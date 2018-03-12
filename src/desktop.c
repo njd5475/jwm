@@ -40,7 +40,7 @@ void StartupDesktops(void)
    for(x = 0; x < settings.desktopCount; x++) {
       if(desktopNames[x] == NULL) {
          desktopNames[x] = Allocate(4 * sizeof(char));
-         snprintf(desktopNames[x], 4, "%d", x + 1);
+         snprintf(desktopNames[x], 4, "workspace-%d", x + 1);
       }
    }
    if(showingDesktop == NULL) {
@@ -363,4 +363,3 @@ const char *GetDesktopName(unsigned int desktop)
       return "";
    }
 }
-
