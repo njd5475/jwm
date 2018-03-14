@@ -35,6 +35,7 @@
 #include "desktop.h"
 #include "place.h"
 #include "clock.h"
+#include "battery.h"
 #include "dock.h"
 #include "misc.h"
 #include "background.h"
@@ -470,6 +471,7 @@ void Initialize(void)
    InitializeBorders();
    InitializeClients();
    InitializeClock();
+   InitializeBattery();
    InitializeColors();
    InitializeCommands();
    InitializeCursors();
@@ -518,6 +520,7 @@ void Startup(void)
 
    StartupPager();
    StartupClock();
+   StartupBattery();
    StartupTaskBar();
    StartupTrayButtons();
    StartupDesktops();
@@ -583,6 +586,7 @@ void Shutdown(void)
    ShutdownTrayButtons();
    ShutdownTaskBar();
    ShutdownClock();
+   ShutdownBattery();
    ShutdownBorders();
    ShutdownClients();
    ShutdownBackgrounds();
@@ -612,6 +616,7 @@ void Destroy(void)
    DestroyBorders();
    DestroyClients();
    DestroyClock();
+   DestroyBattery();
    DestroyColors();
    DestroyCommands();
    DestroyCursors();
