@@ -8,7 +8,7 @@
  */
 
 #include "jwm.h"
-#include "Battery.h"
+#include "battery.h"
 #include "tray.h"
 #include "color.h"
 #include "font.h"
