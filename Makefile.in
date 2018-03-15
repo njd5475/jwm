@@ -54,7 +54,6 @@ distclean: clean
 	rm -f Makefile src/Makefile jwm.1
 	rm -fr autom4te.cache
 	rm -f Makefile.bak src/Makefile.bak
-	rm -fr .git .gitignore
 
 check-gettext:
 	@if test x$(USE_NLS) != "xyes" ; then \
