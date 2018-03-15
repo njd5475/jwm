@@ -27,7 +27,6 @@
 #include "taskbar.h"
 #include "traybutton.h"
 #include "clock.h"
-#include "battery.h"
 #include "dock.h"
 #include "background.h"
 #include "spacer.h"
@@ -199,7 +198,6 @@ static void ParseTaskList(const TokenNode *tp, TrayType *tray);
 static void ParseSwallow(const TokenNode *tp, TrayType *tray);
 static void ParseTrayButton(const TokenNode *tp, TrayType *tray);
 static void ParseClock(const TokenNode *tp, TrayType *tray);
-static void ParseBattery(const TokenNode *tp, TrayType *tray);
 static void ParseTrayComponentActions(const TokenNode *tp,
                                       TrayComponentType *cp,
                                       AddTrayActionFunc func);
@@ -1330,9 +1328,6 @@ void ParseTray(const TokenNode *tp)
       case TOK_CLOCK:
          ParseClock(np, tray);
          break;
-      case TOK_BATTERY:
-    	 ParseBattery(np, tray);
-    	 break;
       case TOK_DOCK:
          ParseDock(np, tray);
          break;
@@ -1534,43 +1529,6 @@ void ParseClock(const TokenNode *tp, TrayType *tray)
    }
 
    cp = CreateClock(format, zone, width, height);
-   if(JLIKELY(cp)) {
-      ParseTrayComponentActions(tp, cp, AddClockAction);
-      AddTrayComponent(tray, cp);
-   }
-
-}
-
-/** Parse a clock tray component. */
-void ParseBattery(const TokenNode *tp, TrayType *tray)
-{
-   TrayComponentType *cp;
-   const char *mode;
-   const char *details;
-   const char *temp;
-   int width, height;
-
-   Assert(tp);
-   Assert(tray);
-
-   mode = FindAttribute(tp->attributes, "mode");
-   details = FindAttribute(tp->attributes, "details");
-
-   temp = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-   if(temp) {
-      width = ParseUnsigned(tp, temp);
-   } else {
-      width = 0;
-   }
-
-   temp = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
-   if(temp) {
-      height = ParseUnsigned(tp, temp);
-   } else {
-      height = 0;
-   }
-
-   cp = CreateBattery(mode, details, width, height);
    if(JLIKELY(cp)) {
       ParseTrayComponentActions(tp, cp, AddClockAction);
       AddTrayComponent(tray, cp);

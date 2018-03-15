@@ -34,7 +34,6 @@ static const struct {
 } INHERITED_FONTS[] = {
    { FONT_TRAY, FONT_PAGER       },
    { FONT_TRAY, FONT_CLOCK       },
-//   { FONT_TRAY, FONT_BATTERY     },
    { FONT_TRAY, FONT_TASKLIST    },
    { FONT_TRAY, FONT_TRAYBUTTON  }
 };

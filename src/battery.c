@@ -1,14 +1,14 @@
 /**
- * @file battery.c
- * @author Nick
+ * @file clock.c
+ * @author Joe Wingbermuehle
  * @date 2005-2006
  *
- * @brief Battery tray component.
+ * @brief Clock tray component.
  *
  */
 
 #include "jwm.h"
-#include "battery.h"
+#include "clock.h"
 #include "tray.h"
 #include "color.h"
 #include "font.h"
@@ -22,13 +22,13 @@
 #include "event.h"
 #include "action.h"
 
-/** Structure to respresent a Battery tray component. */
-typedef struct BatteryType {
+/** Structure to respresent a clock tray component. */
+typedef struct ClockType {
 
    TrayComponentType *cp;        /**< Common component data. */
 
-   char *mode;                 /**< The time format to use. */
-   char *details;                   /**< The time zone to use (NULL = local). */
+   char *format;                 /**< The time format to use. */
+   char *zone;                   /**< The time zone to use (NULL = local). */
    struct ActionNode *actions;   /**< Actions */
    TimeType lastTime;            /**< Currently displayed time. */
 
@@ -37,84 +37,84 @@ typedef struct BatteryType {
    int mousey;                /**< Last mouse y-coordinate. */
    TimeType mouseTime;        /**< Time of the last mouse motion. */
 
-   int userWidth;             /**< User-specified Battery width (or 0). */
+   int userWidth;             /**< User-specified clock width (or 0). */
 
-   struct BatteryType *next;    /**< Next Battery in the list. */
+   struct ClockType *next;    /**< Next clock in the list. */
 
-} BatteryType;
+} ClockType;
 
 /** The default time format to use. */
-//static const char *DEFAULT_FORMAT = "%I:%M %p";
+static const char *DEFAULT_FORMAT = "%I:%M %p";
 
-static BatteryType *Batterys;
+static ClockType *clocks;
 
 static void Create(TrayComponentType *cp);
 static void Resize(TrayComponentType *cp);
 static void Destroy(TrayComponentType *cp);
-static void ProcessBatteryButtonPress(TrayComponentType *cp,
+static void ProcessClockButtonPress(TrayComponentType *cp,
                                     int x, int y, int button);
-static void ProcessBatteryButtonRelease(TrayComponentType *cp,
+static void ProcessClockButtonRelease(TrayComponentType *cp,
                                       int x, int y, int button);
-static void ProcessBatteryMotionEvent(TrayComponentType *cp,
+static void ProcessClockMotionEvent(TrayComponentType *cp,
                                     int x, int y, int mask);
 
-static void DrawBattery(BatteryType *clk, const TimeType *now);
+static void DrawClock(ClockType *clk, const TimeType *now);
 
-static void SignalBattery(const struct TimeType *now, int x, int y, Window w,
+static void SignalClock(const struct TimeType *now, int x, int y, Window w,
                         void *data);
 
 
-/** Initialize Batterys. */
-void InitializeBattery(void)
+/** Initialize clocks. */
+void InitializeClock(void)
 {
-   Batterys = NULL;
+   clocks = NULL;
 }
 
-/** Start Battery(s). */
-void StartupBattery(void)
+/** Start clock(s). */
+void StartupClock(void)
 {
-   BatteryType *clk;
-   for(clk = Batterys; clk; clk = clk->next) {
+   ClockType *clk;
+   for(clk = clocks; clk; clk = clk->next) {
       if(clk->cp->requestedWidth == 0) {
          clk->cp->requestedWidth = 1;
       }
       if(clk->cp->requestedHeight == 0) {
-         //clk->cp->requestedHeight = GetStringHeight(FONT_BATTERY) + 4;
+         clk->cp->requestedHeight = GetStringHeight(FONT_CLOCK) + 4;
       }
    }
 }
 
-/** Destroy Battery(s). */
-void DestroyBattery(void)
+/** Destroy clock(s). */
+void DestroyClock(void)
 {
-   while(Batterys) {
-      BatteryType *cp = Batterys->next;
+   while(clocks) {
+      ClockType *cp = clocks->next;
 
-      if(Batterys->mode) {
-         Release(Batterys->mode);
+      if(clocks->format) {
+         Release(clocks->format);
       }
-      if(Batterys->details) {
-         Release(Batterys->details);
+      if(clocks->zone) {
+         Release(clocks->zone);
       }
-      DestroyActions(Batterys->actions);
-      UnregisterCallback(SignalBattery, Batterys);
+      DestroyActions(clocks->actions);
+      UnregisterCallback(SignalClock, clocks);
 
-      Release(Batterys);
-      Batterys = cp;
+      Release(clocks);
+      clocks = cp;
    }
 }
 
-/** Create a Battery tray component. */
-TrayComponentType *CreateBattery(const char *mode, const char *details,
+/** Create a clock tray component. */
+TrayComponentType *CreateClock(const char *format, const char *zone,
                                int width, int height)
 {
 
    TrayComponentType *cp;
-   BatteryType *clk;
+   ClockType *clk;
 
-   clk = Allocate(sizeof(BatteryType));
-   clk->next = Batterys;
-   Batterys = clk;
+   clk = Allocate(sizeof(ClockType));
+   clk->next = clocks;
+   clocks = clk;
 
    clk->mousex = -settings.doubleClickDelta;
    clk->mousey = -settings.doubleClickDelta;
@@ -122,11 +122,11 @@ TrayComponentType *CreateBattery(const char *mode, const char *details,
    clk->mouseTime.ms = 0;
    clk->userWidth = 0;
 
-   if(!mode) {
-      mode = "percent";
+   if(!format) {
+      format = DEFAULT_FORMAT;
    }
-   clk->mode = CopyString(mode);
-   clk->details = CopyString(details);
+   clk->format = CopyString(format);
+   clk->zone = CopyString(zone);
    clk->actions = NULL;
    memset(&clk->lastTime, 0, sizeof(clk->lastTime));
 
@@ -145,41 +145,41 @@ TrayComponentType *CreateBattery(const char *mode, const char *details,
    cp->Create = Create;
    cp->Resize = Resize;
    cp->Destroy = Destroy;
-   cp->ProcessButtonPress = ProcessBatteryButtonPress;
-   cp->ProcessButtonRelease = ProcessBatteryButtonRelease;
-   cp->ProcessMotionEvent = ProcessBatteryMotionEvent;
+   cp->ProcessButtonPress = ProcessClockButtonPress;
+   cp->ProcessButtonRelease = ProcessClockButtonRelease;
+   cp->ProcessMotionEvent = ProcessClockMotionEvent;
 
-   RegisterCallback(Min(900, settings.popupDelay / 2), SignalBattery, clk);
+   RegisterCallback(Min(900, settings.popupDelay / 2), SignalClock, clk);
 
    return cp;
 }
 
-/** Add an action to a Battery. */
-void AddBatteryAction(TrayComponentType *cp,
+/** Add an action to a clock. */
+void AddClockAction(TrayComponentType *cp,
                     const char *action,
                     int mask)
 {
-   BatteryType *Battery = (BatteryType*)cp->object;
-   AddAction(&Battery->actions, action, mask);
+   ClockType *clock = (ClockType*)cp->object;
+   AddAction(&clock->actions, action, mask);
 }
 
-/** Initialize a Battery tray component. */
+/** Initialize a clock tray component. */
 void Create(TrayComponentType *cp)
 {
    cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height,
                                rootDepth);
 }
 
-/** Resize a Battery tray component. */
+/** Resize a clock tray component. */
 void Resize(TrayComponentType *cp)
 {
 
-   BatteryType *clk;
+   ClockType *clk;
    TimeType now;
 
    Assert(cp);
 
-   clk = (BatteryType*)cp->object;
+   clk = (ClockType*)cp->object;
 
    Assert(clk);
 
@@ -193,11 +193,11 @@ void Resize(TrayComponentType *cp)
    memset(&clk->lastTime, 0, sizeof(clk->lastTime));
 
    GetCurrentTime(&now);
-   DrawBattery(clk, &now);
+   DrawClock(clk, &now);
 
 }
 
-/** Destroy a Battery tray component. */
+/** Destroy a clock tray component. */
 void Destroy(TrayComponentType *cp)
 {
    Assert(cp);
@@ -206,94 +206,94 @@ void Destroy(TrayComponentType *cp)
    }
 }
 
-/** Process a press event on a Battery tray component. */
-void ProcessBatteryButtonPress(TrayComponentType *cp, int x, int y, int button)
+/** Process a press event on a clock tray component. */
+void ProcessClockButtonPress(TrayComponentType *cp, int x, int y, int button)
 {
-   const BatteryType *clk = (BatteryType*)cp->object;
+   const ClockType *clk = (ClockType*)cp->object;
    ProcessActionPress(clk->actions, cp, x, y, button);
 }
 
-void ProcessBatteryButtonRelease(TrayComponentType *cp, int x, int y, int button)
+void ProcessClockButtonRelease(TrayComponentType *cp, int x, int y, int button)
 {
-   const BatteryType *clk = (BatteryType*)cp->object;
+   const ClockType *clk = (ClockType*)cp->object;
    ProcessActionRelease(clk->actions, cp, x, y, button);
 }
 
-/** Process a motion event on a Battery tray component. */
-void ProcessBatteryMotionEvent(TrayComponentType *cp,
+/** Process a motion event on a clock tray component. */
+void ProcessClockMotionEvent(TrayComponentType *cp,
                              int x, int y, int mask)
 {
-   BatteryType *clk = (BatteryType*)cp->object;
+   ClockType *clk = (ClockType*)cp->object;
    clk->mousex = cp->screenx + x;
    clk->mousey = cp->screeny + y;
    GetCurrentTime(&clk->mouseTime);
 }
 
-/** Update a Battery tray component. */
-void SignalBattery(const TimeType *now, int x, int y, Window w, void *data)
+/** Update a clock tray component. */
+void SignalClock(const TimeType *now, int x, int y, Window w, void *data)
 {
 
-   //BatteryType *cp = (BatteryType*)data;
-   //const char *longTime;
+   ClockType *cp = (ClockType*)data;
+   const char *longTime;
 
-   //DrawBattery(cp, now);
-//   if(cp->cp->tray->window == w &&
-//      abs(cp->mousex - x) < settings.doubleClickDelta &&
-//      abs(cp->mousey - y) < settings.doubleClickDelta) {
-//      if(GetTimeDifference(now, &cp->mouseTime) >= settings.popupDelay) {
-//         //longTime = GetTimeString("%c", cp->zone);
-//         //ShowPopup(x, y, "Soonish!", POPUP_BATTERY);
-//      }
-//   }
+   DrawClock(cp, now);
+   if(cp->cp->tray->window == w &&
+      abs(cp->mousex - x) < settings.doubleClickDelta &&
+      abs(cp->mousey - y) < settings.doubleClickDelta) {
+      if(GetTimeDifference(now, &cp->mouseTime) >= settings.popupDelay) {
+         longTime = GetTimeString("%c", cp->zone);
+         ShowPopup(x, y, longTime, POPUP_CLOCK);
+      }
+   }
 
 }
 
-/** Draw a Battery tray component. */
-void DrawBattery(BatteryType *clk, const TimeType *now)
+/** Draw a clock tray component. */
+void DrawClock(ClockType *clk, const TimeType *now)
 {
 
-//   TrayComponentType *cp;
-//   const char *batteryString;
-//   int width;
-//   int rwidth;
-//
-//   /* Only draw if the time changed. */
-//   if(now->seconds == clk->lastTime.seconds) {
-//      return;
-//   }
-//
-//   /* Clear the area. */
-//   cp = clk->cp;
-//   if(colors[COLOR_BATTERY_BG1] == colors[COLOR_BATTERY_BG2]) {
-//      JXSetForeground(display, rootGC, colors[COLOR_BATTERY_BG1]);
-//      JXFillRectangle(display, cp->pixmap, rootGC, 0, 0,
-//                      cp->width, cp->height);
-//   } else {
-//      DrawHorizontalGradient(cp->pixmap, rootGC,
-//                             colors[COLOR_BATTERY_BG1], colors[COLOR_BATTERY_BG2],
-//                             0, 0, cp->width, cp->height);
-//   }
-//
-//   /* Determine if the Battery is the right size. */
-//   batteryString = "Soon!";
-//   width = GetStringWidth(FONT_BATTERY, batteryString);
-//   rwidth = width + 4;
-//   if(rwidth == clk->cp->requestedWidth || clk->userWidth) {
-//
-//      /* Draw the Battery. */
-//      RenderString(cp->pixmap, FONT_BATTERY, COLOR_BATTERY_FG,
-//                   (cp->width - width) / 2,
-//                   (cp->height - GetStringHeight(FONT_BATTERY)) / 2,
-//                   cp->width, batteryString);
-//
-//      UpdateSpecificTray(clk->cp->tray, clk->cp);
-//
-//   } else {
-//
-//      /* Wrong size. Resize. */
-//      clk->cp->requestedWidth = rwidth;
-//      ResizeTray(clk->cp->tray);
-//
-//   }
+   TrayComponentType *cp;
+   const char *timeString;
+   int width;
+   int rwidth;
+
+   /* Only draw if the time changed. */
+   if(now->seconds == clk->lastTime.seconds) {
+      return;
+   }
+
+   /* Clear the area. */
+   cp = clk->cp;
+   if(colors[COLOR_CLOCK_BG1] == colors[COLOR_CLOCK_BG2]) {
+      JXSetForeground(display, rootGC, colors[COLOR_CLOCK_BG1]);
+      JXFillRectangle(display, cp->pixmap, rootGC, 0, 0,
+                      cp->width, cp->height);
+   } else {
+      DrawHorizontalGradient(cp->pixmap, rootGC,
+                             colors[COLOR_CLOCK_BG1], colors[COLOR_CLOCK_BG2],
+                             0, 0, cp->width, cp->height);
+   }
+
+   /* Determine if the clock is the right size. */
+   timeString = GetTimeString(clk->format, clk->zone);
+   width = GetStringWidth(FONT_CLOCK, timeString);
+   rwidth = width + 4;
+   if(rwidth == clk->cp->requestedWidth || clk->userWidth) {
+
+      /* Draw the clock. */
+      RenderString(cp->pixmap, FONT_CLOCK, COLOR_CLOCK_FG,
+                   (cp->width - width) / 2,
+                   (cp->height - GetStringHeight(FONT_CLOCK)) / 2,
+                   cp->width, timeString);
+
+      UpdateSpecificTray(clk->cp->tray, clk->cp);
+
+   } else {
+
+      /* Wrong size. Resize. */
+      clk->cp->requestedWidth = rwidth;
+      ResizeTray(clk->cp->tray);
+
+   }
 
 }
