@@ -79,7 +79,7 @@ void StartupBattery(void)
          clk->cp->requestedWidth = 1;
       }
       if(clk->cp->requestedHeight == 0) {
-         clk->cp->requestedHeight = GetStringHeight(FONT_BATTERY) + 4;
+         //clk->cp->requestedHeight = GetStringHeight(FONT_BATTERY) + 4;
       }
    }
 }
@@ -233,18 +233,18 @@ void ProcessBatteryMotionEvent(TrayComponentType *cp,
 void SignalBattery(const TimeType *now, int x, int y, Window w, void *data)
 {
 
-   BatteryType *cp = (BatteryType*)data;
+   //BatteryType *cp = (BatteryType*)data;
    //const char *longTime;
 
-   DrawBattery(cp, now);
-   if(cp->cp->tray->window == w &&
-      abs(cp->mousex - x) < settings.doubleClickDelta &&
-      abs(cp->mousey - y) < settings.doubleClickDelta) {
-      if(GetTimeDifference(now, &cp->mouseTime) >= settings.popupDelay) {
-         //longTime = GetTimeString("%c", cp->zone);
-         ShowPopup(x, y, "Soonish!", POPUP_BATTERY);
-      }
-   }
+   //DrawBattery(cp, now);
+//   if(cp->cp->tray->window == w &&
+//      abs(cp->mousex - x) < settings.doubleClickDelta &&
+//      abs(cp->mousey - y) < settings.doubleClickDelta) {
+//      if(GetTimeDifference(now, &cp->mouseTime) >= settings.popupDelay) {
+//         //longTime = GetTimeString("%c", cp->zone);
+//         //ShowPopup(x, y, "Soonish!", POPUP_BATTERY);
+//      }
+//   }
 
 }
 
@@ -252,48 +252,48 @@ void SignalBattery(const TimeType *now, int x, int y, Window w, void *data)
 void DrawBattery(BatteryType *clk, const TimeType *now)
 {
 
-   TrayComponentType *cp;
-   const char *batteryString;
-   int width;
-   int rwidth;
-
-   /* Only draw if the time changed. */
-   if(now->seconds == clk->lastTime.seconds) {
-      return;
-   }
-
-   /* Clear the area. */
-   cp = clk->cp;
-   if(colors[COLOR_BATTERY_BG1] == colors[COLOR_BATTERY_BG2]) {
-      JXSetForeground(display, rootGC, colors[COLOR_BATTERY_BG1]);
-      JXFillRectangle(display, cp->pixmap, rootGC, 0, 0,
-                      cp->width, cp->height);
-   } else {
-      DrawHorizontalGradient(cp->pixmap, rootGC,
-                             colors[COLOR_BATTERY_BG1], colors[COLOR_BATTERY_BG2],
-                             0, 0, cp->width, cp->height);
-   }
-
-   /* Determine if the Battery is the right size. */
-   batteryString = "Soon!";
-   width = GetStringWidth(FONT_BATTERY, batteryString);
-   rwidth = width + 4;
-   if(rwidth == clk->cp->requestedWidth || clk->userWidth) {
-
-      /* Draw the Battery. */
-      RenderString(cp->pixmap, FONT_BATTERY, COLOR_BATTERY_FG,
-                   (cp->width - width) / 2,
-                   (cp->height - GetStringHeight(FONT_BATTERY)) / 2,
-                   cp->width, batteryString);
-
-      UpdateSpecificTray(clk->cp->tray, clk->cp);
-
-   } else {
-
-      /* Wrong size. Resize. */
-      clk->cp->requestedWidth = rwidth;
-      ResizeTray(clk->cp->tray);
-
-   }
+//   TrayComponentType *cp;
+//   const char *batteryString;
+//   int width;
+//   int rwidth;
+//
+//   /* Only draw if the time changed. */
+//   if(now->seconds == clk->lastTime.seconds) {
+//      return;
+//   }
+//
+//   /* Clear the area. */
+//   cp = clk->cp;
+//   if(colors[COLOR_BATTERY_BG1] == colors[COLOR_BATTERY_BG2]) {
+//      JXSetForeground(display, rootGC, colors[COLOR_BATTERY_BG1]);
+//      JXFillRectangle(display, cp->pixmap, rootGC, 0, 0,
+//                      cp->width, cp->height);
+//   } else {
+//      DrawHorizontalGradient(cp->pixmap, rootGC,
+//                             colors[COLOR_BATTERY_BG1], colors[COLOR_BATTERY_BG2],
+//                             0, 0, cp->width, cp->height);
+//   }
+//
+//   /* Determine if the Battery is the right size. */
+//   batteryString = "Soon!";
+//   width = GetStringWidth(FONT_BATTERY, batteryString);
+//   rwidth = width + 4;
+//   if(rwidth == clk->cp->requestedWidth || clk->userWidth) {
+//
+//      /* Draw the Battery. */
+//      RenderString(cp->pixmap, FONT_BATTERY, COLOR_BATTERY_FG,
+//                   (cp->width - width) / 2,
+//                   (cp->height - GetStringHeight(FONT_BATTERY)) / 2,
+//                   cp->width, batteryString);
+//
+//      UpdateSpecificTray(clk->cp->tray, clk->cp);
+//
+//   } else {
+//
+//      /* Wrong size. Resize. */
+//      clk->cp->requestedWidth = rwidth;
+//      ResizeTray(clk->cp->tray);
+//
+//   }
 
 }
