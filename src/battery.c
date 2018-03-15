@@ -27,8 +27,8 @@ typedef struct BatteryType {
 
    TrayComponentType *cp;        /**< Common component data. */
 
-   char *format;                 /**< The time format to use. */
-   char *zone;                   /**< The time zone to use (NULL = local). */
+   char *mode;                 /**< The time format to use. */
+   char *details;                   /**< The time zone to use (NULL = local). */
    struct ActionNode *actions;   /**< Actions */
    TimeType lastTime;            /**< Currently displayed time. */
 
@@ -44,7 +44,7 @@ typedef struct BatteryType {
 } BatteryType;
 
 /** The default time format to use. */
-static const char *DEFAULT_FORMAT = "%I:%M %p";
+//static const char *DEFAULT_FORMAT = "%I:%M %p";
 
 static BatteryType *Batterys;
 
@@ -90,11 +90,11 @@ void DestroyBattery(void)
    while(Batterys) {
       BatteryType *cp = Batterys->next;
 
-      if(Batterys->format) {
-         Release(Batterys->format);
+      if(Batterys->mode) {
+         Release(Batterys->mode);
       }
-      if(Batterys->zone) {
-         Release(Batterys->zone);
+      if(Batterys->details) {
+         Release(Batterys->details);
       }
       DestroyActions(Batterys->actions);
       UnregisterCallback(SignalBattery, Batterys);
@@ -105,7 +105,7 @@ void DestroyBattery(void)
 }
 
 /** Create a Battery tray component. */
-TrayComponentType *CreateBattery(const char *format, const char *zone,
+TrayComponentType *CreateBattery(const char *mode, const char *details,
                                int width, int height)
 {
 
@@ -122,11 +122,11 @@ TrayComponentType *CreateBattery(const char *format, const char *zone,
    clk->mouseTime.ms = 0;
    clk->userWidth = 0;
 
-   if(!format) {
-      format = DEFAULT_FORMAT;
+   if(!mode) {
+      mode = "percent";
    }
-   clk->format = CopyString(format);
-   clk->zone = CopyString(zone);
+   clk->mode = CopyString(mode);
+   clk->details = CopyString(details);
    clk->actions = NULL;
    memset(&clk->lastTime, 0, sizeof(clk->lastTime));
 
@@ -234,15 +234,15 @@ void SignalBattery(const TimeType *now, int x, int y, Window w, void *data)
 {
 
    BatteryType *cp = (BatteryType*)data;
-   const char *longTime;
+   //const char *longTime;
 
    DrawBattery(cp, now);
    if(cp->cp->tray->window == w &&
       abs(cp->mousex - x) < settings.doubleClickDelta &&
       abs(cp->mousey - y) < settings.doubleClickDelta) {
       if(GetTimeDifference(now, &cp->mouseTime) >= settings.popupDelay) {
-         longTime = GetTimeString("%c", cp->zone);
-         ShowPopup(x, y, longTime, POPUP_BATTERY);
+         //longTime = GetTimeString("%c", cp->zone);
+         ShowPopup(x, y, "Soonish!", POPUP_BATTERY);
       }
    }
 
@@ -253,7 +253,7 @@ void DrawBattery(BatteryType *clk, const TimeType *now)
 {
 
    TrayComponentType *cp;
-   const char *timeString;
+   const char *batteryString;
    int width;
    int rwidth;
 
@@ -275,8 +275,8 @@ void DrawBattery(BatteryType *clk, const TimeType *now)
    }
 
    /* Determine if the Battery is the right size. */
-   timeString = GetTimeString(clk->format, clk->zone);
-   width = GetStringWidth(FONT_BATTERY, timeString);
+   batteryString = "Soon!";
+   width = GetStringWidth(FONT_BATTERY, batteryString);
    rwidth = width + 4;
    if(rwidth == clk->cp->requestedWidth || clk->userWidth) {
 
@@ -284,7 +284,7 @@ void DrawBattery(BatteryType *clk, const TimeType *now)
       RenderString(cp->pixmap, FONT_BATTERY, COLOR_BATTERY_FG,
                    (cp->width - width) / 2,
                    (cp->height - GetStringHeight(FONT_BATTERY)) / 2,
-                   cp->width, timeString);
+                   cp->width, batteryString);
 
       UpdateSpecificTray(clk->cp->tray, clk->cp);
 

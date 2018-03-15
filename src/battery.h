@@ -20,13 +20,13 @@ void DestroyBattery(void);
 /*@}*/
 
 /** Create a battery component for the tray.
- * @param format The format of the battery.
- * @param zone The timezone of the battery (NULL for local time).
+ * @param mode The mode of the battery.
+ * @param details The details of the battery (NULL for just percentage).
  * @param width The width of the battery (0 for auto).
  * @param height The height of the battery (0 for auto).
  */
-struct TrayComponentType *CreateBattery(const char *format,
-                                      const char *zone,
+struct TrayComponentType *CreateBattery(const char *mode,
+                                      const char *details,
                                       int width, int height);
 
 /** Add an action to a battery.
