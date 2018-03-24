@@ -41,6 +41,7 @@
 #include "settings.h"
 #include "timing.h"
 #include "grab.h"
+#include "battery.h"
 
 #include <errno.h>
 
@@ -464,7 +465,7 @@ void HandleChild(int sig)
  */
 void Initialize(void)
 {
-
+   InitializeBattery();
    InitializeBackgrounds();
    InitializeBindings();
    InitializeBorders();
