@@ -52,6 +52,8 @@ static void ProcessBatteryButtonRelease(TrayComponentType *cp, int x, int y, int
 static void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask);
 static void DrawBattery(BatteryType *bat, int level);
 static void PollBattery(const struct TimeType *now, int x, int y, Window w, void *data);
+static char *quickFileRead(const char *filename);
+static int *readAsInt(const char *filename);
 
 /** Initialize Batterys. */
 void InitializeBattery(void) {
@@ -145,7 +147,10 @@ void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
 
 /** Update a Battery tray component. */
 void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
-  DrawBattery(data, 0);
+  int chargeNow = readAsInt("/sys/class/power_supply/BAT1/charge_now");
+  int chargeFull = readAsInt("/sys/class/power_supply/BAT1/charge_full");
+  int level = (int)(100 * (chargeNow / (float)chargeFull));
+  DrawBattery(data, level);
 }
 
 /** Draw a Battery tray component. */
@@ -160,4 +165,36 @@ void DrawBattery(BatteryType *bat, int level) {
     (bat->cp->width - strWidth)/2, (bat->cp->height - GetStringHeight(FONT_CLOCK))/2, bat->cp->width, buf);
 
   UpdateSpecificTray(bat->cp->tray, bat->cp);
+}
+
+int *readAsInt(const char *filename) {
+  char *str = quickFileRead(filename);
+  return strtol(str, &str, 10);
+}
+
+#include <fcntl.h>
+
+#define FILEMODE S_IRWXU | S_IRGRP | S_IROTH
+
+char *quickFileRead(const char *filename) {
+  char buf[255];
+  memset(buf, 0, 255);
+  int fd;
+
+  if((fd = open(filename, O_RDONLY, FILEMODE)) < 0) {
+    perror("Error in file opening");
+    return NULL;
+  }
+
+  size_t count = read(fd, buf, 254);
+
+  if(count < 0) {
+    perror("Could not read any of the file!");
+    return NULL;
+  }
+
+  printf("Read %d\n", count);
+  char *contents = (char*) malloc(count);
+  strcpy(contents, buf);
+  return contents;
 }
