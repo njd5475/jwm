@@ -59,7 +59,9 @@
 
         <Pager labeled="true"/>
 
-        <TaskList maxwidth="256"/>
+        <TaskList maxwidth="246"/>
+
+        <Battery></Battery>
 
         <Dock/>
 

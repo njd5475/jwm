@@ -27,6 +27,7 @@
 #include "taskbar.h"
 #include "traybutton.h"
 #include "clock.h"
+#include "battery.h"
 #include "dock.h"
 #include "background.h"
 #include "spacer.h"
@@ -1328,6 +1329,9 @@ void ParseTray(const TokenNode *tp)
       case TOK_CLOCK:
          ParseClock(np, tray);
          break;
+      case TOK_BATTERY:
+         ParseBattery(np, tray);
+         break;
       case TOK_DOCK:
          ParseDock(np, tray);
          break;
@@ -1335,6 +1339,7 @@ void ParseTray(const TokenNode *tp)
          ParseSpacer(np, tray);
          break;
       default:
+        Warning(_("We tried to add it unsuccessfully tok type: %d"), np->type);
          InvalidTag(np, TOK_TRAY);
          break;
       }
@@ -1497,6 +1502,36 @@ void ParseTrayButton(const TokenNode *tp, TrayType *tray)
       ParseTrayComponentActions(tp, cp, AddTrayButtonAction);
    }
 
+}
+
+/** Parse a battery tray component. */
+void ParseBattery(const TokenNode *tp, TrayType *tray)
+{
+  TrayComponentType *cp;
+  const char* temp;
+  int width, height;
+
+  Assert(tp);
+  Assert(tray);
+
+   temp = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
+   if(temp) {
+      width = ParseUnsigned(tp, temp);
+   } else {
+      width = 0;
+   }
+
+   temp = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
+   if(temp) {
+      height = ParseUnsigned(tp, temp);
+   } else {
+      height = 0;
+   }
+
+   cp = CreateBattery(width, height);
+   if(JLIKELY(cp)) {
+      AddTrayComponent(tray, cp);
+   }
 }
 
 /** Parse a clock tray component. */

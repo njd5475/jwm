@@ -21,6 +21,7 @@ static const int BLOCK_SIZE = 16;
 static const StringMappingType TOKEN_MAP[] = {
    { "Active",             TOK_ACTIVE           },
    { "Background",         TOK_BACKGROUND       },
+   { "Battery",            TOK_BATTERY          },
    { "Button",             TOK_BUTTON           },
    { "ButtonClose",        TOK_BUTTONCLOSE      },
    { "ButtonMax",          TOK_BUTTONMAX        },
@@ -538,6 +539,7 @@ TokenType LookupType(const char *name, TokenNode *np)
       return x;
    }
 
+   Warning(_("CRAP %s is set to type %d"), name, x);
    if(JUNLIKELY(np)) {
       np->type = TOK_INVALID;
       np->invalidName = CopyString(name);

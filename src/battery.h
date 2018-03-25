@@ -27,9 +27,7 @@ void DestroyBattery(void);
  * @param width The width of the battery (0 for auto).
  * @param height The height of the battery (0 for auto).
  */
-struct TrayComponentType *CreateBattery(const char *format,
-                                      const char *zone,
-                                      int width, int height);
+struct TrayComponentType *CreateBattery(int width, int height);
 
 /**
  * Add an action to a battery.

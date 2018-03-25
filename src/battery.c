@@ -18,6 +18,7 @@
 #include "cursor.h"
 #include "popup.h"
 #include "misc.h"
+#include "error.h"
 #include "settings.h"
 #include "event.h"
 #include "action.h"
@@ -41,7 +42,7 @@ typedef struct BatteryType {
   struct BatteryType *next; /**< Next Battery in the list. */
 } BatteryType;
 
-static BatteryType *Batterys;
+static BatteryType *batteries;
 
 static void Create(TrayComponentType *cp);
 static void Resize(TrayComponentType *cp);
@@ -49,13 +50,13 @@ static void Destroy(TrayComponentType *cp);
 static void ProcessBatteryButtonPress(TrayComponentType *cp, int x, int y, int button);
 static void ProcessBatteryButtonRelease(TrayComponentType *cp, int x, int y, int button);
 static void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask);
-static void DrawBattery(BatteryType *clk, const TimeType *now);
-static void SignalBattery(const struct TimeType *now, int x, int y, Window w,
-    void *data);
+static void DrawBattery(BatteryType *bat, int level);
+static void PollBattery(const struct TimeType *now, int x, int y, Window w, void *data);
 
 /** Initialize Batterys. */
 void InitializeBattery(void) {
-  Batterys = NULL;
+  Warning(_("Battery tray has been initialized"));
+  batteries = NULL;
 }
 
 /** Start Battery(s). */
@@ -69,9 +70,29 @@ void DestroyBattery(void) {
 }
 
 /** Create a Battery tray component. */
-TrayComponentType *CreateBattery(const char *format, const char *zone,
-    int width, int height) {
-  return 0;
+TrayComponentType *CreateBattery(int width, int height) {
+  Warning(_("Creating Battery Component"));
+  TrayComponentType *cp;
+  BatteryType *bat;
+  bat = Allocate(sizeof(BatteryType));
+  bat->next = batteries;
+
+  batteries = bat; //move to head
+
+  cp = CreateTrayComponent();
+  cp->object = bat;
+  cp->width = 20;
+  cp->height = 20;
+  bat->cp = cp;
+  cp->Create = Create;
+  cp->Resize = Resize;
+  cp->Destroy = Destroy;
+  cp->ProcessButtonPress = ProcessBatteryButtonPress;
+  cp->ProcessButtonRelease = ProcessBatteryMotionEvent;
+
+  RegisterCallback(900, PollBattery, bat);
+
+  return cp;
 }
 
 /** Add an action to a Battery. */
@@ -84,7 +105,25 @@ void Create(TrayComponentType *cp) {
 
 /** Resize a Battery tray component. */
 void Resize(TrayComponentType *cp) {
+  Warning(_("Battery received a resize call, width: %d, height: %d"), cp->width, cp->height);
 
+  BatteryType *bat;
+  TimeType now;
+
+  Assert(cp);
+
+  bat = (BatteryType*)cp->object;
+
+  Assert(clk);
+
+  if(cp->pixmap != None) {
+    Warning(_("Battery pixmap released!"));
+     JXFreePixmap(display, cp->pixmap);
+  }
+
+  cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height, rootDepth);
+
+  DrawBattery(bat, 0);
 }
 
 /** Destroy a Battery tray component. */
@@ -105,11 +144,20 @@ void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
 }
 
 /** Update a Battery tray component. */
-void SignalBattery(const TimeType *now, int x, int y, Window w, void *data) {
-
+void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
+  DrawBattery(data, 0);
 }
 
 /** Draw a Battery tray component. */
-void DrawBattery(BatteryType *clk, const TimeType *now) {
+void DrawBattery(BatteryType *bat, int level) {
+  JXSetForeground(display, rootGC, colors[COLOR_CLOCK_BG1]);
+  JXFillRectangle(display, bat->cp->pixmap, rootGC, 0, 0, bat->cp->width, bat->cp->height);
 
+  static char buf[80];
+  sprintf(buf, "%d%%", level);
+  int strWidth = GetStringWidth(FONT_CLOCK, buf); 
+  RenderString(bat->cp->pixmap, FONT_CLOCK, COLOR_CLOCK_FG,
+    (bat->cp->width - strWidth)/2, (bat->cp->height - GetStringHeight(FONT_CLOCK))/2, bat->cp->width, buf);
+
+  UpdateSpecificTray(bat->cp->tray, bat->cp);
 }
