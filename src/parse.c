@@ -199,6 +199,7 @@ static void ParseTaskList(const TokenNode *tp, TrayType *tray);
 static void ParseSwallow(const TokenNode *tp, TrayType *tray);
 static void ParseTrayButton(const TokenNode *tp, TrayType *tray);
 static void ParseClock(const TokenNode *tp, TrayType *tray);
+static void ParseBattery(const TokenNode *tp, TrayType *tray);
 static void ParseTrayComponentActions(const TokenNode *tp,
                                       TrayComponentType *cp,
                                       AddTrayActionFunc func);
