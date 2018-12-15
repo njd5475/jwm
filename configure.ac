@@ -8,10 +8,9 @@ AC_PREREQ(2.57)
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_SRCDIR([po])
 AC_CONFIG_HEADER([config.h])
-AC_LANG(C)
+AC_LANG(C++)
 
-AC_PROG_CC
-AC_PROG_CPP
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 
@@ -542,6 +541,10 @@ if test "$datadir" = "" ; then
     datadir="$ac_default_datadir"
 fi
 
+if test "$datarootdir" = "" ; then
+    datarootdir="$ac_default_datarootdir"
+fi
+
 if test "$LOCALEDIR" = "" ; then
    localedir=`eval echo \""$datadir"/locale\"`
    localedir=`eval echo \""$localedir"\"`
@@ -554,6 +557,8 @@ MANDIR=`eval echo \""$mandir"\"`
 MANDIR=`eval echo \""$MANDIR"\"`
 DATADIR=`eval echo \""$datadir"\"`
 DATADIR=`eval echo \""$DATADIR"\"`
+DATAROOTDIR=`eval echo \""$datarootdir"\"`
+DATAROOTDIR=`eval echo \""$DATAROOTDIR"\"`
 
 AC_DEFINE_UNQUOTED(SYSTEM_CONFIG, "$SYSCONF/system.jwmrc",
    [default system configuration path])
@@ -565,6 +570,7 @@ AC_SUBST(INSTVERSION, `echo $PACKAGE_VERSION | tr -d .`)
 AC_SUBST(BINDIR, "$BINDIR")
 AC_SUBST(MANDIR, "$MANDIR")
 AC_SUBST(DATADIR, "$DATADIR")
+AC_SUBST(DATAROOTDIR, "$DATAROOTDIR")
 AC_SUBST(DATE, `date -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y-%m-%d`)
 AC_SUBST(SYSCONF, "$SYSCONF")
 AC_SUBST(PACKAGE, "$PACKAGE")

@@ -322,16 +322,16 @@ void ResizeClientKeyboard(ClientNode *np, MouseContextType context)
          DiscardKeyEvents(&event, np->window);
          action = GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
          switch(action.action) {
-         case ACTION_UP:
+         case UP:
             deltay = Min(-np->yinc, -10);
             break;
-         case ACTION_DOWN:
+         case DOWN:
             deltay = Max(np->yinc, 10);
             break;
-         case ACTION_RIGHT:
+         case RIGHT:
             deltax = Max(np->xinc, 10);
             break;
-         case ACTION_LEFT:
+         case LEFT:
             deltax = Min(-np->xinc, -10);
             break;
          default:

@@ -1,6 +1,7 @@
 PACKAGE = jwm
 SYSCONF = $(DESTDIR)@SYSCONF@
 MANDIR = $(DESTDIR)@MANDIR@
+DATAROOTDIR = $(DESTDIR)/usr/share
 ICONDIR = $(DESTDIR)@ICONDIR@
 VERSION ?= @VERSION@
 USE_NLS = @USE_NLS@
@@ -17,6 +18,8 @@ install: all
 	install -m 644 example.jwmrc $(SYSCONF)/system.jwmrc
 	install -d -m 0755 $(MANDIR)/man1
 	install -m 644 jwm.1 $(MANDIR)/man1/jwm.1
+	install -d -m 0755 $(DATAROOTDIR)/xsessions
+	install -m 644 jwm.desktop $(DATAROOTDIR)/xsessions/jwm.desktop
 
 install-strip: all install-conf
 	$(MAKE) -C src install-strip
@@ -34,6 +37,7 @@ uninstall:
 	$(MAKE) -C contrib uninstall
 	rm -f $(SYSCONF)/system.jwmrc
 	rm -f $(MANDIR)/man1/jwm.1
+	rm -f $(DATAROOTDIR)/xessions/jwm.desktop
 
 tarball:
 	rm -f ../jwm-$(VERSION).tar.xz ;

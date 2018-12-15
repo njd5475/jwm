@@ -181,7 +181,7 @@ void StartupColors(void)
    memset(rgbColors, 0xFF, sizeof(rgbColors));
 
    /* Determine how to convert between RGB triples and pixels. */
-   switch(rootVisual->class) {
+   switch(rootVisual->c_class) {
    case DirectColor:
    case TrueColor:
       redBits = ComputeShift(rootVisual->red_mask, &redShift);
@@ -457,7 +457,7 @@ void AllocateColor(ColorType type, XColor *c)
    rgbColors[type] = GetRGBFromXColor(c);
 
    /* Look up the pixel value to use. */
-   switch(rootVisual->class) {
+   switch(rootVisual->c_class) {
    case DirectColor:
    case TrueColor:
       c->pixel = GetDirectPixel(c);
@@ -481,7 +481,7 @@ void AllocateColor(ColorType type, XColor *c)
 /** Compute the pixel value from RGB components. */
 void GetColor(XColor *c)
 {
-   switch(rootVisual->class) {
+   switch(rootVisual->c_class) {
    case DirectColor:
    case TrueColor:
       c->pixel = GetDirectPixel(c);

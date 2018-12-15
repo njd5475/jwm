@@ -688,17 +688,17 @@ MenuSelectionType UpdateMotion(Menu *menu,
       y = -1;
       action = GetKey(MC_NONE, event->xkey.state, event->xkey.keycode);
       switch(action.action) {
-      case ACTION_UP:
+      case UP:
          y = GetPreviousMenuIndex(tp);
          break;
-      case ACTION_DOWN:
+      case DOWN:
          y = GetNextMenuIndex(tp);
          break;
-      case ACTION_RIGHT:
+      case RIGHT:
          tp = menu;
          y = 0;
          break;
-      case ACTION_LEFT:
+      case LEFT:
          if(tp->parent) {
             tp = tp->parent;
             if(tp->currentIndex >= 0) {
@@ -708,9 +708,9 @@ MenuSelectionType UpdateMotion(Menu *menu,
             }
          }
          break;
-      case ACTION_ESC:
+      case ESC:
          return MENU_SUBSELECT;
-      case ACTION_ENTER:
+      case ENTER:
          ip = GetMenuItem(tp, tp->currentIndex);
          if(ip != NULL) {
             HideMenu(menu);

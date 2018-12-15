@@ -130,7 +130,7 @@ ClientNode *AddClientWindow(Window w, char alreadyMapped, char notOwner)
    if(attr.override_redirect == True) {
       return NULL;
    }
-   if(attr.class == InputOnly) {
+   if(attr.c_class == InputOnly) {
       return NULL;
    }
 

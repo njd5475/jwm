@@ -77,11 +77,11 @@ void DestroyBattery(void) {
 void StartupBattery(void) {
   if((chargeNowFile = open("/sys/class/power_supply/BAT1/charge_now", O_RDONLY, FILEMODE)) < 0) {
     perror("Error in file opening");
-    return NULL;
+    return;
   }
   if((chargeFullFile = open("/sys/class/power_supply/BAT1/charge_full", O_RDONLY, FILEMODE)) < 0) {
     perror("Error in file opening");
-    return NULL;
+    return;
   }
   Warning(_("Battery started and files opened bat at %.02f"), QueryBatteryPercentage());
   Warning(_("Battery started and files opened bat at %.02f"), QueryBatteryPercentage());

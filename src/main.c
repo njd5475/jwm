@@ -42,6 +42,9 @@
 #include "timing.h"
 #include "grab.h"
 #include "battery.h"
+#include "AbstractAction.h"
+
+AbstractAction aa;
 
 #include <errno.h>
 

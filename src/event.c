@@ -480,52 +480,52 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
    const ActionType key = GetKey(context, state, code);
    const char keyAction = context == MC_NONE;
    switch(key.action) {
-   case ACTION_EXEC:
+   case EXEC:
       RunKeyCommand(context, state, code);
       break;
-   case ACTION_DESKTOP:
+   case DESKTOP:
       ChangeDesktop(key.extra);
       break;
-   case ACTION_RDESKTOP:
+   case RDESKTOP:
       RightDesktop();
       break;
-   case ACTION_LDESKTOP:
+   case LDESKTOP:
       LeftDesktop();
       break;
-   case ACTION_UDESKTOP:
+   case UDESKTOP:
       AboveDesktop();
       break;
-   case ACTION_DDESKTOP:
+   case DDESKTOP:
       BelowDesktop();
       break;
-   case ACTION_SHOWDESK:
+   case SHOWDESK:
       ShowDesktop();
       break;
-   case ACTION_SHOWTRAY:
+   case SHOWTRAY:
       ShowAllTrays();
       break;
-   case ACTION_NEXT:
+   case NEXT:
       StartWindowWalk();
       FocusNext();
       break;
-   case ACTION_NEXTSTACK:
+   case NEXTSTACK:
       StartWindowStackWalk();
       WalkWindowStack(1);
       break;
-   case ACTION_PREV:
+   case PREV:
       StartWindowWalk();
       FocusPrevious();
       break;
-   case ACTION_PREVSTACK:
+   case PREVSTACK:
       StartWindowStackWalk();
       WalkWindowStack(0);
       break;
-   case ACTION_CLOSE:
+   case CLOSE:
       if(np) {
          DeleteClient(np);
       }
       break;
-   case ACTION_SHADE:
+   case SHADE:
       if(np) {
          if(np->state.status & STAT_SHADED) {
             UnshadeClient(np);
@@ -534,7 +534,7 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_STICK:
+   case STICK:
       if(np) {
          if(np->state.status & STAT_STICKY) {
             SetClientSticky(np, 0);
@@ -543,7 +543,7 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_MOVE:
+   case MOVE:
       if(np) {
          if(keyAction) {
             MoveClientKeyboard(np);
@@ -552,7 +552,7 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_RESIZE:
+   case RESIZE:
       if(np) {
          /* Use provided context by default. */
          const unsigned char corner = key.extra;
@@ -560,10 +560,10 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          if(corner) {
             /* Custom corner specified. */
             resizeContext = MC_BORDER;
-            resizeContext |= (corner & ACTION_RESIZE_N) ? MC_BORDER_N : MC_NONE;
-            resizeContext |= (corner & ACTION_RESIZE_S) ? MC_BORDER_S : MC_NONE;
-            resizeContext |= (corner & ACTION_RESIZE_E) ? MC_BORDER_E : MC_NONE;
-            resizeContext |= (corner & ACTION_RESIZE_W) ? MC_BORDER_W : MC_NONE;
+            resizeContext |= (corner & RESIZE_N) ? MC_BORDER_N : MC_NONE;
+            resizeContext |= (corner & RESIZE_S) ? MC_BORDER_S : MC_NONE;
+            resizeContext |= (corner & RESIZE_E) ? MC_BORDER_E : MC_NONE;
+            resizeContext |= (corner & RESIZE_W) ? MC_BORDER_W : MC_NONE;
          } else if(keyAction) {
             /* No corner specified for a key action, assume SE. */
             resizeContext = MC_BORDER | MC_BORDER_S | MC_BORDER_E;
@@ -575,12 +575,12 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_MIN:
+   case MIN:
       if(np) {
          MinimizeClient(np, 1);
       }
       break;
-   case ACTION_MAX:
+   case MAX:
       if(np) {
          if(keyAction) {
             ToggleMaximized(np, MAX_HORIZ | MAX_VERT);
@@ -589,7 +589,7 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_RESTORE:
+   case RESTORE:
       if(np) {
          if(np->state.maxFlags) {
             MaximizeClient(np, MAX_NONE);
@@ -598,28 +598,28 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_MAXTOP:
+   case MAXTOP:
       ToggleMaximized(np, MAX_TOP | MAX_HORIZ);
       break;
-   case ACTION_MAXBOTTOM:
+   case MAXBOTTOM:
       ToggleMaximized(np, MAX_BOTTOM | MAX_HORIZ);
       break;
-   case ACTION_MAXLEFT:
+   case MAXLEFT:
       ToggleMaximized(np, MAX_LEFT | MAX_VERT);
       break;
-   case ACTION_MAXRIGHT:
+   case MAXRIGHT:
       ToggleMaximized(np, MAX_RIGHT | MAX_VERT);
       break;
-   case ACTION_MAXV:
+   case MAXV:
       ToggleMaximized(np, MAX_VERT);
       break;
-   case ACTION_MAXH:
+   case MAXH:
       ToggleMaximized(np, MAX_HORIZ);
       break;
-   case ACTION_ROOT:
+   case ROOT:
       ShowKeyMenu(context, state, code);
       break;
-   case ACTION_WIN:
+   case WIN:
       if(np) {
          if(keyAction) {
             RaiseClient(np);
@@ -634,13 +634,13 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_RESTART:
+   case RESTART:
       Restart();
       break;
-   case ACTION_EXIT:
+   case EXIT:
       Exit(1);
       break;
-   case ACTION_FULLSCREEN:
+   case FULLSCREEN:
       if(np) {
          if(np->state.status & STAT_FULLSCREEN) {
             SetClientFullScreen(np, 0);
@@ -649,35 +649,35 @@ void ProcessBinding(MouseContextType context, ClientNode *np,
          }
       }
       break;
-   case ACTION_SEND:
+   case SEND:
       if(np) {
          const unsigned desktop = key.extra;
          SetClientDesktop(np, desktop);
          ChangeDesktop(desktop);
       }
       break;
-   case ACTION_SENDR:
+   case SENDR:
       if(np) {
          const unsigned desktop = GetRightDesktop(np->state.desktop);
          SetClientDesktop(np, desktop);
          ChangeDesktop(desktop);
       }
       break;
-   case ACTION_SENDL:
+   case SENDL:
       if(np) {
          const unsigned desktop = GetLeftDesktop(np->state.desktop);
          SetClientDesktop(np, desktop);
          ChangeDesktop(desktop);
       }
       break;
-   case ACTION_SENDU:
+   case SENDU:
       if(np) {
          const unsigned desktop = GetAboveDesktop(np->state.desktop);
          SetClientDesktop(np, desktop);
          ChangeDesktop(desktop);
       }
       break;
-   case ACTION_SENDD:
+   case SENDD:
       if(np) {
          const unsigned desktop = GetBelowDesktop(np->state.desktop);
          SetClientDesktop(np, desktop);
@@ -703,10 +703,10 @@ void HandleKeyPress(const XKeyEvent *event)
 void HandleKeyRelease(const XKeyEvent *event)
 {
    const ActionType key = GetKey(MC_NONE, event->state, event->keycode);
-   if(   key.action != ACTION_NEXTSTACK
-      && key.action != ACTION_NEXT
-      && key.action != ACTION_PREV
-      && key.action != ACTION_PREVSTACK) {
+   if(   key.action != NEXTSTACK
+      && key.action != NEXT
+      && key.action != PREV
+      && key.action != PREVSTACK) {
       StopWindowWalk();
    }
 }
@@ -1508,7 +1508,7 @@ void HandleShapeEvent(const XShapeEvent *event)
 void HandleColormapChange(const XColormapEvent *event)
 {
    ClientNode *np;
-   if(event->new == True) {
+   if(event->c_new == True) {
       np = FindClientByWindow(event->window);
       if(np) {
          np->cmap = event->colormap;

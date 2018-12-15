@@ -1,0 +1,79 @@
+autoscan: warning: missing AC_CHECK_FUNCS([dup2]) wanted by: 
+	src/command.c:169
+autoscan: warning: missing AC_CHECK_FUNCS([gettimeofday]) wanted by: 
+	src/timing.c:19
+autoscan: warning: missing AC_CHECK_FUNCS([memmove]) wanted by: 
+	src/misc.c:133
+	src/misc.c:139
+autoscan: warning: missing AC_CHECK_FUNCS([memset]) wanted by: 
+	src/main.c:397
+	src/main.c:667
+	src/swallow.c:193
+	src/clock.c:131
+	src/clock.c:193
+	src/settings.c:117
+	src/battery.c:211
+	src/color.c:181
+	src/color.c:203
+	src/binding.c:84
+	src/render.c:64
+	src/debug.c:124
+	src/debug.c:185
+	src/debug.c:223
+	src/dock.c:236
+	src/dock.c:463
+	src/menu.c:81
+	src/image.c:490
+	src/image.c:590
+	src/client.c:139
+	src/client.c:1170
+	src/client.c:1413
+	src/icon.c:101
+	src/icon.c:472
+	src/border.c:59
+autoscan: warning: missing AC_CHECK_FUNCS([munmap]) wanted by: 
+	src/parse.c:2037
+autoscan: warning: missing AC_CHECK_FUNCS([nl_langinfo]) wanted by: 
+	src/font.c:73
+autoscan: warning: missing AC_CHECK_FUNCS([regcomp]) wanted by: 
+	src/match.c:29
+autoscan: warning: missing AC_CHECK_FUNCS([select]) wanted by: 
+	src/command.c:207
+	src/event.c:122
+autoscan: warning: missing AC_CHECK_FUNCS([strchr]) wanted by: 
+	src/parse.c:1930
+	src/background.c:238
+	src/popup.c:78
+autoscan: warning: missing AC_CHECK_FUNCS([strtol]) wanted by: 
+	src/parse.c:2071
+	src/parse.c:2088
+	src/lex.c:387
+	src/lex.c:389
+	src/battery.c:205
+autoscan: warning: missing AC_CHECK_FUNCS([tzset]) wanted by: 
+	src/timing.c:76
+autoscan: warning: missing AC_CHECK_HEADERS([fcntl.h]) wanted by: 
+	src/parse.c:40
+	src/battery.c:57
+	src/command.c:17
+autoscan: warning: missing AC_CHECK_HEADERS([limits.h]) wanted by: 
+	src/jwm.h:21
+autoscan: warning: missing AC_CHECK_HEADERS([malloc.h]) wanted by: 
+	src/debug.h:24
+autoscan: warning: missing AC_FUNC_FORK wanted by: 
+	src/command.c:131
+	src/command.c:164
+autoscan: warning: missing AC_FUNC_MALLOC wanted by: 
+	src/battery.c:222
+	src/command.c:135
+	src/debug.c:111
+	src/debug.c:116
+	src/debug.c:174
+	src/debug.c:179
+autoscan: warning: missing AC_FUNC_MMAP wanted by: 
+	src/parse.c:2031
+autoscan: warning: missing AC_FUNC_REALLOC wanted by: 
+	src/debug.c:160
+autoscan: warning: missing AC_TYPE_PID_T wanted by: 
+	src/main.c:459
+	src/command.c:151

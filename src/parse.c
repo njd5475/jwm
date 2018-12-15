@@ -43,50 +43,50 @@
 /** Mapping of action names to values.
  * Note that this mapping must be sorted.
  */
-static const StringMappingType ACTION_MAP[] = {
-   { "close",                 ACTION_CLOSE         },
-   { "ddesktop",              ACTION_DDESKTOP      },
-   { "desktop#",              ACTION_DESKTOP       },
-   { "down",                  ACTION_DOWN          },
-   { "escape",                ACTION_ESC           },
-   { "exit",                  ACTION_EXIT          },
-   { "fullscreen",            ACTION_FULLSCREEN    },
-   { "ldesktop",              ACTION_LDESKTOP      },
-   { "left",                  ACTION_LEFT          },
-   { "maxbottom",             ACTION_MAXBOTTOM     },
-   { "maxh",                  ACTION_MAXH          },
-   { "maximize",              ACTION_MAX           },
-   { "maxleft",               ACTION_MAXLEFT       },
-   { "maxright",              ACTION_MAXRIGHT      },
-   { "maxtop",                ACTION_MAXTOP        },
-   { "maxv",                  ACTION_MAXV          },
-   { "minimize",              ACTION_MIN           },
-   { "move",                  ACTION_MOVE          },
-   { "next",                  ACTION_NEXT          },
-   { "nextstacked",           ACTION_NEXTSTACK     },
-   { "none",                  ACTION_NONE          },
-   { "prev",                  ACTION_PREV          },
-   { "prevstacked",           ACTION_PREVSTACK     },
-   { "rdesktop",              ACTION_RDESKTOP      },
-   { "resize",                ACTION_RESIZE        },
-   { "restart",               ACTION_RESTART       },
-   { "restore",               ACTION_RESTORE       },
-   { "right",                 ACTION_RIGHT         },
-   { "select",                ACTION_ENTER         },
-   { "send#",                 ACTION_SEND          },
-   { "sendd",                 ACTION_SENDD         },
-   { "sendl",                 ACTION_SENDL         },
-   { "sendr",                 ACTION_SENDR         },
-   { "sendu",                 ACTION_SENDU         },
-   { "shade",                 ACTION_SHADE         },
-   { "showdesktop",           ACTION_SHOWDESK      },
-   { "showtray",              ACTION_SHOWTRAY      },
-   { "stick",                 ACTION_STICK         },
-   { "udesktop",              ACTION_UDESKTOP      },
-   { "up",                    ACTION_UP            },
-   { "window",                ACTION_WIN           }
+static const StringMappingType MAP[] = {
+   { "close",                 CLOSE         },
+   { "ddesktop",              DDESKTOP      },
+   { "desktop#",              DESKTOP       },
+   { "down",                  DOWN          },
+   { "escape",                ESC           },
+   { "exit",                  EXIT          },
+   { "fullscreen",            FULLSCREEN    },
+   { "ldesktop",              LDESKTOP      },
+   { "left",                  LEFT          },
+   { "maxbottom",             MAXBOTTOM     },
+   { "maxh",                  MAXH          },
+   { "maximize",              MAX           },
+   { "maxleft",               MAXLEFT       },
+   { "maxright",              MAXRIGHT      },
+   { "maxtop",                MAXTOP        },
+   { "maxv",                  MAXV          },
+   { "minimize",              MIN           },
+   { "move",                  MOVE          },
+   { "next",                  NEXT          },
+   { "nextstacked",           NEXTSTACK     },
+   { "none",                  NONE          },
+   { "prev",                  PREV          },
+   { "prevstacked",           PREVSTACK     },
+   { "rdesktop",              RDESKTOP      },
+   { "resize",                RESIZE        },
+   { "restart",               RESTART       },
+   { "restore",               RESTORE       },
+   { "right",                 RIGHT         },
+   { "select",                ENTER         },
+   { "send#",                 SEND          },
+   { "sendd",                 SENDD         },
+   { "sendl",                 SENDL         },
+   { "sendr",                 SENDR         },
+   { "sendu",                 SENDU         },
+   { "shade",                 SHADE         },
+   { "showdesktop",           SHOWDESK      },
+   { "showtray",              SHOWTRAY      },
+   { "stick",                 STICK         },
+   { "udesktop",              UDESKTOP      },
+   { "up",                    UP            },
+   { "window",                WIN           }
 };
-static const unsigned int ACTION_MAP_COUNT = ARRAY_LENGTH(ACTION_MAP);
+static const unsigned int MAP_COUNT = ARRAY_LENGTH(MAP);
 
 /** Mapping of key names to key types.
  * Note that this mapping must be sorted.
@@ -862,30 +862,30 @@ Menu *ParseDynamicMenu(unsigned timeout_ms, const char *command)
 ActionType ParseAction(const char *str, const char **command)
 {
    ActionType action;
-   action.action = ACTION_INVALID;
+   action.action = INVALID;
    action.extra = 0;
    *command = NULL;
    if(!strncmp(str, "exec:", 5)) {
-      action.action = ACTION_EXEC;
+      action.action = EXEC;
       *command = str + 5;
    } else if(!strncmp(str, "root:", 5)) {
-      action.action = ACTION_ROOT;
+      action.action = ROOT;
       *command = str + 5;
    } else if(!strncmp(str, "resize:", 7)) {
       int i;
-      action.action = ACTION_RESIZE;
+      action.action = RESIZE;
       for(i = 7; str[i]; i++) {
          switch(str[i]) {
-         case 'n': action.extra |= ACTION_RESIZE_N; break;
-         case 's': action.extra |= ACTION_RESIZE_S; break;
-         case 'e': action.extra |= ACTION_RESIZE_E; break;
-         case 'w': action.extra |= ACTION_RESIZE_W; break;
+         case 'n': action.extra |= RESIZE_N; break;
+         case 's': action.extra |= RESIZE_S; break;
+         case 'e': action.extra |= RESIZE_E; break;
+         case 'w': action.extra |= RESIZE_W; break;
          default: break;
          }
       }
    } else {
       /* Look up the option in the key map using binary search. */
-      const int x = FindValue(ACTION_MAP, ACTION_MAP_COUNT, str);
+      const int x = FindValue(MAP, MAP_COUNT, str);
       if(x >= 0) {
          action.action = (unsigned char)x;
       }
@@ -915,7 +915,7 @@ void ParseKey(const TokenNode *tp)
 
    /* Insert the binding if it's valid. */
    k = ParseAction(action, &command);
-   if(JUNLIKELY(k.action == ACTION_INVALID)) {
+   if(JUNLIKELY(k.action == INVALID)) {
       ParseError(tp, _("invalid Key action: \"%s\""), action);
    } else {
       InsertBinding(k, mask, key, code, command);
@@ -946,7 +946,7 @@ void ParseMouse(const TokenNode *tp)
       return;
    }
    key = ParseAction(action, &command);
-   if(JUNLIKELY(key.action == ACTION_INVALID)) {
+   if(JUNLIKELY(key.action == INVALID)) {
       ParseError(tp, _("invalid Mouse action: \"%s\""), action);
       return;
    }

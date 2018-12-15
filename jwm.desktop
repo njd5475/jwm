@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=jwm
+Comment=joes window manager
+Exec=jwm
+TryExec=jwm
+Type=Application
+X-LightDM-DesktopName=jwm
+DesktopNames=jwm
+Keywords=tiling;wm;windowmanager;window;manager;
+

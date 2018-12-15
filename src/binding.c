@@ -17,6 +17,7 @@
 #include "misc.h"
 #include "root.h"
 #include "tray.h"
+#include "AbstractAction.h"
 
 #define MASK_NONE    0
 #define MASK_SHIFT   (1 << ShiftMapIndex)
@@ -219,7 +220,7 @@ ActionType GetKey(MouseContextType context, unsigned state, int code)
       }
    }
 
-   result.action = ACTION_NONE;
+   result.action = NONE;
    result.extra = 0;
    return result;
 }
@@ -269,42 +270,42 @@ void ShowKeyMenu(MouseContextType context, unsigned state, int code)
 char ShouldGrab(ActionType action)
 {
    switch(action.action) {
-   case ACTION_NEXT:
-   case ACTION_NEXTSTACK:
-   case ACTION_PREV:
-   case ACTION_PREVSTACK:
-   case ACTION_CLOSE:
-   case ACTION_MIN:
-   case ACTION_MAX:
-   case ACTION_SHADE:
-   case ACTION_STICK:
-   case ACTION_MOVE:
-   case ACTION_RESIZE:
-   case ACTION_ROOT:
-   case ACTION_WIN:
-   case ACTION_DESKTOP:
-   case ACTION_RDESKTOP:
-   case ACTION_LDESKTOP:
-   case ACTION_DDESKTOP:
-   case ACTION_UDESKTOP:
-   case ACTION_SHOWDESK:
-   case ACTION_SHOWTRAY:
-   case ACTION_EXEC:
-   case ACTION_RESTART:
-   case ACTION_EXIT:
-   case ACTION_FULLSCREEN:
-   case ACTION_SEND:
-   case ACTION_SENDR:
-   case ACTION_SENDL:
-   case ACTION_SENDU:
-   case ACTION_SENDD:
-   case ACTION_MAXTOP:
-   case ACTION_MAXBOTTOM:
-   case ACTION_MAXLEFT:
-   case ACTION_MAXRIGHT:
-   case ACTION_MAXV:
-   case ACTION_MAXH:
-   case ACTION_RESTORE:
+   case NEXT:
+   case NEXTSTACK:
+   case PREV:
+   case PREVSTACK:
+   case CLOSE:
+   case MIN:
+   case MAX:
+   case SHADE:
+   case STICK:
+   case MOVE:
+   case RESIZE:
+   case ROOT:
+   case WIN:
+   case DESKTOP:
+   case RDESKTOP:
+   case LDESKTOP:
+   case DDESKTOP:
+   case UDESKTOP:
+   case SHOWDESK:
+   case SHOWTRAY:
+   case EXEC:
+   case RESTART:
+   case EXIT:
+   case FULLSCREEN:
+   case SEND:
+   case SENDR:
+   case SENDL:
+   case SENDU:
+   case SENDD:
+   case MAXTOP:
+   case MAXBOTTOM:
+   case MAXLEFT:
+   case MAXRIGHT:
+   case MAXV:
+   case MAXH:
+   case RESTORE:
       return 1;
    default:
       return 0;
@@ -513,7 +514,7 @@ void ValidateKeys(void)
 
    for(i = 0; i < MC_COUNT; i++) {
       for(kp = bindings[i]; kp; kp = kp->next) {
-         if(kp->action.action == ACTION_ROOT && kp->command) {
+         if(kp->action.action == ROOT && kp->command) {
             const int bindex = GetRootMenuIndexFromString(kp->command);
             if(JUNLIKELY(!IsRootMenuDefined(bindex))) {
                Warning(_("key binding: root menu \"%s\" not defined"),

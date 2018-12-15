@@ -231,11 +231,11 @@ char HandleDialogKeyPress(const XKeyEvent *event)
    if(dialog && event->window == dialog->node->window) {
       const ActionType key = GetKey(MC_NONE, event->state, event->keycode);
       switch(key.action) {
-      case ACTION_ENTER:
+      case ENTER:
          RunDialogAction();
          DestroyConfirmDialog();
          break;
-      case ACTION_ESC:
+      case ESC:
          DestroyConfirmDialog();
          break;
       default:
