@@ -69,4 +69,18 @@ public:
   virtual bool validate() { return true; };
 };
 
+class ActionGroup {
+public:
+  ActionGroup() {}
+  virtual ~ActionGroup() {}
+
+  virtual void add(AbstractAction &action) {
+    const unsigned int num = sizeof(_actions)/sizeof(AbstractAction);
+
+  }
+
+private:
+  AbstractAction **_actions;
+};
+
 #endif /* SRC_ABSTRACTACTION_H_ */
