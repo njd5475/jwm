@@ -21,3 +21,12 @@ src/Makefile
 src/jwm
 doc
 *.swp
+.deps
+ar-lib
+.dirstamp
+*.m4
+googletest/
+libtool
+ltmain.sh
+test-driver
+
