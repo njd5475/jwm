@@ -3,12 +3,18 @@
 ############################################################################
 
 AC_INIT(jwm, 2.4.0, joewing@joewing.net)
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AC_PREREQ(2.57)
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_SRCDIR([po])
 AC_CONFIG_HEADER([config.h])
 AC_LANG(C++)
+
+AM_PROG_AR
+LT_INIT
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_FILES([ tests/Makefile ])
+
 
 AC_PROG_CXX
 AC_PROG_INSTALL

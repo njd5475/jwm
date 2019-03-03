@@ -1,6 +1,6 @@
 CXX = @CXX@
 CFLAGS = @CFLAGS@ -fpermissive
-CPPFLAGS = @CPPFLAGS@
+CPPFLAGS = @CPPFLAGS@ @CFLAGS@ -fpermissive
 LDFLAGS = @LDFLAGS@
 BINDIR = $(DESTDIR)@BINDIR@
 
@@ -12,7 +12,9 @@ OBJECTS = action.o background.o binding.o border.o button.o client.o \
    help.o hint.o icon.o image.o lex.o main.o match.o menu.o misc.o \
    move.o outline.o pager.o parse.o place.o popup.o render.o resize.o \
    root.o screen.o settings.o spacer.o status.o swallow.o taskbar.o \
-   timing.o tray.o traybutton.o winmenu.o battery.o AbstractAction.o
+   timing.o tray.o traybutton.o winmenu.o battery.o AbstractAction.o \
+   DesktopEnvironment.o DockComponent.o DesktopComponent.o \
+   BackgroundComponent.o Component.o
 
 EXE = jwm
 
