@@ -169,8 +169,8 @@ void StartupTray(void)
 
    }
 
-   RequirePagerUpdate();
-   RequireTaskUpdate();
+   _RequirePagerUpdate();
+   _RequireTaskUpdate();
 }
 
 /** Shutdown trays. */
@@ -198,7 +198,7 @@ void DestroyTray(void)
    while(trays) {
       tp = trays->next;
       if(trays->autoHide != THIDE_OFF) {
-         UnregisterCallback(SignalTray, trays);
+         _UnregisterCallback(SignalTray, trays);
       }
       while(trays->components) {
          cp = trays->components->next;
@@ -838,7 +838,7 @@ void LowerTrays(void)
    for(tp = trays; tp; tp = tp->next) {
       tp->autoHide &= ~THIDE_RAISED;
    }
-   RequireRestack();
+   _RequireRestack();
 }
 
 /** Update a specific component on a tray. */
@@ -1006,7 +1006,7 @@ void ResizeTray(TrayType *tp)
    JXMoveResizeWindow(display, tp->window, tp->x, tp->y,
                       tp->width, tp->height);
 
-   RequireTaskUpdate();
+   _RequireTaskUpdate();
    DrawSpecificTray(tp);
 
    if(tp->hidden) {
@@ -1046,7 +1046,7 @@ void SetAutoHideTray(TrayType *tp,
                      unsigned timeout_ms)
 {
    if(JUNLIKELY(tp->autoHide != THIDE_OFF)) {
-      UnregisterCallback(SignalTray, tp);
+      _UnregisterCallback(SignalTray, tp);
    }
 
    tp->autoHide = autohide;

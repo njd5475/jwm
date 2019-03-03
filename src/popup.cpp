@@ -49,7 +49,7 @@ void StartupPopup(void)
 /** Shutdown popups. */
 void ShutdownPopup(void)
 {
-   UnregisterCallback(SignalPopup, NULL);
+   _UnregisterCallback(SignalPopup, NULL);
    if(popup.text) {
       Release(popup.text);
       Release(popup.lines);

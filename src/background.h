@@ -11,10 +11,10 @@
 #define BACKGROUND_H
 
 /*@{*/
-void InitializeBackgrounds(void);
-void StartupBackgrounds(void);
-void ShutdownBackgrounds(void);
-void DestroyBackgrounds(void);
+void _InitializeBackgrounds(void);
+void _StartupBackgrounds(void);
+void _ShutdownBackgrounds(void);
+void _DestroyBackgrounds(void);
 /*@}*/
 
 /** Set the background to use for the specified desktops.
@@ -22,12 +22,12 @@ void DestroyBackgrounds(void);
  * @param type The type of background.
  * @param value The background.
  */
-void SetBackground(int desktop, const char *type, const char *value);
+void _SetBackground(int desktop, const char *type, const char *value);
 
 /** Load the background for the specified desktop.
  * @param desktop The current desktop.
  */
-void LoadBackground(int desktop);
+void _LoadBackground(int desktop);
 
 #endif /* BACKGROUND_H */
 

@@ -19,7 +19,6 @@
 #include "button.h"
 #include "misc.h"
 #include "screen.h"
-#include "desktop.h"
 #include "popup.h"
 #include "timing.h"
 #include "command.h"
@@ -98,7 +97,7 @@ void DestroyTrayButtons(void)
    TrayButtonType *bp;
    while(buttons) {
       bp = buttons->next;
-      UnregisterCallback(SignalTrayButton, buttons);
+      _UnregisterCallback(SignalTrayButton, buttons);
       if(buttons->label) {
          Release(buttons->label);
       }

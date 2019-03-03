@@ -52,23 +52,23 @@ static char owner;
 static Atom dockAtom;
 static unsigned long orientation;
 
-static void SetSize(TrayComponentType *cp, int width, int height);
-static void Create(TrayComponentType *cp);
-static void Resize(TrayComponentType *cp);
+static void _SetSize(TrayComponentType *cp, int width, int height);
+static void _Create(TrayComponentType *cp);
+static void _Resize(TrayComponentType *cp);
 
-static void DockWindow(Window win);
-static void UpdateDock(void);
-static void GetDockItemSize(int *size);
-static void GetDockSize(int *width, int *height);
+static void _DockWindow(Window win);
+static void _UpdateDock(void);
+static void _GetDockItemSize(int *size);
+static void _GetDockSize(int *width, int *height);
 
 /** Initialize dock data. */
-void InitializeDock(void)
+void _InitializeDock(void)
 {
    owner = 0;
 }
 
 /** Startup the dock. */
-void StartupDock(void)
+void _StartupDock(void)
 {
 
    char *selectionName;
@@ -106,7 +106,7 @@ void StartupDock(void)
 }
 
 /** Shutdown the dock. */
-void ShutdownDock(void)
+void _ShutdownDock(void)
 {
 
    DockNode *np;
@@ -134,7 +134,7 @@ void ShutdownDock(void)
 }
 
 /** Destroy dock data. */
-void DestroyDock(void)
+void _DestroyDock(void)
 {
    if(dock) {
       Release(dock);
@@ -143,7 +143,7 @@ void DestroyDock(void)
 }
 
 /** Create a dock component. */
-TrayComponentType *CreateDock(int width)
+TrayComponentType *_CreateDock(int width)
 {
    TrayComponentType *cp;
 
@@ -163,16 +163,16 @@ TrayComponentType *CreateDock(int width)
    dock->cp = cp;
    dock->itemSize = width;
 
-   cp->SetSize = SetSize;
-   cp->Create = Create;
-   cp->Resize = Resize;
+   cp->SetSize = _SetSize;
+   cp->Create = _Create;
+   cp->Resize = _Resize;
 
    return cp;
 
 }
 
 /** Set the size of a dock component. */
-void SetSize(TrayComponentType *cp, int width, int height)
+void _SetSize(TrayComponentType *cp, int width, int height)
 {
 
    Assert(cp);
@@ -188,7 +188,7 @@ void SetSize(TrayComponentType *cp, int width, int height)
    /* Get the size. */
    cp->width = width;
    cp->height = height;
-   GetDockSize(&cp->width, &cp->height);
+   _GetDockSize(&cp->width, &cp->height);
    if(width == 0) {
       cp->requestedWidth = cp->width;
       cp->requestedHeight = 0;
@@ -200,7 +200,7 @@ void SetSize(TrayComponentType *cp, int width, int height)
 }
 
 /** Initialize a dock component. */
-void Create(TrayComponentType *cp)
+void _Create(TrayComponentType *cp)
 {
 
    XEvent event;
@@ -253,19 +253,19 @@ void Create(TrayComponentType *cp)
 }
 
 /** Resize a dock component. */
-void Resize(TrayComponentType *cp)
+void _Resize(TrayComponentType *cp)
 {
    JXResizeWindow(display, cp->window, cp->width, cp->height);
-   UpdateDock();
+   _UpdateDock();
 }
 
 /** Handle a dock event. */
-void HandleDockEvent(const XClientMessageEvent *event)
+void _HandleDockEvent(const XClientMessageEvent *event)
 {
    Assert(event);
    switch(event->data.l[1]) {
    case SYSTEM_TRAY_REQUEST_DOCK:
-      DockWindow(event->data.l[2]);
+      _DockWindow(event->data.l[2]);
       break;
    case SYSTEM_TRAY_BEGIN_MESSAGE:
       break;
@@ -278,7 +278,7 @@ void HandleDockEvent(const XClientMessageEvent *event)
 }
 
 /** Handle a resize request event. */
-char HandleDockResizeRequest(const XResizeRequestEvent *event)
+char _HandleDockResizeRequest(const XResizeRequestEvent *event)
 {
    DockNode *np;
 
@@ -290,7 +290,7 @@ char HandleDockResizeRequest(const XResizeRequestEvent *event)
 
    for(np = dock->nodes; np; np = np->next) {
       if(np->window == event->window) {
-         UpdateDock();
+         _UpdateDock();
          return 1;
       }
    }
@@ -299,7 +299,7 @@ char HandleDockResizeRequest(const XResizeRequestEvent *event)
 }
 
 /** Handle a configure request event. */
-char HandleDockConfigureRequest(const XConfigureRequestEvent *event)
+char _HandleDockConfigureRequest(const XConfigureRequestEvent *event)
 {
 
    DockNode *np;
@@ -312,7 +312,7 @@ char HandleDockConfigureRequest(const XConfigureRequestEvent *event)
 
    for(np = dock->nodes; np; np = np->next) {
       if(np->window == event->window) {
-         UpdateDock();
+         _UpdateDock();
          return 1;
       }
    }
@@ -322,7 +322,7 @@ char HandleDockConfigureRequest(const XConfigureRequestEvent *event)
 }
 
 /** Handle a reparent notify event. */
-char HandleDockReparentNotify(const XReparentEvent *event)
+char _HandleDockReparentNotify(const XReparentEvent *event)
 {
 
    DockNode *np;
@@ -353,7 +353,7 @@ char HandleDockReparentNotify(const XReparentEvent *event)
 
    /* Layout the stuff on the dock again if something happened. */
    if(handled) {
-      UpdateDock();
+      _UpdateDock();
    }
 
    return handled;
@@ -361,7 +361,7 @@ char HandleDockReparentNotify(const XReparentEvent *event)
 }
 
 /** Handle a selection clear event. */
-char HandleDockSelectionClear(const XSelectionClearEvent *event)
+char _HandleDockSelectionClear(const XSelectionClearEvent *event)
 {
    if(event->selection == dockAtom) {
       Debug("lost _NET_SYSTEM_TRAY selection");
@@ -371,7 +371,7 @@ char HandleDockSelectionClear(const XSelectionClearEvent *event)
 }
 
 /** Add a window to the dock. */
-void DockWindow(Window win)
+void _DockWindow(Window win)
 {
    DockNode *np;
 
@@ -400,7 +400,7 @@ void DockWindow(Window win)
    dock->nodes = np;
 
    /* Update the requested size. */
-   GetDockSize(&dock->cp->requestedWidth, &dock->cp->requestedHeight);
+   _GetDockSize(&dock->cp->requestedWidth, &dock->cp->requestedHeight);
 
    /* It's safe to reparent at (0, 0) since we call
     * ResizeTray which will invoke the Resize callback.
@@ -415,7 +415,7 @@ void DockWindow(Window win)
 }
 
 /** Remove a window from the dock. */
-char HandleDockDestroy(Window win)
+char _HandleDockDestroy(Window win)
 {
    DockNode **np;
 
@@ -433,7 +433,7 @@ char HandleDockDestroy(Window win)
          Release(dp);
 
          /* Update the requested size. */
-         GetDockSize(&dock->cp->requestedWidth, &dock->cp->requestedHeight);
+         _GetDockSize(&dock->cp->requestedWidth, &dock->cp->requestedHeight);
 
          /* Resize the tray. */
          ResizeTray(dock->cp->tray);
@@ -445,7 +445,7 @@ char HandleDockDestroy(Window win)
 }
 
 /** Layout items on the dock. */
-void UpdateDock(void)
+void _UpdateDock(void)
 {
 
    XConfigureEvent event;
@@ -456,7 +456,7 @@ void UpdateDock(void)
    Assert(dock);
 
    /* Determine the size of items in the dock. */
-   GetDockItemSize(&itemSize);
+   _GetDockItemSize(&itemSize);
 
    x = 0;
    y = 0;
@@ -491,7 +491,7 @@ void UpdateDock(void)
 }
 
 /** Get the size of a particular window on the dock. */
-void GetDockItemSize(int *size)
+void _GetDockItemSize(int *size)
 {
    /* Determine the default size of items in the dock. */
    if(orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
@@ -505,7 +505,7 @@ void GetDockItemSize(int *size)
 }
 
 /** Get the size of the dock. */
-void GetDockSize(int *width, int *height)
+void _GetDockSize(int *width, int *height)
 {
    DockNode *np;
    int itemSize;
@@ -513,7 +513,7 @@ void GetDockSize(int *width, int *height)
    Assert(dock != NULL);
 
    /* Get the dock item size. */
-   GetDockItemSize(&itemSize);
+   _GetDockItemSize(&itemSize);
 
    /* Determine the size of the items on the dock. */
    for(np = dock->nodes; np; np = np->next) {

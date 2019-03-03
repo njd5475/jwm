@@ -18,13 +18,14 @@
 #include "event.h"
 #include "root.h"
 #include "settings.h"
-#include "desktop.h"
 #include "parse.h"
 #include "winmenu.h"
 #include "screen.h"
 #include "hint.h"
 #include "misc.h"
 #include "popup.h"
+#include "DesktopEnvironment.h"
+
 
 #define BASE_ICON_OFFSET   3
 #define MENU_BORDER_SIZE   1
@@ -212,7 +213,7 @@ char ShowMenu(Menu *menu, RunMenuCommandType runner,
 
    RegisterCallback(settings.popupDelay, MenuCallback, menu);
    ShowSubmenu(menu, NULL, runner, x, y, keyboard);
-   UnregisterCallback(MenuCallback, menu);
+   _UnregisterCallback(MenuCallback, menu);
    UnpatchMenu(menu);
 
    JXUngrabKeyboard(display, CurrentTime);
@@ -312,11 +313,11 @@ void PatchMenu(Menu *menu)
       Menu *submenu = NULL;
       switch(item->action.type & MA_ACTION_MASK) {
       case MA_DESKTOP_MENU:
-         submenu = CreateDesktopMenu(1 << currentDesktop,
+         submenu = DesktopEnvironment::DefaultEnvironment()->CreateDesktopMenu(1 << currentDesktop,
                                      item->action.context);
          break;
       case MA_SENDTO_MENU:
-         submenu = CreateSendtoMenu(
+         submenu = DesktopEnvironment::DefaultEnvironment()->CreateSendtoMenu(
             item->action.type & ~MA_ACTION_MASK,
             item->action.context);
          break;

@@ -25,7 +25,7 @@
 #include "settings.h"
 #include "event.h"
 #include "misc.h"
-#include "desktop.h"
+#include "DesktopEnvironment.h"
 
 typedef struct TaskBarType {
 
@@ -106,7 +106,7 @@ void DestroyTaskBar(void)
    TaskBarType *bp;
    while(bars) {
       bp = bars->next;
-      UnregisterCallback(SignalTaskbar, bars);
+      _UnregisterCallback(SignalTaskbar, bars);
       Release(bars);
       bars = bp;
    }
@@ -337,7 +337,7 @@ FoundActiveAndTop:
             }
             /* Focus the next client or minimize the current group. */
             if(nextClient) {
-               ChangeDesktop(nextClient->state.desktop);
+               DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(nextClient->state.desktop);
                RestoreClient(nextClient, 1);
             } else {
                MinimizeGroup(entry);
@@ -393,7 +393,7 @@ void FocusGroup(const TaskEntry *tp)
    /* If there is no class name, then there will only be one client. */
    if(!className || !settings.groupTasks) {
       if(!(tp->clients->client->state.status & STAT_STICKY)) {
-         ChangeDesktop(tp->clients->client->state.desktop);
+         DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(tp->clients->client->state.desktop);
       }
       RestoreClient(tp->clients->client, 1);
       FocusClient(tp->clients->client);
@@ -418,7 +418,7 @@ void FocusGroup(const TaskEntry *tp)
             if(np->className && !strcmp(np->className, className)) {
                if(ShouldFocus(np, 0)) {
                   if(!(np->state.status & STAT_STICKY)) {
-                     ChangeDesktop(np->state.desktop);
+                    DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(np->state.desktop);
                   }
                   break;
                }
@@ -654,7 +654,7 @@ void AddClientToTaskBar(ClientNode *np)
    cp->prev = NULL;
    tp->clients = cp;
 
-   RequireTaskUpdate();
+   _RequireTaskUpdate();
    UpdateNetClientList();
 
 }
@@ -689,7 +689,7 @@ void RemoveClientFromTaskBar(ClientNode *np)
                }
                Release(tp);
             }
-            RequireTaskUpdate();
+            _RequireTaskUpdate();
             UpdateNetClientList();
             return;
          }

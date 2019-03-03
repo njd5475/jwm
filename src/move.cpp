@@ -21,9 +21,9 @@
 #include "screen.h"
 #include "status.h"
 #include "tray.h"
-#include "desktop.h"
 #include "settings.h"
 #include "timing.h"
+#include "DesktopEnvironment.h"
 
 typedef struct {
   int left, right;
@@ -134,7 +134,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
     if (shouldStopMove) {
       np->controller = NULL;
       SetDefaultCursor(np->parent);
-      UnregisterCallback(SignalMove, NULL);
+      _UnregisterCallback(SignalMove, NULL);
       return doMove;
     }
 
@@ -266,7 +266,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
           SendConfigureEvent(np);
         }
         UpdateMoveWindow(np);
-        RequirePagerUpdate();
+        _RequirePagerUpdate();
       }
 
       break;
@@ -338,7 +338,7 @@ char MoveClientKeyboard(ClientNode *np) {
     if (shouldStopMove) {
       np->controller = NULL;
       SetDefaultCursor(np->parent);
-      UnregisterCallback(SignalMove, NULL);
+      _UnregisterCallback(SignalMove, NULL);
       return 1;
     }
 
@@ -408,7 +408,7 @@ char MoveClientKeyboard(ClientNode *np) {
       }
 
       UpdateMoveWindow(np);
-      RequirePagerUpdate();
+      _RequirePagerUpdate();
 
     }
 
@@ -428,7 +428,7 @@ void StopMove(ClientNode *np, int doMove, int oldx, int oldy) {
   np->controller = NULL;
 
   SetDefaultCursor(np->parent);
-  UnregisterCallback(SignalMove, NULL);
+  _UnregisterCallback(SignalMove, NULL);
 
   if (!doMove) {
     np->x = oldx;
@@ -824,18 +824,18 @@ void UpdateDesktop(const TimeType *now) {
   /* We temporarily mark the client as hidden to avoid hidding it
    * when changing desktops. */
   currentClient->state.status |= STAT_HIDDEN;
-  if (atLeft && LeftDesktop()) {
+  if (atLeft && DesktopEnvironment::DefaultEnvironment()->LeftDesktop()) {
     SetClientDesktop(currentClient, currentDesktop);
-    RequireRestack();
-  } else if (atRight && RightDesktop()) {
+    _RequireRestack();
+  } else if (atRight && DesktopEnvironment::DefaultEnvironment()->RightDesktop()) {
     SetClientDesktop(currentClient, currentDesktop);
-    RequireRestack();
-  } else if (atTop && AboveDesktop()) {
+    _RequireRestack();
+  } else if (atTop && DesktopEnvironment::DefaultEnvironment()->AboveDesktop()) {
     SetClientDesktop(currentClient, currentDesktop);
-    RequireRestack();
-  } else if (atBottom && BelowDesktop()) {
+    _RequireRestack();
+  } else if (atBottom && DesktopEnvironment::DefaultEnvironment()->BelowDesktop()) {
     SetClientDesktop(currentClient, currentDesktop);
-    RequireRestack();
+    _RequireRestack();
   }
   currentClient->state.status &= ~STAT_HIDDEN;
 }

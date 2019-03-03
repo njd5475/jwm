@@ -14,8 +14,8 @@
 #include "error.h"
 #include "cursor.h"
 #include "command.h"
-#include "desktop.h"
 #include "menu.h"
+#include "DesktopEnvironment.h"
 
 typedef struct ActionNode {
    char *action;
@@ -95,7 +95,7 @@ void ProcessActionPress(struct ActionNode *actions,
                   if(!strncmp(ap->action, "exec:", 5)) {
                      RunCommand(ap->action + 5);
                   } else if(!strcmp(ap->action, "showdesktop")) {
-                     ShowDesktop();
+                     DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
                   }
 
                } else {
@@ -192,7 +192,7 @@ void ProcessActionRelease(struct ActionNode *actions,
             if(!strncmp(ap->action, "exec:", 5)) {
                RunCommand(ap->action + 5);
             } else if(!strcmp(ap->action, "showdesktop")) {
-               ShowDesktop();
+               DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
             }
          }
          return;

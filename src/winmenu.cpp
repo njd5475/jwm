@@ -10,7 +10,6 @@
 #include "jwm.h"
 #include "winmenu.h"
 #include "client.h"
-#include "desktop.h"
 #include "move.h"
 #include "resize.h"
 #include "event.h"
@@ -18,6 +17,9 @@
 #include "misc.h"
 #include "root.h"
 #include "settings.h"
+#include "DesktopEnvironment.h"
+
+DesktopEnvironment &environment = *DesktopEnvironment::DefaultEnvironment();
 
 static void CreateWindowLayerMenu(Menu *menu, ClientNode *np);
 static void CreateWindowSendToMenu(Menu *menu, ClientNode *np);
@@ -179,7 +181,7 @@ void CreateWindowSendToMenu(Menu *menu, ClientNode *np)
    AddWindowMenuItem(menu, _("Send To"), MA_NONE, np, 0);
 
    /* Now the first item in the menu is for the desktop list. */
-   menu->items->submenu = CreateDesktopMenu(mask, np);
+   menu->items->submenu = environment.CreateDesktopMenu(mask, np);
 
 }
 

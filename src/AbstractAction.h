@@ -66,7 +66,7 @@ public:
 
   virtual void press() {};
   virtual void release() {};
-  virtual bool validate() { return true; };
+  virtual bool validate() {return true;};
 };
 
 class ActionGroup {

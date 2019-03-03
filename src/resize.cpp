@@ -221,7 +221,7 @@ void ResizeClient(ClientNode *np, MouseContextType context,
                SendConfigureEvent(np);
             }
 
-            RequirePagerUpdate();
+            _RequirePagerUpdate();
 
          }
 
@@ -405,7 +405,7 @@ void ResizeClientKeyboard(ClientNode *np, MouseContextType context)
             SendConfigureEvent(np);
          }
 
-         RequirePagerUpdate();
+         _RequirePagerUpdate();
 
       }
 

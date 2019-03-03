@@ -32,54 +32,23 @@
 #include "swallow.h"
 #include "screen.h"
 #include "root.h"
-#include "desktop.h"
 #include "place.h"
 #include "clock.h"
-#include "dock.h"
 #include "misc.h"
-#include "background.h"
 #include "settings.h"
 #include "timing.h"
 #include "grab.h"
 #include "battery.h"
 #include "AbstractAction.h"
-
-AbstractAction aa;
+#include "DesktopEnvironment.h"
+#include "DockComponent.h"
+#include "DesktopComponent.h"
+#include "BackgroundComponent.h"
 
 #include <errno.h>
 
-Display *display = NULL;
-Window rootWindow;
-int rootWidth, rootHeight;
-int rootScreen;
-Colormap rootColormap;
-Visual *rootVisual;
-int rootDepth;
-GC rootGC;
-int colormapCount;
-Window supportingWindow;
-Atom managerSelection;
 
-char shouldExit = 0;
-char shouldRestart = 0;
-char isRestarting = 0;
-char initializing = 0;
-char shouldReload = 0;
 
-unsigned int currentDesktop = 0;
-
-char *exitCommand = NULL;
-
-XContext clientContext;
-XContext frameContext;
-
-#ifdef USE_SHAPE
-char haveShape;
-int shapeEvent;
-#endif
-#ifdef USE_XRENDER
-char haveRender;
-#endif
 
 static void Initialize(void);
 static void Startup(void);
@@ -101,8 +70,6 @@ static void SendReload(void);
 static void SendJWMMessage(const char *message);
 
 static char *displayString = NULL;
-
-char *configPath = NULL;
 
 /** The main entry point. */
 #ifndef UNIT_TEST
@@ -176,6 +143,9 @@ int main(int argc, char *argv[])
    textdomain("jwm");
 #endif
 
+   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new DockComponent());
+   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new DesktopComponent());
+   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new BackgroundComponent());
    /* The main loop. */
    StartupConnection();
    do {
@@ -468,7 +438,6 @@ void HandleChild(int sig)
  */
 void Initialize(void)
 {
-   InitializeBackgrounds();
    InitializeBindings();
    InitializeBorders();
    InitializeClients();
@@ -477,11 +446,10 @@ void Initialize(void)
    InitializeColors();
    InitializeCommands();
    InitializeCursors();
-   InitializeDesktops();
 #ifndef DISABLE_CONFIRM
    InitializeDialogs();
 #endif
-   InitializeDock();
+   DesktopEnvironment::DefaultEnvironment()->InitializeComponents();
    InitializeFonts();
    InitializeGroups();
    InitializeHints();
@@ -517,7 +485,6 @@ void Startup(void)
    StartupColors();
    StartupFonts();
    StartupIcons();
-   StartupBackgrounds();
    StartupCursors();
 
    StartupPager();
@@ -525,9 +492,8 @@ void Startup(void)
    StartupBattery();
    StartupTaskBar();
    StartupTrayButtons();
-   StartupDesktops();
    StartupHints();
-   StartupDock();
+   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
    StartupTray();
    StartupBindings();
    StartupBorders();
@@ -545,7 +511,7 @@ void Startup(void)
    ReadCurrentDesktop();
    JXFlush(display);
 
-   RequireRestack();
+   _RequireRestack();
 
    /* Allow clients to do their thing. */
    JXSync(display, True);
@@ -559,7 +525,7 @@ void Startup(void)
    ExposeCurrentDesktop();
 
    /* Draw the background (if backgrounds are used). */
-   LoadBackground(currentDesktop);
+   DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
 
    /* Run any startup commands. */
    StartupCommands();
@@ -583,7 +549,7 @@ void Shutdown(void)
    ShutdownBindings();
    ShutdownPager();
    ShutdownRootMenu();
-   ShutdownDock();
+   DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
    ShutdownTray();
    ShutdownTrayButtons();
    ShutdownTaskBar();
@@ -591,13 +557,11 @@ void Shutdown(void)
    ShutdownBattery();
    ShutdownBorders();
    ShutdownClients();
-   ShutdownBackgrounds();
    ShutdownIcons();
    ShutdownCursors();
    ShutdownFonts();
    ShutdownColors();
    ShutdownGroups();
-   ShutdownDesktops();
 
    ShutdownPlacement();
    ShutdownHints();
@@ -614,7 +578,6 @@ void Shutdown(void)
  */
 void Destroy(void)
 {
-   DestroyBackgrounds();
    DestroyBorders();
    DestroyClients();
    DestroyClock();
@@ -622,11 +585,10 @@ void Destroy(void)
    DestroyColors();
    DestroyCommands();
    DestroyCursors();
-   DestroyDesktops();
 #ifndef DISABLE_CONFIRM
    DestroyDialogs();
 #endif
-   DestroyDock();
+   DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
    DestroyFonts();
    DestroyGroups();
    DestroyHints();

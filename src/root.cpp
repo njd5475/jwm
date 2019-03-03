@@ -18,7 +18,7 @@
 #include "command.h"
 #include "parse.h"
 #include "settings.h"
-#include "desktop.h"
+#include "DesktopEnvironment.h"
 
 /** Number of root menus to support. */
 #define ROOT_MENU_COUNT 36
@@ -261,7 +261,7 @@ void RunRootCommand(MenuAction *action, unsigned button)
       Exit(action->value);
       break;
    case MA_DESKTOP:
-      ChangeDesktop(action->value);
+      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(action->value);
       break;
 
    case MA_SENDTO:

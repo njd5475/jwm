@@ -10,10 +10,10 @@
 #include "jwm.h"
 #include "hint.h"
 #include "client.h"
-#include "desktop.h"
 #include "misc.h"
 #include "font.h"
 #include "settings.h"
+#include "DesktopEnvironment.h"
 
 #include <X11/Xlibint.h>
 
@@ -195,7 +195,7 @@ void StartupHints(void)
    /* Determine how much space we will need on the stack and allocate it. */
    count = 0;
    for(x = 0; x < settings.desktopCount; x++) {
-      count += strlen(GetDesktopName(x)) + 1;
+      count += strlen(DesktopEnvironment::DefaultEnvironment()->GetDesktopName(x)) + 1;
    }
    if(count < 2 * sizeof(unsigned long)) {
       count = 2 * sizeof(unsigned long);
@@ -227,7 +227,7 @@ void StartupHints(void)
    /* _NET_DESKTOP_NAMES */
    count = 0;
    for(x = 0; x < settings.desktopCount; x++) {
-      const char *name = GetDesktopName(x);
+      const char *name = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(x);
       const unsigned len = strlen(name);
       memcpy(&data[count], name, len + 1);
       count += len + 1;
@@ -276,7 +276,7 @@ void ReadCurrentDesktop(void)
    unsigned long temp;
    currentDesktop = 0;
    if(GetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, &temp)) {
-      ChangeDesktop(temp);
+      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(temp);
    } else {
       SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
    }

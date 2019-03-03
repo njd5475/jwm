@@ -16,17 +16,17 @@
 #include "error.h"
 #include "menu.h"
 #include "misc.h"
-#include "background.h"
 #include "settings.h"
 #include "grab.h"
 #include "event.h"
 #include "tray.h"
+#include "DesktopEnvironment.h"
 
 static char **desktopNames = NULL;
 static char *showingDesktop = NULL;
 
 /** Startup desktop support. */
-void StartupDesktops(void)
+void _StartupDesktops(void)
 {
 
    unsigned int x;
@@ -52,7 +52,7 @@ void StartupDesktops(void)
 }
 
 /** Release desktop data. */
-void DestroyDesktops(void)
+void _DestroyDesktops(void)
 {
 
    if(desktopNames) {
@@ -71,7 +71,7 @@ void DestroyDesktops(void)
 }
 
 /** Get the right desktop. */
-unsigned int GetRightDesktop(unsigned int desktop)
+unsigned int _GetRightDesktop(unsigned int desktop)
 {
    const int y = desktop / settings.desktopWidth;
    const int x = (desktop + 1) % settings.desktopWidth;
@@ -79,7 +79,7 @@ unsigned int GetRightDesktop(unsigned int desktop)
 }
 
 /** Get the left desktop. */
-unsigned int GetLeftDesktop(unsigned int desktop)
+unsigned int _GetLeftDesktop(unsigned int desktop)
 {
    const int y = currentDesktop / settings.desktopWidth;
    int x = currentDesktop % settings.desktopWidth;
@@ -88,7 +88,7 @@ unsigned int GetLeftDesktop(unsigned int desktop)
 }
 
 /** Get the above desktop. */
-unsigned int GetAboveDesktop(unsigned int desktop)
+unsigned int _GetAboveDesktop(unsigned int desktop)
 {
    if(currentDesktop >= settings.desktopWidth) {
       return currentDesktop - settings.desktopWidth;
@@ -97,17 +97,17 @@ unsigned int GetAboveDesktop(unsigned int desktop)
 }
 
 /** Get the below desktop. */
-unsigned int GetBelowDesktop(unsigned int desktop)
+unsigned int _GetBelowDesktop(unsigned int desktop)
 {
    return (currentDesktop + settings.desktopWidth) % settings.desktopCount;
 }
 
 /** Change to the desktop to the right. */
-char RightDesktop(void)
+char _RightDesktop(void)
 {
    if(settings.desktopWidth > 1) {
-      const unsigned int desktop = GetRightDesktop(currentDesktop);
-      ChangeDesktop(desktop);
+      const unsigned int desktop = _GetRightDesktop(currentDesktop);
+      _ChangeDesktop(desktop);
       return 1;
    } else {
       return 0;
@@ -115,11 +115,11 @@ char RightDesktop(void)
 }
 
 /** Change to the desktop to the left. */
-char LeftDesktop(void)
+char _LeftDesktop(void)
 {
    if(settings.desktopWidth > 1) {
-      const unsigned int desktop = GetLeftDesktop(currentDesktop);
-      ChangeDesktop(desktop);
+      const unsigned int desktop = _GetLeftDesktop(currentDesktop);
+      _ChangeDesktop(desktop);
       return 1;
    } else {
       return 0;
@@ -127,11 +127,11 @@ char LeftDesktop(void)
 }
 
 /** Change to the desktop above. */
-char AboveDesktop(void)
+char _AboveDesktop(void)
 {
    if(settings.desktopHeight > 1) {
-      const int desktop = GetAboveDesktop(currentDesktop);
-      ChangeDesktop(desktop);
+      const int desktop = _GetAboveDesktop(currentDesktop);
+      _ChangeDesktop(desktop);
       return 1;
    } else {
       return 0;
@@ -139,11 +139,11 @@ char AboveDesktop(void)
 }
 
 /** Change to the desktop below. */
-char BelowDesktop(void)
+char _BelowDesktop(void)
 {
    if(settings.desktopHeight > 1) {
-      const unsigned int desktop = GetBelowDesktop(currentDesktop);
-      ChangeDesktop(desktop);
+      const unsigned int desktop = _GetBelowDesktop(currentDesktop);
+      _ChangeDesktop(desktop);
       return 1;
    } else {
       return 0;
@@ -151,7 +151,7 @@ char BelowDesktop(void)
 }
 
 /** Change to the specified desktop. */
-void ChangeDesktop(unsigned int desktop)
+void _ChangeDesktop(unsigned int desktop)
 {
 
    ClientNode *np;
@@ -198,15 +198,15 @@ void ChangeDesktop(unsigned int desktop)
    SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
                    showingDesktop[currentDesktop]);
 
-   RequireRestack();
-   RequireTaskUpdate();
+   _RequireRestack();
+   _RequireTaskUpdate();
 
-   LoadBackground(desktop);
+   DesktopEnvironment::DefaultEnvironment()->LoadBackground(desktop);
 
 }
 
 /** Create a desktop menu. */
-Menu *CreateDesktopMenu(unsigned int mask, void *context)
+Menu *_CreateDesktopMenu(unsigned int mask, void *context)
 {
 
    Menu *menu;
@@ -235,7 +235,7 @@ Menu *CreateDesktopMenu(unsigned int mask, void *context)
 }
 
 /** Create a sendto menu. */
-Menu *CreateSendtoMenu(MenuActionType mask, void *context)
+Menu *_CreateSendtoMenu(MenuActionType mask, void *context)
 {
 
    Menu *menu;
@@ -263,7 +263,7 @@ Menu *CreateSendtoMenu(MenuActionType mask, void *context)
 }
 
 /** Toggle the "show desktop" state. */
-void ShowDesktop(void)
+void _ShowDesktop(void)
 {
 
    ClientNode *np;
@@ -294,8 +294,8 @@ void ShowDesktop(void)
          }
       }
    }
-   RequireRestack();
-   RequireTaskUpdate();
+   _RequireRestack();
+   _RequireTaskUpdate();
    JXSync(display, True);
 
    if(showingDesktop[currentDesktop]) {
@@ -328,7 +328,7 @@ void ShowDesktop(void)
 }
 
 /** Set the name for a desktop. */
-void SetDesktopName(unsigned int desktop, const char *str)
+void _SetDesktopName(unsigned int desktop, const char *str)
 {
 
 
@@ -354,7 +354,7 @@ void SetDesktopName(unsigned int desktop, const char *str)
 }
 
 /** Get the name of a desktop. */
-const char *GetDesktopName(unsigned int desktop)
+const char *_GetDesktopName(unsigned int desktop)
 {
    Assert(desktop < settings.desktopCount);
    if(desktopNames && desktopNames[desktop]) {

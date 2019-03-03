@@ -97,7 +97,7 @@ void DestroyClock(void)
          Release(clocks->zone);
       }
       DestroyActions(clocks->actions);
-      UnregisterCallback(SignalClock, clocks);
+      _UnregisterCallback(SignalClock, clocks);
 
       Release(clocks);
       clocks = cp;

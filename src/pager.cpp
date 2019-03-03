@@ -14,13 +14,13 @@
 #include "clientlist.h"
 #include "color.h"
 #include "cursor.h"
-#include "desktop.h"
 #include "event.h"
 #include "tray.h"
 #include "timing.h"
 #include "popup.h"
 #include "font.h"
 #include "settings.h"
+#include "DesktopEnvironment.h"
 
 /** Structure to represent a pager tray component. */
 typedef struct PagerType {
@@ -87,7 +87,7 @@ void DestroyPager(void)
 {
    PagerType *pp;
    while(pagers) {
-      UnregisterCallback(SignalPager, pagers);
+      _UnregisterCallback(SignalPager, pagers);
       pp = pagers->next;
       Release(pagers);
       pagers = pp;
@@ -215,7 +215,7 @@ void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask)
 
       /* Change to the selected desktop. */
       pp = (PagerType*)cp->object;
-      ChangeDesktop(GetPagerDesktop(pp, x, y));
+      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(GetPagerDesktop(pp, x, y));
       break;
 
    case Button3:
@@ -227,13 +227,13 @@ void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask)
    case Button4:
 
       /* Change to the previous desktop. */
-      LeftDesktop();
+      DesktopEnvironment::DefaultEnvironment()->LeftDesktop();
       break;
 
    case Button5:
 
       /* Change to the next desktop. */
-      RightDesktop();
+     DesktopEnvironment::DefaultEnvironment()->RightDesktop();
       break;
 
    default:
@@ -445,7 +445,7 @@ ClientFound:
          np->y = oldy;
          JXMoveWindow(display, np->parent, np->x - west, np->y - north);
          SendConfigureEvent(np);
-         RequirePagerUpdate();
+         _RequirePagerUpdate();
 
          break;
 
@@ -483,7 +483,7 @@ void StopPagerMove(ClientNode *np,
    }
 
    /* Redraw the pager. */
-   RequirePagerUpdate();
+   _RequirePagerUpdate();
 
 }
 
@@ -535,7 +535,7 @@ void DrawPager(const PagerType *pp)
          for(x = 0; x < settings.desktopCount; x++) {
             dx = x % settings.desktopWidth;
             dy = x / settings.desktopWidth;
-            name = GetDesktopName(x);
+            name = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(x);
             textWidth = GetStringWidth(FONT_PAGER, name);
             if(textWidth < deskWidth) {
                xc = dx * (deskWidth + 1) + (deskWidth - textWidth) / 2;
@@ -602,7 +602,7 @@ void SignalPager(const TimeType *now, int x, int y, Window w, void *data)
          const int desktop = GetPagerDesktop(pp, x - pp->cp->screenx,
                                                  y - pp->cp->screeny);
          if(desktop >= 0 && desktop < settings.desktopCount) {
-            const char *desktopName = GetDesktopName(desktop);
+            const char *desktopName = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(desktop);
             if(desktopName) {
                ShowPopup(x, y, desktopName, POPUP_PAGER);
             }

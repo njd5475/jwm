@@ -61,16 +61,16 @@ void RegisterCallback(int freq, SignalCallback callback, void *data);
  * @param callback The callback to remove.
  * @param data The data passed to the register function.
  */
-void UnregisterCallback(SignalCallback callback, void *data);
+void _UnregisterCallback(SignalCallback callback, void *data);
 
 /** Restack clients before waiting for an event. */
-void RequireRestack();
+void _RequireRestack();
 
 /** Update the task bar before waiting for an event. */
-void RequireTaskUpdate();
+void _RequireTaskUpdate();
 
 /** Update the pager before waiting for an event. */
-void RequirePagerUpdate();
+void _RequirePagerUpdate();
 
 #endif /* EVENT_H */
 

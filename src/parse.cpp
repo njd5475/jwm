@@ -28,11 +28,9 @@
 #include "traybutton.h"
 #include "clock.h"
 #include "battery.h"
-#include "dock.h"
-#include "background.h"
 #include "spacer.h"
-#include "desktop.h"
 #include "border.h"
+#include "DesktopEnvironment.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1132,7 +1130,7 @@ void ParseDesktop(int desktop, const TokenNode *tp) {
 
    attr = FindAttribute(tp->attributes, "name");
    if(attr) {
-      SetDesktopName(desktop, attr);
+      DesktopEnvironment::DefaultEnvironment()->SetDesktopName(desktop, attr);
    }
 
    for(np = tp->subnodeHead; np; np = np->next) {
@@ -1152,7 +1150,7 @@ void ParseDesktop(int desktop, const TokenNode *tp) {
 void ParseDesktopBackground(int desktop, const TokenNode *tp)
 {
    const char *type = FindAttribute(tp->attributes, "type");
-   SetBackground(desktop, type, tp->value);
+   DesktopEnvironment::DefaultEnvironment()->SetBackground(desktop, type, tp->value);
 }
 
 /** Parse tray style. */
@@ -1630,7 +1628,7 @@ void ParseDock(const TokenNode *tp, TrayType *tray) {
       settings.dockSpacing = ParseUnsigned(tp, str);
    }
 
-   cp = CreateDock(width);
+   cp = DesktopEnvironment::DefaultEnvironment()->CreateDock(width);
    if(JLIKELY(cp)) {
       AddTrayComponent(tray, cp);
    }

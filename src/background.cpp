@@ -50,7 +50,7 @@ static void LoadGradientBackground(BackgroundNode *bp);
 static void LoadImageBackground(BackgroundNode *bp);
 
 /** Initialize any data needed for background support. */
-void InitializeBackgrounds(void)
+void _InitializeBackgrounds(void)
 {
    backgrounds = NULL;
    defaultBackground = NULL;
@@ -58,7 +58,7 @@ void InitializeBackgrounds(void)
 }
 
 /** Startup background support. */
-void StartupBackgrounds(void)
+void _StartupBackgrounds(void)
 {
 
    BackgroundNode *bp;
@@ -93,7 +93,7 @@ void StartupBackgrounds(void)
 }
 
 /** Shutdown background support. */
-void ShutdownBackgrounds(void)
+void _ShutdownBackgrounds(void)
 {
    BackgroundNode *bp;
    for(bp = backgrounds; bp; bp = bp->next) {
@@ -105,7 +105,7 @@ void ShutdownBackgrounds(void)
 }
 
 /** Release any data needed for background support. */
-void DestroyBackgrounds(void)
+void _DestroyBackgrounds(void)
 {
    BackgroundNode *bp;
    while(backgrounds) {
@@ -117,7 +117,7 @@ void DestroyBackgrounds(void)
 }
 
 /** Set the background to use for the specified desktops. */
-void SetBackground(int desktop, const char *type, const char *value)
+void _SetBackground(int desktop, const char *type, const char *value)
 {
    static const StringMappingType mapping[] = {
       { "command",   BACKGROUND_COMMAND   },
@@ -181,7 +181,7 @@ void SetBackground(int desktop, const char *type, const char *value)
 }
 
 /** Load the background for the specified desktop. */
-void LoadBackground(int desktop)
+void _LoadBackground(int desktop)
 {
 
    XSetWindowAttributes attr;
