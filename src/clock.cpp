@@ -149,7 +149,7 @@ TrayComponentType *CreateClock(const char *format, const char *zone,
    cp->ProcessButtonRelease = ProcessClockButtonRelease;
    cp->ProcessMotionEvent = ProcessClockMotionEvent;
 
-   RegisterCallback(Min(900, settings.popupDelay / 2), SignalClock, clk);
+   _RegisterCallback(Min(900, settings.popupDelay / 2), SignalClock, clk);
 
    return cp;
 }

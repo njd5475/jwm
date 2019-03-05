@@ -43,7 +43,7 @@ void StartupPopup(void)
 {
    popup.text = NULL;
    popup.window = None;
-   RegisterCallback(100, SignalPopup, NULL);
+   _RegisterCallback(100, SignalPopup, NULL);
 }
 
 /** Shutdown popups. */

@@ -736,7 +736,7 @@ void HandleTrayButtonPress(TrayType *tp, const XButtonEvent *event)
       const int x = event->x - cp->x;
       const int y = event->y - cp->y;
       const int mask = event->button;
-      DiscardButtonEvents();
+      _DiscardButtonEvents();
       (cp->ProcessButtonPress)(cp, x, y, mask);
    }
 }
@@ -1053,7 +1053,7 @@ void SetAutoHideTray(TrayType *tp,
    tp->autoHideDelay = timeout_ms;
 
    if(autohide != THIDE_OFF) {
-      RegisterCallback(timeout_ms, SignalTray, tp);
+      _RegisterCallback(timeout_ms, SignalTray, tp);
    }
 }
 

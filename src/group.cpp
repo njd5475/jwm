@@ -12,9 +12,10 @@
 #include "client.h"
 #include "icon.h"
 #include "error.h"
-#include "match.h"
 #include "misc.h"
 #include "settings.h"
+
+#include <regex.h>
 
 /** What part of the window to match. */
 typedef unsigned int MatchType;
@@ -53,6 +54,9 @@ static void ReleaseOptionList(OptionListType *lp);
 static void AddPattern(PatternListType **lp, const char *pattern,
                        MatchType match);
 static void ApplyGroup(const GroupType *gp, ClientNode *np);
+
+/** Determine if expression matches pattern. */
+static char Match(const char *pattern, const char *expression);
 
 /** Destroy group data. */
 void DestroyGroups(void)
@@ -398,6 +402,32 @@ void ApplyGroup(const GroupType *gp, ClientNode *np)
          break;
       }
    }
+
+}
+
+/** Determine if expression matches pattern. */
+char Match(const char *pattern, const char *expression)
+{
+
+   regex_t re;
+   regmatch_t rm;
+   int rc;
+
+   if(!pattern && !expression) {
+      return 1;
+   } else if(!pattern || !expression) {
+      return 0;
+   }
+
+   if(regcomp(&re, pattern, REG_EXTENDED) != 0) {
+      return 0;
+   }
+
+   rc = regexec(&re, expression, 0, &rm, 0);
+
+   regfree(&re);
+
+   return rc == 0 ? 1 : 0;
 
 }
 

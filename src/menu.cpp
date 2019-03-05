@@ -211,7 +211,7 @@ char ShowMenu(Menu *menu, RunMenuCommandType runner,
       return 0;
    }
 
-   RegisterCallback(settings.popupDelay, MenuCallback, menu);
+   _RegisterCallback(settings.popupDelay, MenuCallback, menu);
    ShowSubmenu(menu, NULL, runner, x, y, keyboard);
    _UnregisterCallback(MenuCallback, menu);
    UnpatchMenu(menu);
@@ -384,7 +384,7 @@ char MenuLoop(Menu *menu, RunMenuCommandType runner)
 
    for(;;) {
 
-      WaitForEvent(&event);
+      _WaitForEvent(&event);
 
       switch(event.type) {
       case Expose:
@@ -650,7 +650,7 @@ MenuSelectionType UpdateMotion(Menu *menu,
 
       SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
                        event->xmotion.window);
-      DiscardMotionEvents(event, menu->window);
+      _DiscardMotionEvents(event, menu->window);
 
       x = event->xmotion.x_root - menu->x;
       y = event->xmotion.y_root - menu->y;

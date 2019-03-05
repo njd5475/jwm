@@ -143,7 +143,7 @@ TrayComponentType *CreateTaskBar()
    cp->ProcessButtonPress = ProcessTaskButtonEvent;
    cp->ProcessMotionEvent = ProcessTaskMotionEvent;
 
-   RegisterCallback(settings.popupDelay / 2, SignalTaskbar, tp);
+   _RegisterCallback(settings.popupDelay / 2, SignalTaskbar, tp);
 
    return cp;
 

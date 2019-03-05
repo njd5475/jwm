@@ -247,7 +247,7 @@ ClientNode *AddClientWindow(Window w, char alreadyMapped, char notOwner)
    }
 
    if(np->state.status & STAT_URGENT) {
-      RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
+      _RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
    }
 
    /* Update task bars. */
@@ -1499,7 +1499,7 @@ void UnmapClient(ClientNode *np)
       /* Discard the unmap event so we don't process it later. */
       JXSync(display, False);
       if(JXCheckTypedWindowEvent(display, np->window, UnmapNotify, &e)) {
-         UpdateTime(&e);
+         _UpdateTime(&e);
       }
    }
 }

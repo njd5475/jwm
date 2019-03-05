@@ -108,7 +108,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
     return 0;
   }
 
-  RegisterCallback(0, SignalMove, NULL);
+  _RegisterCallback(0, SignalMove, NULL);
   np->controller = MoveController;
   shouldStopMove = 0;
 
@@ -129,7 +129,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
   doMove = 0;
   for (;;) {
 
-    WaitForEvent(&event);
+    _WaitForEvent(&event);
 
     if (shouldStopMove) {
       np->controller = NULL;
@@ -147,7 +147,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
       break;
     case MotionNotify:
 
-      DiscardMotionEvents(&event, np->window);
+      _DiscardMotionEvents(&event, np->window);
 
       np->x = event.xmotion.x_root - startx;
       np->y = event.xmotion.y_root - starty;
@@ -314,7 +314,7 @@ char MoveClientKeyboard(ClientNode *np) {
   oldx = np->x;
   oldy = np->y;
 
-  RegisterCallback(0, SignalMove, NULL);
+  _RegisterCallback(0, SignalMove, NULL);
   np->controller = MoveController;
   shouldStopMove = 0;
 
@@ -322,7 +322,7 @@ char MoveClientKeyboard(ClientNode *np) {
   UpdateMoveWindow(np);
 
   MoveMouse(rootWindow, np->x, np->y);
-  DiscardMotionEvents(&event, np->window);
+  _DiscardMotionEvents(&event, np->window);
 
   if (np->state.status & STAT_SHADED) {
     height = 0;
@@ -333,7 +333,7 @@ char MoveClientKeyboard(ClientNode *np) {
 
   for (;;) {
 
-    WaitForEvent(&event);
+    _WaitForEvent(&event);
 
     if (shouldStopMove) {
       np->controller = NULL;
@@ -347,7 +347,7 @@ char MoveClientKeyboard(ClientNode *np) {
     if (event.type == KeyPress) {
       ActionType action;
 
-      DiscardKeyEvents(&event, np->window);
+      _DiscardKeyEvents(&event, np->window);
       action = GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
       switch (action.action) {
       case UP:
@@ -376,13 +376,13 @@ char MoveClientKeyboard(ClientNode *np) {
       }
 
       MoveMouse(rootWindow, np->x, np->y);
-      DiscardMotionEvents(&event, np->window);
+      _DiscardMotionEvents(&event, np->window);
 
       moved = 1;
 
     } else if (event.type == MotionNotify) {
 
-      DiscardMotionEvents(&event, np->window);
+      _DiscardMotionEvents(&event, np->window);
 
       np->x = event.xmotion.x;
       np->y = event.xmotion.y;

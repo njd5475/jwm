@@ -108,7 +108,7 @@ TrayComponentType *CreateBattery(int width, int height) {
   cp->ProcessButtonPress = ProcessBatteryButtonPress;
   cp->ProcessButtonRelease = ProcessBatteryMotionEvent;
 
-  RegisterCallback(900, PollBattery, bat);
+  _RegisterCallback(900, PollBattery, bat);
 
   return cp;
 }

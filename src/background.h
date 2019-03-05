@@ -24,7 +24,7 @@ void _DestroyBackgrounds(void);
  */
 void _SetBackground(int desktop, const char *type, const char *value);
 
-/** Load the background for the specified desktop.
+/** Load the background for the s pecified desktop.
  * @param desktop The current desktop.
  */
 void _LoadBackground(int desktop);

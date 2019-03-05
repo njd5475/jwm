@@ -12,6 +12,7 @@
 #include "desktop.h"
 #include "Component.h"
 #include "tray.h"
+#include <vector>
 
 class DesktopEnvironment {
 public:
@@ -50,11 +51,8 @@ public:
   virtual char HandleDockDestroy(const Window);
   virtual void HandleDockEvent(const XClientMessageEvent* event);
   virtual char HandleDockSelectionClear(const XSelectionClearEvent* event);
-
-  virtual char HandleFrameExtentsRequest(const XClientMessageEvent* event);
-  virtual void HandleClientMessage(const XClientMessageEvent* message);
 private:
-  Component **_components;
+  std::vector<Component*> _components;
   unsigned int _componentCount;
 public:
   static DesktopEnvironment *DefaultEnvironment() {

@@ -161,7 +161,7 @@ TrayComponentType *CreateTrayButton(const char *iconName,
       cp->ProcessMotionEvent = ProcessMotionEvent;
    }
 
-   RegisterCallback(settings.popupDelay / 2, SignalTrayButton, bp);
+   _RegisterCallback(settings.popupDelay / 2, SignalTrayButton, bp);
 
    return cp;
 

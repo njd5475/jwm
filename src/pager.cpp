@@ -119,7 +119,7 @@ TrayComponentType *CreatePager(char labeled)
    cp->ProcessButtonPress = ProcessPagerButtonEvent;
    cp->ProcessMotionEvent = ProcessPagerMotionEvent;
 
-   RegisterCallback(settings.popupDelay / 2, SignalPager, pp);
+   _RegisterCallback(settings.popupDelay / 2, SignalPager, pp);
 
    return cp;
 }
@@ -384,7 +384,7 @@ ClientFound:
 
    for(;;) {
 
-      WaitForEvent(&event);
+      _WaitForEvent(&event);
 
       if(shouldStopMove) {
          np->controller = NULL;

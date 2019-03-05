@@ -172,7 +172,7 @@ void ResizeClient(ClientNode *np, MouseContextType context,
 
    for(;;) {
 
-      WaitForEvent(&event);
+      _WaitForEvent(&event);
 
       if(shouldStopResize) {
          np->controller = NULL;
@@ -191,7 +191,7 @@ void ResizeClient(ClientNode *np, MouseContextType context,
 
          SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
                           event.xmotion.window);
-         DiscardMotionEvents(&event, np->window);
+         _DiscardMotionEvents(&event, np->window);
 
          UpdateSize(np, context, event.xmotion.x, event.xmotion.y,
                     startx, starty, oldx, oldy, oldw, oldh);
@@ -303,11 +303,11 @@ void ResizeClientKeyboard(ClientNode *np, MouseContextType context)
       startx = np->x + np->width / 2;
    }
    MoveMouse(rootWindow, startx, starty);
-   DiscardMotionEvents(&event, np->window);
+   _DiscardMotionEvents(&event, np->window);
 
    for(;;) {
 
-      WaitForEvent(&event);
+      _WaitForEvent(&event);
 
       if(shouldStopResize) {
          np->controller = NULL;
@@ -319,7 +319,7 @@ void ResizeClientKeyboard(ClientNode *np, MouseContextType context)
          int deltay = 0;
          ActionType action;
 
-         DiscardKeyEvents(&event, np->window);
+         _DiscardKeyEvents(&event, np->window);
          action = GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
          switch(action.action) {
          case UP:
@@ -368,7 +368,7 @@ void ResizeClientKeyboard(ClientNode *np, MouseContextType context)
 
          SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
                           event.xmotion.window);
-         DiscardMotionEvents(&event, np->window);
+         _DiscardMotionEvents(&event, np->window);
 
          UpdateSize(np, context, event.xmotion.x, event.xmotion.y,
                     startx, starty, oldx, oldy, oldw, oldh);

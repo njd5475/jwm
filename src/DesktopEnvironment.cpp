@@ -8,6 +8,7 @@
 #include "DesktopEnvironment.h"
 #include "dock.h"
 #include "background.h"
+#include "event.h"
 
 Display *display = NULL;
 Window rootWindow;
@@ -76,12 +77,7 @@ void DesktopEnvironment::ShowDesktop() {
 
 void DesktopEnvironment::RegisterComponent(Component *component) {
   ++this->_componentCount;
-  Component **resized = new Component*[this->_componentCount];
-  for (int i = 0; i < this->_componentCount-1; ++i) {
-    resized[i] = this->_components[i];
-  }
-  delete this->_components;
-  this->_components = resized;
+  this->_components.push_back(component);
 }
 
 DesktopEnvironment::DesktopEnvironment() :
@@ -91,10 +87,10 @@ DesktopEnvironment::DesktopEnvironment() :
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
-  for (int i = 0; i < _componentCount; ++i) {
-    delete _components[i];
+  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+    delete *it;
   }
-  delete _components;
+  this->_components.clear();
   _componentCount = 0;
 }
 
@@ -123,26 +119,26 @@ char DesktopEnvironment::HandleDockResizeRequest(XResizeRequestEvent* event) {
 }
 
 void DesktopEnvironment::InitializeComponents() {
-  for (int i = 0; i < this->_componentCount; ++i) {
-    this->_components[i]->initialize();
+  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+    (*it)->initialize();
   }
 }
 
 void DesktopEnvironment::StartupComponents() {
-  for (int i = 0; i < this->_componentCount; ++i) {
-    this->_components[i]->start();
+  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+    (*it)->start();
   }
 }
 
 void DesktopEnvironment::ShutdownComponents() {
-  for (int i = 0; i < this->_componentCount; ++i) {
-    this->_components[i]->stop();
+  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+    (*it)->stop();
   }
 }
 
 void DesktopEnvironment::DestroyComponents() {
-  for (int i = 0; i < this->_componentCount; ++i) {
-    this->_components[i]->destroy();
+  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+    (*it)->destroy();
   }
 }
 
@@ -184,12 +180,4 @@ Menu* DesktopEnvironment::CreateSendtoMenu(int desktop, void* mem) {
 
 char DesktopEnvironment::HandleDockSelectionClear(const XSelectionClearEvent* event) {
   return _HandleDockSelectionClear(event);
-}
-
-char DesktopEnvironment::HandleFrameExtentsRequest(const XClientMessageEvent* event) {
-  return HandleFrameExtentsRequest(event);
-}
-
-void DesktopEnvironment::HandleClientMessage(const XClientMessageEvent* message) {
-  return _HandleClientMessage(message);
 }

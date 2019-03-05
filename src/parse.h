@@ -24,5 +24,7 @@ void ParseConfig(const char *fileName);
  */
 struct Menu *ParseDynamicMenu(unsigned timeout_ms, const char *command);
 
+void ParseConfigString(const char* inMem);
+
 #endif /* PARSE_H */
 

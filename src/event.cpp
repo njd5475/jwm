@@ -126,7 +126,7 @@ char _WaitForEvent(XEvent *event) {
     _Signal();
 
     JXNextEvent(display, event);
-    UpdateTime(event);
+    _UpdateTime(event);
 
     switch (event->type) {
     case ConfigureRequest:
@@ -141,7 +141,7 @@ char _WaitForEvent(XEvent *event) {
       handled = _HandlePropertyNotify(&event->xproperty);
       break;
     case ClientMessage:
-      DesktopEnvironment::DefaultEnvironment()->HandleClientMessage(&event->xclient);
+      _HandleClientMessage(&event->xclient);
       handled = 1;
       break;
     case UnmapNotify:
@@ -287,7 +287,7 @@ void _ProcessEvent(XEvent *event) {
   case MotionNotify:
     while (JXCheckTypedEvent(display, MotionNotify, event))
       ;
-    UpdateTime(event);
+    _UpdateTime(event);
     _HandleMotionNotify(&event->xmotion);
     break;
   case LeaveNotify:
@@ -306,7 +306,7 @@ void _DiscardButtonEvents() {
   XEvent event;
   JXSync(display, False);
   while (JXCheckMaskEvent(display, ButtonPressMask | ButtonReleaseMask, &event)) {
-    UpdateTime(&event);
+    _UpdateTime(&event);
   }
 }
 
@@ -315,7 +315,7 @@ void _DiscardMotionEvents(XEvent *event, Window w) {
   XEvent temp;
   JXSync(display, False);
   while (JXCheckTypedEvent(display, MotionNotify, &temp)) {
-    UpdateTime(&temp);
+    _UpdateTime(&temp);
     SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root,
         temp.xmotion.window);
     if (temp.xmotion.window == w) {
@@ -328,7 +328,7 @@ void _DiscardMotionEvents(XEvent *event, Window w) {
 void _DiscardKeyEvents(XEvent *event, Window w) {
   JXSync(display, False);
   while (JXCheckTypedWindowEvent(display, w, KeyPress, event)) {
-    UpdateTime(event);
+    _UpdateTime(event);
   }
 }
 
@@ -337,7 +337,7 @@ void _DiscardEnterEvents() {
   XEvent event;
   JXSync(display, False);
   while (JXCheckMaskEvent(display, EnterWindowMask, &event)) {
-    UpdateTime(&event);
+    _UpdateTime(&event);
     SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
         event.xmotion.window);
   }
@@ -919,7 +919,7 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
       }
       ReadWMHints(np->window, &np->state, 1);
       if (np->state.status & STAT_URGENT) {
-        RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
+        _RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
       }
       WriteState(np);
       break;
@@ -1079,7 +1079,7 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
   } else if (event->message_type == atoms[ATOM_NET_REQUEST_FRAME_EXTENTS]) {
 
-    DesktopEnvironment::DefaultEnvironment()->HandleFrameExtentsRequest(event);
+    _HandleFrameExtentsRequest(event);
 
   } else if (event->message_type == atoms[ATOM_NET_SYSTEM_TRAY_OPCODE]) {
 
@@ -1545,7 +1545,7 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
     }
 
     if (JXCheckTypedWindowEvent(display, np->window, DestroyNotify, &e)) {
-      UpdateTime(&e);
+      _UpdateTime(&e);
       RemoveClient(np);
     } else if ((np->state.status & STAT_MAPPED) || event->send_event) {
       if (!(np->state.status & STAT_HIDDEN)) {
@@ -1603,7 +1603,7 @@ void _UpdateState(ClientNode *np) {
   }
   np->state = ReadWindowState(np->window, alreadyMapped);
   if (np->state.status & STAT_URGENT) {
-    RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
+    _RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
   }
 
   /* We don't handle mapping the window, so restore its mapped state. */
