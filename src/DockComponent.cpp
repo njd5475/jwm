@@ -12,6 +12,8 @@
 
 #include "DesktopEnvironment.h"
 
+bool DockComponent::registered = environment->RegisterComponent(new DockComponent());
+
 void DockComponent::initialize() {
   _InitializeDock();
 }

@@ -40,14 +40,14 @@
 #include "grab.h"
 #include "battery.h"
 #include "AbstractAction.h"
-#include "DesktopEnvironment.h"
 #include "DockComponent.h"
 #include "DesktopComponent.h"
 #include "BackgroundComponent.h"
 
-
 #include <fcntl.h>
 #include <errno.h>
+
+#include "DesktopEnvironment.h"
 
 static void Initialize(void);
 static void Startup(void);
@@ -147,10 +147,10 @@ int main(int argc, char *argv[]) {
   textdomain("jwm");
 #endif
 
-  log(fd, "Registering Components\n");
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new DockComponent());
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new DesktopComponent());
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new BackgroundComponent());
+  //log(fd, "Registering Components\n");
+  //environment.RegisterComponent(new DockComponent());
+  //environment.RegisterComponent(new DesktopComponent());
+  //environment.RegisterComponent(new BackgroundComponent());
   /* The main loop. */
   log(fd, "Starting connection...\n");
   StartupConnection();

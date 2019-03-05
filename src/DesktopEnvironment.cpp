@@ -5,10 +5,13 @@
  *      Author: nick
  */
 
+#include "jwm.h"
 #include "DesktopEnvironment.h"
 #include "dock.h"
 #include "background.h"
 #include "event.h"
+#include "desktop.h"
+#include "tray.h"
 
 Display *display = NULL;
 Window rootWindow;
@@ -75,7 +78,7 @@ void DesktopEnvironment::ShowDesktop() {
   _ShowDesktop();
 }
 
-void DesktopEnvironment::RegisterComponent(Component *component) {
+bool DesktopEnvironment::RegisterComponent(Component *component) {
   ++this->_componentCount;
   this->_components.push_back(component);
 }

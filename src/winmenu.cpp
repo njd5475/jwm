@@ -19,8 +19,6 @@
 #include "settings.h"
 #include "DesktopEnvironment.h"
 
-DesktopEnvironment &environment = *DesktopEnvironment::DefaultEnvironment();
-
 static void CreateWindowLayerMenu(Menu *menu, ClientNode *np);
 static void CreateWindowSendToMenu(Menu *menu, ClientNode *np);
 static void AddWindowMenuItem(Menu *menu, const char *name,
@@ -181,7 +179,7 @@ void CreateWindowSendToMenu(Menu *menu, ClientNode *np)
    AddWindowMenuItem(menu, _("Send To"), MA_NONE, np, 0);
 
    /* Now the first item in the menu is for the desktop list. */
-   menu->items->submenu = environment.CreateDesktopMenu(mask, np);
+   menu->items->submenu = environment->CreateDesktopMenu(mask, np);
 
 }
 

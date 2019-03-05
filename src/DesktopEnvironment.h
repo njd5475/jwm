@@ -9,10 +9,11 @@
 #define SRC_DESKTOPENVIRONMENT_H_
 
 #include "jwm.h"
-#include "desktop.h"
 #include "Component.h"
-#include "tray.h"
 #include <vector>
+
+typedef struct Menu;
+typedef struct TrayComponentType;
 
 class DesktopEnvironment {
 public:
@@ -23,7 +24,7 @@ public:
   virtual void StartupComponents();
   virtual void ShutdownComponents();
   virtual void DestroyComponents();
-  virtual void RegisterComponent(Component *component);
+  virtual bool RegisterComponent(Component *component);
   virtual unsigned int ComponentCount() {return _componentCount;}
 
   virtual void ShowDesktop();
@@ -64,5 +65,7 @@ public:
 private:
   static DesktopEnvironment *_instance;
 };
+
+#define environment DesktopEnvironment::DefaultEnvironment()
 
 #endif /* SRC_DESKTOPENVIRONMENT_H_ */

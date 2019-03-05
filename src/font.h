@@ -13,16 +13,9 @@
 #include "color.h"
 
 /** Enumeration of different components that use fonts. */
-typedef unsigned char FontType;
-#define FONT_BORDER     0
-#define FONT_MENU       1
-#define FONT_POPUP      2
-#define FONT_TRAY       3
-#define FONT_PAGER      4
-#define FONT_CLOCK      5
-#define FONT_TASKLIST   6
-#define FONT_TRAYBUTTON 7
-#define FONT_COUNT      8
+typedef enum {
+  FONT_BORDER = 0, FONT_MENU, FONT_POPUP, FONT_TRAY, FONT_PAGER, FONT_CLOCK, FONT_TASKLIST, FONT_TRAYBUTTON, FONT_COUNT
+} FontType;
 
 void InitializeFonts(void);
 void StartupFonts(void);
@@ -44,8 +37,7 @@ void SetFont(FontType type, const char *value);
  * @param width The maximum width allowed.
  * @param str The string to render.
  */
-void RenderString(Drawable d, FontType font, ColorType color,
-                  int x, int y, int width, const char *str);
+void RenderString(Drawable d, FontType font, ColorType color, int x, int y, int width, const char *str);
 
 /** Get the width of a string.
  * @param ft The font used to determine the width.

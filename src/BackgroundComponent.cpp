@@ -5,8 +5,11 @@
  *      Author: nick
  */
 
+#include "DesktopEnvironment.h"
 #include "BackgroundComponent.h"
 #include "background.h"
+
+bool BackgroundComponent::registered = environment->RegisterComponent(new BackgroundComponent());
 
 void BackgroundComponent::set(int desktop, const char* type, const char* value) {
   _SetBackground(desktop, type, value);

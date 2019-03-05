@@ -21,6 +21,8 @@ public:
   virtual void destroy();
   virtual void set(int desktop, const char* type, const char* value);
   virtual void loadBackground(int desktop);
+private:
+  static bool registered;
 };
 
 #endif /* SRC_BACKGROUNDCOMPONENT_H_ */

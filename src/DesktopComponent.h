@@ -19,6 +19,8 @@ public:
   virtual void start();
   virtual void stop();
   virtual void destroy();
+private:
+  static bool registered;
 };
 
 #endif /* SRC_DESKTOPCOMPONENT_H_ */
