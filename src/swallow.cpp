@@ -86,7 +86,7 @@ TrayComponentType *CreateSwallow(const char *name, const char *command,
       return NULL;
    }
 
-   np = Allocate(sizeof(SwallowNode));
+   np = new SwallowNode;
    np->name = CopyString(name);
    np->command = CopyString(command);
 
@@ -193,8 +193,7 @@ void Destroy(TrayComponentType *cp)
       memset(&state, 0, sizeof(state));
       ReadWMProtocols(cp->window, &state);
       if(state.status & STAT_DELETE) {
-         SendClientMessage(cp->window, ATOM_WM_PROTOCOLS,
-                           ATOM_WM_DELETE_WINDOW);
+         ClientNode::SendClientMessage(cp->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
       } else {
          JXKillClient(display, cp->window);
       }

@@ -87,9 +87,9 @@ void Debug(const char *str, ...);
 #   define StartDebug()          ((void)0)
 #   define StopDebug()           ((void)0)
 
-#   define Allocate( x )         malloc( (x) )
+#   define Allocate( x )         new( (x) )
 #   define Reallocate( x, y )    realloc( (x), (y) )
-#   define Release( x )          free( (x) )
+#   define Release( x )          delete( (x) )
 
 #endif /* DEBUG */
 

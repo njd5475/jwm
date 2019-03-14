@@ -168,7 +168,7 @@ void _SetBackground(int desktop, const char *type, const char *value)
    }
 
    /* Create the background node. */
-   bp = Allocate(sizeof(BackgroundNode));
+   bp = new BackgroundNode;
    bp->desktop = desktop;
    bp->type = bgType;
    bp->value = CopyString(value);

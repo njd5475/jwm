@@ -247,7 +247,7 @@ void SetOpacity(struct ClientNode *np, unsigned int opacity, char force);
  * @param win The window.
  * @param state The client state.
  */
-void WriteFrameExtents(Window win, const ClientState *state);
+void WriteFrameExtents(Window win, ClientState *state);
 
 /** Read a cardinal atom.
  * @param window The window.

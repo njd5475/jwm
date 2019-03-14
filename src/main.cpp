@@ -22,7 +22,6 @@
 #include "confirm.h"
 #include "font.h"
 #include "group.h"
-#include "binding.h"
 #include "icon.h"
 #include "taskbar.h"
 #include "tray.h"
@@ -39,6 +38,7 @@
 #include "timing.h"
 #include "grab.h"
 #include "battery.h"
+#include "binding.h"
 #include "AbstractAction.h"
 #include "DockComponent.h"
 #include "DesktopComponent.h"
@@ -444,7 +444,6 @@ void HandleChild(int sig) {
 
 void Initialize(void) {
   ILog(InitializeBindings);
-  ILog(InitializeBorders);
   ILog(InitializeClients);
   ILog(InitializeClock);
   ILog(InitializeBattery);
@@ -500,9 +499,7 @@ void Startup(void) {
   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
   StartupTray();
   StartupBindings();
-  StartupBorders();
   StartupPlacement();
-  StartupClients();
 
 #  ifndef DISABLE_CONFIRM
   StartupDialogs();
@@ -526,7 +523,7 @@ void Startup(void) {
   DrawTray();
 
   /* Send expose events. */
-  ExposeCurrentDesktop();
+  Border::ExposeCurrentDesktop();
 
   /* Draw the background (if backgrounds are used). */
   DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
@@ -558,8 +555,6 @@ void Shutdown(void) {
   ShutdownTaskBar();
   ShutdownClock();
   ShutdownBattery();
-  ShutdownBorders();
-  ShutdownClients();
   ShutdownIcons();
   ShutdownCursors();
   ShutdownFonts();
@@ -580,7 +575,6 @@ void Shutdown(void) {
  * Note that it is possible for this to be called more than once.
  */
 void Destroy(void) {
-  DestroyBorders();
   DestroyClients();
   DestroyClock();
   DestroyBattery();

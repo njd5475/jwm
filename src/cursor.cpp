@@ -9,6 +9,7 @@
 
 #include "jwm.h"
 #include "cursor.h"
+#include "settings.h"
 #include "main.h"
 
 /** Cursor types. */

@@ -187,7 +187,7 @@ char *ConvertFromUTF8(char *str)
       size_t inLeft = strlen(str);
       size_t outLeft = 4 * inLeft;
       size_t rc;
-      result = Allocate(outLeft + 1);
+      result = new  char[outLeft + 1];
       outBuf = result;
       rc = iconv(fromUTF8, &inBuf, &inLeft, &outBuf, &outLeft);
       if(rc == (size_t)-1) {

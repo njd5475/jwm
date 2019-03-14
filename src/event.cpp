@@ -15,7 +15,6 @@
 #include "confirm.h"
 #include "cursor.h"
 #include "icon.h"
-#include "binding.h"
 #include "move.h"
 #include "place.h"
 #include "resize.h"
@@ -29,6 +28,8 @@
 #include "popup.h"
 #include "pager.h"
 #include "grab.h"
+#include "action.h"
+#include "binding.h"
 #include "DesktopEnvironment.h"
 
 #define MIN_TIME_DELTA 50
@@ -51,8 +52,7 @@ static char pager_update_pending = 0;
 
 static void _Signal(void);
 
-static void _ProcessBinding(MouseContextType context, ClientNode *np,
-    unsigned state, int code, int x, int y);
+static void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, int code, int x, int y);
 
 static void _HandleConfigureRequest(const XConfigureRequestEvent *event);
 static char _HandleConfigureNotify(const XConfigureEvent *event);
@@ -71,14 +71,11 @@ static void _HandleEnterNotify(const XCrossingEvent *event);
 static void _HandleMotionNotify(const XMotionEvent *event);
 static char _HandleSelectionClear(const XSelectionClearEvent *event);
 
-static void _HandleNetMoveResize(const XClientMessageEvent *event,
-    ClientNode *np);
-static void _HandleNetWMMoveResize(const XClientMessageEvent *evnet,
-    ClientNode *np);
+static void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np);
+static void _HandleNetWMMoveResize(const XClientMessageEvent *evnet, ClientNode *np);
 static void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np);
 static void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np);
 static void _HandleFrameExtentsRequest(const XClientMessageEvent *event);
-static void _UpdateState(ClientNode *np);
 static void _DiscardEnterEvents();
 
 #ifdef USE_SHAPE
@@ -165,19 +162,16 @@ char _WaitForEvent(XEvent *event) {
       handled = DesktopEnvironment::DefaultEnvironment()->HandleDockResizeRequest(&event->xresizerequest);
       break;
     case MotionNotify:
-      SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
-          event->xmotion.window);
+      SetMousePosition(event->xmotion.x_root, event->xmotion.y_root, event->xmotion.window);
       handled = 0;
       break;
     case ButtonPress:
     case ButtonRelease:
-      SetMousePosition(event->xbutton.x_root, event->xbutton.y_root,
-          event->xbutton.window);
+      SetMousePosition(event->xbutton.x_root, event->xbutton.y_root, event->xbutton.window);
       handled = 0;
       break;
     case EnterNotify:
-      SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
-          event->xcrossing.window);
+      SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root, event->xcrossing.window);
       handled = 0;
       break;
     case LeaveNotify:
@@ -241,7 +235,7 @@ void _Signal(void) {
   y;
 
   if (restack_pending) {
-    RestackClients();
+    ClientNode::RestackClients();
     restack_pending = 0;
   }
   if (task_update_pending) {
@@ -316,8 +310,7 @@ void _DiscardMotionEvents(XEvent *event, Window w) {
   JXSync(display, False);
   while (JXCheckTypedEvent(display, MotionNotify, &temp)) {
     _UpdateTime(&temp);
-    SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root,
-        temp.xmotion.window);
+    SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root, temp.xmotion.window);
     if (temp.xmotion.window == w) {
       *event = temp;
     }
@@ -338,8 +331,7 @@ void _DiscardEnterEvents() {
   JXSync(display, False);
   while (JXCheckMaskEvent(display, EnterWindowMask, &event)) {
     _UpdateTime(&event);
-    SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
-        event.xmotion.window);
+    SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
   }
 }
 
@@ -371,8 +363,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
   if (event->type == ButtonPress) {
     if (doubleClickActive == event->button && event->time != lastClickTime
         && event->time - lastClickTime <= settings.doubleClickSpeed
-        && abs(event->x - lastX) <= settings.doubleClickDelta
-        && abs(event->y - lastY) <= settings.doubleClickDelta) {
+        && abs(event->x - lastX) <= settings.doubleClickDelta && abs(event->y - lastY) <= settings.doubleClickDelta) {
       button = event->button * 11;
     } else {
       button = event->button;
@@ -392,14 +383,14 @@ void _HandleButtonEvent(const XButtonEvent *event) {
   }
 
   /* Dispatch the event. */
-  np = FindClientByParent(event->window);
+  np = ClientNode::FindClientByParent(event->window);
   if (np) {
     /* Click on the border. */
     if (event->type == ButtonPress) {
-      FocusClient(np);
-      RaiseClient(np);
+      np->FocusClient();
+      np->RaiseClient();
     }
-    context = GetBorderContext(np, event->x, event->y);
+    context = Border::GetBorderContext(np, event->x, event->y);
     _ProcessBinding(context, np, event->state, button, event->x, event->y);
   } else if (event->window == rootWindow) {
     /* Click on the root.
@@ -410,33 +401,30 @@ void _HandleButtonEvent(const XButtonEvent *event) {
   } else {
     /* Click over window content. */
     const unsigned int mask = event->state & ~lockMask;
-    np = FindClientByWindow(event->window);
+    np = ClientNode::FindClientByWindow(event->window);
     if (np) {
-      const char move_resize = (np->state.status & STAT_DRAG)
-          || ((mask == settings.moveMask) && !(np->state.status & STAT_NODRAG));
+      const char move_resize = (np->getState()->status & STAT_DRAG)
+          || ((mask == settings.moveMask) && !(np->getState()->status & STAT_NODRAG));
       switch (event->button) {
       case Button1:
       case Button2:
-        FocusClient(np);
-        if (settings.focusModel == FOCUS_SLOPPY
-            || settings.focusModel == FOCUS_CLICK) {
-          RaiseClient(np);
+        np->FocusClient();
+        if (settings.focusModel == FOCUS_SLOPPY || settings.focusModel == FOCUS_CLICK) {
+          np->RaiseClient();
         }
         if (move_resize) {
-          GetBorderSize(&np->state, &north, &south, &east, &west);
-          MoveClient(np, event->x + west, event->y + north);
+          Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
+          np->MoveClient(event->x + west, event->y + north);
         }
         break;
       case Button3:
         if (move_resize) {
-          GetBorderSize(&np->state, &north, &south, &east, &west);
-          ResizeClient(np, MC_BORDER | MC_BORDER_E | MC_BORDER_S,
-              event->x + west, event->y + north);
+          Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
+          np->ResizeClient(MC_BORDER | MC_BORDER_E | MC_BORDER_S, event->x + west, event->y + north);
         } else {
-          FocusClient(np);
-          if (settings.focusModel == FOCUS_SLOPPY
-              || settings.focusModel == FOCUS_CLICK) {
-            RaiseClient(np);
+          np->FocusClient();
+          if (settings.focusModel == FOCUS_SLOPPY || settings.focusModel == FOCUS_CLICK) {
+            np->RaiseClient();
           }
         }
         break;
@@ -451,17 +439,16 @@ void _HandleButtonEvent(const XButtonEvent *event) {
 /** Toggle maximized state. */
 void _ToggleMaximized(ClientNode *np, MaxFlags flags) {
   if (np) {
-    if (np->state.maxFlags == flags) {
-      MaximizeClient(np, MAX_NONE);
+    if (np->getState()->maxFlags == flags) {
+      np->MaximizeClient(MAX_NONE);
     } else {
-      MaximizeClient(np, flags);
+      np->MaximizeClient(flags);
     }
   }
 }
 
 /** Process a key or mouse binding. */
-void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
-    int code, int x, int y) {
+void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, int code, int x, int y) {
   const ActionType key = GetKey(context, state, code);
   const char keyAction = context == MC_NONE;
   switch (key.action) {
@@ -507,33 +494,33 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
     break;
   case CLOSE:
     if (np) {
-      DeleteClient(np);
+      np->DeleteClient();
     }
     break;
   case SHADE:
     if (np) {
-      if (np->state.status & STAT_SHADED) {
-        UnshadeClient(np);
+      if (np->getState()->status & STAT_SHADED) {
+        np->ShadeClient();
       } else {
-        ShadeClient(np);
+        np->UnshadeClient();
       }
     }
     break;
   case STICK:
     if (np) {
-      if (np->state.status & STAT_STICKY) {
-        SetClientSticky(np, 0);
+      if (np->getState()->status & STAT_STICKY) {
+        np->SetClientSticky(0);
       } else {
-        SetClientSticky(np, 1);
+        np->SetClientSticky(1);
       }
     }
     break;
   case MOVE:
     if (np) {
       if (keyAction) {
-        MoveClientKeyboard(np);
+        np->MoveClientKeyboard();
       } else {
-        MoveClient(np, x, y);
+        np->MoveClient(x, y);
       }
     }
     break;
@@ -554,15 +541,15 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
         resizeContext = MC_BORDER | MC_BORDER_S | MC_BORDER_E;
       }
       if (keyAction) {
-        ResizeClientKeyboard(np, resizeContext);
+        np->ResizeClientKeyboard(resizeContext);
       } else {
-        ResizeClient(np, resizeContext, x, y);
+        np->ResizeClient(resizeContext, x, y);
       }
     }
     break;
   case MIN:
     if (np) {
-      MinimizeClient(np, 1);
+      np->MinimizeClient(1);
     }
     break;
   case MAX:
@@ -570,16 +557,16 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
       if (keyAction) {
         _ToggleMaximized(np, MAX_HORIZ | MAX_VERT);
       } else {
-        MaximizeClientDefault(np);
+        np->MaximizeClientDefault();
       }
     }
     break;
   case RESTORE:
     if (np) {
-      if (np->state.maxFlags) {
-        MaximizeClient(np, MAX_NONE);
+      if (np->getState()->maxFlags) {
+        np->MaximizeClient(MAX_NONE);
       } else {
-        MinimizeClient(np, 1);
+        np->MinimizeClient(1);
       }
     }
     break;
@@ -607,14 +594,13 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
   case WIN:
     if (np) {
       if (keyAction) {
-        RaiseClient(np);
-        ShowWindowMenu(np, np->x, np->y, 1);
+        np->RaiseClient();
+        ShowWindowMenu(np, np->getX(), np->getY(), 1);
       } else {
-        const unsigned bsize =
-            (np->state.border & BORDER_OUTLINE) ? settings.borderWidth : 0;
-        const unsigned titleHeight = GetTitleHeight();
-        const int mx = np->x + x - bsize;
-        const int my = np->y + y - titleHeight - bsize;
+        const unsigned bsize = (np->getState()->border & BORDER_OUTLINE) ? settings.borderWidth : 0;
+        const unsigned titleHeight = Border::GetTitleHeight();
+        const int mx = np->getX() + x - bsize;
+        const int my = np->getY() + y - titleHeight - bsize;
         ShowWindowMenu(np, mx, my, 0);
       }
     }
@@ -627,45 +613,45 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
     break;
   case FULLSCREEN:
     if (np) {
-      if (np->state.status & STAT_FULLSCREEN) {
-        SetClientFullScreen(np, 0);
+      if (np->getState()->status & STAT_FULLSCREEN) {
+        np->SetClientFullScreen(0);
       } else {
-        SetClientFullScreen(np, 1);
+        np->SetClientFullScreen(1);
       }
     }
     break;
   case SEND:
     if (np) {
       const unsigned desktop = key.extra;
-      SetClientDesktop(np, desktop);
+      np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDR:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(np->state.desktop);
-      SetClientDesktop(np, desktop);
+      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(np->getState()->desktop);
+      np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDL:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(np->state.desktop);
-      SetClientDesktop(np, desktop);
+      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(np->getState()->desktop);
+      np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDU:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(np->state.desktop);
-      SetClientDesktop(np, desktop);
+      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(np->getState()->desktop);
+      np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDD:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(np->state.desktop);
-      SetClientDesktop(np, desktop);
+      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(np->getState()->desktop);
+      np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
@@ -679,15 +665,14 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
 void _HandleKeyPress(const XKeyEvent *event) {
   ClientNode *np;
   SetMousePosition(event->x_root, event->y_root, event->window);
-  np = GetActiveClient();
+  np = ClientNode::GetActiveClient();
   _ProcessBinding(MC_NONE, np, event->state, event->keycode, 0, 0);
 }
 
 /** Handle a key release event. */
 void _HandleKeyRelease(const XKeyEvent *event) {
   const ActionType key = GetKey(MC_NONE, event->state, event->keycode);
-  if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV
-      && key.action != PREVSTACK) {
+  if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV && key.action != PREVSTACK) {
     StopWindowWalk();
   }
 }
@@ -700,21 +685,21 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
     return;
   }
 
-  np = FindClientByWindow(event->window);
+  np = ClientNode::FindClientByWindow(event->window);
   if (np) {
 
     int deltax, deltay;
     char changed = 0;
     char resized = 0;
 
-    GetGravityDelta(np, np->gravity, &deltax, &deltay);
-    if ((event->value_mask & CWWidth) && (event->width != np->width)) {
-      switch (np->gravity) {
+    GetGravityDelta(np, np->getGravity(), &deltax, &deltay);
+    if ((event->value_mask & CWWidth) && (event->width != np->getWidth())) {
+      switch (np->getGravity()) {
       case EastGravity:
       case NorthEastGravity:
       case SouthEastGravity:
         /* Right side should not move. */
-        np->x -= event->width - np->width;
+        np->setX(np->getX() - (event->width - np->getWidth()));
         break;
       case WestGravity:
       case NorthWestGravity:
@@ -723,17 +708,17 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
         break;
       case CenterGravity:
         /* Center of the window should not move. */
-        np->x -= (event->width - np->width) / 2;
+        np->setX(np->getX() - (event->width - np->getWidth()) / 2);
         break;
       default:
         break;
       }
-      np->width = event->width;
+      np->setWidth(event->width);
       changed = 1;
       resized = 1;
     }
-    if ((event->value_mask & CWHeight) && (event->height != np->height)) {
-      switch (np->gravity) {
+    if ((event->value_mask & CWHeight) && (event->height != np->getHeight())) {
+      switch (np->getGravity()) {
       case NorthGravity:
       case NorthEastGravity:
       case NorthWestGravity:
@@ -743,25 +728,25 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
       case SouthEastGravity:
       case SouthWestGravity:
         /* Bottom should not move. */
-        np->y -= event->height - np->height;
+        np->setY(np->getY() - (event->height - np->getHeight()));
         break;
       case CenterGravity:
         /* Center of the window should not move. */
-        np->y -= (event->height - np->height) / 2;
+        np->setY(np->getY() - (event->height - np->getHeight()) / 2);
         break;
       default:
         break;
       }
-      np->height = event->height;
+      np->setHeight(event->height);
       changed = 1;
       resized = 1;
     }
-    if ((event->value_mask & CWX) && (event->x - deltax != np->x)) {
-      np->x = event->x - deltax;
+    if ((event->value_mask & CWX) && (event->x - deltax != np->getX())) {
+      np->setX(event->x - deltax);
       changed = 1;
     }
-    if ((event->value_mask & CWY) && (event->y - deltay != np->y)) {
-      np->y = event->y - deltay;
+    if ((event->value_mask & CWY) && (event->y - deltay != np->getY())) {
+      np->setY(event->y - deltay);
       changed = 1;
     }
 
@@ -771,44 +756,44 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
       if (event->value_mask & CWSibling) {
         above = event->above;
       }
-      RestackClient(np, above, event->detail);
+      np->RestackClient(above, event->detail);
     }
 
     /* Return early if there's nothing to do. */
     if (!changed) {
       /* Nothing changed; send a synthetic configure event. */
-      SendConfigureEvent(np);
+      np->SendConfigureEvent();
       return;
     }
 
     /* Stop any move/resize that may be in progress. */
-    if (np->controller) {
-      (np->controller)(0);
+    if (np->getController()) {
+      (np->getController())(0);
     }
 
     /* If the client is maximized, restore it first. */
-    if (np->state.maxFlags) {
-      MaximizeClient(np, MAX_NONE);
+    if (np->getState()->maxFlags) {
+      np->MaximizeClient(MAX_NONE);
     }
 
-    if (np->state.border & BORDER_CONSTRAIN) {
+    if (np->getState()->border & BORDER_CONSTRAIN) {
       resized = 1;
     }
     if (resized) {
       /* The size changed so the parent will need to be redrawn. */
-      ConstrainSize(np);
-      ConstrainPosition(np);
-      ResetBorder(np);
+      np->ConstrainSize();
+      np->ConstrainPosition();
+      Border::ResetBorder(np);
     } else {
       /* Only the position changed; move the client. */
       int north, south, east, west;
-      GetBorderSize(&np->state, &north, &south, &east, &west);
+      Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
 
-      if (np->parent != None) {
-        JXMoveWindow(display, np->parent, np->x - west, np->y - north);
-        SendConfigureEvent(np);
+      if (np->getParent() != None) {
+        JXMoveWindow(display, np->getParent(), np->getX() - west, np->getY() - north);
+        np->SendConfigureEvent();
       } else {
-        JXMoveWindow(display, np->window, np->x, np->y);
+        JXMoveWindow(display, np->getWindow(), np->getX(), np->getY());
       }
     }
 
@@ -849,20 +834,19 @@ char _HandleConfigureNotify(const XConfigureEvent *event) {
 void _HandleEnterNotify(const XCrossingEvent *event) {
   ClientNode *np;
   Cursor cur;
-  np = FindClient(event->window);
+  np = ClientNode::FindClient(event->window);
   if (np) {
-    if (!(np->state.status & STAT_ACTIVE)
-        && (settings.focusModel == FOCUS_SLOPPY
-            || settings.focusModel == FOCUS_SLOPPY_TITLE)) {
-      FocusClient(np);
+    if (!(np->getState()->status & STAT_ACTIVE)
+        && (settings.focusModel == FOCUS_SLOPPY || settings.focusModel == FOCUS_SLOPPY_TITLE)) {
+      np->FocusClient();
     }
-    if (np->parent == event->window) {
-      np->mouseContext = GetBorderContext(np, event->x, event->y);
-      cur = GetFrameCursor(np->mouseContext);
-      JXDefineCursor(display, np->parent, cur);
-    } else if (np->mouseContext != MC_NONE) {
-      SetDefaultCursor(np->parent);
-      np->mouseContext = MC_NONE;
+    if (np->getParent() == event->window) {
+      np->setMouseContext(Border::GetBorderContext(np, event->x, event->y));
+      cur = GetFrameCursor(np->getMouseContext());
+      JXDefineCursor(display, np->getParent(), cur);
+    } else if (np->getMouseContext() != MC_NONE) {
+      SetDefaultCursor(np->getParent());
+      np->setMouseContext(MC_NONE);
     }
   }
 
@@ -871,16 +855,16 @@ void _HandleEnterNotify(const XCrossingEvent *event) {
 /** Handle an expose event. */
 char _HandleExpose(const XExposeEvent *event) {
   ClientNode *np;
-  np = FindClientByParent(event->window);
+  np = ClientNode::FindClientByParent(event->window);
   if (np) {
     if (event->count == 0) {
-      DrawBorder(np);
+      Border::DrawBorder(np);
     }
     return 1;
   } else {
-    np = FindClientByWindow(event->window);
+    np = ClientNode::FindClientByWindow(event->window);
     if (np) {
-      if (np->state.status & STAT_WMDIALOG) {
+      if (np->getState()->status & STAT_WMDIALOG) {
 
         /* Dialog expose events are handled elsewhere. */
         return 0;
@@ -898,43 +882,45 @@ char _HandleExpose(const XExposeEvent *event) {
 
 /** Handle a property notify event. */
 char _HandlePropertyNotify(const XPropertyEvent *event) {
-  ClientNode *np = FindClientByWindow(event->window);
+  ClientNode *np = ClientNode::FindClientByWindow(event->window);
   if (np) {
     char changed = 0;
     switch (event->atom) {
     case XA_WM_NAME:
-      ReadWMName(np);
+      np->ReadWMName();
       changed = 1;
       break;
     case XA_WM_NORMAL_HINTS:
-      ReadWMNormalHints(np);
-      if (ConstrainSize(np)) {
-        ResetBorder(np);
+      np->ReadWMNormalHints();
+      if (np->ConstrainSize()) {
+        Border::ResetBorder(np);
       }
       changed = 1;
       break;
     case XA_WM_HINTS:
-      if (np->state.status & STAT_URGENT) {
-        _UnregisterCallback(SignalUrgent, np);
+      if (np->getState()->status & STAT_URGENT) {
+        _UnregisterCallback(ClientNode::SignalUrgent, np);
       }
-      ReadWMHints(np->window, &np->state, 1);
-      if (np->state.status & STAT_URGENT) {
-        _RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
+      ReadWMHints(np->getWindow(), np->getState(), 1);
+      if (np->getState()->status & STAT_URGENT) {
+        _RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, np);
       }
       WriteState(np);
       break;
     case XA_WM_TRANSIENT_FOR:
-      JXGetTransientForHint(display, np->window, &np->owner);
+      unsigned long int owner = np->getOwner();
+      JXGetTransientForHint(display, np->getWindow(), &owner);
+      np->setOwner(owner);
       break;
     case XA_WM_ICON_NAME:
     case XA_WM_CLIENT_MACHINE:
       break;
     default:
       if (event->atom == atoms[ATOM_WM_COLORMAP_WINDOWS]) {
-        ReadWMColormaps(np);
-        UpdateClientColormap(np);
+        np->ReadWMColormaps();
+        np->UpdateClientColormap(-1);
       } else if (event->atom == atoms[ATOM_WM_PROTOCOLS]) {
-        ReadWMProtocols(np->window, &np->state);
+        ReadWMProtocols(np->getWindow(), np->getState());
       } else if (event->atom == atoms[ATOM_NET_WM_ICON]) {
         LoadIcon(np);
         changed = 1;
@@ -946,25 +932,25 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
       } else if (event->atom == atoms[ATOM_NET_WM_STRUT]) {
         ReadClientStrut(np);
       } else if (event->atom == atoms[ATOM_MOTIF_WM_HINTS]) {
-        _UpdateState(np);
+        np->_UpdateState();
         WriteState(np);
-        ResetBorder(np);
+        Border::ResetBorder(np);
         changed = 1;
       } else if (event->atom == atoms[ATOM_NET_WM_WINDOW_OPACITY]) {
-        ReadWMOpacity(np->window, &np->state.opacity);
-        if (np->parent != None) {
-          SetOpacity(np, np->state.opacity, 1);
+        ReadWMOpacity(np->getWindow(), &np->getState()->opacity);
+        if (np->getParent() != None) {
+          SetOpacity(np, np->getState()->opacity, 1);
         }
       }
       break;
     }
 
     if (changed) {
-      DrawBorder(np);
+      Border::DrawBorder(np);
       _RequireTaskUpdate();
       _RequirePagerUpdate();
     }
-    if (np->state.status & STAT_WMDIALOG) {
+    if (np->getState()->status & STAT_WMDIALOG) {
       return 0;
     } else {
       return 1;
@@ -982,23 +968,23 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
   char *atomName;
 #endif
 
-  np = FindClientByWindow(event->window);
+  np = ClientNode::FindClientByWindow(event->window);
   if (np) {
     if (event->message_type == atoms[ATOM_WM_CHANGE_STATE]) {
 
-      if (np->controller) {
-        (np->controller)(0);
+      if (np->getController()) {
+        (np->getController())(0);
       }
 
       switch (event->data.l[0]) {
       case WithdrawnState:
-        SetClientWithdrawn(np);
+        np->SetClientWithdrawn();
         break;
       case IconicState:
-        MinimizeClient(np, 1);
+        np->MinimizeClient(1);
         break;
       case NormalState:
-        RestoreClient(np, 1);
+        np->RestoreClient(1);
         break;
       default:
         break;
@@ -1006,30 +992,30 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
     } else if (event->message_type == atoms[ATOM_NET_ACTIVE_WINDOW]) {
 
-      RestoreClient(np, 1);
-      UnshadeClient(np);
-      FocusClient(np);
+      np->RestoreClient(1);
+      np->ShadeClient();
+      np->FocusClient();
 
     } else if (event->message_type == atoms[ATOM_NET_WM_DESKTOP]) {
 
       if (event->data.l[0] == ~0L) {
-        SetClientSticky(np, 1);
+        np->SetClientSticky(1);
       } else {
 
-        if (np->controller) {
-          (np->controller)(0);
+        if (np->getController()) {
+          (np->getController())(0);
         }
 
-        if (event->data.l[0] >= 0
-            && event->data.l[0] < (long) settings.desktopCount) {
-          np->state.status &= ~STAT_STICKY;
-          SetClientDesktop(np, event->data.l[0]);
+        if (event->data.l[0] >= 0 && event->data.l[0] < (long) settings.desktopCount) {
+          np->getState()->status &= ~STAT_STICKY;
+
+          np->SetClientDesktop(event->data.l[0]);
         }
       }
 
     } else if (event->message_type == atoms[ATOM_NET_CLOSE_WINDOW]) {
 
-      DeleteClient(np);
+      np->DeleteClient();
 
     } else if (event->message_type == atoms[ATOM_NET_MOVERESIZE_WINDOW]) {
 
@@ -1109,7 +1095,7 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
   flags = event->data.l[0] >> 8;
   gravity = event->data.l[0] & 0xFF;
   if (gravity == 0) {
-    gravity = np->gravity;
+    gravity = np->getGravity();
   }
   GetGravityDelta(np, gravity, &deltax, &deltay);
 
@@ -1120,7 +1106,7 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
     case NorthEastGravity:
     case SouthEastGravity:
       /* Right side should not move. */
-      np->x -= width - np->width;
+      np->setX(np->getX() - (width - np->getWidth()));
       break;
     case WestGravity:
     case NorthWestGravity:
@@ -1129,12 +1115,12 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
       break;
     case CenterGravity:
       /* Center of the window should not move. */
-      np->x -= (width - np->width) / 2;
+      np->setX(np->getX() - (width - np->getWidth()) / 2);
       break;
     default:
       break;
     }
-    np->width = width;
+    np->setWidth(width);
   }
   if (flags & (1 << 3)) {
     const long height = event->data.l[4];
@@ -1148,35 +1134,35 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
     case SouthEastGravity:
     case SouthWestGravity:
       /* Bottom should not move. */
-      np->y -= height - np->height;
+      np->setY(np->getY() - (height - np->getHeight()));
       break;
     case CenterGravity:
       /* Center of the window should not move. */
-      np->y -= (height - np->height) / 2;
+      np->setY(np->getY() - (height - np->getHeight()) / 2);
       break;
     default:
       break;
     }
-    np->height = height;
+    np->setHeight(height);
   }
   if (flags & (1 << 0)) {
-    np->x = event->data.l[1] - deltax;
+    np->setX(event->data.l[1] - deltax);
   }
   if (flags & (1 << 1)) {
-    np->y = event->data.l[2] - deltay;
+    np->setY(event->data.l[2] - deltay);
   }
 
   /* Don't let maximized clients be moved or resized. */
-  if (JUNLIKELY(np->state.status & STAT_FULLSCREEN)) {
-    SetClientFullScreen(np, 0);
+  if (JUNLIKELY(np->getState()->status & STAT_FULLSCREEN)) {
+    np->SetClientFullScreen(0);
   }
-  if (JUNLIKELY(np->state.maxFlags)) {
-    MaximizeClient(np, MAX_NONE);
+  if (JUNLIKELY(np->getState()->maxFlags)) {
+    np->MaximizeClient(MAX_NONE);
   }
 
-  ConstrainSize(np);
-  ResetBorder(np);
-  SendConfigureEvent(np);
+  np->ConstrainSize();
+  Border::ResetBorder(np);
+  np->SendConfigureEvent();
   _RequirePagerUpdate();
 
 }
@@ -1184,52 +1170,52 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 /** Handle a _NET_WM_MOVERESIZE request. */
 void _HandleNetWMMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 
-  long x = event->data.l[0] - np->x;
-  long y = event->data.l[1] - np->y;
+  long x = event->data.l[0] - np->getX();
+  long y = event->data.l[1] - np->getY();
   const long direction = event->data.l[2];
   int deltax, deltay;
 
-  GetGravityDelta(np, np->gravity, &deltax, &deltay);
+  GetGravityDelta(np, np->getGravity(), &deltax, &deltay);
   x -= deltax;
   y -= deltay;
 
   switch (direction) {
   case 0: /* top-left */
-    ResizeClient(np, MC_BORDER | MC_BORDER_N | MC_BORDER_W, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_N | MC_BORDER_W, x, y);
     break;
   case 1: /* top */
-    ResizeClient(np, MC_BORDER | MC_BORDER_N, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_N, x, y);
     break;
   case 2: /* top-right */
-    ResizeClient(np, MC_BORDER | MC_BORDER_N | MC_BORDER_E, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_N | MC_BORDER_E, x, y);
     break;
   case 3: /* right */
-    ResizeClient(np, MC_BORDER | MC_BORDER_E, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_E, x, y);
     break;
   case 4: /* bottom-right */
-    ResizeClient(np, MC_BORDER | MC_BORDER_S | MC_BORDER_E, x, y);
+   np-> ResizeClient(MC_BORDER | MC_BORDER_S | MC_BORDER_E, x, y);
     break;
   case 5: /* bottom */
-    ResizeClient(np, MC_BORDER | MC_BORDER_S, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_S, x, y);
     break;
   case 6: /* bottom-left */
-    ResizeClient(np, MC_BORDER | MC_BORDER_S | MC_BORDER_W, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_S | MC_BORDER_W, x, y);
     break;
   case 7: /* left */
-    ResizeClient(np, MC_BORDER | MC_BORDER_W, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_W, x, y);
     break;
   case 8: /* move */
-    MoveClient(np, x, y);
+    np->MoveClient(x, y);
     break;
   case 9: /* resize-keyboard */
-    ResizeClientKeyboard(np, MC_BORDER | MC_BORDER_S | MC_BORDER_E);
+    np->ResizeClientKeyboard(MC_BORDER | MC_BORDER_S | MC_BORDER_E);
     break;
   case 10: /* move-keyboard */
-    MoveClientKeyboard(np);
+    np->MoveClientKeyboard();
     break;
   case 11: /* cancel */
-    if (np->controller) {
-      (np->controller)(0);
+    if (np->getController()) {
+      (np->getController())(0);
     }
     break;
   default:
@@ -1242,7 +1228,7 @@ void _HandleNetWMMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np) {
   const Window sibling = event->data.l[1];
   const int detail = event->data.l[2];
-  RestackClient(np, sibling, detail);
+  np->RestackClient(sibling, detail);
 }
 
 /** Handle a _NET_WM_STATE request. */
@@ -1273,11 +1259,9 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
   for (x = 1; x <= 2; x++) {
     if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_STICKY]) {
       actionStick = 1;
-    } else if (event->data.l[x]
-        == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
+    } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
       maxFlags |= MAX_VERT;
-    } else if (event->data.l[x]
-        == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
+    } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
       maxFlags |= MAX_HORIZ;
     } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SHADED]) {
       actionShade = 1;
@@ -1285,8 +1269,7 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
       actionFullScreen = 1;
     } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_HIDDEN]) {
       actionMinimize = 1;
-    } else if (event->data.l[x]
-        == (long) atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
+    } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
       actionNolist = 1;
     } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SKIP_PAGER]) {
       actionNopager = 1;
@@ -1300,113 +1283,113 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
   switch (event->data.l[0]) {
   case 0: /* Remove */
     if (actionStick) {
-      SetClientSticky(np, 0);
+      np->SetClientSticky(0);
     }
-    if (maxFlags != MAX_NONE && np->state.maxFlags) {
-      MaximizeClient(np, np->state.maxFlags & ~maxFlags);
+    if (maxFlags != MAX_NONE && np->getState()->maxFlags) {
+      np->MaximizeClient(np->getState()->maxFlags & ~maxFlags);
     }
     if (actionShade) {
-      UnshadeClient(np);
+      np->ShadeClient();
     }
     if (actionFullScreen) {
-      SetClientFullScreen(np, 0);
+      np->SetClientFullScreen(0);
     }
     if (actionMinimize) {
-      RestoreClient(np, 0);
+      np->RestoreClient(0);
     }
-    if (actionNolist && !(np->state.status & STAT_ILIST)) {
-      np->state.status &= ~STAT_NOLIST;
+    if (actionNolist && !(np->getState()->status & STAT_ILIST)) {
+      np->getState()->status &= ~STAT_NOLIST;
       _RequireTaskUpdate();
     }
-    if (actionNopager && !(np->state.status & STAT_IPAGER)) {
-      np->state.status &= ~STAT_NOPAGER;
+    if (actionNopager && !(np->getState()->status & STAT_IPAGER)) {
+      np->getState()->status &= ~STAT_NOPAGER;
       _RequirePagerUpdate();
     }
-    if (actionBelow && np->state.layer == LAYER_BELOW) {
-      SetClientLayer(np, np->state.defaultLayer);
+    if (actionBelow && np->getState()->layer == LAYER_BELOW) {
+      np->SetClientLayer(np->getState()->defaultLayer);
     }
-    if (actionAbove && np->state.layer == LAYER_ABOVE) {
-      SetClientLayer(np, np->state.defaultLayer);
+    if (actionAbove && np->getState()->layer == LAYER_ABOVE) {
+      np->SetClientLayer(np->getState()->defaultLayer);
     }
     break;
   case 1: /* Add */
     if (actionStick) {
-      SetClientSticky(np, 1);
+      np->SetClientSticky(1);
     }
     if (maxFlags != MAX_NONE) {
-      MaximizeClient(np, np->state.maxFlags | maxFlags);
+      np->MaximizeClient(np->getState()->maxFlags | maxFlags);
     }
     if (actionShade) {
-      ShadeClient(np);
+      np->ShadeClient();
     }
     if (actionFullScreen) {
-      SetClientFullScreen(np, 1);
+      np->SetClientFullScreen(1);
     }
     if (actionMinimize) {
-      MinimizeClient(np, 1);
+      np->MinimizeClient(1);
     }
-    if (actionNolist && !(np->state.status & STAT_ILIST)) {
-      np->state.status |= STAT_NOLIST;
+    if (actionNolist && !(np->getState()->status & STAT_ILIST)) {
+      np->getState()->status |= STAT_NOLIST;
       _RequireTaskUpdate();
     }
-    if (actionNopager && !(np->state.status & STAT_IPAGER)) {
-      np->state.status |= STAT_NOPAGER;
+    if (actionNopager && !(np->getState()->status & STAT_IPAGER)) {
+      np->getState()->status |= STAT_NOPAGER;
       _RequirePagerUpdate();
     }
     if (actionBelow) {
-      SetClientLayer(np, LAYER_BELOW);
+      np->SetClientLayer(LAYER_BELOW);
     }
     if (actionAbove) {
-      SetClientLayer(np, LAYER_ABOVE);
+      np->SetClientLayer(LAYER_ABOVE);
     }
     break;
   case 2: /* Toggle */
     if (actionStick) {
-      if (np->state.status & STAT_STICKY) {
-        SetClientSticky(np, 0);
+      if (np->getState()->status & STAT_STICKY) {
+        np->SetClientSticky(0);
       } else {
-        SetClientSticky(np, 1);
+        np->SetClientSticky(1);
       }
     }
     if (maxFlags) {
-      MaximizeClient(np, np->state.maxFlags ^ maxFlags);
+      np->MaximizeClient(np->getState()->maxFlags ^ maxFlags);
     }
     if (actionShade) {
-      if (np->state.status & STAT_SHADED) {
-        UnshadeClient(np);
+      if (np->getState()->status & STAT_SHADED) {
+        np->UnshadeClient();
       } else {
-        ShadeClient(np);
+        np->ShadeClient();
       }
     }
     if (actionFullScreen) {
-      if (np->state.status & STAT_FULLSCREEN) {
-        SetClientFullScreen(np, 0);
+      if (np->getState()->status & STAT_FULLSCREEN) {
+        np->SetClientFullScreen(0);
       } else {
-        SetClientFullScreen(np, 1);
+        np->SetClientFullScreen(1);
       }
     }
     if (actionBelow) {
-      if (np->state.layer == LAYER_BELOW) {
-        SetClientLayer(np, np->state.defaultLayer);
+      if (np->getState()->layer == LAYER_BELOW) {
+        np->SetClientLayer(np->getState()->defaultLayer);
       } else {
-        SetClientLayer(np, LAYER_BELOW);
+        np->SetClientLayer(LAYER_BELOW);
       }
     }
     if (actionAbove) {
-      if (np->state.layer == LAYER_ABOVE) {
-        SetClientLayer(np, np->state.defaultLayer);
+      if (np->getState()->layer == LAYER_ABOVE) {
+        np->SetClientLayer(np->getState()->defaultLayer);
       } else {
-        SetClientLayer(np, LAYER_ABOVE);
+        np->SetClientLayer(LAYER_ABOVE);
       }
     }
     /* Note that we don't handle toggling of hidden per EWMH
      * recommendations. */
-    if (actionNolist && !(np->state.status & STAT_ILIST)) {
-      np->state.status ^= STAT_NOLIST;
+    if (actionNolist && !(np->getState()->status & STAT_ILIST)) {
+      np->getState()->status ^= STAT_NOLIST;
       _RequireTaskUpdate();
     }
-    if (actionNopager && !(np->state.status & STAT_IPAGER)) {
-      np->state.status ^= STAT_NOPAGER;
+    if (actionNopager && !(np->getState()->status & STAT_IPAGER)) {
+      np->getState()->status ^= STAT_NOPAGER;
       _RequirePagerUpdate();
     }
     break;
@@ -1441,13 +1424,13 @@ void _HandleMotionNotify(const XMotionEvent *event) {
     return;
   }
 
-  np = FindClientByParent(event->window);
+  np = ClientNode::FindClientByParent(event->window);
   if (np) {
-    const MouseContextType context = GetBorderContext(np, event->x, event->y);
-    if (np->mouseContext != context) {
-      np->mouseContext = context;
+    const MouseContextType context = Border::GetBorderContext(np, event->x, event->y);
+    if (np->getMouseContext() != context) {
+      np->setMouseContext(context);
       cur = GetFrameCursor(context);
-      JXDefineCursor(display, np->parent, cur);
+      JXDefineCursor(display, np->getParent(), cur);
     }
   }
 
@@ -1457,10 +1440,10 @@ void _HandleMotionNotify(const XMotionEvent *event) {
 #ifdef USE_SHAPE
 void _HandleShapeEvent(const XShapeEvent *event) {
   ClientNode *np;
-  np = FindClientByWindow(event->window);
+  np = ClientNode::FindClientByWindow(event->window);
   if (np) {
-    np->state.status |= STAT_SHAPED;
-    ResetBorder(np);
+    np->getState()->status |= STAT_SHAPED;
+    Border::ResetBorder(np);
   }
 }
 #endif /* USE_SHAPE */
@@ -1469,10 +1452,9 @@ void _HandleShapeEvent(const XShapeEvent *event) {
 void _HandleColormapChange(const XColormapEvent *event) {
   ClientNode *np;
   if (event->c_new == True) {
-    np = FindClientByWindow(event->window);
+    np = ClientNode::FindClientByWindow(event->window);
     if (np) {
-      np->cmap = event->colormap;
-      UpdateClientColormap(np);
+      np->UpdateClientColormap(event->colormap);
     }
   }
 }
@@ -1484,32 +1466,32 @@ void _HandleMapRequest(const XMapEvent *event) {
   if (CheckSwallowMap(event->window)) {
     return;
   }
-  np = FindClientByWindow(event->window);
+  np = ClientNode::FindClientByWindow(event->window);
   if (!np) {
     GrabServer();
-    np = AddClientWindow(event->window, 0, 1);
+    np = new ClientNode(event->window, 0, 1);
     if (np) {
-      if (!(np->state.status & STAT_NOFOCUS)) {
-        FocusClient(np);
+      if (!(np->getState()->status & STAT_NOFOCUS)) {
+        np->FocusClient();
       }
     } else {
       JXMapWindow(display, event->window);
     }
     UngrabServer();
   } else {
-    if (!(np->state.status & STAT_MAPPED)) {
-      _UpdateState(np);
-      np->state.status |= STAT_MAPPED;
-      XMapWindow(display, np->window);
-      if (np->parent != None) {
-        XMapWindow(display, np->parent);
+    if (!(np->getState()->status & STAT_MAPPED)) {
+      np->_UpdateState();
+      np->getState()->status |= STAT_MAPPED;
+      XMapWindow(display, np->getWindow());
+      if (np->getParent() != None) {
+        XMapWindow(display, np->getParent());
       }
-      if (!(np->state.status & STAT_STICKY)) {
-        np->state.desktop = currentDesktop;
+      if (!(np->getState()->status & STAT_STICKY)) {
+        np->getState()->desktop = currentDesktop;
       }
-      if (!(np->state.status & STAT_NOFOCUS)) {
-        FocusClient(np);
-        RaiseClient(np);
+      if (!(np->getState()->status & STAT_NOFOCUS)) {
+        np->FocusClient();
+        np->RaiseClient();
       }
       WriteState(np);
       _RequireTaskUpdate();
@@ -1533,29 +1515,29 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
     }
   }
 
-  np = FindClientByWindow(event->window);
+  np = ClientNode::FindClientByWindow(event->window);
   if (np) {
 
     /* Grab the server to prevent the client from destroying the
      * window after we check for a DestroyNotify. */
     GrabServer();
 
-    if (np->controller) {
-      (np->controller)(1);
+    if (np->getController()) {
+      (np->getController())(1);
     }
 
-    if (JXCheckTypedWindowEvent(display, np->window, DestroyNotify, &e)) {
+    if (JXCheckTypedWindowEvent(display, np->getWindow(), DestroyNotify, &e)) {
       _UpdateTime(&e);
-      RemoveClient(np);
-    } else if ((np->state.status & STAT_MAPPED) || event->send_event) {
-      if (!(np->state.status & STAT_HIDDEN)) {
-        np->state.status &= ~(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED);
-        JXUngrabButton(display, AnyButton, AnyModifier, np->window);
-        GravitateClient(np, 1);
-        JXReparentWindow(display, np->window, rootWindow, np->x, np->y);
+      np->RemoveClient();
+    } else if ((np->getState()->status & STAT_MAPPED) || event->send_event) {
+      if (!(np->getState()->status & STAT_HIDDEN)) {
+        np->getState()->status &= ~(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED);
+        JXUngrabButton(display, AnyButton, AnyModifier, np->getWindow());
+        np->GravitateClient(1);
+        JXReparentWindow(display, np->getWindow(), rootWindow, np->getX(), np->getY());
         WriteState(np);
-        JXRemoveFromSaveSet(display, np->window);
-        RemoveClient(np);
+        JXRemoveFromSaveSet(display, np->getWindow());
+        np->RemoveClient();
       }
     }
     UngrabServer();
@@ -1566,65 +1548,16 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
 /** Handle a destroy notify event. */
 char _HandleDestroyNotify(const XDestroyWindowEvent *event) {
   ClientNode *np;
-  np = FindClientByWindow(event->window);
+  np = ClientNode::FindClientByWindow(event->window);
   if (np) {
-    if (np->controller) {
-      (np->controller)(1);
+    if (np->getController()) {
+      (np->getController())(1);
     }
-    RemoveClient(np);
+    np->RemoveClient();
     return 1;
   } else {
     return DesktopEnvironment::DefaultEnvironment()->HandleDockDestroy(event->window);
   }
-}
-
-/** Update window state information. */
-void _UpdateState(ClientNode *np) {
-  const char alreadyMapped = (np->state.status & STAT_MAPPED) ? 1 : 0;
-  const char active = (np->state.status & STAT_ACTIVE) ? 1 : 0;
-
-  /* Remove from the layer list. */
-  if (np->prev != NULL) {
-    np->prev->next = np->next;
-  } else {
-    Assert(nodes[np->state.layer] == np);
-    nodes[np->state.layer] = np->next;
-  }
-  if (np->next != NULL) {
-    np->next->prev = np->prev;
-  } else {
-    Assert(nodeTail[np->state.layer] == np);
-    nodeTail[np->state.layer] = np->prev;
-  }
-
-  /* Read the state (and new layer). */
-  if (np->state.status & STAT_URGENT) {
-    _UnregisterCallback(SignalUrgent, np);
-  }
-  np->state = ReadWindowState(np->window, alreadyMapped);
-  if (np->state.status & STAT_URGENT) {
-    _RegisterCallback(URGENCY_DELAY, SignalUrgent, np);
-  }
-
-  /* We don't handle mapping the window, so restore its mapped state. */
-  if (!alreadyMapped) {
-    np->state.status &= ~STAT_MAPPED;
-  }
-
-  /* Add to the layer list. */
-  np->prev = NULL;
-  np->next = nodes[np->state.layer];
-  if (np->next == NULL) {
-    nodeTail[np->state.layer] = np;
-  } else {
-    np->next->prev = np;
-  }
-  nodes[np->state.layer] = np;
-
-  if (active) {
-    FocusClient(np);
-  }
-
 }
 
 /** Update the last event time. */
@@ -1672,7 +1605,7 @@ void _UpdateTime(const XEvent *event) {
 /** Register a callback. */
 void _RegisterCallback(int freq, SignalCallback callback, void *data) {
   CallbackNode *cp;
-  cp = Allocate(sizeof(CallbackNode));
+  cp = new CallbackNode;
   cp->last.seconds = 0;
   cp->last.ms = 0;
   cp->freq = freq;

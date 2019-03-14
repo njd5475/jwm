@@ -101,7 +101,7 @@ void ReleaseOptionList(OptionListType *lp)
 GroupType *CreateGroup(void)
 {
    GroupType *tp;
-   tp = Allocate(sizeof(GroupType));
+   tp = new GroupType;
    tp->patterns = NULL;
    tp->options = NULL;
    tp->next = groups;
@@ -137,7 +137,7 @@ void AddPattern(PatternListType **lp, const char *pattern, MatchType match)
    PatternListType *tp;
    Assert(lp);
    Assert(pattern);
-   tp = Allocate(sizeof(PatternListType));
+   tp = new PatternListType;
    tp->next = *lp;
    *lp = tp;
    tp->pattern = CopyString(pattern);
@@ -148,7 +148,7 @@ void AddPattern(PatternListType **lp, const char *pattern, MatchType match)
 void AddGroupOption(GroupType *gp, OptionType option)
 {
    OptionListType *lp;
-   lp = Allocate(sizeof(OptionListType));
+   lp = new OptionListType;
    lp->option = option;
    lp->str = NULL;
    lp->next = gp->options;
@@ -161,7 +161,7 @@ void AddGroupOptionString(GroupType *gp, OptionType option,
 {
    OptionListType *lp;
    Assert(value);
-   lp = Allocate(sizeof(OptionListType));
+   lp = new OptionListType;
    lp->option = option;
    lp->str = CopyString(value);
    lp->next = gp->options;
@@ -174,7 +174,7 @@ void AddGroupOptionUnsigned(GroupType *gp, OptionType option,
 {
    OptionListType *lp;
    Assert(value);
-   lp = Allocate(sizeof(OptionListType));
+   lp = new OptionListType;
    lp->option = option;
    lp->str = NULL;
    lp->value.u = value;
@@ -188,7 +188,7 @@ void AddGroupOptionSigned(GroupType *gp, OptionType option,
 {
    OptionListType *lp;
    Assert(value);
-   lp = Allocate(sizeof(OptionListType));
+   lp = new OptionListType;
    lp->option = option;
    lp->str = NULL;
    lp->value.s = value;
@@ -214,12 +214,12 @@ void ApplyGroups(ClientNode *np)
       matchesName = 0;
       for(lp = gp->patterns; lp; lp = lp->next) {
          if(lp->match == MATCH_CLASS) {
-            if(Match(lp->pattern, np->className)) {
+            if(Match(lp->pattern, np->getClassName())) {
                matchesClass = 1;
             }
             hasClass = 1;
          } else if(lp->match == MATCH_NAME) {
-            if(Match(lp->pattern, np->instanceName)) {
+            if(Match(lp->pattern, np->getInstanceName())) {
                matchesName = 1;
             }
             hasName = 1;
@@ -246,156 +246,156 @@ void ApplyGroup(const GroupType *gp, ClientNode *np)
    for(lp = gp->options; lp; lp = lp->next) {
       switch(lp->option) {
       case OPTION_STICKY:
-         np->state.status |= STAT_STICKY;
+         np->getState()->status |= STAT_STICKY;
          break;
       case OPTION_NOLIST:
-         np->state.status |= STAT_NOLIST;
+         np->getState()->status |= STAT_NOLIST;
          noList = 1;
          break;
       case OPTION_ILIST:
-         np->state.status |= STAT_ILIST;
+         np->getState()->status |= STAT_ILIST;
          if(!noList) {
-            np->state.status &= ~STAT_NOLIST;
+            np->getState()->status &= ~STAT_NOLIST;
          }
          break;
       case OPTION_NOPAGER:
-         np->state.status |= STAT_NOPAGER;
+         np->getState()->status |= STAT_NOPAGER;
          noPager = 1;
          break;
       case OPTION_IPAGER:
-         np->state.status |= STAT_IPAGER;
+         np->getState()->status |= STAT_IPAGER;
          if(!noPager) {
-            np->state.status &= ~STAT_NOPAGER;
+            np->getState()->status &= ~STAT_NOPAGER;
          }
          break;
       case OPTION_BORDER:
-         np->state.border |= BORDER_OUTLINE;
+         np->getState()->border |= BORDER_OUTLINE;
          break;
       case OPTION_NOBORDER:
-         np->state.border &= ~BORDER_OUTLINE;
+         np->getState()->border &= ~BORDER_OUTLINE;
          break;
       case OPTION_TITLE:
-         np->state.border |= BORDER_TITLE;
+         np->getState()->border |= BORDER_TITLE;
          break;
       case OPTION_NOTITLE:
-         np->state.border &= ~BORDER_TITLE;
-         np->state.border &= ~BORDER_SHADE;
+         np->getState()->border &= ~BORDER_TITLE;
+         np->getState()->border &= ~BORDER_SHADE;
          break;
       case OPTION_LAYER:
-         np->state.layer = lp->value.u;
+         np->getState()->layer = lp->value.u;
          break;
       case OPTION_DESKTOP:
          if(JLIKELY(lp->value.u >= 1 && lp->value.u <= settings.desktopCount)) {
-            np->state.desktop = lp->value.u - 1;
+            np->getState()->desktop = lp->value.u - 1;
          } else {
             Warning(_("invalid group desktop: %d"), lp->value.u);
          }
          break;
       case OPTION_ICON:
-         DestroyIcon(np->icon);
-         np->icon = LoadNamedIcon(lp->str, 1, 1);
+         DestroyIcon(np->getIcon());
+         np->setIcon(LoadNamedIcon(lp->str, 1, 1));
          break;
       case OPTION_PIGNORE:
-         np->state.status |= STAT_PIGNORE;
+         np->getState()->status |= STAT_PIGNORE;
          break;
       case OPTION_IIGNORE:
-         np->state.status |= STAT_IIGNORE;
+         np->getState()->status |= STAT_IIGNORE;
          break;
       case OPTION_MAXIMIZED:
-         np->state.maxFlags |= MAX_HORIZ | MAX_VERT;
+         np->getState()->maxFlags |= MAX_HORIZ | MAX_VERT;
          break;
       case OPTION_MINIMIZED:
-         np->state.status |= STAT_MINIMIZED;
+         np->getState()->status |= STAT_MINIMIZED;
          break;
       case OPTION_SHADED:
-         np->state.status |= STAT_SHADED;
+         np->getState()->status |= STAT_SHADED;
          break;
       case OPTION_OPACITY:
-         np->state.opacity = lp->value.u;
-         np->state.status |= STAT_OPACITY;
+         np->getState()->opacity = lp->value.u;
+         np->getState()->status |= STAT_OPACITY;
          break;
       case OPTION_MAX_V:
-         np->state.border &= ~BORDER_MAX_H;
+         np->getState()->border &= ~BORDER_MAX_H;
          break;
       case OPTION_MAX_H:
-         np->state.border &= ~BORDER_MAX_V;
+         np->getState()->border &= ~BORDER_MAX_V;
          break;
       case OPTION_NOFOCUS:
-         np->state.status |= STAT_NOFOCUS;
+         np->getState()->status |= STAT_NOFOCUS;
          break;
       case OPTION_NOSHADE:
-         np->state.border &= ~BORDER_SHADE;
+         np->getState()->border &= ~BORDER_SHADE;
          break;
       case OPTION_NOMIN:
-         np->state.border &= ~BORDER_MIN;
+         np->getState()->border &= ~BORDER_MIN;
          break;
       case OPTION_NOMAX:
-         np->state.border &= ~BORDER_MAX;
+         np->getState()->border &= ~BORDER_MAX;
          break;
       case OPTION_NOCLOSE:
-         np->state.border &= ~BORDER_CLOSE;
+         np->getState()->border &= ~BORDER_CLOSE;
          break;
       case OPTION_NOMOVE:
-         np->state.border &= ~BORDER_MOVE;
+         np->getState()->border &= ~BORDER_MOVE;
          break;
       case OPTION_NORESIZE:
-         np->state.border &= ~BORDER_RESIZE;
+         np->getState()->border &= ~BORDER_RESIZE;
          break;
       case OPTION_CENTERED:
-         np->state.status |= STAT_CENTERED;
+         np->getState()->status |= STAT_CENTERED;
          break;
       case OPTION_TILED:
-         np->state.status |= STAT_TILED;
+         np->getState()->status |= STAT_TILED;
          break;
       case OPTION_NOTURGENT:
-         np->state.status |= STAT_NOTURGENT;
+         np->getState()->status |= STAT_NOTURGENT;
          break;
       case OPTION_CONSTRAIN:
-         np->state.border |= BORDER_CONSTRAIN;
+         np->getState()->border |= BORDER_CONSTRAIN;
          break;
       case OPTION_FULLSCREEN:
-         np->state.status |= STAT_FULLSCREEN;
+         np->getState()->status |= STAT_FULLSCREEN;
          break;
       case OPTION_NOFULLSCREEN:
-         np->state.border &= ~BORDER_FULLSCREEN;
+         np->getState()->border &= ~BORDER_FULLSCREEN;
          break;
       case OPTION_DRAG:
-         np->state.status |= STAT_DRAG;
+         np->getState()->status |= STAT_DRAG;
          break;
       case OPTION_FIXED:
-         np->state.status |= STAT_FIXED;
+         np->getState()->status |= STAT_FIXED;
          break;
       case OPTION_AEROSNAP:
-         np->state.status |= STAT_AEROSNAP;
+         np->getState()->status |= STAT_AEROSNAP;
          break;
       case OPTION_NODRAG:
-         np->state.status |= STAT_NODRAG;
+         np->getState()->status |= STAT_NODRAG;
          break;
       case OPTION_X:
          if(lp->value.s < 0) {
             int north, south, east, west;
-            GetBorderSize(&np->state, &north, &south, &east, &west);
-            np->x = rootWidth + lp->value.s - np->width - east - west;
+            Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
+            np->setX(rootWidth + lp->value.s - np->getWidth() - east - west);
          } else {
-            np->x = lp->value.s;
+            np->setX(lp->value.s);
          }
-         np->state.status |= STAT_POSITION;
+         np->getState()->status |= STAT_POSITION;
          break;
       case OPTION_Y:
          if(lp->value.s < 0) {
             int north, south, east, west;
-            GetBorderSize(&np->state, &north, &south, &east, &west);
-            np->y = rootHeight + lp->value.s - np->height - north - south;
+            Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
+            np->setY(rootHeight + lp->value.s - np->getHeight() - north - south);
          } else {
-            np->y = lp->value.s;
+           np->setY(lp->value.s);
          }
-         np->state.status |= STAT_POSITION;
+         np->getState()->status |= STAT_POSITION;
          break;
       case OPTION_WIDTH:
-         np->width = Max(1, lp->value.u);
+         np->setWidth(Max(1, lp->value.u));
          break;
       case OPTION_HEIGHT:
-         np->height = Max(1, lp->value.u);
+         np->setHeight(Max(1, lp->value.u));
          break;
       default:
          Debug("invalid option: %d", lp->option);

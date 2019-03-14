@@ -214,9 +214,7 @@ void DestroyTray(void)
 /** Create an empty tray. */
 TrayType *CreateTray(void)
 {
-   TrayType *tp;
-
-   tp = Allocate(sizeof(TrayType));
+   TrayType *tp = new TrayType;
 
    tp->requestedX = 0;
    tp->requestedY = -1;
@@ -250,9 +248,7 @@ TrayType *CreateTray(void)
 /** Create an empty tray component. */
 TrayComponentType *CreateTrayComponent(void)
 {
-   TrayComponentType *cp;
-
-   cp = Allocate(sizeof(TrayComponentType));
+   TrayComponentType *cp = new TrayComponentType;
 
    cp->tray = NULL;
    cp->object = NULL;

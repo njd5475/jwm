@@ -138,8 +138,8 @@ void ShutdownBindings(void)
 
    /* Ungrab keys on client windows. */
    for(layer = 0; layer < LAYER_COUNT; layer++) {
-      for(np = nodes[layer]; np; np = np->next) {
-         JXUngrabKey(display, AnyKey, AnyModifier, np->window);
+      for(np = nodes[layer]; np; np = np->getNext()) {
+         JXUngrabKey(display, AnyKey, AnyModifier, np->getWindow());
       }
    }
 
@@ -425,7 +425,7 @@ void InsertBinding(ActionType action, const char *modifiers,
                   return;
                }
 
-               np = Allocate(sizeof(KeyNode));
+               np = new KeyNode;
                np->next = bindings[MC_NONE];
                bindings[MC_NONE] = np;
 
@@ -451,7 +451,7 @@ void InsertBinding(ActionType action, const char *modifiers,
          return;
       }
 
-      np = Allocate(sizeof(KeyNode));
+      np = new KeyNode();
       np->next = bindings[MC_NONE];
       bindings[MC_NONE] = np;
 
@@ -465,7 +465,7 @@ void InsertBinding(ActionType action, const char *modifiers,
 
    } else if(code && strlen(code) > 0) {
 
-      np = Allocate(sizeof(KeyNode));
+      np = new KeyNode();
       np->next = bindings[MC_NONE];
       bindings[MC_NONE] = np;
 
@@ -493,7 +493,7 @@ void InsertMouseBinding(
    ActionType action,
    const char *command)
 {
-   KeyNode *np = Allocate(sizeof(KeyNode));
+   KeyNode *np = new KeyNode();
    np->next = bindings[context];
    bindings[context] = np;
 

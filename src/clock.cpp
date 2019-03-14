@@ -112,7 +112,7 @@ TrayComponentType *CreateClock(const char *format, const char *zone,
    TrayComponentType *cp;
    ClockType *clk;
 
-   clk = Allocate(sizeof(ClockType));
+   clk = new ClockType;
    clk->next = clocks;
    clocks = clk;
 

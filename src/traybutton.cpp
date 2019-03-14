@@ -130,7 +130,7 @@ TrayComponentType *CreateTrayButton(const char *iconName,
       return NULL;
    }
 
-   bp = Allocate(sizeof(TrayButtonType));
+   bp = new TrayButtonType;
    bp->next = buttons;
    buttons = bp;
 

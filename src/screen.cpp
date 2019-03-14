@@ -32,7 +32,7 @@ void StartupScreens(void)
 
       info = XineramaQueryScreens(display, &screenCount);
 
-      screens = Allocate(sizeof(ScreenType) * screenCount);
+      screens = new ScreenType[screenCount];
       for(x = 0; x < screenCount; x++) {
          screens[x].index = x;
          screens[x].x = info[x].x_org;
@@ -46,7 +46,7 @@ void StartupScreens(void)
    } else {
 
       screenCount = 1;
-      screens = Allocate(sizeof(ScreenType));
+      screens = new ScreenType;
       screens->index = 0;
       screens->x = 0;
       screens->y = 0;

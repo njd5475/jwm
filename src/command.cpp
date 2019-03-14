@@ -94,7 +94,7 @@ void AddCommand(CommandNode **commands, const char *command)
       return;
    }
 
-   cp = Allocate(sizeof(CommandNode));
+   cp = new CommandNode;
    cp->next = *commands;
    *commands = cp;
    cp->command = CopyString(command);
@@ -178,7 +178,7 @@ char *ReadFromProcess(const char *command, unsigned timeout_ms)
 
       max_size = BLOCK_SIZE;
       buffer_size = 0;
-      buffer = Allocate(max_size);
+      buffer = new char[max_size];
 
       GetCurrentTime(&start_time);
       for(;;) {

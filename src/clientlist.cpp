@@ -10,7 +10,6 @@
 #include "jwm.h"
 #include "clientlist.h"
 #include "client.h"
-#include "binding.h"
 #include "event.h"
 #include "tray.h"
 #include "settings.h"
@@ -36,16 +35,16 @@ char ShouldFocus(const ClientNode *np, char current)
    }
 
    /* Don't display a client if it doesn't want to be displayed. */
-   if(np->state.status & STAT_NOLIST) {
+   if(np->getState()->status & STAT_NOLIST) {
       return 0;
    }
 
    /* Don't display a client on the tray if it has an owner. */
-   if(np->owner != None) {
+   if(np->getOwner() != None) {
       return 0;
    }
 
-   if(!(np->state.status & (STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
+   if(!(np->getState()->status & (STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
       return 0;
    }
 
@@ -83,7 +82,7 @@ void StartWindowStackWalk(void)
    /* First determine how much space to allocate for windows. */
    count = 0;
    for(layer = LAST_LAYER; layer >= FIRST_LAYER; layer--) {
-      for(np = nodes[layer]; np; np = np->next) {
+      for(np = nodes[layer]; np; np = np->getNext()) {
          if(ShouldFocus(np, 1)) {
             ++count;
          }
@@ -96,14 +95,14 @@ void StartWindowStackWalk(void)
    }
 
    /* Allocate space for the windows. */
-   windowStack = Allocate(sizeof(Window) * count);
+   windowStack = new Window[count];
 
    /* Copy windows into the array. */
    windowStackSize = 0;
    for(layer = LAST_LAYER; layer >= FIRST_LAYER; layer--) {
-      for(np = nodes[layer]; np; np = np->next) {
+      for(np = nodes[layer]; np; np = np->getNext()) {
          if(ShouldFocus(np, 1)) {
-            windowStack[windowStackSize++] = np->window;
+            windowStack[windowStackSize++] = np->getWindow();
          }
       }
    }
@@ -132,9 +131,9 @@ void WalkWindowStack(char forward)
       int x;
 
       if(wasMinimized) {
-         np = FindClientByWindow(windowStack[windowStackCurrent]);
+         np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
          if(np) {
-            MinimizeClient(np, 1);
+            np->MinimizeClient(1);
          }
       }
 
@@ -152,27 +151,27 @@ void WalkWindowStack(char forward)
          }
 
          /* Look up the window. */
-         np = FindClientByWindow(windowStack[windowStackCurrent]);
+         np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
 
          /* Skip this window if it no longer exists or is currently in
           * a state that doesn't allow focus.
           */
          if(np == NULL || !ShouldFocus(np, 1)
-            || (np->state.status & STAT_ACTIVE)) {
+            || (np->getState()->status & STAT_ACTIVE)) {
             continue;
          }
 
          /* Show the window.
           * Only when the walk completes do we update the stacking order. */
-         RestackClients();
-         if(np->state.status & STAT_MINIMIZED) {
-            RestoreClient(np, 1);
+         ClientNode::RestackClients();
+         if(np->getState()->status & STAT_MINIMIZED) {
+            np->RestoreClient(1);
             wasMinimized = 1;
          } else {
             wasMinimized = 0;
          }
-         JXRaiseWindow(display, np->parent ? np->parent : np->window);
-         FocusClient(np);
+         JXRaiseWindow(display, np->getParent() ? np->getParent() : np->getWindow());
+         np->FocusClient();
          break;
 
       }
@@ -191,12 +190,12 @@ void StopWindowWalk(void)
    if(windowStack != NULL) {
 
       /* Look up the current window. */
-      np = FindClientByWindow(windowStack[windowStackCurrent]);
+      np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
       if(np) {
-         if(np->state.status & STAT_MINIMIZED) {
-            RestoreClient(np, 1);
+         if(np->getState()->status & STAT_MINIMIZED) {
+            np->RestoreClient(1);
          } else {
-            RaiseClient(np);
+            np->RaiseClient();
          }
       }
 
@@ -225,18 +224,18 @@ void FocusNextStacked(ClientNode *np)
 
    Assert(np);
 
-   for(tp = np->next; tp; tp = tp->next) {
-      if((tp->state.status & (STAT_MAPPED | STAT_SHADED))
-         && !(tp->state.status & STAT_HIDDEN)) {
-         FocusClient(tp);
+   for(tp = np->getNext(); tp; tp = tp->getNext()) {
+      if((tp->getState()->status & (STAT_MAPPED | STAT_SHADED))
+         && !(tp->getState()->status & STAT_HIDDEN)) {
+         tp->FocusClient();
          return;
       }
    }
-   for(x = np->state.layer - 1; x >= FIRST_LAYER; x--) {
-      for(tp = nodes[x]; tp; tp = tp->next) {
-         if((tp->state.status & (STAT_MAPPED | STAT_SHADED))
-            && !(tp->state.status & STAT_HIDDEN)) {
-            FocusClient(tp);
+   for(x = np->getState()->layer - 1; x >= FIRST_LAYER; x--) {
+      for(tp = nodes[x]; tp; tp = tp->getNext()) {
+         if((tp->getState()->status & (STAT_MAPPED | STAT_SHADED))
+            && !(tp->getState()->status & STAT_HIDDEN)) {
+            tp->FocusClient();
             return;
          }
       }

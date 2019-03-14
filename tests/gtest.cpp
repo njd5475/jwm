@@ -96,10 +96,11 @@ TEST(DesktopEnvironment, ParseDesktops) {
 TEST(DesktopEnvironment, RegisterComponentTest) {
   DesktopEnvironment *de = DesktopEnvironment::DefaultEnvironment();
   ASSERT_NE(NULL, de);
+  int defaultCount = de->ComponentCount();
   de->RegisterComponent(new DockComponent());
-  ASSERT_EQ(1, de->ComponentCount());
+  ASSERT_EQ(defaultCount + 1, de->ComponentCount());
   de->RegisterComponent(new DesktopComponent());
-  ASSERT_EQ(2, de->ComponentCount());
+  ASSERT_EQ(defaultCount + 2, de->ComponentCount());
 }
 
 int main(int argc, char **argv) {

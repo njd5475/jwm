@@ -18,7 +18,7 @@ struct TrayComponentType;
  * Note that we use the high bits to store additional information
  * for some key types (for example the desktop number).
  */
-typedef struct {
+typedef struct ActionType {
   Actions action;
    unsigned char extra;
 } ActionType;

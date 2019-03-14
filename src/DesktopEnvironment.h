@@ -12,8 +12,8 @@
 #include "Component.h"
 #include <vector>
 
-typedef struct Menu;
-typedef struct TrayComponentType;
+struct Menu;
+struct TrayComponentType;
 
 class DesktopEnvironment {
 public:

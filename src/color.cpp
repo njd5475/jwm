@@ -199,7 +199,7 @@ void StartupColors(void)
       greenBits = ComputeShift(0x0C, &greenShift);
       blueBits = ComputeShift(0x03, &blueShift);
       alphaMask = 0;
-      rgbToPixel = Allocate(sizeof(unsigned long) * MAX_COLORS);
+      rgbToPixel = new unsigned long[MAX_COLORS];
       memset(rgbToPixel, 0xFF, sizeof(unsigned long) * MAX_COLORS);
       break;
    }
@@ -397,7 +397,7 @@ void InitializeNames(void)
 {
    if(names == NULL) {
       unsigned int x;
-      names = Allocate(sizeof(char*) * COLOR_COUNT);
+      names = new char*[COLOR_COUNT];
       for(x = 0; x < COLOR_COUNT; x++) {
          names[x] = NULL;
       }
@@ -500,7 +500,7 @@ XftColor *GetXftColor(ColorType type)
    if(!xftColors[type]) {
       XRenderColor rcolor;
       const unsigned long rgb = rgbColors[type];
-      xftColors[type] = Allocate(sizeof(XftColor));
+      xftColors[type] = new XftColor;
       rcolor.alpha = 65535;
       rcolor.red = ((rgb >> 16) & 0xFF) * 257;
       rcolor.green = ((rgb >> 8) & 0xFF) * 257;

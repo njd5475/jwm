@@ -151,7 +151,7 @@ TrayComponentType *_CreateDock(int width)
       Warning(_("only one Dock allowed"));
       return NULL;
    } else if(dock == NULL) {
-      dock = Allocate(sizeof(DockType));
+      dock = new DockType;
       dock->nodes = NULL;
       dock->window = None;
    }
@@ -393,7 +393,7 @@ void _DockWindow(Window win)
    }
 
    /* Add the window to our list. */
-   np = Allocate(sizeof(DockNode));
+   np = new DockNode;
    np->window = win;
    np->needs_reparent = 0;
    np->next = dock->nodes;

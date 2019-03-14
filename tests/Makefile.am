@@ -10,7 +10,7 @@ gtest_SOURCES = gtest.cpp ../src/DesktopEnvironment.cpp ../src/DesktopComponent.
 	../src/button.cpp ../src/confirm.cpp ../src/color.cpp ../src/clientlist.cpp ../src/client.cpp ../src/clock.cpp\
 	../src/cursor.cpp ../src/background.cpp ../src/border.cpp ../src/debug.cpp ../src/battery.cpp ../src/binding.cpp\
 	../src/command.cpp ../src/error.cpp ../src/event.cpp ../src/font.cpp ../src/grab.cpp ../src/gradient.cpp\
-	../src/group.cpp ../src/help.cpp ../src/hint.cpp ../src/icon.cpp ../src/image.cpp ../src/lex.cpp ../src/match.cpp\
+	../src/group.cpp ../src/help.cpp ../src/hint.cpp ../src/icon.cpp ../src/image.cpp ../src/lex.cpp\
 	../src/menu.cpp ../src/misc.cpp ../src/move.cpp ../src/outline.cpp ../src/pager.cpp ../src/parse.cpp\
 	../src/place.cpp ../src/popup.cpp ../src/render.cpp ../src/resize.cpp ../src/root.cpp ../src/screen.cpp\
 	../src/settings.cpp ../src/spacer.cpp ../src/status.cpp ../src/swallow.cpp ../src/taskbar.cpp ../src/timing.cpp\

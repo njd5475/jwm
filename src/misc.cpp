@@ -78,13 +78,13 @@ char *GetSymbolName(const char *str)
    char *temp;
 
    if(*str == '$') {
-      temp = Allocate(2);
+      temp = new char[2];
       temp[0] = '$';
       temp[1] = 0;
    } else {
       int stop;
       for(stop = 0; IsSymbolic(str[stop]); stop++);
-      temp = Allocate(stop + 1);
+      temp = new char[stop + 1];
       memcpy(temp, str, stop);
       temp[stop] = 0;
    }
@@ -118,7 +118,7 @@ void ReplaceSymbol(char **str, unsigned int offset,
    /* Allocate extra space if necessary. */
    if(valueLength > nameLength) {
 		const size_t totalLen = strLength - nameLength + valueLength + 1;
-      temp = Allocate(totalLen);
+      temp = new char[totalLen];
       memcpy(temp, *str, strLength + 1);
       Release(*str);
       *str = temp;
@@ -218,7 +218,7 @@ char *CopyString(const char *str)
    }
 
    len = strlen(str) + 1;
-   temp = Allocate(len);
+   temp = new char[len];
    memcpy(temp, str, len);
 
    return temp;

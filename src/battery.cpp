@@ -51,7 +51,7 @@ static void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int m
 static void DrawBattery(BatteryType *bat, float percentage);
 static void PollBattery(const struct TimeType *now, int x, int y, Window w, void *data);
 static char *quickFileRead(int fd);
-static int *readAsInt(int fd);
+static int readAsInt(int fd);
 static float QueryBatteryPercentage();
 
 #include <fcntl.h>
@@ -92,7 +92,7 @@ TrayComponentType *CreateBattery(int width, int height) {
   Warning(_("Creating Battery Component"));
   TrayComponentType *cp;
   BatteryType *bat;
-  bat = Allocate(sizeof(BatteryType));
+  bat = new BatteryType;
   bat->next = batteries;
 
   batteries = bat; //move to head
@@ -162,14 +162,14 @@ void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
 }
 
 float QueryBatteryPercentage() {
-  int chargeNow = readAsInt(chargeNowFile);
-  int chargeFull = readAsInt(chargeFullFile);
+  int chargeNow = (int)readAsInt(chargeNowFile);
+  int chargeFull = (int)readAsInt(chargeFullFile);
   return (100 * (chargeNow / (float)chargeFull));
 }
 
 /** Update a Battery tray component. */
 void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
-  DrawBattery(data, QueryBatteryPercentage());
+  DrawBattery((BatteryType*)data, QueryBatteryPercentage());
 }
 
 /** Draw a Battery tray component. */
@@ -200,9 +200,9 @@ void DrawBattery(BatteryType *bat, float percentage) {
   bat->lastLevel = percentage;
 }
 
-int *readAsInt(int fd) {
+int readAsInt(int fd) {
   char *str = quickFileRead(fd);
-  return strtol(str, &str, 10);
+  return (int)strtol(str, &str, 10);
 }
 
 

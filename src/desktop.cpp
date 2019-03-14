@@ -32,19 +32,19 @@ void _StartupDesktops(void)
    unsigned int x;
 
    if(desktopNames == NULL) {
-      desktopNames = Allocate(settings.desktopCount * sizeof(char*));
+      desktopNames = new char*[settings.desktopCount];
       for(x = 0; x < settings.desktopCount; x++) {
          desktopNames[x] = NULL;
       }
    }
    for(x = 0; x < settings.desktopCount; x++) {
       if(desktopNames[x] == NULL) {
-         desktopNames[x] = Allocate(4 * sizeof(char));
+         desktopNames[x] = new char[4];
          snprintf(desktopNames[x], 4, "w-%d", x + 1);
       }
    }
    if(showingDesktop == NULL) {
-      showingDesktop = Allocate(settings.desktopCount * sizeof(char));
+      showingDesktop = new char[settings.desktopCount];
       for(x = 0; x < settings.desktopCount; x++) {
          showingDesktop[x] = 0;
       }
@@ -170,24 +170,24 @@ void _ChangeDesktop(unsigned int desktop)
     * with clients losing focus.
     */
    for(x = 0; x < LAYER_COUNT; x++) {
-      for(np = nodes[x]; np; np = np->next) {
-         if(np->state.status & STAT_STICKY) {
+      for(np = nodes[x]; np; np = np->getNext()) {
+         if(np->getState()->status & STAT_STICKY) {
             continue;
          }
-         if(np->state.desktop == currentDesktop) {
-            HideClient(np);
+         if(np->getState()->desktop == currentDesktop) {
+            np->HideClient();
          }
       }
    }
 
    /* Show clients on the new desktop. */
    for(x = 0; x < LAYER_COUNT; x++) {
-      for(np = nodes[x]; np; np = np->next) {
-         if(np->state.status & STAT_STICKY) {
+      for(np = nodes[x]; np; np = np->getNext()) {
+         if(np->getState()->status & STAT_STICKY) {
             continue;
          }
-         if(np->state.desktop == desktop) {
-            ShowClient(np);
+         if(np->getState()->desktop == desktop) {
+            np->ShowClient();
          }
       }
    }
@@ -223,7 +223,7 @@ Menu *_CreateDesktopMenu(unsigned int mask, void *context)
       item->action.context = context;
       item->action.value = x;
 
-      item->name = Allocate(len + 3);
+      item->name = new char[len + 3];
       item->name[0] = (mask & (1 << x)) ? '[' : ' ';
       memcpy(&item->name[1], desktopNames[x], len);
       item->name[len + 1] = (mask & (1 << x)) ? ']' : ' ';
@@ -252,7 +252,7 @@ Menu *_CreateSendtoMenu(MenuActionType mask, void *context)
       item->action.context = context;
       item->action.value = x;
 
-      item->name = Allocate(len + 3);
+      item->name = new char[len + 3];
       item->name[0] = (x == currentDesktop) ? '[' : ' ';
       memcpy(&item->name[1], desktopNames[x], len);
       item->name[len + 1] = (x == currentDesktop) ? ']' : ' ';
@@ -271,24 +271,24 @@ void _ShowDesktop(void)
 
    GrabServer();
    for(layer = 0; layer < LAYER_COUNT; layer++) {
-      for(np = nodes[layer]; np; np = np->next) {
-         if(np->state.status & STAT_NOLIST) {
+      for(np = nodes[layer]; np; np = np->getNext()) {
+         if(np->getState()->status & STAT_NOLIST) {
             continue;
          }
-         if((np->state.desktop == currentDesktop) ||
-            (np->state.status & STAT_STICKY)) {
+         if((np->getState()->desktop == currentDesktop) ||
+            (np->getState()->status & STAT_STICKY)) {
             if(showingDesktop[currentDesktop]) {
-               if(np->state.status & STAT_SDESKTOP) {
-                  RestoreClient(np, 0);
+               if(np->getState()->status & STAT_SDESKTOP) {
+                  np->RestoreClient(0);
                }
             } else {
-               if(np->state.status & STAT_ACTIVE) {
+               if(np->getState()->status & STAT_ACTIVE) {
                   JXSetInputFocus(display, rootWindow, RevertToParent,
                                   CurrentTime);
                }
-               if(np->state.status & (STAT_MAPPED | STAT_SHADED)) {
-                  MinimizeClient(np, 0);
-                  np->state.status |= STAT_SDESKTOP;
+               if(np->getState()->status & (STAT_MAPPED | STAT_SHADED)) {
+                  np->MinimizeClient(0);
+                  np->getState()->status |= STAT_SDESKTOP;
                }
             }
          }
@@ -302,17 +302,17 @@ void _ShowDesktop(void)
       char first = 1;
       JXSync(display, False);
       for(layer = 0; layer < LAYER_COUNT; layer++) {
-         for(np = nodes[layer]; np; np = np->next) {
-            if(np->state.status & STAT_NOLIST) {
+         for(np = nodes[layer]; np; np = np->getNext()) {
+            if(np->getState()->status & STAT_NOLIST) {
                continue;
             }
-            if((np->state.desktop == currentDesktop) ||
-               (np->state.status & STAT_STICKY)) {
+            if((np->getState()->desktop == currentDesktop) ||
+               (np->getState()->status & STAT_STICKY)) {
                if(first) {
-                  FocusClient(np);
+                  np->FocusClient();
                   first = 0;
                }
-               DrawBorder(np);
+               Border::DrawBorder(np);
             }
          }
       }
@@ -341,7 +341,7 @@ void _SetDesktopName(unsigned int desktop, const char *str)
 
    if(!desktopNames) {
       unsigned int x;
-      desktopNames = Allocate(settings.desktopCount * sizeof(char*));
+      desktopNames = new char*[settings.desktopCount];
       for(x = 0; x < settings.desktopCount; x++) {
          desktopNames[x] = NULL;
       }

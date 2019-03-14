@@ -36,12 +36,12 @@ void GetMoveResizeCoordinates(const ClientNode *np, StatusWindowType type,
    const ScreenType *sp;
 
    if(type == SW_WINDOW) {
-      *x = np->x + (np->width - statusWindowWidth) / 2;
-      *y = np->y + (np->height - statusWindowHeight) / 2;
+      *x = np->getX() + (np->getWidth() - statusWindowWidth) / 2;
+      *y = np->getY() + (np->getHeight() - statusWindowHeight) / 2;
       return;
    }
 
-   sp = GetCurrentScreen(np->x, np->y);
+   sp = GetCurrentScreen(np->getX(), np->getY());
 
    if(type == SW_CORNER) {
       *x = sp->x;
@@ -158,7 +158,7 @@ void UpdateMoveWindow(ClientNode *np)
 
    DrawMoveResizeWindow(np, settings.moveStatusType);
 
-   snprintf(str, sizeof(str), "(%d, %d)", np->x, np->y);
+   snprintf(str, sizeof(str), "(%d, %d)", np->getX(), np->getY());
    width = GetStringWidth(FONT_MENU, str);
    RenderString(statusWindow, FONT_MENU, COLOR_MENU_FG,
                 (statusWindowWidth - width) / 2, 5, rootWidth, str);

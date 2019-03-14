@@ -45,7 +45,7 @@ void AddAction(ActionNode **actions, const char *action, int mask)
       return;
    }
 
-   ap = Allocate(sizeof(ActionNode));
+   ap = new ActionNode;
    ap->action = CopyString(action);
    ap->mask = mask;
    ap->next = *actions;

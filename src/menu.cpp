@@ -13,7 +13,6 @@
 #include "client.h"
 #include "icon.h"
 #include "cursor.h"
-#include "binding.h"
 #include "button.h"
 #include "event.h"
 #include "root.h"
@@ -24,6 +23,7 @@
 #include "hint.h"
 #include "misc.h"
 #include "popup.h"
+#include "binding.h"
 #include "DesktopEnvironment.h"
 
 
@@ -66,7 +66,7 @@ int menuShown = 0;
 /** Allocate an empty menu. */
 Menu *CreateMenu()
 {
-   Menu *menu = Allocate(sizeof(Menu));
+   Menu *menu = new Menu;
    menu->itemHeight = 0;
    menu->items = NULL;
    menu->label = NULL;
@@ -78,7 +78,7 @@ Menu *CreateMenu()
 /** Create an empty menu item. */
 MenuItem *CreateMenuItem(MenuItemType type)
 {
-   MenuItem *item = Allocate(sizeof(MenuItem));
+   MenuItem *item = new MenuItem;
    memset(item, 0, sizeof(MenuItem));
    item->type = type;
    return item;
@@ -146,7 +146,7 @@ void InitializeMenu(Menu *menu)
       return;
    }
 
-   menu->offsets = Allocate(sizeof(int) * menu->itemCount);
+   menu->offsets = new int[menu->itemCount];
 
    hasSubmenu = 0;
    index = 0;
@@ -218,7 +218,7 @@ char ShowMenu(Menu *menu, RunMenuCommandType runner,
 
    JXUngrabKeyboard(display, CurrentTime);
    JXUngrabPointer(display, CurrentTime);
-   RefocusClient();
+   ClientNode::RefocusClient();
 
    if(shouldReload) {
       ReloadMenu();

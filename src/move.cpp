@@ -15,7 +15,6 @@
 #include "clientlist.h"
 #include "cursor.h"
 #include "event.h"
-#include "binding.h"
 #include "outline.h"
 #include "pager.h"
 #include "screen.h"
@@ -23,6 +22,7 @@
 #include "tray.h"
 #include "settings.h"
 #include "timing.h"
+#include "binding.h"
 #include "DesktopEnvironment.h"
 
 typedef struct {
@@ -47,22 +47,16 @@ static void MoveController(int wasDestroyed);
 static void DoSnap(ClientNode *np);
 static void DoSnapScreen(ClientNode *np);
 static void DoSnapBorder(ClientNode *np);
-static char ShouldSnap(const ClientNode *np);
-static void GetClientRectangle(const ClientNode *np, RectangleType *r);
+static char ShouldSnap(ClientNode *np);
+static void GetClientRectangle(ClientNode *np, RectangleType *r);
 
-static char CheckOverlapTopBottom(const RectangleType *a,
-    const RectangleType *b);
-static char CheckOverlapLeftRight(const RectangleType *a,
-    const RectangleType *b);
+static char CheckOverlapTopBottom(const RectangleType *a, const RectangleType *b);
+static char CheckOverlapLeftRight(const RectangleType *a, const RectangleType *b);
 
-static char CheckLeftValid(const RectangleType *client,
-    const RectangleType *other, const RectangleType *left);
-static char CheckRightValid(const RectangleType *client,
-    const RectangleType *other, const RectangleType *right);
-static char CheckTopValid(const RectangleType *client,
-    const RectangleType *other, const RectangleType *top);
-static char CheckBottomValid(const RectangleType *client,
-    const RectangleType *other, const RectangleType *bottom);
+static char CheckLeftValid(const RectangleType *client, const RectangleType *other, const RectangleType *left);
+static char CheckRightValid(const RectangleType *client, const RectangleType *other, const RectangleType *right);
+static char CheckTopValid(const RectangleType *client, const RectangleType *other, const RectangleType *top);
+static char CheckBottomValid(const RectangleType *client, const RectangleType *other, const RectangleType *bottom);
 
 static void SignalMove(const TimeType *now, int x, int y, Window w, void *data);
 static void UpdateDesktop(const TimeType *now);
@@ -86,7 +80,7 @@ void MoveController(int wasDestroyed) {
 }
 
 /** Move a client window. */
-char MoveClient(ClientNode *np, int startx, int starty) {
+char ClientNode::MoveClient(int startx, int starty) {
   XEvent event;
   const ScreenType *sp;
   MaxFlags flags;
@@ -95,12 +89,10 @@ char MoveClient(ClientNode *np, int startx, int starty) {
   int north, south, east, west;
   int height;
 
-  Assert(np);
-
-  if (!(np->state.border & BORDER_MOVE)) {
+  if (!(this->getState()->border & BORDER_MOVE)) {
     return 0;
   }
-  if (np->state.status & STAT_FULLSCREEN) {
+  if (this->getState()->status & STAT_FULLSCREEN) {
     return 0;
   }
 
@@ -109,22 +101,22 @@ char MoveClient(ClientNode *np, int startx, int starty) {
   }
 
   _RegisterCallback(0, SignalMove, NULL);
-  np->controller = MoveController;
+  this->controller = MoveController;
   shouldStopMove = 0;
 
-  oldx = np->x;
-  oldy = np->y;
+  oldx = this->getX();
+  oldy = this->getY();
 
   if (!(GetMouseMask() & (Button1Mask | Button2Mask))) {
-    StopMove(np, 0, oldx, oldy);
+    this->StopMove(0, oldx, oldy);
     return 0;
   }
 
-  GetBorderSize(&np->state, &north, &south, &east, &west);
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
   startx -= west;
   starty -= north;
 
-  currentClient = np;
+  currentClient = this;
   atTop = atBottom = atLeft = atRight = atSideFirst = 0;
   doMove = 0;
   for (;;) {
@@ -132,8 +124,8 @@ char MoveClient(ClientNode *np, int startx, int starty) {
     _WaitForEvent(&event);
 
     if (shouldStopMove) {
-      np->controller = NULL;
-      SetDefaultCursor(np->parent);
+      this->controller = NULL;
+      SetDefaultCursor(this->parent);
       _UnregisterCallback(SignalMove, NULL);
       return doMove;
     }
@@ -141,16 +133,16 @@ char MoveClient(ClientNode *np, int startx, int starty) {
     switch (event.type) {
     case ButtonRelease:
       if (event.xbutton.button == Button1 || event.xbutton.button == Button2) {
-        StopMove(np, doMove, oldx, oldy);
+        this->StopMove(doMove, oldx, oldy);
         return doMove;
       }
       break;
     case MotionNotify:
 
-      _DiscardMotionEvents(&event, np->window);
+      _DiscardMotionEvents(&event, this->getWindow());
 
-      np->x = event.xmotion.x_root - startx;
-      np->y = event.xmotion.y_root - starty;
+      this->x = event.xmotion.x_root - startx;
+      this->y = event.xmotion.y_root - starty;
 
       /* Get the move time used for desktop switching. */
       if (!(atLeft | atTop | atRight | atBottom)) {
@@ -163,7 +155,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
       }
 
       /* Determine if we are at a border for desktop switching. */
-      sp = GetCurrentScreen(np->x + np->width / 2, np->y + np->height / 2);
+      sp = GetCurrentScreen(this->getX() + this->getWidth() / 2, this->getY() + this->getHeight() / 2);
       atLeft = atTop = atRight = atBottom = 0;
       if (event.xmotion.x_root <= sp->x) {
         atLeft = 1;
@@ -186,7 +178,7 @@ char MoveClient(ClientNode *np, int startx, int starty) {
         }
       } else {
         /* If alt is not pressed, snap to borders. */
-        if (np->state.status & STAT_AEROSNAP) {
+        if (this->getState()->status & STAT_AEROSNAP) {
           if (atTop & atLeft) {
             if (atSideFirst) {
               flags = MAX_TOP | MAX_LEFT;
@@ -221,30 +213,29 @@ char MoveClient(ClientNode *np, int startx, int starty) {
             flags = MAX_VERT | MAX_HORIZ;
             atSideFirst = 0;
           }
-          if (flags != np->state.maxFlags) {
+          if (flags != this->getState()->maxFlags) {
             if (settings.moveMode == MOVE_OUTLINE) {
               ClearOutline();
             }
-            MaximizeClient(np, flags);
+            this->MaximizeClient(flags);
           }
-          if (!np->state.maxFlags) {
-            DoSnap(np);
+          if (!this->getState()->maxFlags) {
+            DoSnap(this);
           }
         } else {
-          DoSnap(np);
+          DoSnap(this);
         }
       }
 
       if (flags != MAX_NONE) {
-        RestartMove(np, &doMove);
-      } else if (!doMove
-          && (abs(np->x - oldx) > MOVE_DELTA || abs(np->y - oldy) > MOVE_DELTA)) {
+        this->RestartMove(&doMove);
+      } else if (!doMove && (abs(this->getX() - oldx) > MOVE_DELTA || abs(this->getY() - oldy) > MOVE_DELTA)) {
 
-        if (np->state.maxFlags) {
-          MaximizeClient(np, MAX_NONE);
+        if (this->getState()->maxFlags) {
+          this->MaximizeClient(MAX_NONE);
         }
 
-        CreateMoveWindow(np);
+        CreateMoveWindow(this);
         doMove = 1;
       }
 
@@ -252,20 +243,19 @@ char MoveClient(ClientNode *np, int startx, int starty) {
         if (settings.moveMode == MOVE_OUTLINE) {
           ClearOutline();
           height = north + south;
-          if (!(np->state.status & STAT_SHADED)) {
-            height += np->height;
+          if (!(this->getState()->status & STAT_SHADED)) {
+            height += this->getHeight();
           }
-          DrawOutline(np->x - west, np->y - north, np->width + west + east,
-              height);
+          DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
         } else {
-          if (np->parent != None) {
-            JXMoveWindow(display, np->parent, np->x - west, np->y - north);
+          if (this->getParent() != None) {
+            JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
           } else {
-            JXMoveWindow(display, np->window, np->x, np->y);
+            JXMoveWindow(display, this->getWindow(), this->getX(), this->getY());
           }
-          SendConfigureEvent(np);
+          this->SendConfigureEvent();
         }
-        UpdateMoveWindow(np);
+        UpdateMoveWindow(this);
         _RequirePagerUpdate();
       }
 
@@ -277,30 +267,26 @@ char MoveClient(ClientNode *np, int startx, int starty) {
 }
 
 /** Move a client window (keyboard or menu initiated). */
-char MoveClientKeyboard(ClientNode *np) {
+char ClientNode::MoveClientKeyboard() {
   XEvent event;
   int oldx, oldy;
   int moved;
   int height;
   int north, south, east, west;
   Window win;
-
-  Assert(np);
-
-  if (!(np->state.border & BORDER_MOVE)) {
+  if (!(this->getState()->border & BORDER_MOVE)) {
     return 0;
   }
-  if (np->state.status & STAT_FULLSCREEN) {
+  if (this->getState()->status & STAT_FULLSCREEN) {
     return 0;
   }
 
-  if (np->state.maxFlags != MAX_NONE) {
-    MaximizeClient(np, MAX_NONE);
+  if (this->getState()->maxFlags != MAX_NONE) {
+    this->MaximizeClient(MAX_NONE);
   }
 
-  win = np->parent != None ? np->parent : np->window;
-  if (JUNLIKELY(
-      JXGrabKeyboard(display, win, True, GrabModeAsync, GrabModeAsync, CurrentTime))) {
+  win = this->parent != None ? this->parent : this->window;
+  if (JUNLIKELY(JXGrabKeyboard(display, win, True, GrabModeAsync, GrabModeAsync, CurrentTime))) {
     Debug("MoveClient: could not grab keyboard");
     return 0;
   }
@@ -309,35 +295,35 @@ char MoveClientKeyboard(ClientNode *np) {
     return 0;
   }
 
-  GetBorderSize(&np->state, &north, &south, &east, &west);
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
 
-  oldx = np->x;
-  oldy = np->y;
+  oldx = this->getX();
+  oldy = this->getY();
 
   _RegisterCallback(0, SignalMove, NULL);
-  np->controller = MoveController;
+  this->controller = MoveController;
   shouldStopMove = 0;
 
-  CreateMoveWindow(np);
-  UpdateMoveWindow(np);
+  CreateMoveWindow(this);
+  UpdateMoveWindow(this);
 
-  MoveMouse(rootWindow, np->x, np->y);
-  _DiscardMotionEvents(&event, np->window);
+  MoveMouse(rootWindow, this->getX(), this->getY());
+  _DiscardMotionEvents(&event, this->window);
 
-  if (np->state.status & STAT_SHADED) {
+  if (this->getState()->status & STAT_SHADED) {
     height = 0;
   } else {
-    height = np->height;
+    height = this->getHeight();
   }
-  currentClient = np;
+  currentClient = this;
 
   for (;;) {
 
     _WaitForEvent(&event);
 
     if (shouldStopMove) {
-      np->controller = NULL;
-      SetDefaultCursor(np->parent);
+      this->controller = NULL;
+      SetDefaultCursor(this->parent);
       _UnregisterCallback(SignalMove, NULL);
       return 1;
     }
@@ -347,51 +333,50 @@ char MoveClientKeyboard(ClientNode *np) {
     if (event.type == KeyPress) {
       ActionType action;
 
-      _DiscardKeyEvents(&event, np->window);
+      _DiscardKeyEvents(&event, this->window);
       action = GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
       switch (action.action) {
       case UP:
-        if (np->y + height > 0) {
-          np->y -= 10;
+        if (this->getY() + height > 0) {
+          this->y -= 10;
         }
         break;
       case DOWN:
-        if (np->y < rootHeight) {
-          np->y += 10;
+        if (this->getY() < rootHeight) {
+          this->y += 10;
         }
         break;
       case RIGHT:
-        if (np->x < rootWidth) {
-          np->x += 10;
+        if (this->getX() < rootWidth) {
+          this->x += 10;
         }
         break;
       case LEFT:
-        if (np->x + np->width > 0) {
-          np->x -= 10;
+        if (this->getX() + this->getWidth() > 0) {
+          this->x -= 10;
         }
         break;
       default:
-        StopMove(np, 1, oldx, oldy);
+        this->StopMove(1, oldx, oldy);
         return 1;
       }
 
-      MoveMouse(rootWindow, np->x, np->y);
-      _DiscardMotionEvents(&event, np->window);
+      MoveMouse(rootWindow, this->getX(), this->getY());
+      _DiscardMotionEvents(&event, this->window);
 
       moved = 1;
 
     } else if (event.type == MotionNotify) {
 
-      _DiscardMotionEvents(&event, np->window);
+      _DiscardMotionEvents(&event, this->window);
 
-      np->x = event.xmotion.x;
-      np->y = event.xmotion.y;
+      this->x = event.xmotion.x;
+      this->y = event.xmotion.y;
 
       moved = 1;
 
     } else if (event.type == ButtonRelease) {
-
-      StopMove(np, 1, oldx, oldy);
+      this->StopMove(1, oldx, oldy);
       return 1;
 
     }
@@ -400,14 +385,13 @@ char MoveClientKeyboard(ClientNode *np) {
 
       if (settings.moveMode == MOVE_OUTLINE) {
         ClearOutline();
-        DrawOutline(np->x - west, np->y - west, np->width + west + east,
-            height + north + west);
+        DrawOutline(this->getX() - west, this->getY() - west, this->getWidth() + west + east, height + north + west);
       } else {
-        JXMoveWindow(display, win, np->x - west, np->y - north);
-        SendConfigureEvent(np);
+        JXMoveWindow(display, win, this->getX() - west, this->getY() - north);
+        this->SendConfigureEvent();
       }
 
-      UpdateMoveWindow(np);
+      UpdateMoveWindow(this);
       _RequirePagerUpdate();
 
     }
@@ -417,47 +401,46 @@ char MoveClientKeyboard(ClientNode *np) {
 }
 
 /** Stop move. */
-void StopMove(ClientNode *np, int doMove, int oldx, int oldy) {
+void ClientNode::StopMove(int doMove, int oldx, int oldy) {
   int north, south, east, west;
 
-  Assert(np);
-  Assert(np->controller);
+  Assert(this->controller);
 
-  (np->controller)(0);
+  (this->controller)(0);
 
-  np->controller = NULL;
+  this->controller = NULL;
 
-  SetDefaultCursor(np->parent);
+  SetDefaultCursor(this->parent);
   _UnregisterCallback(SignalMove, NULL);
 
   if (!doMove) {
-    np->x = oldx;
-    np->y = oldy;
+    this->x = oldx;
+    this->y = oldy;
     return;
   }
 
-  GetBorderSize(&np->state, &north, &south, &east, &west);
-  if (np->parent != None) {
-    JXMoveWindow(display, np->parent, np->x - west, np->y - north);
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  if (this->parent != None) {
+    JXMoveWindow(display, this->parent, this->getX() - west, this->getY() - north);
   } else {
-    JXMoveWindow(display, np->window, np->x - west, np->y - north);
+    JXMoveWindow(display, this->window, this->getX() - west, this->getY() - north);
   }
-  SendConfigureEvent(np);
+  this->SendConfigureEvent();
 }
 
 /** Restart a move. */
-void RestartMove(ClientNode *np, int *doMove) {
+void ClientNode::RestartMove(int *doMove) {
   if (*doMove) {
     int north, south, east, west;
     *doMove = 0;
     DestroyMoveWindow();
-    GetBorderSize(&np->state, &north, &south, &east, &west);
-    if (np->parent != None) {
-      JXMoveWindow(display, np->parent, np->x - west, np->y - north);
+    Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+    if (this->getParent() != None) {
+      JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
     } else {
-      JXMoveWindow(display, np->window, np->x - west, np->y - north);
+      JXMoveWindow(display, this->getWindow(), this->getX() - west, this->getY() - north);
     }
-    SendConfigureEvent(np);
+    this->SendConfigureEvent();
   }
 }
 
@@ -465,11 +448,11 @@ void RestartMove(ClientNode *np, int *doMove) {
 void DoSnap(ClientNode *np) {
   switch (settings.snapMode) {
   case SNAP_BORDER:
-    DoSnapBorder(np);
-    DoSnapScreen(np);
+    np->DoSnapBorder();
+    np->DoSnapScreen();
     break;
   case SNAP_SCREEN:
-    DoSnapScreen(np);
+    np->DoSnapScreen();
     break;
   default:
     break;
@@ -477,7 +460,7 @@ void DoSnap(ClientNode *np) {
 }
 
 /** Snap to the screen. */
-void DoSnapScreen(ClientNode *np) {
+void ClientNode::DoSnapScreen() {
 
   RectangleType client;
   int screen;
@@ -485,9 +468,9 @@ void DoSnapScreen(ClientNode *np) {
   int screenCount;
   int north, south, east, west;
 
-  GetClientRectangle(np, &client);
+  GetClientRectangle(this, &client);
 
-  GetBorderSize(&np->state, &north, &south, &east, &west);
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
 
   screenCount = GetScreenCount();
   for (screen = 0; screen < screenCount; screen++) {
@@ -495,19 +478,19 @@ void DoSnapScreen(ClientNode *np) {
     sp = GetScreen(screen);
 
     if (abs(client.right - sp->width - sp->x) <= settings.snapDistance) {
-      np->x = sp->x + sp->width - west - np->width;
+      this->x = sp->x + sp->width - west - this->getWidth();
     }
     if (abs(client.left - sp->x) <= settings.snapDistance) {
-      np->x = sp->x + east;
+      this->x = sp->x + east;
     }
     if (abs(client.bottom - sp->height - sp->y) <= settings.snapDistance) {
-      np->y = sp->y + sp->height - south;
-      if (!(np->state.status & STAT_SHADED)) {
-        np->y -= np->height;
+      this->y = sp->y + sp->height - south;
+      if (!(this->getState()->status & STAT_SHADED)) {
+        this->y -= this->getHeight();
       }
     }
     if (abs(client.top - sp->y) <= settings.snapDistance) {
-      np->y = north + sp->y;
+      this->y = north + sp->y;
     }
 
   }
@@ -515,7 +498,7 @@ void DoSnapScreen(ClientNode *np) {
 }
 
 /** Snap to window borders. */
-void DoSnapBorder(ClientNode *np) {
+void ClientNode::DoSnapBorder() {
 
   const ClientNode *tp;
   const TrayType *tray;
@@ -527,9 +510,9 @@ void DoSnapBorder(ClientNode *np) {
   int layer;
   int north, south, east, west;
 
-  GetClientRectangle(np, &client);
+  GetClientRectangle(this, &client);
 
-  GetBorderSize(&np->state, &north, &south, &east, &west);
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
 
   other.valid = 1;
 
@@ -575,7 +558,7 @@ void DoSnapBorder(ClientNode *np) {
     /* Check client windows. */
     for (tp = nodeTail[layer]; tp; tp = tp->prev) {
 
-      if (tp == np || !ShouldSnap(tp)) {
+      if (tp == this || !ShouldSnap(tp)) {
         continue;
       }
 
@@ -610,28 +593,28 @@ void DoSnapBorder(ClientNode *np) {
   }
 
   if (right.valid) {
-    np->x = right.left - np->width - west;
+    this->x = right.left - this->getWidth() - west;
   }
   if (left.valid) {
-    np->x = left.right + east;
+    this->x = left.right + east;
   }
   if (bottom.valid) {
-    np->y = bottom.top - south;
-    if (!(np->state.status & STAT_SHADED)) {
-      np->y -= np->height;
+    this->y = bottom.top - south;
+    if (!(this->getState()->status & STAT_SHADED)) {
+      this->y -= this->getHeight();
     }
   }
   if (top.valid) {
-    np->y = top.bottom + north;
+    this->y = top.bottom + north;
   }
 
 }
 
 /** Determine if we should snap to the specified client. */
-char ShouldSnap(const ClientNode *np) {
-  if (np->state.status & STAT_HIDDEN) {
+char ShouldSnap(ClientNode *np) {
+  if (np->getState()->status & STAT_HIDDEN) {
     return 0;
-  } else if (np->state.status & STAT_MINIMIZED) {
+  } else if (np->getState()->status & STAT_MINIMIZED) {
     return 0;
   } else {
     return 1;
@@ -639,19 +622,19 @@ char ShouldSnap(const ClientNode *np) {
 }
 
 /** Get a rectangle to represent a client window. */
-void GetClientRectangle(const ClientNode *np, RectangleType *r) {
+void GetClientRectangle(ClientNode *np, RectangleType *r) {
 
   int north, south, east, west;
 
-  GetBorderSize(&np->state, &north, &south, &east, &west);
+  Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
 
-  r->left = np->x - west;
-  r->right = np->x + np->width + east;
-  r->top = np->y - north;
-  if (np->state.status & STAT_SHADED) {
-    r->bottom = np->y + south;
+  r->left = np->getX() - west;
+  r->right = np->getX() + np->getWidth() + east;
+  r->top = np->getY() - north;
+  if (np->getState()->status & STAT_SHADED) {
+    r->bottom = np->getY() + south;
   } else {
-    r->bottom = np->y + np->height + south;
+    r->bottom = np->getY() + np->getHeight() + south;
   }
 
   r->valid = 1;
@@ -687,8 +670,7 @@ char CheckOverlapLeftRight(const RectangleType *a, const RectangleType *b) {
  * @param left The top/bottom of the current left snap window.
  * @return 1 if the current left snap position is still valid, otherwise 0.
  */
-char CheckLeftValid(const RectangleType *client, const RectangleType *other,
-    const RectangleType *left) {
+char CheckLeftValid(const RectangleType *client, const RectangleType *other, const RectangleType *left) {
 
   if (!left->valid) {
     return 0;
@@ -717,8 +699,7 @@ char CheckLeftValid(const RectangleType *client, const RectangleType *other,
 }
 
 /** Check if the current right snap position is valid. */
-char CheckRightValid(const RectangleType *client, const RectangleType *other,
-    const RectangleType *right) {
+char CheckRightValid(const RectangleType *client, const RectangleType *other, const RectangleType *right) {
 
   if (!right->valid) {
     return 0;
@@ -747,8 +728,7 @@ char CheckRightValid(const RectangleType *client, const RectangleType *other,
 }
 
 /** Check if the current top snap position is valid. */
-char CheckTopValid(const RectangleType *client, const RectangleType *other,
-    const RectangleType *top) {
+char CheckTopValid(const RectangleType *client, const RectangleType *other, const RectangleType *top) {
 
   if (!top->valid) {
     return 0;
@@ -777,8 +757,7 @@ char CheckTopValid(const RectangleType *client, const RectangleType *other,
 }
 
 /** Check if the current bottom snap position is valid. */
-char CheckBottomValid(const RectangleType *client, const RectangleType *other,
-    const RectangleType *bottom) {
+char CheckBottomValid(const RectangleType *client, const RectangleType *other, const RectangleType *bottom) {
 
   if (!bottom->valid) {
     return 0;
@@ -823,19 +802,19 @@ void UpdateDesktop(const TimeType *now) {
 
   /* We temporarily mark the client as hidden to avoid hidding it
    * when changing desktops. */
-  currentClient->state.status |= STAT_HIDDEN;
+  currentClient->getState()->status |= STAT_HIDDEN;
   if (atLeft && DesktopEnvironment::DefaultEnvironment()->LeftDesktop()) {
-    SetClientDesktop(currentClient, currentDesktop);
+    currentClient->SetClientDesktop(currentDesktop);
     _RequireRestack();
   } else if (atRight && DesktopEnvironment::DefaultEnvironment()->RightDesktop()) {
-    SetClientDesktop(currentClient, currentDesktop);
+    currentClient->SetClientDesktop(currentDesktop);
     _RequireRestack();
   } else if (atTop && DesktopEnvironment::DefaultEnvironment()->AboveDesktop()) {
-    SetClientDesktop(currentClient, currentDesktop);
+    currentClient->SetClientDesktop(currentDesktop);
     _RequireRestack();
   } else if (atBottom && DesktopEnvironment::DefaultEnvironment()->BelowDesktop()) {
-    SetClientDesktop(currentClient, currentDesktop);
+    currentClient->SetClientDesktop(currentDesktop);
     _RequireRestack();
   }
-  currentClient->state.status &= ~STAT_HIDDEN;
+  currentClient->getState()->status &= ~STAT_HIDDEN;
 }

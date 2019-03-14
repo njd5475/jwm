@@ -19,7 +19,6 @@
 #include "swallow.h"
 #include "pager.h"
 #include "error.h"
-#include "binding.h"
 #include "main.h"
 #include "font.h"
 #include "icon.h"
@@ -30,6 +29,7 @@
 #include "battery.h"
 #include "spacer.h"
 #include "border.h"
+#include "binding.h"
 #include "DesktopEnvironment.h"
 
 #include <sys/types.h>
@@ -321,19 +321,19 @@ void Parse(const TokenNode *start, int depth) {
           ParseWindowStyle(tp);
           break;
         case TOK_BUTTONCLOSE:
-          SetBorderIcon(BI_CLOSE, tp->value);
+          Border::SetBorderIcon(BI_CLOSE, tp->value);
           break;
         case TOK_BUTTONMAX:
-          SetBorderIcon(BI_MAX, tp->value);
+          Border::SetBorderIcon(BI_MAX, tp->value);
           break;
         case TOK_BUTTONMAXACTIVE:
-          SetBorderIcon(BI_MAX_ACTIVE, tp->value);
+          Border::SetBorderIcon(BI_MAX_ACTIVE, tp->value);
           break;
         case TOK_BUTTONMIN:
-          SetBorderIcon(BI_MIN, tp->value);
+          Border::SetBorderIcon(BI_MIN, tp->value);
           break;
         case TOK_BUTTONMENU:
-          SetBorderIcon(BI_MENU, tp->value);
+          Border::SetBorderIcon(BI_MENU, tp->value);
           break;
         case TOK_DEFAULTICON:
           SetDefaultIcon(tp->value);
@@ -440,7 +440,7 @@ void ParseRootMenu(const TokenNode *start) {
 
   onroot = FindAttribute(start->attributes, ONROOT_ATTRIBUTE);
   if (!onroot) {
-    onroot = "123";
+    onroot = (char*)"123";
   }
 
   value = FindAttribute(start->attributes, DYNAMIC_ATTRIBUTE);
@@ -1996,7 +1996,7 @@ void ParseError(const TokenNode *tp, const char *str, ...) {
 
   if (tp) {
     const size_t msg_len = sizeof(FILE_MESSAGE) + strlen(tp->fileName) + 1;
-    msg = Allocate(msg_len);
+    msg = new char[msg_len];
     snprintf(msg, msg_len, FILE_MESSAGE, tp->fileName, tp->line);
   } else {
     msg = CopyString(_("configuration error"));

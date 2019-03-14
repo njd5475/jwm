@@ -103,7 +103,7 @@ ScaledIconNode *CreateScaledRenderIcon(ImageNode *image, long fg)
 
    Assert(haveRender);
 
-   result = Allocate(sizeof(ScaledIconNode));
+   result = new ScaledIconNode;
    result->fg = fg;
    result->width = width;
    result->height = height;
@@ -114,11 +114,11 @@ ScaledIconNode *CreateScaledRenderIcon(ImageNode *image, long fg)
 
    destImage = JXCreateImage(display, rootVisual, rootDepth,
                              ZPixmap, 0, NULL, width, height, 8, 0);
-   destImage->data = Allocate(sizeof(unsigned long) * width * height);
+   destImage->data = new char[sizeof(long unsigned int) * width * height];
 
    destMask = JXCreateImage(display, rootVisual, 8, ZPixmap,
                             0, NULL, width, height, 8, 0);
-   destMask->data = Allocate(width * height);
+   destMask->data = new char[width * height];
 
    if(image->bitmap) {
       perLine = (image->width >> 3) + ((image->width & 7) ? 1 : 0);

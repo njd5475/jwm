@@ -94,7 +94,7 @@ void InitializeIcons(void)
    unsigned int x;
    iconPaths = NULL;
    iconPathsTail = NULL;
-   iconHash = Allocate(sizeof(IconNode*) * HASH_SIZE);
+   iconHash = new IconNode*[HASH_SIZE];
    for(x = 0; x < HASH_SIZE; x++) {
       iconHash[x] = NULL;
    }
@@ -113,8 +113,8 @@ void StartupIcons(void)
    gcValues.graphics_exposures = False;
    iconGC = JXCreateGC(display, rootWindow, gcMask, &gcValues);
 
-   iconSize.min_width = GetBorderIconSize();
-   iconSize.min_height = GetBorderIconSize();
+   iconSize.min_width = Border::GetBorderIconSize();
+   iconSize.min_height = Border::GetBorderIconSize();
    iconSize.max_width = iconSize.min_width;
    iconSize.max_height = iconSize.min_height;
    iconSize.width_inc = 1;
@@ -176,8 +176,8 @@ void AddIconPath(char *path)
       addSep = 0;
    }
 
-   ip = Allocate(sizeof(IconPathNode));
-   ip->path = Allocate(length + addSep + 1);
+   ip = new IconPathNode();
+   ip->path = new char[length + addSep + 1];
    memcpy(ip->path, path, length + 1);
    if(addSep) {
       ip->path[length] = '/';
@@ -248,40 +248,40 @@ void PutIcon(IconNode *icon, Drawable d, long fg,
 }
 
 /** Load the icon for a client. */
-void LoadIcon(ClientNode *np)
+void ClientNode::LoadIcon()
 {
    /* If client already has an icon, destroy it first. */
-   DestroyIcon(np->icon);
-   np->icon = NULL;
+   DestroyIcon(this->icon);
+   this->icon = NULL;
 
    /* Attempt to read _NET_WM_ICON for an icon. */
-   np->icon = ReadNetWMIcon(np->window);
-   if(np->icon) {
+   this->icon = ReadNetWMIcon(this->window);
+   if(this->icon) {
       return;
    }
-   if(np->owner != None) {
-      np->icon = ReadNetWMIcon(np->owner);
-      if(np->icon) {
+   if(this->owner != None) {
+     this->icon = ReadNetWMIcon(this->owner);
+      if(this->icon) {
          return;
       }
    }
 
    /* Attempt to read an icon from XWMHints. */
-   np->icon = ReadWMHintIcon(np->window);
-   if(np->icon) {
+   this->icon = ReadWMHintIcon(this->window);
+   if(this->icon) {
       return;
    }
-   if(np->owner != None) {
-      np->icon = ReadNetWMIcon(np->owner);
-      if(np->icon) {
+   if(this->owner != None) {
+     this->icon = ReadNetWMIcon(this->owner);
+      if(this->icon) {
          return;
       }
    }
 
    /* Attempt to read an icon based on the window name. */
-   if(np->instanceName) {
-      np->icon = LoadNamedIcon(np->instanceName, 1, 1);
-      if(np->icon) {
+   if(this->instanceName) {
+     this->icon = LoadNamedIcon(this->instanceName, 1, 1);
+      if(this->icon) {
          return;
       }
    }
@@ -645,7 +645,7 @@ ScaledIconNode *GetScaledIcon(IconNode *icon, long fg,
 #endif
 
    /* Create a new ScaledIconNode the old-fashioned way. */
-   np = Allocate(sizeof(ScaledIconNode));
+   np = new ScaledIconNode;
    np->fg = fg;
    np->width = nwidth;
    np->height = nheight;
@@ -662,13 +662,13 @@ ScaledIconNode *GetScaledIcon(IconNode *icon, long fg,
    /* Create a temporary XImage for scaling. */
    image = JXCreateImage(display, rootVisual, rootDepth,
                          ZPixmap, 0, NULL, nwidth, nheight, 8, 0);
-   image->data = Allocate(sizeof(unsigned long) * nwidth * nheight);
+   image->data = new char[sizeof(unsigned long) * nwidth * nheight];
 
    /* Determine the scale factor. */
    scalex = (imageNode->width << 16) / nwidth;
    scaley = (imageNode->height << 16) / nheight;
 
-   points = Allocate(sizeof(XPoint) * nwidth);
+   points = new XPoint[nwidth];
    data = imageNode->data;
    if(imageNode->bitmap) {
       perLine = (imageNode->width >> 3) + ((imageNode->width & 7) ? 1 : 0);
@@ -793,8 +793,7 @@ IconNode *CreateIconFromBinary(const unsigned long *input,
 /** Create an empty icon node. */
 IconNode *CreateIcon(const ImageNode *image)
 {
-   IconNode *icon;
-   icon = Allocate(sizeof(IconNode));
+   IconNode *icon = new IconNode;
    icon->nodes = NULL;
    icon->name = NULL;
    icon->images = NULL;
