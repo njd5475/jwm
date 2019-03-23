@@ -15,6 +15,11 @@
 struct Menu;
 struct TrayComponentType;
 
+#ifndef DISPLAY_STRING_
+#define DISPLAY_STRING_
+static char *displayString = NULL;
+#endif
+
 class DesktopEnvironment {
 public:
   DesktopEnvironment();
@@ -27,6 +32,7 @@ public:
   virtual bool RegisterComponent(Component *component);
   virtual unsigned int ComponentCount() {return _componentCount;}
 
+  virtual bool OpenConnection();
   virtual void ShowDesktop();
   virtual void ChangeDesktop(short unsigned int num);
   virtual const char* GetDesktopName(short unsigned int num);

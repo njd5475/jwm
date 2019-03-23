@@ -104,6 +104,7 @@ TEST(DesktopEnvironment, RegisterComponentTest) {
 }
 
 int main(int argc, char **argv) {
+  assert(environment->OpenConnection());
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

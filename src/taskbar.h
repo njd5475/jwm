@@ -103,7 +103,7 @@ public:
    * @param cp The task bar component.
    * @param value The maximum width.
    */
-  static void SetMaxTaskBarItemWidth(struct TrayComponentType *cp, const char *value);
+  void SetMaxTaskBarItemWidth(const char *value);
 
   /** Set the preferred height of task bar items.
    * @param cp The task bar component.

@@ -1240,7 +1240,7 @@ void ParsePager(const TokenNode *tp, TrayType *tray) {
 
 /** Parse a task list tray component. */
 void ParseTaskList(const TokenNode *tp, TrayType *tray) {
-  TrayComponentType *cp;
+  TaskBarType *cp;
   const char *temp;
 
   Assert(tp);
@@ -1251,7 +1251,7 @@ void ParseTaskList(const TokenNode *tp, TrayType *tray) {
 
   temp = FindAttribute(tp->attributes, "maxwidth");
   if (temp) {
-    TaskBarType::SetMaxTaskBarItemWidth(cp, temp);
+    cp->SetMaxTaskBarItemWidth(temp);
   }
 
   temp = FindAttribute(tp->attributes, "height");

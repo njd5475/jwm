@@ -90,7 +90,7 @@ DesktopEnvironment::DesktopEnvironment() :
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
-  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     delete *it;
   }
   this->_components.clear();
@@ -122,25 +122,25 @@ char DesktopEnvironment::HandleDockResizeRequest(XResizeRequestEvent* event) {
 }
 
 void DesktopEnvironment::InitializeComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->initialize();
   }
 }
 
 void DesktopEnvironment::StartupComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->start();
   }
 }
 
 void DesktopEnvironment::ShutdownComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->stop();
   }
 }
 
 void DesktopEnvironment::DestroyComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin() ; it != this->_components.end(); ++it) {
+  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->destroy();
   }
 }
@@ -170,7 +170,7 @@ void DesktopEnvironment::SetBackground(int id, const char* file, char* const nam
 }
 
 TrayComponentType* DesktopEnvironment::CreateDock(int width) {
-  return this->CreateDock(width);
+  return new DockType(width);
 }
 
 Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {
@@ -183,4 +183,31 @@ Menu* DesktopEnvironment::CreateSendtoMenu(int desktop, void* mem) {
 
 char DesktopEnvironment::HandleDockSelectionClear(const XSelectionClearEvent* event) {
   return this->HandleDockSelectionClear(event);
+}
+
+bool DesktopEnvironment::OpenConnection() {
+  /** Open a connection to the X server. */
+
+  display = JXOpenDisplay(displayString);
+  if (JUNLIKELY(!display)) {
+    if (displayString) {
+      printf("error: could not open display %s\n", displayString);
+    } else {
+      printf("error: could not open display\n");
+    }
+    return false;
+  }
+
+  rootScreen = DefaultScreen(display);
+  rootWindow = RootWindow(display, rootScreen);
+  rootWidth = DisplayWidth(display, rootScreen);
+  rootHeight = DisplayHeight(display, rootScreen);
+  rootDepth = DefaultDepth(display, rootScreen);
+  rootVisual = DefaultVisual(display, rootScreen);
+  rootColormap = DefaultColormap(display, rootScreen);
+  rootGC = DefaultGC(display, rootScreen);
+  colormapCount = MaxCmapsOfScreen(ScreenOfDisplay(display, rootScreen));
+
+  XSetGraphicsExposures(display, rootGC, False);
+  return true;
 }

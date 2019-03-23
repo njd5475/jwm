@@ -873,11 +873,9 @@ TaskEntry *TaskBarType::GetEntry(int x, int y) {
 }
 
 /** Set the maximum width of an item in the task bar. */
-void TaskBarType::SetMaxTaskBarItemWidth(TrayComponentType *cp, const char *value) {
-  TaskBarType *bp = (TaskBarType*) cp->getObject();
+void TaskBarType::SetMaxTaskBarItemWidth(const char *value) {
   int temp;
 
-  Assert(cp);
   Assert(value);
 
   temp = atoi(value);
@@ -885,7 +883,7 @@ void TaskBarType::SetMaxTaskBarItemWidth(TrayComponentType *cp, const char *valu
     Warning(_("invalid maxwidth for TaskList: %s"), value);
     return;
   }
-  bp->maxItemWidth = temp;
+  this->maxItemWidth = temp;
 }
 
 /** Set the preferred height of the specified task bar. */

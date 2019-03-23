@@ -54,7 +54,6 @@ static void Startup(void);
 static void Shutdown(void);
 static void Destroy(void);
 
-static void OpenConnection(void);
 static void CloseConnection(void);
 static Bool SelectionReleased(Display *d, XEvent *e, XPointer arg);
 static void StartupConnection(void);
@@ -69,7 +68,6 @@ static void SendReload(void);
 static void SendJWMMessage(const char *message);
 static void log(int fd, const char *message);
 
-static char *displayString = NULL;
 static int fd = 0;
 /** The main entry point. */
 #ifndef UNIT_TEST
@@ -262,32 +260,6 @@ void EventLoop(void) {
 
 }
 
-/** Open a connection to the X server. */
-void OpenConnection(void) {
-
-  display = JXOpenDisplay(displayString);
-  if (JUNLIKELY(!display)) {
-    if (displayString) {
-      printf("error: could not open display %s\n", displayString);
-    } else {
-      printf("error: could not open display\n");
-    }
-    DoExit(1);
-  }
-
-  rootScreen = DefaultScreen(display);
-  rootWindow = RootWindow(display, rootScreen);
-  rootWidth = DisplayWidth(display, rootScreen);
-  rootHeight = DisplayHeight(display, rootScreen);
-  rootDepth = DefaultDepth(display, rootScreen);
-  rootVisual = DefaultVisual(display, rootScreen);
-  rootColormap = DefaultColormap(display, rootScreen);
-  rootGC = DefaultGC(display, rootScreen);
-  colormapCount = MaxCmapsOfScreen(ScreenOfDisplay(display, rootScreen));
-
-  XSetGraphicsExposures(display, rootGC, False);
-}
-
 /** Predicate for XIfEvent to determine if we got the WM_Sn selection. */
 Bool SelectionReleased(Display *d, XEvent *e, XPointer arg) {
   if (e->type == DestroyNotify) {
@@ -316,7 +288,9 @@ void StartupConnection(void) {
   int revert;
 
   initializing = 1;
-  OpenConnection();
+  if(!environment->OpenConnection()) {
+    DoExit(1);
+  }
 
 #if 0
   XSynchronize(display, True);
@@ -617,7 +591,9 @@ void SendReload(void) {
 /** Send a JWM message to the root window. */
 void SendJWMMessage(const char *message) {
   XEvent event;
-  OpenConnection();
+  if(!environment->OpenConnection()) {
+    DoExit(1);
+  }
   memset(&event, 0, sizeof(event));
   event.xclient.type = ClientMessage;
   event.xclient.window = rootWindow;
