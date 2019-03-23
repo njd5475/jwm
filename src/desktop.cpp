@@ -323,7 +323,7 @@ void _ShowDesktop(void)
    SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
                    showingDesktop[currentDesktop]);
    UngrabServer();
-   DrawTray();
+   TrayType::DrawTray();
 
 }
 

@@ -11,7 +11,6 @@
 
 #include "AbstractAction.h"
 
-struct ActionNode;
 struct TrayComponentType;
 
 /** Enumeration of actions.
@@ -20,7 +19,7 @@ struct TrayComponentType;
  */
 typedef struct ActionType {
   Actions action;
-   unsigned char extra;
+  unsigned char extra;
 } ActionType;
 
 /** Add an action to a list of actions.
@@ -28,36 +27,38 @@ typedef struct ActionType {
  * @param action The action to add to the list.
  * @param mask The mouse button mask.
  */
-void AddAction(struct ActionNode **actions, const char *action, int mask);
 
-/** Destroy a list of actions. */
-void DestroyActions(struct ActionNode *actions);
+class ActionNode {
 
-/** Process a button press event.
- * @param actions The action list.
- * @param cp The tray component.
- * @param x The mouse x-coordinate.
- * @param y The mouse y-coordinate.
- * @param button The mouse button.
- */
-void ProcessActionPress(struct ActionNode *actions,
-                        struct TrayComponentType *cp,
-                        int x, int y, int button);
+public:
+  ActionNode(const char* action, int mask);
+  virtual ~ActionNode();
 
-/** Process a button release event.
- * @param actions The action list.
- * @param cp The tray component.
- * @param x The mouse x-coordinate.
- * @param y The mouse y-coordinate.
- * @param button The mouse button.
- */
-void ProcessActionRelease(struct ActionNode *actions,
-                          struct TrayComponentType *cp,
-                          int x, int y, int button);
+  /** Process a button press event.
+   * @param actions The action list.
+   * @param cp The tray component.
+   * @param x The mouse x-coordinate.
+   * @param y The mouse y-coordinate.
+   * @param button The mouse button.
+   */
+  void ProcessActionPress(struct TrayComponentType *cp, int x, int y, int button);
 
-/** Validate actions.
- * @param actions The action list to validate.
- */
-void ValidateActions(const struct ActionNode *actions);
+  /** Process a button release event.
+   * @param actions The action list.
+   * @param cp The tray component.
+   * @param x The mouse x-coordinate.
+   * @param y The mouse y-coordinate.
+   * @param button The mouse button.
+   */
+  void ProcessActionRelease(struct TrayComponentType *cp, int x, int y, int button);
+
+  /** Validate actions.
+   * @param actions The action list to validate.
+   */
+  void ValidateAction();
+private:
+  char *action;
+  int mask;
+};
 
 #endif /* ACTION_H */

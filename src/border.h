@@ -71,7 +71,7 @@ public:
    * @param east Pointer to the value to contain the east border size.
    * @param west Pointer to the value to contain the west border size.
    */
-  static void GetBorderSize(struct ClientState *state,
+  static void GetBorderSize(const struct ClientState *state,
       int *north, int *south, int *east, int *west);
 
   /** Redraw all borders on the current desktop. */

@@ -1138,7 +1138,7 @@ unsigned Border::GetTitleHeight(void)
 }
 
 /** Get the size of the borders for a client. */
-void Border::GetBorderSize(ClientState *state,
+void Border::GetBorderSize(const ClientState *state,
                    int *north, int *south, int *east, int *west)
 {
    Assert(state);

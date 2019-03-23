@@ -10,55 +10,93 @@
 #ifndef DOCK_H
 #define DOCK_H
 
-struct TrayComponentType;
+#include "tray.h"
 
-/*@{*/
-void _InitializeDock(void);
-void _StartupDock(void);
-void _ShutdownDock(void);
-void _DestroyDock(void);
-/*@}*/
+/** Structure to represent a docked window. */
+typedef struct DockNode {
 
-/** Create a dock to be used for notifications.
- * Note that only one dock can be created.
- * @param width The width of an item in the dock.
- */
-struct TrayComponentType *_CreateDock(int width);
+  Window window;
+  char needs_reparent;
 
-/** Handle a client message sent to the dock window.
- * @param event The event.
- */
-void _HandleDockEvent(const XClientMessageEvent *event);
+  struct DockNode *next;
 
-/** Handle a destroy event.
- * @param win The window that was destroyed.
- * @return 1 if handled, 0 otherwise.
- */
-char _HandleDockDestroy(Window win);
+} DockNode;
 
-/** Handle a selection clear event.
- * @param event The selection clear event.
- * @return 1 if handled, 0 otherwise.
- */
-char _HandleDockSelectionClear(const XSelectionClearEvent *event);
+/** Structure to represent a dock tray component. */
+class DockType  : public TrayComponentType {
+public:
+  DockType(int width);
+  virtual ~DockType() {}
 
-/** Handle a resize request.
- * @param event The resize request event.
- * @return 1 if handled, 0 otherwise.
- */
-char _HandleDockResizeRequest(const XResizeRequestEvent *event);
+  Window window;
+  int itemSize;
 
-/** Handle a configure request.
- * @param event The configure request event.
- * @return 1 if handled, 0 otherwise.
- */
-char _HandleDockConfigureRequest(const XConfigureRequestEvent *event);
+  DockNode *nodes;
 
-/** Handle a reparent notify event.
- * @param event The reparent notify event.
- * @return 1 if handled, 0 otherwise.
- */
-char _HandleDockReparentNotify(const XReparentEvent *event);
+  static const char *BASE_SELECTION_NAME;
 
+  static DockType *dock;
+  static char owner;
+  static Atom dockAtom;
+  static unsigned long orientation;
+
+  void SetSize(int width, int height);
+  void Create();
+  void Resize();
+
+  static void _DockWindow(Window win);
+  static void _UpdateDock(void);
+  static void _GetDockItemSize(int *size);
+  static void _GetDockSize(int *width, int *height);
+
+  /*@{*/
+  static void _InitializeDock(void);
+  static void _StartupDock(void);
+  static void _ShutdownDock(void);
+  static void _DestroyDock(void);
+  /*@}*/
+
+  /** Create a dock to be used for notifications.
+   * Note that only one dock can be created.
+   * @param width The width of an item in the dock.
+   */
+  struct TrayComponentType *_CreateDock(int width);
+
+  /** Handle a client message sent to the dock window.
+   * @param event The event.
+   */
+  void _HandleDockEvent(const XClientMessageEvent *event);
+
+  /** Handle a destroy event.
+   * @param win The window that was destroyed.
+   * @return 1 if handled, 0 otherwise.
+   */
+  char _HandleDockDestroy(Window win);
+
+  /** Handle a selection clear event.
+   * @param event The selection clear event.
+   * @return 1 if handled, 0 otherwise.
+   */
+  char _HandleDockSelectionClear(const XSelectionClearEvent *event);
+
+  /** Handle a resize request.
+   * @param event The resize request event.
+   * @return 1 if handled, 0 otherwise.
+   */
+  char _HandleDockResizeRequest(const XResizeRequestEvent *event);
+
+  /** Handle a configure request.
+   * @param event The configure request event.
+   * @return 1 if handled, 0 otherwise.
+   */
+  char _HandleDockConfigureRequest(const XConfigureRequestEvent *event);
+
+  /** Handle a reparent notify event.
+   * @param event The reparent notify event.
+   * @return 1 if handled, 0 otherwise.
+   */
+  char _HandleDockReparentNotify(const XReparentEvent *event);
+
+};
 #endif
 

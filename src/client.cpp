@@ -30,7 +30,7 @@
 
 #include <X11/Xlibint.h>
 
-static ClientNode *ClientNode::activeClient;
+ClientNode *ClientNode::activeClient;
 
 unsigned int ClientNode::clientCount;
 
@@ -232,7 +232,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   }
 
   /* Update task bars. */
-  AddClientToTaskBar(this);
+  TaskBarType::AddClientToTaskBar(this);
 
   /* Make sure we're still in sync */
   WriteState(this);
@@ -1106,7 +1106,7 @@ void ClientNode::RestackClients(void) {
   }
 
   /* Allocate memory for restacking. */
-  trayCount = GetTrayCount();
+  trayCount = TrayType::GetTrayCount();
   stack = AllocateStack((clientCount + trayCount) * sizeof(Window));
 
   /* Prepare the stacking array. */
@@ -1148,9 +1148,9 @@ void ClientNode::RestackClients(void) {
       }
     }
 
-    for (tp = GetTrays(); tp; tp = tp->next) {
-      if (layer == tp->layer) {
-        stack[index] = tp->window;
+    for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+      if (layer == tp->getLayer()) {
+        stack[index] = tp->getWindow();
         index += 1;
       }
     }
@@ -1165,7 +1165,7 @@ void ClientNode::RestackClients(void) {
   JXRestackWindows(display, stack, index);
 
   ReleaseStack(stack);
-  UpdateNetClientList();
+  TaskBarType::UpdateNetClientList();
   _RequirePagerUpdate();
 
 }
@@ -1268,7 +1268,7 @@ void ClientNode::RemoveClient() {
     JXFree(this->className);
   }
 
-  RemoveClientFromTaskBar(this);
+  TaskBarType::RemoveClientFromTaskBar(this);
   RemoveClientStrut(this);
 
   while (this->colormaps) {

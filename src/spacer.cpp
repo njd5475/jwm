@@ -12,73 +12,45 @@
 #include "spacer.h"
 #include "tray.h"
 
-static void Create(TrayComponentType *cp);
-static void Destroy(TrayComponentType *cp);
-static void SetSize(TrayComponentType *cp, int width, int height);
-static void Resize(TrayComponentType *cp);
 
 /** Create a spacer tray component. */
-TrayComponentType *CreateSpacer(int width, int height)
-{
+Spacer::Spacer(int width, int height) {
+  if (JUNLIKELY(width < 0)) {
+    width = 0;
+  }
+  if (JUNLIKELY(height < 0)) {
+    height = 0;
+  }
 
-   TrayComponentType *cp;
-
-   if(JUNLIKELY(width < 0)) {
-      width = 0;
-   }
-   if(JUNLIKELY(height < 0)) {
-      height = 0;
-   }
-
-   cp = CreateTrayComponent();
-   cp->requestedWidth = width;
-   cp->requestedHeight = height;
-
-   cp->Create = Create;
-   cp->Destroy = Destroy;
-   cp->SetSize = SetSize;
-   cp->Resize = Resize;
-
-   return cp;
-
+  this->requestNewSize(width, height);
+  this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
+  TrayType::ClearTrayDrawable(this);
 }
 
 /** Set the size. */
-void SetSize(TrayComponentType *cp, int width, int height)
-{
-   if(width == 0) {
-      cp->width = cp->requestedWidth;
-      cp->height = height;
-   } else {
-      cp->width = width;
-      cp->height = cp->requestedHeight;
-   }
-}
-
-/** Initialize. */
-void Create(TrayComponentType *cp)
-{
-   cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height,
-                               rootDepth);
-   ClearTrayDrawable(cp);
+void Spacer::SetSize(int width, int height) {
+  if (width == 0) {
+    this->width = this->getRequestedWidth();
+    this->height = height;
+  } else {
+    this->width = width;
+    this->height = this->requestedHeight;
+  }
 }
 
 /** Resize. */
-void Resize(TrayComponentType *cp)
-{
-   if(cp->pixmap != None) {
-      JXFreePixmap(display, cp->pixmap);
-   }
-   cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height,
-                               rootDepth);
-   ClearTrayDrawable(cp);
+void Spacer::Resize() {
+  if (this->getPixmap() != None) {
+    JXFreePixmap(display, this->getPixmap());
+  }
+  this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
+  TrayType::ClearTrayDrawable(this);
 }
 
 /** Destroy. */
-void Destroy(TrayComponentType *cp)
-{
-   if(cp->pixmap != None) {
-      JXFreePixmap(display, cp->pixmap);
-   }
+void Spacer::Destroy() {
+  if (this->getPixmap() != None) {
+    JXFreePixmap(display, this->getPixmap());
+  }
 }
 

@@ -120,8 +120,8 @@ void StartupBindings(void)
          GrabKey(np, rootWindow);
 
          /* Grab on the trays. */
-         for(tp = GetTrays(); tp; tp = tp->next) {
-            GrabKey(np, tp->window);
+         for(tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+            GrabKey(np, tp->getWindow());
          }
 
       }
@@ -144,8 +144,8 @@ void ShutdownBindings(void)
    }
 
    /* Ungrab keys on trays, only really needed if we are restarting. */
-   for(tp = GetTrays(); tp; tp = tp->next) {
-      JXUngrabKey(display, AnyKey, AnyModifier, tp->window);
+   for(tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+      JXUngrabKey(display, AnyKey, AnyModifier, tp->getWindow());
    }
 
    /* Ungrab keys on the root. */

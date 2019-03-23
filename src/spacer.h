@@ -9,14 +9,22 @@
 #ifndef SPACER_H
 #define SPACER_H
 
-struct TrayComponentType;
+#include "tray.h"
 
 /** Create a spacer tray component.
  * @param width Minimum width.
  * @param height Minimum height.
  * @return A new spacer tray component.
  */
-struct TrayComponentType *CreateSpacer(int width, int height);
+
+class Spacer : public TrayComponentType {
+public:
+  Spacer(int width, int height);
+
+  void Destroy();
+  void SetSize(int width, int height);
+  void Resize();
+};
 
 #endif /* SPACER_H */
 

@@ -27,68 +27,15 @@
 #include "misc.h"
 #include "DesktopEnvironment.h"
 
-typedef struct TaskBarType {
-
-  TrayComponentType *cp;
-  struct TaskBarType *next;
-
-  int maxItemWidth;
-  int userHeight;
-  int itemHeight;
-  int itemWidth;
-  LayoutType layout;
-  char labeled;
-
-  Pixmap buffer;
-
-  TimeType mouseTime;
-  int mousex, mousey;
-
-} TaskBarType;
-
-typedef struct ClientEntry {
-  ClientNode *client;
-  struct ClientEntry *next;
-  struct ClientEntry *prev;
-} ClientEntry;
-
-typedef struct TaskEntry {
-  ClientEntry *clients;
-  struct TaskEntry *next;
-  struct TaskEntry *prev;
-} TaskEntry;
-
-static TaskBarType *bars;
-static TaskEntry *taskEntries;
-static TaskEntry *taskEntriesTail;
-
-static void ComputeItemSize(TaskBarType *tp);
-static char ShouldShowEntry(const TaskEntry *tp);
-static char ShouldFocusEntry(const TaskEntry *tp);
-static TaskEntry *GetEntry(TaskBarType *bar, int x, int y);
-static void Render(const TaskBarType *bp);
-static void ShowClientList(TaskBarType *bar, TaskEntry *tp);
-static void RunTaskBarCommand(MenuAction *action, unsigned button);
-
-static void SetSize(TrayComponentType *cp, int width, int height);
-static void Create(TrayComponentType *cp);
-static void Resize(TrayComponentType *cp);
-static void ProcessTaskButtonEvent(TrayComponentType *cp, int x, int y, int mask);
-static void MinimizeGroup(const TaskEntry *tp);
-static void FocusGroup(const TaskEntry *tp);
-static char IsGroupOnTop(const TaskEntry *entry);
-static void ProcessTaskMotionEvent(TrayComponentType *cp, int x, int y, int mask);
-static void SignalTaskbar(const TimeType *now, int x, int y, Window w, void *data);
-
 /** Initialize task bar data. */
-void InitializeTaskBar(void) {
+void TaskBarType::InitializeTaskBar(void) {
   bars = NULL;
   taskEntries = NULL;
   taskEntriesTail = NULL;
 }
 
 /** Shutdown the task bar. */
-void ShutdownTaskBar(void) {
+void TaskBarType::ShutdownTaskBar(void) {
   TaskBarType *bp;
   for (bp = bars; bp; bp = bp->next) {
     JXFreePixmap(display, bp->buffer);
@@ -96,7 +43,7 @@ void ShutdownTaskBar(void) {
 }
 
 /** Destroy task bar data. */
-void DestroyTaskBar(void) {
+void TaskBarType::DestroyTaskBar(void) {
   TaskBarType *bp;
   while (bars) {
     bp = bars->next;
@@ -107,90 +54,65 @@ void DestroyTaskBar(void) {
 }
 
 /** Create a new task bar tray component. */
-TrayComponentType *CreateTaskBar() {
-
-  TrayComponentType *cp;
-  TaskBarType *tp = new TaskBarType;
-  tp->next = bars;
-  bars = tp;
-  tp->itemHeight = 0;
-  tp->itemWidth = 0;
-  tp->userHeight = 0;
-  tp->maxItemWidth = 0;
-  tp->layout = LAYOUT_HORIZONTAL;
-  tp->labeled = 1;
-  tp->mousex = -settings.doubleClickDelta;
-  tp->mousey = -settings.doubleClickDelta;
-  tp->mouseTime.seconds = 0;
-  tp->mouseTime.ms = 0;
-
-  cp = CreateTrayComponent();
-  cp->object = tp;
-  tp->cp = cp;
-
-  cp->SetSize = SetSize;
-  cp->Create = Create;
-  cp->Resize = Resize;
-  cp->ProcessButtonPress = ProcessTaskButtonEvent;
-  cp->ProcessMotionEvent = ProcessTaskMotionEvent;
-
-  _RegisterCallback(settings.popupDelay / 2, SignalTaskbar, tp);
-
-  return cp;
-
+TaskBarType::TaskBarType() {
+  this->next = bars;
+  bars = this;
+  this->itemHeight = 0;
+  this->itemWidth = 0;
+  this->userHeight = 0;
+  this->maxItemWidth = 0;
+  this->layout = LAYOUT_HORIZONTAL;
+  this->labeled = 1;
+  this->mousex = -settings.doubleClickDelta;
+  this->mousey = -settings.doubleClickDelta;
+  this->mouseTime.seconds = 0;
+  this->mouseTime.ms = 0;
+  this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
+  this->buffer = this->pixmap;
+  TrayType::ClearTrayDrawable(this);
+  _RegisterCallback(settings.popupDelay / 2, SignalTaskbar, this);
 }
 
 /** Set the size of a task bar tray component. */
-void SetSize(TrayComponentType *cp, int width, int height) {
-  TaskBarType *tp = (TaskBarType*) cp->object;
+void TaskBarType::SetSize(int width, int height) {
   if (width == 0) {
-    tp->layout = LAYOUT_HORIZONTAL;
+    this->layout = LAYOUT_HORIZONTAL;
   } else if (height == 0) {
-    tp->layout = LAYOUT_VERTICAL;
+    this->layout = LAYOUT_VERTICAL;
   } else if (width > height) {
-    tp->layout = LAYOUT_HORIZONTAL;
+    this->layout = LAYOUT_HORIZONTAL;
   } else {
-    tp->layout = LAYOUT_VERTICAL;
+    this->layout = LAYOUT_VERTICAL;
   }
-}
-
-/** Initialize a task bar tray component. */
-void Create(TrayComponentType *cp) {
-  TaskBarType *tp = (TaskBarType*) cp->object;
-  cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height, rootDepth);
-  tp->buffer = cp->pixmap;
-  ClearTrayDrawable(cp);
 }
 
 /** Resize a task bar tray component. */
-void Resize(TrayComponentType *cp) {
-  TaskBarType *tp = (TaskBarType*) cp->object;
-  if (tp->buffer != None) {
-    JXFreePixmap(display, tp->buffer);
+void TaskBarType::Resize() {
+  if (this->buffer != None) {
+    JXFreePixmap(display, this->buffer);
   }
-  cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height, rootDepth);
-  tp->buffer = cp->pixmap;
-  ClearTrayDrawable(cp);
+  this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
+  this->buffer = this->pixmap;
+  TrayType::ClearTrayDrawable(this);
 }
 
 /** Determine the size of items in the task bar. */
-void ComputeItemSize(TaskBarType *tp) {
-  TrayComponentType *cp = tp->cp;
-  if (tp->layout == LAYOUT_VERTICAL) {
+void TaskBarType::ComputeItemSize() {
+  if (this->layout == LAYOUT_VERTICAL) {
 
-    if (tp->userHeight > 0) {
-      tp->itemHeight = tp->userHeight;
+    if (this->userHeight > 0) {
+      this->itemHeight = this->userHeight;
     } else {
-      tp->itemHeight = GetStringHeight(FONT_TASKLIST) + 12;
+      this->itemHeight = GetStringHeight(FONT_TASKLIST) + 12;
     }
-    tp->itemWidth = cp->width;
+    this->itemWidth = this->getWidth();
 
   } else {
 
     TaskEntry *ep;
     unsigned itemCount = 0;
 
-    tp->itemHeight = cp->height;
+    this->itemHeight = this->getHeight();
     for (ep = taskEntries; ep; ep = ep->next) {
       if (ShouldShowEntry(ep)) {
         itemCount += 1;
@@ -200,18 +122,18 @@ void ComputeItemSize(TaskBarType *tp) {
       return;
     }
 
-    tp->itemWidth = Max(1, cp->width / itemCount);
-    if (!tp->labeled) {
-      tp->itemWidth = Min(tp->itemHeight, tp->itemWidth);
+    this->itemWidth = Max(1, this->getWidth() / itemCount);
+    if (!this->labeled) {
+      this->itemWidth = Min(this->itemHeight, this->itemWidth);
     }
-    if (tp->maxItemWidth > 0) {
-      tp->itemWidth = Min(tp->maxItemWidth, tp->itemWidth);
+    if (this->maxItemWidth > 0) {
+      this->itemWidth = Min(this->maxItemWidth, this->itemWidth);
     }
   }
 }
 
 /** Check if all clients in this grou are on the top of their layer. */
-char IsGroupOnTop(const TaskEntry *entry) {
+char TaskBarType::IsGroupOnTop(const TaskEntry *entry) {
   ClientEntry *cp;
   int layer;
 
@@ -239,10 +161,8 @@ char IsGroupOnTop(const TaskEntry *entry) {
 }
 
 /** Process a task list button event. */
-void ProcessTaskButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
-
-  TaskBarType *bar = (TaskBarType*) cp->object;
-  TaskEntry *entry = GetEntry(bar, x, y);
+void TaskBarType::ProcessTaskButtonEvent(int x, int y, int mask) {
+  TaskEntry *entry = this->GetEntry(x, y);
 
   if (entry) {
     ClientEntry *cp;
@@ -332,7 +252,7 @@ void ProcessTaskButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
       }
       break;
     case Button3:
-      ShowClientList(bar, entry);
+      ShowClientList(this, entry);
       break;
     case Button4:
       FocusPrevious();
@@ -348,7 +268,7 @@ void ProcessTaskButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
 }
 
 /** Minimize all clients in a group. */
-void MinimizeGroup(const TaskEntry *tp) {
+void TaskBarType::MinimizeGroup(const TaskEntry *tp) {
   ClientEntry *cp;
   for (cp = tp->clients; cp; cp = cp->next) {
     if (ShouldFocus(cp->client, 1)) {
@@ -358,7 +278,7 @@ void MinimizeGroup(const TaskEntry *tp) {
 }
 
 /** Raise all clients in a group and focus the top-most. */
-void FocusGroup(const TaskEntry *tp) {
+void TaskBarType::FocusGroup(const TaskEntry *tp) {
   const char *className = tp->clients->client->getClassName();
   ClientNode **toRestore;
   const ClientEntry *cp;
@@ -432,15 +352,15 @@ void FocusGroup(const TaskEntry *tp) {
 }
 
 /** Process a task list motion event. */
-void ProcessTaskMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
-  TaskBarType *bp = (TaskBarType*) cp->object;
-  bp->mousex = cp->screenx + x;
-  bp->mousey = cp->screeny + y;
+void TaskBarType::ProcessTaskMotionEvent(int x, int y, int mask) {
+  TaskBarType *bp = (TaskBarType*) this->getObject();
+  bp->mousex = this->getScreenX() + x;
+  bp->mousey = this->getScreenY() + y;
   GetCurrentTime(&bp->mouseTime);
 }
 
 /** Show the menu associated with a task list item. */
-void ShowClientList(TaskBarType *bar, TaskEntry *tp) {
+void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
   Menu *menu;
   MenuItem *item;
   ClientEntry *cp;
@@ -518,25 +438,25 @@ void ShowClientList(TaskBarType *bar, TaskEntry *tp) {
 
   /* Initialize and position the menu. */
   InitializeMenu(menu);
-  sp = GetCurrentScreen(bar->cp->screenx, bar->cp->screeny);
+  sp = GetCurrentScreen(bar->cp->getScreenX(), bar->cp->getScreenY());
   GetMousePosition(&x, &y, &w);
   if (bar->layout == LAYOUT_HORIZONTAL) {
-    if (bar->cp->screeny + bar->cp->height / 2 < sp->y + sp->height / 2) {
+    if (bar->cp->getScreenY() + bar->cp->getHeight() / 2 < sp->y + sp->height / 2) {
       /* Bottom of the screen: menus go up. */
-      y = bar->cp->screeny + bar->cp->height;
+      y = bar->cp->getScreenY() + bar->cp->getHeight();
     } else {
       /* Top of the screen: menus go down. */
-      y = bar->cp->screeny - menu->height;
+      y = bar->cp->getScreenY() - menu->height;
     }
     x -= menu->width / 2;
     x = Max(x, sp->x);
   } else {
-    if (bar->cp->screenx + bar->cp->width / 2 < sp->x + sp->width / 2) {
+    if (bar->cp->getScreenX() + bar->cp->getWidth() / 2 < sp->x + sp->width / 2) {
       /* Left side: menus go right. */
-      x = bar->cp->screenx + bar->cp->width;
+      x = bar->cp->getScreenX() + bar->cp->getWidth();
     } else {
       /* Right side: menus go left. */
-      x = bar->cp->screenx - menu->width;
+      x = bar->cp->getScreenX() - menu->width;
     }
     y -= menu->height / 2;
     y = Max(y, sp->y);
@@ -549,7 +469,7 @@ void ShowClientList(TaskBarType *bar, TaskEntry *tp) {
 }
 
 /** Run a menu action. */
-void RunTaskBarCommand(MenuAction *action, unsigned button) {
+void TaskBarType::RunTaskBarCommand(MenuAction *action, unsigned button) {
   ClientEntry *cp;
 
   if (action->type & MA_GROUP_MASK) {
@@ -593,7 +513,7 @@ void RunTaskBarCommand(MenuAction *action, unsigned button) {
 }
 
 /** Add a client to the task bar. */
-void AddClientToTaskBar(ClientNode *np) {
+void TaskBarType::AddClientToTaskBar(ClientNode *np) {
   TaskEntry *tp = NULL;
   ClientEntry *cp = new ClientEntry;
   cp->client = np;
@@ -632,7 +552,7 @@ void AddClientToTaskBar(ClientNode *np) {
 }
 
 /** Remove a client from the task bar. */
-void RemoveClientFromTaskBar(ClientNode *np) {
+void TaskBarType::RemoveClientFromTaskBar(ClientNode *np) {
   TaskEntry *tp;
   for (tp = taskEntries; tp; tp = tp->next) {
     ClientEntry *cp;
@@ -669,49 +589,49 @@ void RemoveClientFromTaskBar(ClientNode *np) {
 }
 
 /** Update all task bars. */
-void UpdateTaskBar(void) {
-  TaskBarType *bp;
+void TaskBarType::UpdateTaskBar(void) {
   int lastHeight = -1;
 
   if (JUNLIKELY(shouldExit)) {
     return;
   }
 
-  for (bp = bars; bp; bp = bp->next) {
-    if (bp->layout == LAYOUT_VERTICAL) {
-      TaskEntry *tp;
-      lastHeight = bp->cp->requestedHeight;
-      if (bp->userHeight > 0) {
-        bp->itemHeight = bp->userHeight;
+  TaskBarType *bar;
+  for (bar = bars; bar; bar = bar->next) {
+    if (bar->layout == LAYOUT_VERTICAL) {
+      TaskEntry *taskEntry;
+      lastHeight = bar->requestedHeight;
+      if (bar->userHeight > 0) {
+        bar->itemHeight = bar->userHeight;
       } else {
-        bp->itemHeight = GetStringHeight(FONT_TASKLIST) + 12;
+        bar->itemHeight = GetStringHeight(FONT_TASKLIST) + 12;
       }
-      bp->cp->requestedHeight = 0;
-      for (tp = taskEntries; tp; tp = tp->next) {
-        if (ShouldShowEntry(tp)) {
-          bp->cp->requestedHeight += bp->itemHeight;
+      bar->requestedHeight = 0;
+      for (taskEntry = taskEntries; taskEntry; taskEntry = taskEntry->next) {
+        if (bar->ShouldShowEntry(taskEntry)) {
+          bar->requestedHeight += bar->itemHeight;
         }
       }
-      bp->cp->requestedHeight = Max(1, bp->cp->requestedHeight);
-      if (lastHeight != bp->cp->requestedHeight) {
-        ResizeTray(bp->cp->tray);
+      bar->requestedHeight = Max(1, bar->requestedHeight);
+      if (lastHeight != bar->requestedHeight) {
+        bar->getTray()->ResizeTray();
       }
     }
-    ComputeItemSize(bp);
-    Render(bp);
+    bar->ComputeItemSize();
+    bar->Render();
   }
 }
 
 /** Signal task bar (for popups). */
-void SignalTaskbar(const TimeType *now, int x, int y, Window w, void *data) {
+void TaskBarType::SignalTaskbar(const TimeType *now, int x, int y, Window w, void *data) {
 
   TaskBarType *bp = (TaskBarType*) data;
   TaskEntry *ep;
 
-  if (w == bp->cp->tray->window && abs(bp->mousex - x) < settings.doubleClickDelta
+  if (w == bp->getTray()->getWindow() && abs(bp->mousex - x) < settings.doubleClickDelta
       && abs(bp->mousey - y) < settings.doubleClickDelta) {
     if (GetTimeDifference(now, &bp->mouseTime) >= settings.popupDelay) {
-      ep = GetEntry(bp, x - bp->cp->screenx, y - bp->cp->screeny);
+      ep = bp->GetEntry(x - bp->getScreenX(), y - bp->getScreenY());
       if (settings.groupTasks) {
         if (ep && ep->clients->client->getClassName()) {
           ShowPopup(x, y, ep->clients->client->getClassName(), POPUP_TASK);
@@ -727,7 +647,7 @@ void SignalTaskbar(const TimeType *now, int x, int y, Window w, void *data) {
 }
 
 /** Draw a specific task bar. */
-void Render(const TaskBarType *bp) {
+void TaskBarType::Render() {
   TaskEntry *tp;
   char *displayName;
   ButtonNode button;
@@ -737,17 +657,17 @@ void Render(const TaskBarType *bp) {
     return;
   }
 
-  ClearTrayDrawable(bp->cp);
+  TrayType::ClearTrayDrawable(this);
   if (!taskEntries) {
-    UpdateSpecificTray(bp->cp->tray, bp->cp);
+    this->UpdateSpecificTray(this->getTray());
     return;
   }
 
-  ResetButton(&button, bp->cp->pixmap);
+  ResetButton(&button, this->getPixmap());
   button.border = settings.taskListDecorations == DECO_MOTIF;
   button.font = FONT_TASKLIST;
-  button.height = bp->itemHeight;
-  button.width = bp->itemWidth;
+  button.height = this->itemHeight;
+  button.width = this->itemWidth;
   button.text = NULL;
 
   x = 0;
@@ -784,7 +704,7 @@ void Render(const TaskBarType *bp) {
       button.icon = tp->clients->client->getIcon();
     }
     displayName = NULL;
-    if (bp->labeled) {
+    if (this->labeled) {
       if (tp->clients->client->getClassName() && settings.groupTasks) {
         if (clientCount != 1) {
           const size_t len = strlen(tp->clients->client->getClassName()) + 16;
@@ -803,19 +723,19 @@ void Render(const TaskBarType *bp) {
       Release(displayName);
     }
 
-    if (bp->layout == LAYOUT_HORIZONTAL) {
-      x += bp->itemWidth;
+    if (this->layout == LAYOUT_HORIZONTAL) {
+      x += this->itemWidth;
     } else {
-      y += bp->itemHeight;
+      y += this->itemHeight;
     }
   }
 
-  UpdateSpecificTray(bp->cp->tray, bp->cp);
+  this->UpdateSpecificTray(this->getTray());
 
 }
 
 /** Focus the next client in the task bar. */
-void FocusNext(void) {
+void TaskBarType::FocusNext(void) {
   TaskEntry *tp;
 
   /* Find the current entry. */
@@ -856,7 +776,7 @@ void FocusNext(void) {
 }
 
 /** Focus the previous client in the task bar. */
-void FocusPrevious(void) {
+void TaskBarType::FocusPrevious(void) {
   TaskEntry *tp;
 
   /* Find the current entry. */
@@ -898,7 +818,7 @@ void FocusPrevious(void) {
 }
 
 /** Determine if there is anything to show for the specified entry. */
-char ShouldShowEntry(const TaskEntry *tp) {
+char TaskBarType::ShouldShowEntry(const TaskEntry *tp) {
   const ClientEntry *cp;
   for (cp = tp->clients; cp; cp = cp->next) {
     if (ShouldFocus(cp->client, 0)) {
@@ -909,7 +829,7 @@ char ShouldShowEntry(const TaskEntry *tp) {
 }
 
 /** Determine if we should attempt to focus an entry. */
-char ShouldFocusEntry(const TaskEntry *tp) {
+char TaskBarType::ShouldFocusEntry(const TaskEntry *tp) {
   const ClientEntry *cp;
   for (cp = tp->clients; cp; cp = cp->next) {
     if (cp->client->getState()->status & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
@@ -921,8 +841,13 @@ char ShouldFocusEntry(const TaskEntry *tp) {
   return 0;
 }
 
+
+TaskBarType *TaskBarType::bars = NULL;
+TaskEntry *TaskBarType::taskEntries = NULL;
+TaskEntry *TaskBarType::taskEntriesTail = NULL;
+
 /** Get the item associated with a coordinate on the task bar. */
-TaskEntry *GetEntry(TaskBarType *bar, int x, int y) {
+TaskEntry *TaskBarType::GetEntry(int x, int y) {
   TaskEntry *tp;
   int offset;
 
@@ -931,13 +856,13 @@ TaskEntry *GetEntry(TaskBarType *bar, int x, int y) {
     if (!ShouldShowEntry(tp)) {
       continue;
     }
-    if (bar->layout == LAYOUT_HORIZONTAL) {
-      offset += bar->itemWidth;
+    if (this->layout == LAYOUT_HORIZONTAL) {
+      offset += this->itemWidth;
       if (x < offset) {
         return tp;
       }
     } else {
-      offset += bar->itemHeight;
+      offset += this->itemHeight;
       if (y < offset) {
         return tp;
       }
@@ -948,8 +873,8 @@ TaskEntry *GetEntry(TaskBarType *bar, int x, int y) {
 }
 
 /** Set the maximum width of an item in the task bar. */
-void SetMaxTaskBarItemWidth(TrayComponentType *cp, const char *value) {
-  TaskBarType *bp = (TaskBarType*) cp->object;
+void TaskBarType::SetMaxTaskBarItemWidth(TrayComponentType *cp, const char *value) {
+  TaskBarType *bp = (TaskBarType*) cp->getObject();
   int temp;
 
   Assert(cp);
@@ -964,8 +889,8 @@ void SetMaxTaskBarItemWidth(TrayComponentType *cp, const char *value) {
 }
 
 /** Set the preferred height of the specified task bar. */
-void SetTaskBarHeight(TrayComponentType *cp, const char *value) {
-  TaskBarType *bp = (TaskBarType*) cp->object;
+void TaskBarType::SetTaskBarHeight(TrayComponentType *cp, const char *value) {
+  TaskBarType *bp = (TaskBarType*) cp->getObject();
   int temp;
 
   temp = atoi(value);
@@ -977,13 +902,13 @@ void SetTaskBarHeight(TrayComponentType *cp, const char *value) {
 }
 
 /** Set whether the label should be displayed. */
-void SetTaskBarLabeled(TrayComponentType *cp, char labeled) {
-  TaskBarType *bp = (TaskBarType*) cp->object;
+void TaskBarType::SetTaskBarLabeled(TrayComponentType *cp, char labeled) {
+  TaskBarType *bp = (TaskBarType*) cp->getObject();
   bp->labeled = labeled;
 }
 
 /** Maintain the _NET_CLIENT_LIST[_STACKING] properties on the root. */
-void UpdateNetClientList(void) {
+void TaskBarType::UpdateNetClientList(void) {
   TaskEntry *tp;
   ClientNode *client;
   Window *windows;

@@ -97,16 +97,9 @@ TrayComponentType *CreateBattery(int width, int height) {
 
   batteries = bat; //move to head
 
-  cp = CreateTrayComponent();
-  cp->object = bat;
-  cp->width = 20;
-  cp->height = 20;
+  cp = new TrayComponentType();
+  cp->SetSize(20, 20);
   bat->cp = cp;
-  cp->Create = Create;
-  cp->Resize = Resize;
-  cp->Destroy = Destroy;
-  cp->ProcessButtonPress = ProcessBatteryButtonPress;
-  cp->ProcessButtonRelease = ProcessBatteryMotionEvent;
 
   _RegisterCallback(900, PollBattery, bat);
 
@@ -123,23 +116,23 @@ void Create(TrayComponentType *cp) {
 
 /** Resize a Battery tray component. */
 void Resize(TrayComponentType *cp) {
-  Warning(_("Battery received a resize call, width: %d, height: %d"), cp->width, cp->height);
+  Warning(_("Battery received a resize call, width: %d, height: %d"), cp->getWidth(), cp->getHeight());
 
   BatteryType *bat;
   TimeType now;
 
   Assert(cp);
 
-  bat = (BatteryType*)cp->object;
+  bat = (BatteryType*)cp->getObject();
 
   Assert(clk);
 
-  if(cp->pixmap != None) {
+  if(cp->getPixmap() != None) {
     Warning(_("Battery pixmap released!"));
-     JXFreePixmap(display, cp->pixmap);
+     JXFreePixmap(display, cp->getPixmap());
   }
 
-  cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height, rootDepth);
+  cp->setPixmap(JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(), rootDepth));
 
   DrawBattery(bat, QueryBatteryPercentage());
 }
@@ -179,21 +172,21 @@ void DrawBattery(BatteryType *bat, float percentage) {
   }
 
   JXSetForeground(display, rootGC, colors[COLOR_CLOCK_BG1]);
-  JXFillRectangle(display, bat->cp->pixmap, rootGC, 0, 0, bat->cp->width, bat->cp->height);
+  JXFillRectangle(display, bat->cp->getPixmap(), rootGC, 0, 0, bat->cp->getWidth(), bat->cp->getHeight());
 
   static char buf[80];
   sprintf(buf, "%d%%", (int)percentage);
   int strWidth = GetStringWidth(FONT_CLOCK, buf); 
   strWidth += 16;
-  if(strWidth == bat->cp->requestedWidth) {
-     RenderString(bat->cp->pixmap, FONT_CLOCK, COLOR_CLOCK_FG,
-       (bat->cp->width - strWidth)/2, (bat->cp->height - GetStringHeight(FONT_CLOCK))/2, bat->cp->width, buf);
+  if(strWidth == bat->cp->getRequestedWidth()) {
+     RenderString(bat->cp->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG,
+       (bat->cp->getWidth() - strWidth)/2, (bat->cp->getHeight() - GetStringHeight(FONT_CLOCK))/2, bat->cp->getWidth(), buf);
 
-     UpdateSpecificTray(bat->cp->tray, bat->cp);
+     bat->cp->UpdateSpecificTray(bat->cp->getTray());
   } else {
     Warning(_("Requesting the tray to give us a better size"));
-    bat->cp->requestedWidth = strWidth;
-    ResizeTray(bat->cp->tray);
+    bat->cp->requestNewSize(strWidth, bat->cp->getRequestedHeight());
+    bat->cp->getTray()->ResizeTray();
   }
 
   //update battery level

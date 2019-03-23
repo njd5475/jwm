@@ -30,6 +30,7 @@
 #include "grab.h"
 #include "action.h"
 #include "binding.h"
+#include "pager.h"
 #include "DesktopEnvironment.h"
 
 #define MIN_TIME_DELTA 50
@@ -206,13 +207,13 @@ char _WaitForEvent(XEvent *event) {
     }
 
     if (!handled) {
-      handled = ProcessTrayEvent(event);
+      handled = TrayType::ProcessTrayEvent(event);
     }
     if (!handled) {
       handled = ProcessDialogEvent(event);
     }
     if (!handled) {
-      handled = ProcessSwallowEvent(event);
+      handled = SwallowNode::ProcessSwallowEvent(event);
     }
     if (!handled) {
       handled = ProcessPopupEvent(event);
@@ -239,11 +240,11 @@ void _Signal(void) {
     restack_pending = 0;
   }
   if (task_update_pending) {
-    UpdateTaskBar();
+    TaskBarType::UpdateTaskBar();
     task_update_pending = 0;
   }
   if (pager_update_pending) {
-    UpdatePager();
+    PagerType::UpdatePager();
     pager_update_pending = 0;
   }
 
@@ -474,11 +475,11 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
     DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
     break;
   case SHOWTRAY:
-    ShowAllTrays();
+    TrayType::ShowAllTrays();
     break;
   case NEXT:
     StartWindowWalk();
-    FocusNext();
+    TaskBarType::FocusNext();
     break;
   case NEXTSTACK:
     StartWindowStackWalk();
@@ -486,7 +487,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
     break;
   case PREV:
     StartWindowWalk();
-    FocusPrevious();
+    TaskBarType::FocusPrevious();
     break;
   case PREVSTACK:
     StartWindowStackWalk();
@@ -1463,7 +1464,7 @@ void _HandleColormapChange(const XColormapEvent *event) {
 void _HandleMapRequest(const XMapEvent *event) {
   ClientNode *np;
   Assert(event);
-  if (CheckSwallowMap(event->window)) {
+  if (SwallowNode::CheckSwallowMap(event->window)) {
     return;
   }
   np = ClientNode::FindClientByWindow(event->window);

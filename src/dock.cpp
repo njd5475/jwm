@@ -23,516 +23,441 @@
 #define SYSTEM_TRAY_ORIENTATION_HORZ 0
 #define SYSTEM_TRAY_ORIENTATION_VERT 1
 
-/** Structure to represent a docked window. */
-typedef struct DockNode {
 
-   Window window;
-   char needs_reparent;
+DockType *DockType::dock = NULL;
+char DockType::owner = 0;
 
-   struct DockNode *next;
+Atom DockType::dockAtom = 0;
+unsigned long DockType::orientation = 0;
 
-} DockNode;
-
-/** Structure to represent a dock tray component. */
-typedef struct DockType {
-
-   TrayComponentType *cp;
-
-   Window window;
-   int itemSize;
-
-   DockNode *nodes;
-
-} DockType;
-
-static const char BASE_SELECTION_NAME[] = "_NET_SYSTEM_TRAY_S%d";
-
-static DockType *dock = NULL;
-static char owner;
-static Atom dockAtom;
-static unsigned long orientation;
-
-static void _SetSize(TrayComponentType *cp, int width, int height);
-static void _Create(TrayComponentType *cp);
-static void _Resize(TrayComponentType *cp);
-
-static void _DockWindow(Window win);
-static void _UpdateDock(void);
-static void _GetDockItemSize(int *size);
-static void _GetDockSize(int *width, int *height);
+const char* DockType::BASE_SELECTION_NAME = "_NET_SYSTEM_TRAY_S%d";
 
 /** Initialize dock data. */
-void _InitializeDock(void)
-{
-   owner = 0;
+void DockType::_InitializeDock(void) {
+  owner = 0;
 }
 
 /** Startup the dock. */
-void _StartupDock(void)
-{
+void DockType::_StartupDock(void) {
 
-   char *selectionName;
+  char *selectionName;
 
-   if(!dock) {
-      /* No dock has been requested. */
-      return;
-   }
+  if (!dock) {
+    /* No dock has been requested. */
+    return;
+  }
 
-   if(dock->window == None) {
+  if (dock->window == None) {
 
-      /* No dock yet. */
+    /* No dock yet. */
 
-      /* Get the selection atom. */
-      selectionName = AllocateStack(sizeof(BASE_SELECTION_NAME));
-      snprintf(selectionName, sizeof(BASE_SELECTION_NAME),
-               BASE_SELECTION_NAME, rootScreen);
-      dockAtom = JXInternAtom(display, selectionName, False);
-      ReleaseStack(selectionName);
+    /* Get the selection atom. */
+    selectionName = AllocateStack(sizeof(BASE_SELECTION_NAME));
+    snprintf(selectionName, sizeof(BASE_SELECTION_NAME), BASE_SELECTION_NAME, rootScreen);
+    dockAtom = JXInternAtom(display, selectionName, False);
+    ReleaseStack(selectionName);
 
-      /* The location and size of the window doesn't matter here. */
-      dock->window = JXCreateSimpleWindow(display, rootWindow,
-         /* x, y, width, height */ 0, 0, 1, 1,
-         /* border_size, border_color */ 0, 0,
-         /* background */ colors[COLOR_TRAY_BG2]);
-      JXSelectInput(display, dock->window,
-           SubstructureNotifyMask
-         | SubstructureRedirectMask
-         | EnterWindowMask
-         | PointerMotionMask | PointerMotionHintMask);
+    /* The location and size of the window doesn't matter here. */
+    dock->window = JXCreateSimpleWindow(display, rootWindow,
+    /* x, y, width, height */0, 0, 1, 1,
+    /* border_size, border_color */0, 0,
+    /* background */colors[COLOR_TRAY_BG2]);
+    JXSelectInput(display, dock->window,
+        SubstructureNotifyMask | SubstructureRedirectMask | EnterWindowMask | PointerMotionMask | PointerMotionHintMask);
 
-   }
-   dock->cp->window = dock->window;
+  }
 
 }
 
 /** Shutdown the dock. */
-void _ShutdownDock(void)
-{
+void DockType::_ShutdownDock(void) {
 
-   DockNode *np;
+  DockNode *np;
 
-   if(dock) {
+  if (dock) {
 
-      /* Release memory used by the dock list. */
-      while(dock->nodes) {
-         np = dock->nodes->next;
-         JXReparentWindow(display, dock->nodes->window, rootWindow, 0, 0);
-         Release(dock->nodes);
-         dock->nodes = np;
-      }
+    /* Release memory used by the dock list. */
+    while (dock->nodes) {
+      np = dock->nodes->next;
+      JXReparentWindow(display, dock->nodes->window, rootWindow, 0, 0);
+      Release(dock->nodes);
+      dock->nodes = np;
+    }
 
-      /* Release the selection. */
-      if(owner) {
-         JXSetSelectionOwner(display, dockAtom, None, CurrentTime);
-      }
+    /* Release the selection. */
+    if (owner) {
+      JXSetSelectionOwner(display, dockAtom, None, CurrentTime);
+    }
 
-      /* Destroy the dock window. */
-      JXDestroyWindow(display, dock->window);
+    /* Destroy the dock window. */
+    JXDestroyWindow(display, dock->window);
 
-   }
+  }
 
 }
 
 /** Destroy dock data. */
-void _DestroyDock(void)
-{
-   if(dock) {
-      Release(dock);
-      dock = NULL;
-   }
+void DockType::_DestroyDock(void) {
+  if (dock) {
+    Release(dock);
+    dock = NULL;
+  }
 }
 
 /** Create a dock component. */
-TrayComponentType *_CreateDock(int width)
-{
-   TrayComponentType *cp;
-
-   if(JUNLIKELY(dock != NULL && dock->cp != NULL)) {
-      Warning(_("only one Dock allowed"));
-      return NULL;
-   } else if(dock == NULL) {
-      dock = new DockType;
-      dock->nodes = NULL;
-      dock->window = None;
-   }
-
-   cp = CreateTrayComponent();
-   cp->object = dock;
-   cp->requestedWidth = 1;
-   cp->requestedHeight = 1;
-   dock->cp = cp;
-   dock->itemSize = width;
-
-   cp->SetSize = _SetSize;
-   cp->Create = _Create;
-   cp->Resize = _Resize;
-
-   return cp;
-
+DockType::DockType(int width) : TrayComponentType() {
+  this->nodes = NULL;
+  this->window = None;
+  this->requestedWidth = 1;
+  this->requestedHeight = 1;
+  this->itemSize = width;
 }
 
 /** Set the size of a dock component. */
-void _SetSize(TrayComponentType *cp, int width, int height)
-{
+void DockType::SetSize(int width, int height) {
 
-   Assert(cp);
-   Assert(dock);
+  /* Set the orientation. */
+  if (width == 0) {
+    orientation = SYSTEM_TRAY_ORIENTATION_HORZ;
+  } else if (height == 0) {
+    orientation = SYSTEM_TRAY_ORIENTATION_VERT;
+  }
 
-   /* Set the orientation. */
-   if(width == 0) {
-      orientation = SYSTEM_TRAY_ORIENTATION_HORZ;
-   } else if(height == 0) {
-      orientation = SYSTEM_TRAY_ORIENTATION_VERT;
-   }
-
-   /* Get the size. */
-   cp->width = width;
-   cp->height = height;
-   _GetDockSize(&cp->width, &cp->height);
-   if(width == 0) {
-      cp->requestedWidth = cp->width;
-      cp->requestedHeight = 0;
-   } else {
-      cp->requestedWidth = 0;
-      cp->requestedHeight = cp->height;
-   }
-
+  /* Get the size. */
+  int newWidth = width;
+  int newHeight = height;
+  _GetDockSize(&newWidth, &newHeight);
+  if (width == 0) {
+    newWidth = this->getWidth();
+    newHeight = 0;
+  } else {
+    newWidth = 0;
+    newHeight = this->getHeight();
+  }
+  this->requestNewSize(newWidth, newHeight);
 }
 
 /** Initialize a dock component. */
-void _Create(TrayComponentType *cp)
-{
+void DockType::Create() {
 
-   XEvent event;
+  XEvent event;
 
-   Assert(cp);
+  /* Map the dock window. */
+  if (this->getWindow() != None) {
+    JXResizeWindow(display, this->getWindow(), this->getWidth(), this->getHeight());
+    JXMapRaised(display, this->getWindow());
+  }
 
-   /* Map the dock window. */
-   if(cp->window != None) {
-      JXResizeWindow(display, cp->window, cp->width, cp->height);
-      JXMapRaised(display, cp->window);
-   }
+  /* Set the orientation atom. */
+  SetCardinalAtom(dock->getWindow(), ATOM_NET_SYSTEM_TRAY_ORIENTATION, orientation);
 
-   /* Set the orientation atom. */
-   SetCardinalAtom(dock->cp->window, ATOM_NET_SYSTEM_TRAY_ORIENTATION,
-                   orientation);
+  /* Get the selection if we don't already own it.
+   * If we did already own it, getting it again would cause problems
+   * with some clients due to the way restarts are handled.
+   */
+  if (!owner) {
 
-   /* Get the selection if we don't already own it.
-    * If we did already own it, getting it again would cause problems
-    * with some clients due to the way restarts are handled.
-    */
-   if(!owner) {
+    owner = 1;
+    JXSetSelectionOwner(display, dockAtom, dock->getWindow(), CurrentTime);
+    if (JUNLIKELY(JXGetSelectionOwner(display, dockAtom) != dock->getWindow())) {
 
-      owner = 1;
-      JXSetSelectionOwner(display, dockAtom, dock->cp->window, CurrentTime);
-      if(JUNLIKELY(JXGetSelectionOwner(display, dockAtom)
-                   != dock->cp->window)) {
+      owner = 0;
+      Warning(_("could not acquire system tray selection"));
 
-         owner = 0;
-         Warning(_("could not acquire system tray selection"));
+    } else {
 
-      } else {
+      memset(&event, 0, sizeof(event));
+      event.xclient.type = ClientMessage;
+      event.xclient.window = rootWindow;
+      event.xclient.message_type = atoms[ATOM_MANAGER];
+      event.xclient.format = 32;
+      event.xclient.data.l[0] = CurrentTime;
+      event.xclient.data.l[1] = dockAtom;
+      event.xclient.data.l[2] = dock->getWindow();
+      event.xclient.data.l[3] = 0;
+      event.xclient.data.l[4] = 0;
 
-         memset(&event, 0, sizeof(event));
-         event.xclient.type = ClientMessage;
-         event.xclient.window = rootWindow;
-         event.xclient.message_type = atoms[ATOM_MANAGER];
-         event.xclient.format = 32;
-         event.xclient.data.l[0] = CurrentTime;
-         event.xclient.data.l[1] = dockAtom;
-         event.xclient.data.l[2] = dock->cp->window;
-         event.xclient.data.l[3] = 0;
-         event.xclient.data.l[4] = 0;
+      JXSendEvent(display, rootWindow, False, StructureNotifyMask, &event);
 
-         JXSendEvent(display, rootWindow, False, StructureNotifyMask, &event);
+    }
 
-      }
-
-   }
+  }
 
 }
 
 /** Resize a dock component. */
-void _Resize(TrayComponentType *cp)
-{
-   JXResizeWindow(display, cp->window, cp->width, cp->height);
-   _UpdateDock();
+void DockType::Resize() {
+  JXResizeWindow(display, this->getWindow(), this->getWidth(), this->getHeight());
+  _UpdateDock();
 }
 
 /** Handle a dock event. */
-void _HandleDockEvent(const XClientMessageEvent *event)
-{
-   Assert(event);
-   switch(event->data.l[1]) {
-   case SYSTEM_TRAY_REQUEST_DOCK:
-      _DockWindow(event->data.l[2]);
-      break;
-   case SYSTEM_TRAY_BEGIN_MESSAGE:
-      break;
-   case SYSTEM_TRAY_CANCEL_MESSAGE:
-      break;
-   default:
-      Debug("invalid opcode in dock event");
-      break;
-   }
+void DockType::_HandleDockEvent(const XClientMessageEvent *event) {
+  Assert(event);
+  switch (event->data.l[1]) {
+  case SYSTEM_TRAY_REQUEST_DOCK:
+    _DockWindow(event->data.l[2]);
+    break;
+  case SYSTEM_TRAY_BEGIN_MESSAGE:
+    break;
+  case SYSTEM_TRAY_CANCEL_MESSAGE:
+    break;
+  default:
+    Debug("invalid opcode in dock event");
+    break;
+  }
 }
 
 /** Handle a resize request event. */
-char _HandleDockResizeRequest(const XResizeRequestEvent *event)
-{
-   DockNode *np;
+char DockType::_HandleDockResizeRequest(const XResizeRequestEvent *event) {
+  DockNode *np;
 
-   Assert(event);
+  Assert(event);
 
-   if(!dock) {
-      return 0;
-   }
+  if (!dock) {
+    return 0;
+  }
 
-   for(np = dock->nodes; np; np = np->next) {
-      if(np->window == event->window) {
-         _UpdateDock();
-         return 1;
-      }
-   }
+  for (np = dock->nodes; np; np = np->next) {
+    if (np->window == event->window) {
+      _UpdateDock();
+      return 1;
+    }
+  }
 
-   return 0;
+  return 0;
 }
 
 /** Handle a configure request event. */
-char _HandleDockConfigureRequest(const XConfigureRequestEvent *event)
-{
+char DockType::_HandleDockConfigureRequest(const XConfigureRequestEvent *event) {
 
-   DockNode *np;
+  DockNode *np;
 
-   Assert(event);
+  Assert(event);
 
-   if(!dock) {
-      return 0;
-   }
+  if (!dock) {
+    return 0;
+  }
 
-   for(np = dock->nodes; np; np = np->next) {
-      if(np->window == event->window) {
-         _UpdateDock();
-         return 1;
-      }
-   }
+  for (np = dock->nodes; np; np = np->next) {
+    if (np->window == event->window) {
+      _UpdateDock();
+      return 1;
+    }
+  }
 
-   return 0;
+  return 0;
 
 }
 
 /** Handle a reparent notify event. */
-char _HandleDockReparentNotify(const XReparentEvent *event)
-{
+char DockType::_HandleDockReparentNotify(const XReparentEvent *event) {
 
-   DockNode *np;
-   char handled;
+  DockNode *np;
+  char handled;
 
-   Assert(event);
+  Assert(event);
 
-   /* Just return if there is no dock. */
-   if(!dock) {
-      return 0;
-   }
+  /* Just return if there is no dock. */
+  if (!dock) {
+    return 0;
+  }
 
-   /* Check each docked window. */
-   handled = 0;
-   for(np = dock->nodes; np; np = np->next) {
-      if(np->window == event->window) {
-         if(event->parent != dock->cp->window) {
-            /* For some reason the application reparented the window.
-             * We make note of this condition and reparent every time
-             * the dock is updated. Unfortunately we can't do this for
-             * all applications because some won't deal with it.
-             */
-            np->needs_reparent = 1;
-            handled = 1;
-         }
+  /* Check each docked window. */
+  handled = 0;
+  for (np = dock->nodes; np; np = np->next) {
+    if (np->window == event->window) {
+      if (event->parent != dock->getWindow()) {
+        /* For some reason the application reparented the window.
+         * We make note of this condition and reparent every time
+         * the dock is updated. Unfortunately we can't do this for
+         * all applications because some won't deal with it.
+         */
+        np->needs_reparent = 1;
+        handled = 1;
       }
-   }
+    }
+  }
 
-   /* Layout the stuff on the dock again if something happened. */
-   if(handled) {
-      _UpdateDock();
-   }
+  /* Layout the stuff on the dock again if something happened. */
+  if (handled) {
+    _UpdateDock();
+  }
 
-   return handled;
+  return handled;
 
 }
 
 /** Handle a selection clear event. */
-char _HandleDockSelectionClear(const XSelectionClearEvent *event)
-{
-   if(event->selection == dockAtom) {
-      Debug("lost _NET_SYSTEM_TRAY selection");
-      owner = 0;
-   }
-   return 0;
+char DockType::_HandleDockSelectionClear(const XSelectionClearEvent *event) {
+  if (event->selection == dockAtom) {
+    Debug("lost _NET_SYSTEM_TRAY selection");
+    owner = 0;
+  }
+  return 0;
 }
 
 /** Add a window to the dock. */
-void _DockWindow(Window win)
-{
-   DockNode *np;
+void DockType::_DockWindow(Window win) {
+  DockNode *np;
 
-   /* If no dock is running, just return. */
-   if(!dock) {
+  /* If no dock is running, just return. */
+  if (!dock) {
+    return;
+  }
+
+  /* Make sure we have a valid window to add. */
+  if (JUNLIKELY(win == None)) {
+    return;
+  }
+
+  /* If this window is already docked ignore it. */
+  for (np = dock->nodes; np; np = np->next) {
+    if (np->window == win) {
       return;
-   }
+    }
+  }
 
-   /* Make sure we have a valid window to add. */
-   if(JUNLIKELY(win == None)) {
-      return;
-   }
+  /* Add the window to our list. */
+  np = new DockNode;
+  np->window = win;
+  np->needs_reparent = 0;
+  np->next = dock->nodes;
+  dock->nodes = np;
 
-   /* If this window is already docked ignore it. */
-   for(np = dock->nodes; np; np = np->next) {
-      if(np->window == win) {
-         return;
-      }
-   }
+  /* Update the requested size. */
+  int newWidth = dock->getRequestedWidth(), newHeight = dock->getRequestedHeight();
+  _GetDockSize(&newWidth, &newHeight);
+  dock->requestNewSize(newWidth, newHeight);
 
-   /* Add the window to our list. */
-   np = new DockNode;
-   np->window = win;
-   np->needs_reparent = 0;
-   np->next = dock->nodes;
-   dock->nodes = np;
+  /* It's safe to reparent at (0, 0) since we call
+   * ResizeTray which will invoke the Resize callback.
+   */
+  JXAddToSaveSet(display, win);
+  JXReparentWindow(display, win, dock->getWindow(), 0, 0);
+  JXMapRaised(display, win);
 
-   /* Update the requested size. */
-   _GetDockSize(&dock->cp->requestedWidth, &dock->cp->requestedHeight);
-
-   /* It's safe to reparent at (0, 0) since we call
-    * ResizeTray which will invoke the Resize callback.
-    */
-   JXAddToSaveSet(display, win);
-   JXReparentWindow(display, win, dock->cp->window, 0, 0);
-   JXMapRaised(display, win);
-
-   /* Resize the tray containing the dock. */
-   ResizeTray(dock->cp->tray);
+  /* Resize the tray containing the dock. */
+  dock->getTray()->ResizeTray();
 
 }
 
 /** Remove a window from the dock. */
-char _HandleDockDestroy(Window win)
-{
-   DockNode **np;
+char DockType::_HandleDockDestroy(Window win) {
+  DockNode **np;
 
-   /* If no dock is running, just return. */
-   if(!dock) {
-      return 0;
-   }
+  /* If no dock is running, just return. */
+  if (!dock) {
+    return 0;
+  }
 
-   for(np = &dock->nodes; *np; np = &(*np)->next) {
-      DockNode *dp = *np;
-      if(dp->window == win) {
+  for (np = &dock->nodes; *np; np = &(*np)->next) {
+    DockNode *dp = *np;
+    if (dp->window == win) {
 
-         /* Remove the window from our list. */
-         *np = dp->next;
-         Release(dp);
+      /* Remove the window from our list. */
+      *np = dp->next;
+      Release(dp);
 
-         /* Update the requested size. */
-         _GetDockSize(&dock->cp->requestedWidth, &dock->cp->requestedHeight);
+      /* Update the requested size. */
+      int newWidth = dock->getRequestedWidth(), newHeight = dock->getRequestedHeight();
+      _GetDockSize(&newWidth, &newHeight);
+      dock->requestNewSize(newWidth, newHeight);
 
-         /* Resize the tray. */
-         ResizeTray(dock->cp->tray);
-         return 1;
-      }
-   }
+      /* Resize the tray. */
+      dock->getTray()->ResizeTray();
+      return 1;
+    }
+  }
 
-   return 0;
+  return 0;
 }
 
 /** Layout items on the dock. */
-void _UpdateDock(void)
-{
+void DockType::_UpdateDock(void) {
 
-   XConfigureEvent event;
-   DockNode *np;
-   int x, y;
-   int itemSize;
+  XConfigureEvent event;
+  DockNode *np;
+  int x, y;
+  int itemSize;
 
-   Assert(dock);
+  Assert(dock);
 
-   /* Determine the size of items in the dock. */
-   _GetDockItemSize(&itemSize);
+  /* Determine the size of items in the dock. */
+  _GetDockItemSize(&itemSize);
 
-   x = 0;
-   y = 0;
-   memset(&event, 0, sizeof(event));
-   for(np = dock->nodes; np; np = np->next) {
+  x = 0;
+  y = 0;
+  memset(&event, 0, sizeof(event));
+  for (np = dock->nodes; np; np = np->next) {
 
-      JXMoveResizeWindow(display, np->window, x, y, itemSize, itemSize);
+    JXMoveResizeWindow(display, np->window, x, y, itemSize, itemSize);
 
-      /* Reparent if this window likes to go other places. */
-      if(np->needs_reparent) {
-         JXReparentWindow(display, np->window, dock->cp->window, x, y);
-      }
+    /* Reparent if this window likes to go other places. */
+    if (np->needs_reparent) {
+      JXReparentWindow(display, np->window, dock->getWindow(), x, y);
+    }
 
-      event.type = ConfigureNotify;
-      event.event = np->window;
-      event.window = np->window;
-      event.x = dock->cp->screenx + x;
-      event.y = dock->cp->screeny + y;
-      event.width = itemSize;
-      event.height = itemSize;
-      JXSendEvent(display, np->window, False, StructureNotifyMask,
-                  (XEvent*)&event);
+    event.type = ConfigureNotify;
+    event.event = np->window;
+    event.window = np->window;
+    event.x = dock->getScreenX() + x;
+    event.y = dock->getScreenY() + y;
+    event.width = itemSize;
+    event.height = itemSize;
+    JXSendEvent(display, np->window, False, StructureNotifyMask, (XEvent* )&event);
 
-      if(orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
-         x += itemSize + settings.dockSpacing;
-      } else {
-         y += itemSize + settings.dockSpacing;
-      }
+    if (orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
+      x += itemSize + settings.dockSpacing;
+    } else {
+      y += itemSize + settings.dockSpacing;
+    }
 
-   }
+  }
 
 }
 
 /** Get the size of a particular window on the dock. */
-void _GetDockItemSize(int *size)
-{
-   /* Determine the default size of items in the dock. */
-   if(orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
-      *size = dock->cp->height;
-   } else {
-      *size = dock->cp->width;
-   }
-   if(dock->itemSize > 0 && *size > dock->itemSize) {
-      *size = dock->itemSize;
-   }
+void DockType::_GetDockItemSize(int *size) {
+  /* Determine the default size of items in the dock. */
+  if (orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
+    *size = dock->getHeight();
+  } else {
+    *size = dock->getWidth();
+  }
+  if (dock->itemSize > 0 && *size > dock->itemSize) {
+    *size = dock->itemSize;
+  }
 }
 
 /** Get the size of the dock. */
-void _GetDockSize(int *width, int *height)
-{
-   DockNode *np;
-   int itemSize;
+void DockType::_GetDockSize(int *width, int *height) {
+  DockNode *np;
+  int itemSize;
 
-   Assert(dock != NULL);
+  Assert(dock != NULL);
 
-   /* Get the dock item size. */
-   _GetDockItemSize(&itemSize);
+  /* Get the dock item size. */
+  _GetDockItemSize(&itemSize);
 
-   /* Determine the size of the items on the dock. */
-   for(np = dock->nodes; np; np = np->next) {
-      const unsigned spacing = (np->next ? settings.dockSpacing : 0);
-      if(orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
-         /* Horizontal tray; height fixed, placement is left to right. */
-         *width += itemSize + spacing;
-      } else {
-         /* Vertical tray; width fixed, placement is top to bottom. */
-         *height += itemSize + spacing;
-      }
-   }
+  /* Determine the size of the items on the dock. */
+  for (np = dock->nodes; np; np = np->next) {
+    const unsigned spacing = (np->next ? settings.dockSpacing : 0);
+    if (orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
+      /* Horizontal tray; height fixed, placement is left to right. */
+      *width += itemSize + spacing;
+    } else {
+      /* Vertical tray; width fixed, placement is top to bottom. */
+      *height += itemSize + spacing;
+    }
+  }
 
-   /* Don't allow the dock to have zero size since a size of
-    * zero indicates a variable sized component. */
-   if(orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
-      *width = Max(*width, 1);
-   } else {
-      *height = Max(*height, 1);
-   }
+  /* Don't allow the dock to have zero size since a size of
+   * zero indicates a variable sized component. */
+  if (orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
+    *width = Max(*width, 1);
+  } else {
+    *height = Max(*height, 1);
+  }
 
 }

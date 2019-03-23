@@ -10,32 +10,62 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-struct TrayComponentType;
+#include "tray.h"
 
-/*@{*/
-void InitializeClock(void);
-void StartupClock(void);
-#define ShutdownClock() (void)(0)
-void DestroyClock(void);
-/*@}*/
+/** Structure to respresent a clock tray component. */
+class ClockType : public TrayComponentType {
+public:
+  ClockType(const char *format, const char *zone, int width, int height);
+  virtual ~ClockType() {}
+private:
+  TrayComponentType *cp; /**< Common component data. */
 
-/** Create a clock component for the tray.
- * @param format The format of the clock.
- * @param zone The timezone of the clock (NULL for local time).
- * @param width The width of the clock (0 for auto).
- * @param height The height of the clock (0 for auto).
- */
-struct TrayComponentType *CreateClock(const char *format,
-                                      const char *zone,
-                                      int width, int height);
+  char *format; /**< The time format to use. */
+  char *zone; /**< The time zone to use (NULL = local). */
+  //struct ActionNode *actions; /**< Actions */
+  TimeType lastTime; /**< Currently displayed time. */
 
-/** Add an action to a clock.
- * @param cp The clock.
- * @param action The action to take.
- * @param mask The mouse button mask.
- */
-void AddClockAction(struct TrayComponentType *cp,
-                    const char *action,
-                    int mask);
+  /* The following are used to control popups. */
+  int mousex; /**< Last mouse x-coordinate. */
+  int mousey; /**< Last mouse y-coordinate. */
+  TimeType mouseTime; /**< Time of the last mouse motion. */
+
+  int userWidth; /**< User-specified clock width (or 0). */
+
+  struct ClockType *next; /**< Next clock in the list. */
+
+  /** The default time format to use. */
+  static const char *DEFAULT_FORMAT = "%I:%M %p";
+
+  static ClockType *clocks;
+
+public:
+
+  static void Create(TrayComponentType *cp);
+  static void Resize(TrayComponentType *cp);
+  static void Destroy(TrayComponentType *cp);
+  static void ProcessClockButtonPress(TrayComponentType *cp, int x, int y, int button);
+  static void ProcessClockButtonRelease(TrayComponentType *cp, int x, int y, int button);
+  static void ProcessClockMotionEvent(TrayComponentType *cp, int x, int y, int mask);
+
+  static void DrawClock(ClockType *clk, const TimeType *now);
+
+  static void SignalClock(const struct TimeType *now, int x, int y, Window w, void *data);
+
+  /*@{*/
+  void InitializeClock(void);
+  void StartupClock(void);
+  static void ShutdownClock() {}
+  void DestroyClock(void);
+  /*@}*/
+
+  /** Add an action to a clock.
+   * @param cp The clock.
+   * @param action The action to take.
+   * @param mask The mouse button mask.
+   */
+  static void AddClockAction(struct TrayComponentType *cp, const char *action, int mask);
+
+};
 
 #endif /* CLOCK_H */

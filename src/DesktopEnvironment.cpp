@@ -51,19 +51,19 @@ char *configPath = NULL;
 DesktopEnvironment* DesktopEnvironment::_instance = NULL;
 
 char DesktopEnvironment::HandleDockReparentNotify(const XReparentEvent* event) {
-  return _HandleDockReparentNotify(event);
+  return this->HandleDockReparentNotify(event);
 }
 
 char DesktopEnvironment::HandleDockDestroy(unsigned long int num) {
-  return _HandleDockDestroy(num);
+  return this->HandleDockDestroy(num);
 }
 
 char DesktopEnvironment::HandleDockConfigureRequest(const XConfigureRequestEvent* event) {
-  return _HandleDockConfigureRequest(event);
+  return this->HandleDockConfigureRequest(event);
 }
 
 void DesktopEnvironment::HandleDockEvent(const XClientMessageEvent* event) {
-  _HandleDockEvent(event);
+  this->HandleDockEvent(event);
 }
 
 void DesktopEnvironment::LoadBackground(unsigned int num) {
@@ -118,7 +118,7 @@ const unsigned DesktopEnvironment::GetBelowDesktop(signed short int num) {
 }
 
 char DesktopEnvironment::HandleDockResizeRequest(XResizeRequestEvent* event) {
-  return _HandleDockResizeRequest(event);
+  return this->HandleDockResizeRequest(event);
 }
 
 void DesktopEnvironment::InitializeComponents() {
@@ -170,7 +170,7 @@ void DesktopEnvironment::SetBackground(int id, const char* file, char* const nam
 }
 
 TrayComponentType* DesktopEnvironment::CreateDock(int width) {
-  return _CreateDock(width);
+  return this->CreateDock(width);
 }
 
 Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {
@@ -182,5 +182,5 @@ Menu* DesktopEnvironment::CreateSendtoMenu(int desktop, void* mem) {
 }
 
 char DesktopEnvironment::HandleDockSelectionClear(const XSelectionClearEvent* event) {
-  return _HandleDockSelectionClear(event);
+  return this->HandleDockSelectionClear(event);
 }

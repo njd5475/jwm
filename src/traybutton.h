@@ -12,43 +12,58 @@
 
 struct TrayComponentType;
 struct TimeType;
+struct IconNode;
 
-/*@{*/
+#include "tray.h"
+
+class TrayButton : public TrayComponentType {
+
+public:
+  /*@{*/
 #define InitializeTrayButtons()  (void)(0)
-void StartupTrayButtons(void);
+  static void StartupTrayButtons(void);
 #define ShutdownTrayButtons()    (void)(0)
-void DestroyTrayButtons(void);
-/*@}*/
+  static void DestroyTrayButtons(void);
+  /*@}*/
 
-/** Create a tray button component.
- * @param iconName The name of the icon to use for the button.
- * @param label The label to use for the button.
- * @param popup Text to display in a popup window.
- * @param width The width to use for the button (0 for default).
- * @param height The height to use for the button (0 for default).
- * @return A new tray button component.
- */
-struct TrayComponentType *CreateTrayButton(const char *iconName,
-                                           const char *label,
-                                           const char *popup,
-                                           unsigned int width,
-                                           unsigned int height);
+  /** Create a tray button component.
+   * @param iconName The name of the icon to use for the button.
+   * @param label The label to use for the button.
+   * @param popup Text to display in a popup window.
+   * @param width The width to use for the button (0 for default).
+   * @param height The height to use for the button (0 for default).
+   * @return A new tray button component.
+   */
+  TrayButton(const char *iconName,
+      const char *label,
+      const char *popup,
+      unsigned int width,
+      unsigned int height);
 
-/** Add an action to a tray button.
- * @param cp The tray button.
- * @param action The action to take.
- * @param mask The mouse button mask.
- */
-void AddTrayButtonAction(struct TrayComponentType *cp,
-                         const char *action,
-                         int mask);
+  char *label;
+  char *popup;
+  char *iconName;
+  IconNode *icon;
 
-/** Validate the tray buttons and print a warning if something is wrong.
- * This is called after parsing the configuration file(s) to determine
- * if a root menu is defined for each each tray button that specifies
- * a root menu.
- */
-void ValidateTrayButtons(void);
+  int mousex;
+  int mousey;
+  TimeType mouseTime;
+
+  struct TrayButton *next;
+
+  static TrayButton *buttons = NULL;
+
+  static void Create(TrayComponentType *cp);
+  static void Destroy(TrayComponentType *cp);
+  static void SetSize(TrayComponentType *cp, int width, int height);
+  static void Resize(TrayComponentType *cp);
+  static void Draw(TrayComponentType *cp);
+
+  static void ProcessButtonPress(TrayComponentType *cp, int x, int y, int button);
+  static void ProcessButtonRelease(TrayComponentType *cp, int x, int y, int button);
+  static void ProcessMotionEvent(TrayComponentType *cp, int x, int y, int mask);
+  static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);
+};
 
 #endif /* TRAY_BUTTON_H */
 

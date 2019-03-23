@@ -245,7 +245,7 @@ void EventLoop(void) {
   GetCurrentTime(&start);
   for (;;) {
     if (JXPending(display) == 0) {
-      if (!IsSwallowPending()) {
+      if (!SwallowNode::IsSwallowPending()) {
         break;
       } else {
         TimeType now;
@@ -445,7 +445,6 @@ void HandleChild(int sig) {
 void Initialize(void) {
   ILog(InitializeBindings);
   ILog(InitializeClients);
-  ILog(InitializeClock);
   ILog(InitializeBattery);
   ILog(InitializeColors);
   ILog(InitializeCommands);
@@ -458,15 +457,15 @@ void Initialize(void) {
   ILog(InitializeGroups);
   ILog(InitializeHints);
   ILog(InitializeIcons);
-  ILog(InitializePager);
+  ILog(PagerType::InitializePager);
   ILog(InitializePlacement);
   ILog(InitializePopup);
   ILog(InitializeRootMenu);
   ILog(InitializeScreens);
   ILog(InitializeSettings);
   ILog(InitializeSwallow);
-  ILog(InitializeTaskBar);
-  ILog(InitializeTray);
+  ILog(TaskBarType::InitializeTaskBar);
+  ILog(TrayType::InitializeTray);
   ILog(InitializeTrayButtons);
 }
 
@@ -490,14 +489,13 @@ void Startup(void) {
   StartupIcons();
   StartupCursors();
 
-  StartupPager();
-  StartupClock();
+  PagerType::StartupPager();
   StartupBattery();
   StartupTaskBar();
-  StartupTrayButtons();
+  TrayButton::StartupTrayButtons();
   StartupHints();
   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
-  StartupTray();
+  TrayType::StartupTray();
   StartupBindings();
   StartupPlacement();
 
@@ -518,9 +516,9 @@ void Startup(void) {
   JXSync(display, True);
   UngrabServer();
 
-  StartupSwallow();
+  SwallowNode::StartupSwallow();
 
-  DrawTray();
+  TrayType::DrawTray();
 
   /* Send expose events. */
   Border::ExposeCurrentDesktop();
@@ -547,13 +545,13 @@ void Shutdown(void) {
 #  endif
   ShutdownPopup();
   ShutdownBindings();
-  ShutdownPager();
+  PagerType::ShutdownPager();
   ShutdownRootMenu();
   DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
-  ShutdownTray();
+  TrayType::ShutdownTray();
   ShutdownTrayButtons();
-  ShutdownTaskBar();
-  ShutdownClock();
+  TaskBarType::ShutdownTaskBar();
+  ClockType::ShutdownClock();
   ShutdownBattery();
   ShutdownIcons();
   ShutdownCursors();
@@ -576,7 +574,6 @@ void Shutdown(void) {
  */
 void Destroy(void) {
   DestroyClients();
-  DestroyClock();
   DestroyBattery();
   DestroyColors();
   DestroyCommands();
@@ -590,16 +587,16 @@ void Destroy(void) {
   DestroyHints();
   DestroyIcons();
   DestroyBindings();
-  DestroyPager();
+  PagerType::DestroyPager();
   DestroyPlacement();
   DestroyPopup();
   DestroyRootMenu();
   DestroyScreens();
   DestroySettings();
-  DestroySwallow();
-  DestroyTaskBar();
-  DestroyTray();
-  DestroyTrayButtons();
+  SwallowNode::DestroySwallow();
+  TaskBarType::DestroyTaskBar();
+  TrayType::DestroyTray();
+  TrayButton::DestroyTrayButtons();
 }
 
 /** Send _JWM_RESTART to the root window. */

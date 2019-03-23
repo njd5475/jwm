@@ -31,11 +31,7 @@ static int *cascadeOffsets = NULL;
 
 static char DoRemoveClientStrut(ClientNode *np);
 static void InsertStrut(const BoundingBox *box, ClientNode *np);
-static void CenterClient(const BoundingBox *box, ClientNode *np);
 static int IntComparator(const void *a, const void *b);
-static int TryTileClient(const BoundingBox *box, ClientNode *np, int x, int y);
-static char TileClient(const BoundingBox *box, ClientNode *np);
-static void CascadeClient(const BoundingBox *box, ClientNode *np);
 
 static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
 static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
@@ -333,14 +329,14 @@ void SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
   const TrayType *tp;
   BoundingBox src;
   BoundingBox last;
-  for (tp = GetTrays(); tp; tp = tp->next) {
+  for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
 
-    if (tp->layer > layer && tp->autoHide == THIDE_OFF) {
+    if (tp->getLayer() > layer && tp->getAutoHide() == THIDE_OFF) {
 
-      src.x = tp->x;
-      src.y = tp->y;
-      src.width = tp->width;
-      src.height = tp->height;
+      src.x = tp->getX();
+      src.y = tp->getY();
+      src.width = tp->getWidth();
+      src.height = tp->getHeight();
       if (src.x < 0) {
         src.width += src.x;
         src.x = 0;

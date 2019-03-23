@@ -22,62 +22,18 @@
 #include "settings.h"
 #include "DesktopEnvironment.h"
 
-/** Structure to represent a pager tray component. */
-typedef struct PagerType {
-
-  TrayComponentType *cp; /**< Common tray component data. */
-
-  int deskWidth; /**< Width of a desktop. */
-  int deskHeight; /**< Height of a desktop. */
-  int scalex; /**< Horizontal scale factor (fixed point). */
-  int scaley; /**< Vertical scale factor (fixed point). */
-  char labeled; /**< Set to label the pager. */
-
-  Pixmap buffer; /**< Buffer for rendering the pager. */
-
-  TimeType mouseTime; /**< Timestamp of last mouse movement. */
-  int mousex, mousey; /**< Coordinates of last mouse location. */
-
-  struct PagerType *next; /**< Next pager in the list. */
-
-} PagerType;
-
-static PagerType *pagers = NULL;
-
-static char shouldStopMove;
-
-static void Create(TrayComponentType *cp);
-
-static void SetSize(TrayComponentType *cp, int width, int height);
-
-static int GetPagerDesktop(PagerType *pp, int x, int y);
-
-static void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask);
-
-static void ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int mask);
-
-static void StartPagerMove(TrayComponentType *cp, int x, int y);
-
-static void StopPagerMove(ClientNode *np, int x, int y, int desktop, MaxFlags maxFlags);
-
-static void PagerMoveController(int wasDestroyed);
-
-static void DrawPager(const PagerType *pp);
-
-static void DrawPagerClient(const PagerType *pp, ClientNode *np);
-
-static void SignalPager(const TimeType *now, int x, int y, Window w, void *data);
-
 /** Shutdown the pager. */
-void ShutdownPager(void) {
+void PagerType::ShutdownPager(void) {
   PagerType *pp;
   for (pp = pagers; pp; pp = pp->next) {
     JXFreePixmap(display, pp->buffer);
   }
 }
 
+PagerType *PagerType::pagers;
+
 /** Release pager data. */
-void DestroyPager(void) {
+void PagerType::DestroyPager(void) {
   PagerType *pp;
   while (pagers) {
     _UnregisterCallback(SignalPager, pagers);
@@ -88,108 +44,83 @@ void DestroyPager(void) {
 }
 
 /** Create a new pager tray component. */
-TrayComponentType *CreatePager(char labeled) {
+PagerType::PagerType(char labeled) {
+  this->next = pagers;
+  pagers = this;
+  this->labeled = labeled;
+  this->mousex = -settings.doubleClickDelta;
+  this->mousey = -settings.doubleClickDelta;
+  this->mouseTime.seconds = 0;
+  this->mouseTime.ms = 0;
+  this->buffer = None;
 
-  TrayComponentType *cp;
-  PagerType *pp;
-
-  pp = new PagerType;
-  pp->next = pagers;
-  pagers = pp;
-  pp->labeled = labeled;
-  pp->mousex = -settings.doubleClickDelta;
-  pp->mousey = -settings.doubleClickDelta;
-  pp->mouseTime.seconds = 0;
-  pp->mouseTime.ms = 0;
-  pp->buffer = None;
-
-  cp = CreateTrayComponent();
-  cp->object = pp;
-  pp->cp = cp;
-  cp->Create = Create;
-  cp->SetSize = SetSize;
-  cp->ProcessButtonPress = ProcessPagerButtonEvent;
-  cp->ProcessMotionEvent = ProcessPagerMotionEvent;
-
-  _RegisterCallback(settings.popupDelay / 2, SignalPager, pp);
-
-  return cp;
+  _RegisterCallback(settings.popupDelay / 2, SignalPager, this);
 }
 
 /** Initialize a pager tray component. */
-void Create(TrayComponentType *cp) {
+void PagerType::Create(TrayComponentType *cp) {
 
-  PagerType *pp;
+  Assert(this->getWidth() > 0);
+  Assert(this->getHeight() > 0);
 
-  Assert(cp);
-
-  pp = (PagerType*) cp->object;
-
-  Assert(pp);
-
-  Assert(cp->width > 0);
-  Assert(cp->height > 0);
-
-  cp->pixmap = JXCreatePixmap(display, rootWindow, cp->width, cp->height, rootDepth);
-  pp->buffer = cp->pixmap;
+  this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
+  this->buffer = this->pixmap;
 
 }
 
 /** Set the size of a pager tray component. */
-void SetSize(TrayComponentType *cp, int width, int height) {
-
-  PagerType *pp = (PagerType*) cp->object;
+void PagerType::SetSize(int width, int height) {
 
   if (width) {
 
     /* Vertical pager. */
-    cp->width = width;
+    this->width = width;
 
-    pp->deskWidth = width / settings.desktopWidth;
-    pp->deskHeight = (pp->deskWidth * rootHeight) / rootWidth;
+    this->deskWidth = width / settings.desktopWidth;
+    this->deskHeight = (this->deskWidth * rootHeight) / rootWidth;
 
-    cp->height = pp->deskHeight * settings.desktopHeight + settings.desktopHeight - 1;
+    this->height = this->deskHeight * settings.desktopHeight + settings.desktopHeight - 1;
 
   } else if (height) {
 
     /* Horizontal pager. */
-    cp->height = height;
+    this->height = height;
 
-    pp->deskHeight = height / settings.desktopHeight;
-    pp->deskWidth = (pp->deskHeight * rootWidth) / rootHeight;
+    this->deskHeight = height / settings.desktopHeight;
+    this->deskWidth = (this->deskHeight * rootWidth) / rootHeight;
 
-    cp->width = pp->deskWidth * settings.desktopWidth + settings.desktopWidth - 1;
+    this->width = this->deskWidth * settings.desktopWidth + settings.desktopWidth - 1;
 
   } else {
     Assert(0);
   }
 
-  if (pp->buffer != None) {
-    JXFreePixmap(display, pp->buffer);
-    pp->buffer = JXCreatePixmap(display, rootWindow, cp->width, cp->height, rootDepth);
-    cp->pixmap = pp->buffer;
-    DrawPager(pp);
+  if (this->buffer != None) {
+    JXFreePixmap(display, this->buffer);
+    this->buffer = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
+    this->pixmap = this->buffer;
+    this->DrawPager();
   }
 
-  pp->scalex = ((pp->deskWidth - 2) << 16) / rootWidth;
-  pp->scaley = ((pp->deskHeight - 2) << 16) / rootHeight;
+  this->scalex = ((this->deskWidth - 2) << 16) / rootWidth;
+  this->scaley = ((this->deskHeight - 2) << 16) / rootHeight;
 
 }
 
 /** Get the desktop for a pager given a set of coordinates. */
-int GetPagerDesktop(PagerType *pp, int x, int y) {
+int PagerType::GetPagerDesktop(int x, int y) {
 
   int pagerx, pagery;
 
-  pagerx = x / (pp->deskWidth + 1);
-  pagery = y / (pp->deskHeight + 1);
+  pagerx = x / (this->deskWidth + 1);
+  pagery = y / (this->deskHeight + 1);
 
   return pagery * settings.desktopWidth + pagerx;
 
 }
 
 /** Process a button event on a pager tray component. */
-void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
+void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
 
   PagerType *pp;
 
@@ -198,8 +129,8 @@ void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
   case Button2:
 
     /* Change to the selected desktop. */
-    pp = (PagerType*) cp->object;
-    DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(GetPagerDesktop(pp, x, y));
+    pp = (PagerType*) cp->getObject();
+    DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(pp->GetPagerDesktop(x, y));
     break;
 
   case Button3:
@@ -226,17 +157,17 @@ void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
 }
 
 /** Process a motion event on a pager tray component. */
-void ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
+void PagerType::ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
 
-  PagerType *pp = (PagerType*) cp->object;
+  PagerType *pp = (PagerType*) cp->getObject();
 
-  pp->mousex = cp->screenx + x;
-  pp->mousey = cp->screeny + y;
+  pp->mousex = cp->getScreenX() + x;
+  pp->mousey = cp->getScreenY() + y;
   GetCurrentTime(&pp->mouseTime);
 }
 
 /** Start a pager move operation. */
-void StartPagerMove(TrayComponentType *cp, int x, int y) {
+void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 
   XEvent event;
   PagerType *pp;
@@ -252,10 +183,10 @@ void StartPagerMove(TrayComponentType *cp, int x, int y) {
   int startx, starty;
   MaxFlags maxFlags;
 
-  pp = (PagerType*) cp->object;
+  pp = (PagerType*) cp->getObject();
 
   /* Determine the selected desktop. */
-  desktop = GetPagerDesktop(pp, x, y);
+  desktop = pp->GetPagerDesktop(x, y);
   x -= (desktop % settings.desktopWidth) * (pp->deskWidth + 1);
   y -= (desktop / settings.desktopWidth) * (pp->deskHeight + 1);
 
@@ -350,7 +281,7 @@ void StartPagerMove(TrayComponentType *cp, int x, int y) {
 
   Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
 
-  np->setController(PagerMoveController);
+  np->setController(PagerType::PagerMoveController);
   shouldStopMove = 0;
 
   oldx = np->getX();
@@ -388,19 +319,19 @@ void StartPagerMove(TrayComponentType *cp, int x, int y) {
       SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
 
       /* Get the mouse position on the pager. */
-      x = event.xmotion.x_root - cp->screenx;
-      y = event.xmotion.y_root - cp->screeny;
+      x = event.xmotion.x_root - cp->getScreenX();
+      y = event.xmotion.y_root - cp->getScreenY();
 
       /* Don't move if we are off of the pager. */
-      if (x < 0 || x > cp->width) {
+      if (x < 0 || x > cp->getWidth()) {
         break;
       }
-      if (y < 0 || y > cp->height) {
+      if (y < 0 || y > cp->getHeight()) {
         break;
       }
 
       /* Determine the new client desktop. */
-      desktop = GetPagerDesktop(pp, x, y);
+      desktop = pp->GetPagerDesktop(x, y);
       x -= pp->deskWidth * (desktop % settings.desktopWidth);
       y -= pp->deskHeight * (desktop / settings.desktopWidth);
 
@@ -465,8 +396,10 @@ void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
 
 }
 
+char PagerType::shouldStopMove = 0;
+
 /** Client-terminated pager move. */
-void PagerMoveController(int wasDestroyed) {
+void PagerType::PagerMoveController(int wasDestroyed) {
 
   JXUngrabPointer(display, CurrentTime);
   JXUngrabKeyboard(display, CurrentTime);
@@ -475,7 +408,7 @@ void PagerMoveController(int wasDestroyed) {
 }
 
 /** Draw a pager. */
-void DrawPager(const PagerType *pp) {
+void PagerType::DrawPager() {
   ClientNode *np;
   Pixmap buffer;
   int width, height;
@@ -486,11 +419,11 @@ void DrawPager(const PagerType *pp) {
   int textWidth, textHeight;
   int dx, dy;
 
-  buffer = pp->cp->pixmap;
-  width = pp->cp->width;
-  height = pp->cp->height;
-  deskWidth = pp->deskWidth;
-  deskHeight = pp->deskHeight;
+  buffer = this->getPixmap();
+  width = this->getWidth();
+  height = this->getHeight();
+  deskWidth = this->deskWidth;
+  deskHeight = this->deskHeight;
 
   /* Draw the background. */
   JXSetForeground(display, rootGC, colors[COLOR_PAGER_BG]);
@@ -503,7 +436,7 @@ void DrawPager(const PagerType *pp) {
   JXFillRectangle(display, buffer, rootGC, dx * (deskWidth + 1), dy * (deskHeight + 1), deskWidth, deskHeight);
 
   /* Draw the labels. */
-  if (pp->labeled) {
+  if (this->labeled) {
     textHeight = GetStringHeight(FONT_PAGER);
     if (textHeight < deskHeight) {
       for (x = 0; x < settings.desktopCount; x++) {
@@ -524,7 +457,7 @@ void DrawPager(const PagerType *pp) {
   /* Draw the clients. */
   for (x = FIRST_LAYER; x <= LAST_LAYER; x++) {
     for (np = nodeTail[x]; np; np = np->getPrev()) {
-      DrawPagerClient(pp, np);
+      this->DrawPagerClient(np);
     }
   }
 
@@ -540,7 +473,7 @@ void DrawPager(const PagerType *pp) {
 }
 
 /** Update the pager. */
-void UpdatePager(void) {
+void PagerType::UpdatePager(void) {
 
   PagerType *pp;
 
@@ -551,22 +484,22 @@ void UpdatePager(void) {
   for (pp = pagers; pp; pp = pp->next) {
 
     /* Draw the pager. */
-    DrawPager(pp);
+    pp->DrawPager();
 
     /* Tell the tray to redraw. */
-    UpdateSpecificTray(pp->cp->tray, pp->cp);
+    pp->UpdateSpecificTray(pp->getTray());
 
   }
 
 }
 
 /** Signal pagers (for popups). */
-void SignalPager(const TimeType *now, int x, int y, Window w, void *data) {
+void PagerType::SignalPager(const TimeType *now, int x, int y, Window w, void *data) {
   PagerType *pp = (PagerType*) data;
-  if (pp->cp->tray->window == w && abs(pp->mousex - x) < settings.doubleClickDelta
+  if (pp->getTray()->getWindow() == w && abs(pp->mousex - x) < settings.doubleClickDelta
       && abs(pp->mousey - y) < settings.doubleClickDelta) {
     if (GetTimeDifference(now, &pp->mouseTime) >= settings.popupDelay) {
-      const int desktop = GetPagerDesktop(pp, x - pp->cp->screenx, y - pp->cp->screeny);
+      const int desktop = pp->GetPagerDesktop(x - pp->getScreenX(), y - pp->getScreenY());
       if (desktop >= 0 && desktop < settings.desktopCount) {
         const char *desktopName = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(desktop);
         if (desktopName) {
@@ -579,7 +512,7 @@ void SignalPager(const TimeType *now, int x, int y, Window w, void *data) {
 }
 
 /** Draw a client on the pager. */
-void DrawPagerClient(const PagerType *pp, ClientNode *np) {
+void PagerType::DrawPagerClient(ClientNode *np) {
 
   int x, y;
   int width, height;
@@ -601,21 +534,21 @@ void DrawPagerClient(const PagerType *pp, ClientNode *np) {
     offx = np->getState()->desktop % settings.desktopWidth;
     offy = np->getState()->desktop / settings.desktopWidth;
   }
-  offx *= pp->deskWidth + 1;
-  offy *= pp->deskHeight + 1;
+  offx *= this->deskWidth + 1;
+  offy *= this->deskHeight + 1;
 
   /* Determine the location and size of the client on the pager. */
-  x = 1 + ((np->getX() * pp->scalex) >> 16);
-  y = 1 + ((np->getY() * pp->scaley) >> 16);
-  width = (np->getWidth() * pp->scalex) >> 16;
-  height = (np->getHeight() * pp->scaley) >> 16;
+  x = 1 + ((np->getX() * this->scalex) >> 16);
+  y = 1 + ((np->getY() * this->scaley) >> 16);
+  width = (np->getWidth() * this->scalex) >> 16;
+  height = (np->getHeight() * this->scaley) >> 16;
 
   /* Normalize the size and offset. */
-  if (x + width > pp->deskWidth) {
-    width = pp->deskWidth - x;
+  if (x + width > this->deskWidth) {
+    width = this->deskWidth - x;
   }
-  if (y + height > pp->deskHeight) {
-    height = pp->deskHeight - y;
+  if (y + height > this->deskHeight) {
+    height = this->deskHeight - y;
   }
   if (x < 0) {
     width += x;
@@ -637,7 +570,7 @@ void DrawPagerClient(const PagerType *pp, ClientNode *np) {
 
   /* Draw the client outline. */
   JXSetForeground(display, rootGC, colors[COLOR_PAGER_OUTLINE]);
-  JXDrawRectangle(display, pp->cp->pixmap, rootGC, x, y, width, height);
+  JXDrawRectangle(display, this->getPixmap(), rootGC, x, y, width, height);
 
   /* Fill the client if there's room. */
   if (width > 1 && height > 1) {
@@ -651,7 +584,7 @@ void DrawPagerClient(const PagerType *pp, ClientNode *np) {
       fillColor = COLOR_PAGER_FG;
     }
     JXSetForeground(display, rootGC, colors[fillColor]);
-    JXFillRectangle(display, pp->cp->pixmap, rootGC, x + 1, y + 1, width - 1, height - 1);
+    JXFillRectangle(display, this->getPixmap(), rootGC, x + 1, y + 1, width - 1, height - 1);
   }
 
 }

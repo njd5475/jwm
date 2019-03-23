@@ -65,13 +65,13 @@ static const unsigned int MC_MAP_COUNT = ARRAY_LENGTH(MC_MAP);
 static const StringMappingType OPTION_MAP[] = { { "aerosnap", OPTION_AEROSNAP }, { "border", OPTION_BORDER }, {
     "centered", OPTION_CENTERED }, { "constrain", OPTION_CONSTRAIN }, { "drag", OPTION_DRAG },
     { "fixed", OPTION_FIXED }, { "fullscreen", OPTION_FULLSCREEN }, { "hmax", OPTION_MAX_H }, { "iignore",
-        OPTION_IIGNORE }, { "ilist", OPTION_ILIST }, { "ipager", OPTION_IPAGER }, { "maximized", OPTION_MAXIMIZED }, {
+    OPTION_IIGNORE }, { "ilist", OPTION_ILIST }, { "ipager", OPTION_IPAGER }, { "maximized", OPTION_MAXIMIZED }, {
         "minimized", OPTION_MINIMIZED }, { "noborder", OPTION_NOBORDER }, { "noclose", OPTION_NOCLOSE }, { "nodrag",
-        OPTION_NODRAG }, { "nofocus", OPTION_NOFOCUS }, { "nofullscreen", OPTION_NOFULLSCREEN }, { "nolist",
-        OPTION_NOLIST }, { "nomax", OPTION_NOMAX }, { "nomin", OPTION_NOMIN }, { "nomove", OPTION_NOMOVE }, { "nopager",
-        OPTION_NOPAGER }, { "noresize", OPTION_NORESIZE }, { "noshade", OPTION_NOSHADE }, { "notitle", OPTION_NOTITLE },
-    { "noturgent", OPTION_NOTURGENT }, { "pignore", OPTION_PIGNORE }, { "sticky", OPTION_STICKY }, { "tiled",
-        OPTION_TILED }, { "title", OPTION_TITLE }, { "vmax", OPTION_MAX_V } };
+    OPTION_NODRAG }, { "nofocus", OPTION_NOFOCUS }, { "nofullscreen", OPTION_NOFULLSCREEN }, { "nolist",
+    OPTION_NOLIST }, { "nomax", OPTION_NOMAX }, { "nomin", OPTION_NOMIN }, { "nomove", OPTION_NOMOVE }, { "nopager",
+    OPTION_NOPAGER }, { "noresize", OPTION_NORESIZE }, { "noshade", OPTION_NOSHADE }, { "notitle", OPTION_NOTITLE }, {
+        "noturgent", OPTION_NOTURGENT }, { "pignore", OPTION_PIGNORE }, { "sticky", OPTION_STICKY }, { "tiled",
+    OPTION_TILED }, { "title", OPTION_TITLE }, { "vmax", OPTION_MAX_V } };
 static const unsigned int OPTION_MAP_COUNT = ARRAY_LENGTH(OPTION_MAP);
 
 static const char *DEFAULT_TITLE = "JWM";
@@ -125,7 +125,7 @@ static void ParseSwallow(const TokenNode *tp, TrayType *tray);
 static void ParseTrayButton(const TokenNode *tp, TrayType *tray);
 static void ParseClock(const TokenNode *tp, TrayType *tray);
 static void ParseBattery(const TokenNode *tp, TrayType *tray);
-static void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp, AddTrayActionFunc func);
+static void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp);
 static void ParseDock(const TokenNode *tp, TrayType *tray);
 static void ParseSpacer(const TokenNode *tp, TrayType *tray);
 
@@ -186,7 +186,6 @@ void ParseConfig(const char *fileName) {
       ParseError(NULL, _("could not open %s or %s"), CONFIG_FILES[0], SYSTEM_CONFIG);
     }
   }
-  ValidateTrayButtons();
   ValidateKeys();
 }
 
@@ -440,7 +439,7 @@ void ParseRootMenu(const TokenNode *start) {
 
   onroot = FindAttribute(start->attributes, ONROOT_ATTRIBUTE);
   if (!onroot) {
-    onroot = (char*)"123";
+    onroot = (char*) "123";
   }
 
   value = FindAttribute(start->attributes, DYNAMIC_ATTRIBUTE);
@@ -855,7 +854,7 @@ void ParseMouse(const TokenNode *tp) {
 /** Parse text alignment. */
 AlignmentType ParseTextAlignment(const TokenNode *tp) {
   static const StringMappingType mapping[] = { { "left", ALIGN_LEFT }, { "center", ALIGN_CENTER }, { "right",
-      ALIGN_RIGHT } };
+  ALIGN_RIGHT } };
   const char *attr = FindAttribute(tp->attributes, "align");
   if (attr) {
     const int x = FindValue(mapping, ARRAY_LENGTH(mapping), attr);
@@ -1132,7 +1131,7 @@ void ParseActive(const TokenNode *tp, ColorType fg, ColorType bg1, ColorType bg2
 /** Parse tray. */
 void ParseTray(const TokenNode *tp) {
   static const StringMappingType mapping[] = { { "bottom", THIDE_BOTTOM }, { "invisible", THIDE_INVISIBLE }, { "left",
-      THIDE_LEFT }, { "off", THIDE_OFF }, { "on", THIDE_ON }, { "right", THIDE_RIGHT }, { "top", THIDE_TOP } };
+  THIDE_LEFT }, { "off", THIDE_OFF }, { "on", THIDE_ON }, { "right", THIDE_RIGHT }, { "top", THIDE_TOP } };
   const TokenNode *np;
   const char *attr;
   unsigned delay = 0;
@@ -1141,47 +1140,47 @@ void ParseTray(const TokenNode *tp) {
 
   Assert(tp);
 
-  tray = CreateTray();
+  tray = new TrayType();
 
   autohide = ParseAttribute(mapping, ARRAY_LENGTH(mapping), tp, "autohide", THIDE_OFF);
   attr = FindAttribute(tp->attributes, "delay");
   if (attr) {
     delay = ParseUnsigned(tp, attr);
   }
-  SetAutoHideTray(tray, autohide, delay);
+  tray->SetAutoHideTray(autohide, delay);
 
   attr = FindAttribute(tp->attributes, X_ATTRIBUTE);
   if (attr) {
-    SetTrayX(tray, attr);
+    tray->SetTrayX(attr);
   }
 
   attr = FindAttribute(tp->attributes, Y_ATTRIBUTE);
   if (attr) {
-    SetTrayY(tray, attr);
+    tray->SetTrayY(attr);
   }
 
   attr = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
   if (attr) {
-    SetTrayWidth(tray, attr);
+    tray->SetTrayWidth(attr);
   }
 
   attr = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
   if (attr) {
-    SetTrayHeight(tray, attr);
+    tray->SetTrayHeight(attr);
   }
 
   attr = FindAttribute(tp->attributes, "valign");
-  SetTrayVerticalAlignment(tray, attr);
+  tray->SetTrayVerticalAlignment(attr);
 
   attr = FindAttribute(tp->attributes, "halign");
-  SetTrayHorizontalAlignment(tray, attr);
+  tray->SetTrayHorizontalAlignment(attr);
 
   attr = FindAttribute(tp->attributes, "layout");
-  SetTrayLayout(tray, attr);
+  tray->SetTrayLayout(attr);
 
   attr = FindAttribute(tp->attributes, "layer");
   if (attr) {
-    SetTrayLayer(tray, ParseLayer(tp, attr));
+    tray->SetTrayLayer(ParseLayer(tp, attr));
   }
 
   for (np = tp->subnodeHead; np; np = np->next) {
@@ -1234,8 +1233,8 @@ void ParsePager(const TokenNode *tp, TrayType *tray) {
   if (temp && !strcmp(temp, TRUE_VALUE)) {
     labeled = 1;
   }
-  cp = CreatePager(labeled);
-  AddTrayComponent(tray, cp);
+  cp = new PagerType(labeled);
+  tray->AddTrayComponent(cp);
 
 }
 
@@ -1247,22 +1246,22 @@ void ParseTaskList(const TokenNode *tp, TrayType *tray) {
   Assert(tp);
   Assert(tray);
 
-  cp = CreateTaskBar();
-  AddTrayComponent(tray, cp);
+  cp = new TaskBarType();
+  tray->AddTrayComponent(cp);
 
   temp = FindAttribute(tp->attributes, "maxwidth");
   if (temp) {
-    SetMaxTaskBarItemWidth(cp, temp);
+    TaskBarType::SetMaxTaskBarItemWidth(cp, temp);
   }
 
   temp = FindAttribute(tp->attributes, "height");
   if (temp) {
-    SetTaskBarHeight(cp, temp);
+    TaskBarType::SetTaskBarHeight(cp, temp);
   }
 
   temp = FindAttribute(tp->attributes, "labeled");
   if (temp && !strcmp(temp, FALSE_VALUE)) {
-    SetTaskBarLabeled(cp, 0);
+    TaskBarType::SetTaskBarLabeled(cp, 0);
   }
 }
 
@@ -1325,9 +1324,9 @@ void ParseSwallow(const TokenNode *tp, TrayType *tray) {
     height = 0;
   }
 
-  cp = CreateSwallow(name, tp->value, width, height);
+  cp = new SwallowNode(name, tp->value, width, height);
   if (cp) {
-    AddTrayComponent(tray, cp);
+    tray->AddTrayComponent(cp);
   }
 
 }
@@ -1363,10 +1362,10 @@ void ParseTrayButton(const TokenNode *tp, TrayType *tray) {
     height = 0;
   }
 
-  cp = CreateTrayButton(icon, label, popup, width, height);
+  cp = new TrayButton(icon, label, popup, width, height);
   if (JLIKELY(cp)) {
-    AddTrayComponent(tray, cp);
-    ParseTrayComponentActions(tp, cp, AddTrayButtonAction);
+    tray->AddTrayComponent(cp);
+    ParseTrayComponentActions(tp, cp);
   }
 
 }
@@ -1396,13 +1395,12 @@ void ParseBattery(const TokenNode *tp, TrayType *tray) {
 
   cp = CreateBattery(width, height);
   if (JLIKELY(cp)) {
-    AddTrayComponent(tray, cp);
+    tray->AddTrayComponent(cp);
   }
 }
 
 /** Parse a clock tray component. */
 void ParseClock(const TokenNode *tp, TrayType *tray) {
-  TrayComponentType *cp;
   const char *format;
   const char *zone;
   const char *temp;
@@ -1428,23 +1426,23 @@ void ParseClock(const TokenNode *tp, TrayType *tray) {
     height = 0;
   }
 
-  cp = CreateClock(format, zone, width, height);
-  if (JLIKELY(cp)) {
-    ParseTrayComponentActions(tp, cp, AddClockAction);
-    AddTrayComponent(tray, cp);
+  ClockType *clock = new ClockType(format, zone, width, height);
+  if (JLIKELY(clock)) {
+    ParseTrayComponentActions(tp, clock);
+    tray->AddTrayComponent(clock);
   }
 
 }
 
 /** Parse tray component actions. */
-void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp, AddTrayActionFunc func) {
+void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp) {
   const TokenNode *np;
   const char *mask_str;
   const int default_mask = (1 << 1) | (1 << 2) | (1 << 3);
   int mask;
 
   if (tp->value) {
-    (func)(cp, tp->value, default_mask);
+    cp->addAction(tp->value, default_mask);
   }
 
   for (np = tp->subnodeHead; np; np = np->next) {
@@ -1460,7 +1458,7 @@ void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp, AddTr
       } else {
         mask = default_mask;
       }
-      (func)(cp, np->value, mask);
+      cp->addAction(np->value, mask);
       break;
     default:
       InvalidTag(np, tp->type);
@@ -1493,7 +1491,7 @@ void ParseDock(const TokenNode *tp, TrayType *tray) {
 
   cp = DesktopEnvironment::DefaultEnvironment()->CreateDock(width);
   if (JLIKELY(cp)) {
-    AddTrayComponent(tray, cp);
+    tray->AddTrayComponent(cp);
   }
 
 }
@@ -1526,9 +1524,9 @@ void ParseSpacer(const TokenNode *tp, TrayType *tray) {
   }
 
   /* Create the spacer. */
-  cp = CreateSpacer(width, height);
+  cp = new Spacer(width, height);
   if (JLIKELY(cp)) {
-    AddTrayComponent(tray, cp);
+    tray->AddTrayComponent(cp);
   }
 
 }
@@ -1594,7 +1592,7 @@ void ParseClockStyle(const TokenNode *tp) {
 /** Parse popup style. */
 void ParsePopupStyle(const TokenNode *tp) {
   static const StringMappingType enable_mapping[] = { { "button", POPUP_BUTTON }, { "clock", POPUP_CLOCK }, { "false",
-      POPUP_NONE }, { "menu", POPUP_MENU }, { "pager", POPUP_PAGER }, { "task", POPUP_TASK }, { "true", POPUP_ALL } };
+  POPUP_NONE }, { "menu", POPUP_MENU }, { "pager", POPUP_PAGER }, { "task", POPUP_TASK }, { "true", POPUP_ALL } };
   const TokenNode *np;
   const char *str;
   char *tok;
@@ -1961,7 +1959,7 @@ unsigned ParseOpacity(const TokenNode *tp, const char *str) {
 /** Parse layer. */
 WinLayerType ParseLayer(const TokenNode *tp, const char *str) {
   static const StringMappingType mapping[] = { { "above", LAYER_ABOVE }, { "below", LAYER_BELOW }, { "normal",
-      LAYER_NORMAL } };
+  LAYER_NORMAL } };
   const int x = FindValue(mapping, ARRAY_LENGTH(mapping), str);
   if (JLIKELY(x >= 0)) {
     return x;

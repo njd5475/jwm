@@ -41,6 +41,8 @@ typedef unsigned char MenuActionType;
 #define MA_ACTION_MASK        0x7F
 #define MA_GROUP_MASK         0x80
 
+struct Menu;
+
 /** Structure to represent a menu action for callbacks. */
 typedef struct MenuAction {
 
