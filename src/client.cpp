@@ -1459,7 +1459,6 @@ void ClientNode::UpdateClientColormap(Colormap cmap) {
 
 /** Update callback for clients with the urgency hint set. */
 void ClientNode::SignalUrgent(const TimeType *now, int x, int y, Window w, void *data) {
-  Logger::Log("SignalUrgent called");
   ClientNode *np = (ClientNode*) data;
 
   /* Redraw borders. */

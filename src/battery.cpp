@@ -161,7 +161,6 @@ float QueryBatteryPercentage() {
 
 /** Update a Battery tray component. */
 void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
-  Logger::Log("PollBattery::Callback called");
   DrawBattery((BatteryType*)data, QueryBatteryPercentage());
 }
 

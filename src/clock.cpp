@@ -155,7 +155,6 @@ void ClockType::ProcessClockMotionEvent(TrayComponentType *cp, int x, int y, int
 
 /** Update a clock tray component. */
 void ClockType::SignalClock(const TimeType *now, int x, int y, Window w, void *data) {
-  Logger::Log("SignalClock called");
   ClockType *cp = (ClockType*) data;
   const char *longTime;
 

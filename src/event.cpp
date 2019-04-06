@@ -53,7 +53,8 @@ static char pager_update_pending = 0;
 
 static void _Signal(void);
 
-static void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, int code, int x, int y);
+static void _ProcessBinding(MouseContextType context, ClientNode *np,
+    unsigned state, int code, int x, int y);
 
 static void _HandleConfigureRequest(const XConfigureRequestEvent *event);
 static char _HandleConfigureNotify(const XConfigureEvent *event);
@@ -72,8 +73,10 @@ static void _HandleEnterNotify(const XCrossingEvent *event);
 static void _HandleMotionNotify(const XMotionEvent *event);
 static char _HandleSelectionClear(const XSelectionClearEvent *event);
 
-static void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np);
-static void _HandleNetWMMoveResize(const XClientMessageEvent *evnet, ClientNode *np);
+static void _HandleNetMoveResize(const XClientMessageEvent *event,
+    ClientNode *np);
+static void _HandleNetWMMoveResize(const XClientMessageEvent *evnet,
+    ClientNode *np);
 static void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np);
 static void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np);
 static void _HandleFrameExtentsRequest(const XClientMessageEvent *event);
@@ -85,7 +88,6 @@ static void _HandleShapeEvent(const XShapeEvent *event);
 
 /** Wait for an event and process it. */
 char _WaitForEvent(XEvent *event) {
-  Logger::Log("Waiting for events\n");
   struct timeval timeout;
   CallbackNode *cp;
   fd_set fds;
@@ -106,7 +108,6 @@ char _WaitForEvent(XEvent *event) {
       sleepTime = cp->freq;
     }
   }
-  Logger::Log("Computed sleep time\n");
 
   do {
 
@@ -123,83 +124,114 @@ char _WaitForEvent(XEvent *event) {
       }
     }
 
-    Logger::Log("Right before signal, woza!\n");
     _Signal();
-    Logger::Log("After signal\n");
 
-    Logger::Log("About to get next event\n");
     JXNextEvent(display, event);
     _UpdateTime(event);
 
-    Logger::Log("Updated time\n");
     char buf[80];
-    sprintf(buf, "Event received %d\n", event->type);
-    Logger::Log(buf);
+    char *eventName = "Unknown Event";
     switch (event->type) {
     case ConfigureRequest:
+      eventName = "ConfigureRequest";
       _HandleConfigureRequest(&event->xconfigurerequest);
       handled = 1;
       break;
     case MapRequest:
+      eventName = "MapRequest";
       _HandleMapRequest(&event->xmap);
       handled = 1;
       break;
     case PropertyNotify:
+      eventName = "PropertyNotify";
       handled = _HandlePropertyNotify(&event->xproperty);
       break;
     case ClientMessage:
+      eventName = "ClientMessage";
       _HandleClientMessage(&event->xclient);
       handled = 1;
       break;
     case UnmapNotify:
+      eventName = "UnmapNotify";
       _HandleUnmapNotify(&event->xunmap);
       handled = 1;
       break;
     case Expose:
+      eventName = "Expose";
       handled = _HandleExpose(&event->xexpose);
       break;
     case ColormapNotify:
+      eventName = "ColormapNotify";
       _HandleColormapChange(&event->xcolormap);
       handled = 1;
       break;
     case DestroyNotify:
+      eventName = "DestroyNotify";
       handled = _HandleDestroyNotify(&event->xdestroywindow);
       break;
     case SelectionClear:
+      eventName = "SelectionClear";
       handled = _HandleSelectionClear(&event->xselectionclear);
       break;
     case ResizeRequest:
-      handled = DesktopEnvironment::DefaultEnvironment()->HandleDockResizeRequest(&event->xresizerequest);
+
+      eventName = "ResizeRequest";
+      handled =
+          DesktopEnvironment::DefaultEnvironment()->HandleDockResizeRequest(
+              &event->xresizerequest);
       break;
     case MotionNotify:
-      SetMousePosition(event->xmotion.x_root, event->xmotion.y_root, event->xmotion.window);
+      eventName = "MotionNotify";
+      SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
+          event->xmotion.window);
       handled = 0;
       break;
     case ButtonPress:
     case ButtonRelease:
-      SetMousePosition(event->xbutton.x_root, event->xbutton.y_root, event->xbutton.window);
+      if (event->type == ButtonPress) {
+        eventName = "ButtonPress";
+      } else {
+        eventName = "ButtonRelease";
+      }
+      SetMousePosition(event->xbutton.x_root, event->xbutton.y_root,
+          event->xbutton.window);
       handled = 0;
       break;
     case EnterNotify:
-      SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root, event->xcrossing.window);
+      eventName = "EnterNotify";
+      SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
+          event->xcrossing.window);
       handled = 0;
       break;
     case LeaveNotify:
+      eventName = "LeaveNotify";
       SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
       None);
       handled = 0;
       break;
     case ReparentNotify:
-      DesktopEnvironment::DefaultEnvironment()->HandleDockReparentNotify(&event->xreparent);
+      eventName = "ReparentNotify";
+      DesktopEnvironment::DefaultEnvironment()->HandleDockReparentNotify(
+          &event->xreparent);
       handled = 1;
       break;
     case ConfigureNotify:
+      eventName = "ConfigureNotify";
       handled = _HandleConfigureNotify(&event->xconfigure);
       break;
     case CreateNotify:
     case MapNotify:
     case GraphicsExpose:
     case NoExpose:
+      if (event->type == CreateNotify) {
+        eventName = "CreateNotify";
+      } else if (event->type == MapNotify) {
+        eventName = "MapNotify";
+      }else if(event->type == GraphicsExpose) {
+        eventName = "GraphicsExpose";
+      }else if(event->type == NoExpose) {
+        eventName = "NoExpose";
+      }
       handled = 1;
       break;
     default:
@@ -214,6 +246,8 @@ char _WaitForEvent(XEvent *event) {
       }
       break;
     }
+    sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
+    Logger::Log(buf);
 
     if (!handled) {
       handled = TrayType::ProcessTrayEvent(event);
@@ -260,24 +294,19 @@ void _Signal(void) {
     pager_update_pending = 0;
   }
 
-  Logger::Log("Updating time difference\n");
   GetCurrentTime(&now);
   if (GetTimeDifference(&now, &last) < MIN_TIME_DELTA) {
     return;
   }
   last = now;
 
-  Logger::Log("Getting mouse position\n");
   GetMousePosition(&x, &y, &w);
-  Logger::Log("Processing callbacks\n");
   for (cp = callbacks; cp; cp = cp->next) {
     if (cp->freq == 0 || GetTimeDifference(&now, &cp->last) >= cp->freq) {
       cp->last = now;
-      Logger::Log("Callback\n");
       (cp->callback)(&now, x, y, w, cp->data);
     }
   }
-  Logger::Log("Done with signal\n");
 }
 
 /** Process an event. */
@@ -328,7 +357,8 @@ void _DiscardMotionEvents(XEvent *event, Window w) {
   JXSync(display, False);
   while (JXCheckTypedEvent(display, MotionNotify, &temp)) {
     _UpdateTime(&temp);
-    SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root, temp.xmotion.window);
+    SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root,
+        temp.xmotion.window);
     if (temp.xmotion.window == w) {
       *event = temp;
     }
@@ -349,7 +379,8 @@ void _DiscardEnterEvents() {
   JXSync(display, False);
   while (JXCheckMaskEvent(display, EnterWindowMask, &event)) {
     _UpdateTime(&event);
-    SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
+    SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
+        event.xmotion.window);
   }
 }
 
@@ -360,7 +391,8 @@ char _HandleSelectionClear(const XSelectionClearEvent *event) {
     shouldExit = 1;
     return 1;
   }
-  return DesktopEnvironment::DefaultEnvironment()->HandleDockSelectionClear(event);
+  return DesktopEnvironment::DefaultEnvironment()->HandleDockSelectionClear(
+      event);
 }
 
 /** Process a button event. */
@@ -381,7 +413,8 @@ void _HandleButtonEvent(const XButtonEvent *event) {
   if (event->type == ButtonPress) {
     if (doubleClickActive == event->button && event->time != lastClickTime
         && event->time - lastClickTime <= settings.doubleClickSpeed
-        && abs(event->x - lastX) <= settings.doubleClickDelta && abs(event->y - lastY) <= settings.doubleClickDelta) {
+        && abs(event->x - lastX) <= settings.doubleClickDelta
+        && abs(event->y - lastY) <= settings.doubleClickDelta) {
       button = event->button * 11;
     } else {
       button = event->button;
@@ -422,12 +455,14 @@ void _HandleButtonEvent(const XButtonEvent *event) {
     np = ClientNode::FindClientByWindow(event->window);
     if (np) {
       const char move_resize = (np->getState()->status & STAT_DRAG)
-          || ((mask == settings.moveMask) && !(np->getState()->status & STAT_NODRAG));
+          || ((mask == settings.moveMask)
+              && !(np->getState()->status & STAT_NODRAG));
       switch (event->button) {
       case Button1:
       case Button2:
         np->FocusClient();
-        if (settings.focusModel == FOCUS_SLOPPY || settings.focusModel == FOCUS_CLICK) {
+        if (settings.focusModel == FOCUS_SLOPPY
+            || settings.focusModel == FOCUS_CLICK) {
           np->RaiseClient();
         }
         if (move_resize) {
@@ -438,10 +473,12 @@ void _HandleButtonEvent(const XButtonEvent *event) {
       case Button3:
         if (move_resize) {
           Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
-          np->ResizeClient(MC_BORDER | MC_BORDER_E | MC_BORDER_S, event->x + west, event->y + north);
+          np->ResizeClient(MC_BORDER | MC_BORDER_E | MC_BORDER_S,
+              event->x + west, event->y + north);
         } else {
           np->FocusClient();
-          if (settings.focusModel == FOCUS_SLOPPY || settings.focusModel == FOCUS_CLICK) {
+          if (settings.focusModel == FOCUS_SLOPPY
+              || settings.focusModel == FOCUS_CLICK) {
             np->RaiseClient();
           }
         }
@@ -466,7 +503,8 @@ void _ToggleMaximized(ClientNode *np, MaxFlags flags) {
 }
 
 /** Process a key or mouse binding. */
-void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, int code, int x, int y) {
+void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
+    int code, int x, int y) {
   const ActionType key = GetKey(context, state, code);
   const char keyAction = context == MC_NONE;
   switch (key.action) {
@@ -615,7 +653,9 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
         np->RaiseClient();
         ShowWindowMenu(np, np->getX(), np->getY(), 1);
       } else {
-        const unsigned bsize = (np->getState()->border & BORDER_OUTLINE) ? settings.borderWidth : 0;
+        const unsigned bsize =
+            (np->getState()->border & BORDER_OUTLINE) ?
+                settings.borderWidth : 0;
         const unsigned titleHeight = Border::GetTitleHeight();
         const int mx = np->getX() + x - bsize;
         const int my = np->getY() + y - titleHeight - bsize;
@@ -647,28 +687,36 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
     break;
   case SENDR:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(np->getState()->desktop);
+      const unsigned desktop =
+          DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(
+              np->getState()->desktop);
       np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDL:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(np->getState()->desktop);
+      const unsigned desktop =
+          DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(
+              np->getState()->desktop);
       np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDU:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(np->getState()->desktop);
+      const unsigned desktop =
+          DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(
+              np->getState()->desktop);
       np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDD:
     if (np) {
-      const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(np->getState()->desktop);
+      const unsigned desktop =
+          DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(
+              np->getState()->desktop);
       np->SetClientDesktop(desktop);
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
@@ -690,7 +738,8 @@ void _HandleKeyPress(const XKeyEvent *event) {
 /** Handle a key release event. */
 void _HandleKeyRelease(const XKeyEvent *event) {
   const ActionType key = GetKey(MC_NONE, event->state, event->keycode);
-  if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV && key.action != PREVSTACK) {
+  if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV
+      && key.action != PREVSTACK) {
     StopWindowWalk();
   }
 }
@@ -699,7 +748,8 @@ void _HandleKeyRelease(const XKeyEvent *event) {
 void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
   ClientNode *np;
 
-  if (DesktopEnvironment::DefaultEnvironment()->HandleDockConfigureRequest(event)) {
+  if (DesktopEnvironment::DefaultEnvironment()->HandleDockConfigureRequest(
+      event)) {
     return;
   }
 
@@ -808,7 +858,8 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
       Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
 
       if (np->getParent() != None) {
-        JXMoveWindow(display, np->getParent(), np->getX() - west, np->getY() - north);
+        JXMoveWindow(display, np->getParent(), np->getX() - west,
+            np->getY() - north);
         np->SendConfigureEvent();
       } else {
         JXMoveWindow(display, np->getWindow(), np->getX(), np->getY());
@@ -855,7 +906,8 @@ void _HandleEnterNotify(const XCrossingEvent *event) {
   np = ClientNode::FindClient(event->window);
   if (np) {
     if (!(np->getState()->status & STAT_ACTIVE)
-        && (settings.focusModel == FOCUS_SLOPPY || settings.focusModel == FOCUS_SLOPPY_TITLE)) {
+        && (settings.focusModel == FOCUS_SLOPPY
+            || settings.focusModel == FOCUS_SLOPPY_TITLE)) {
       np->FocusClient();
     }
     if (np->getParent() == event->window) {
@@ -1024,7 +1076,8 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
           (np->getController())(0);
         }
 
-        if (event->data.l[0] >= 0 && event->data.l[0] < (long) settings.desktopCount) {
+        if (event->data.l[0] >= 0
+            && event->data.l[0] < (long) settings.desktopCount) {
           np->getState()->status &= ~STAT_STICKY;
 
           np->SetClientDesktop(event->data.l[0]);
@@ -1211,7 +1264,7 @@ void _HandleNetWMMoveResize(const XClientMessageEvent *event, ClientNode *np) {
     np->ResizeClient(MC_BORDER | MC_BORDER_E, x, y);
     break;
   case 4: /* bottom-right */
-   np-> ResizeClient(MC_BORDER | MC_BORDER_S | MC_BORDER_E, x, y);
+    np->ResizeClient(MC_BORDER | MC_BORDER_S | MC_BORDER_E, x, y);
     break;
   case 5: /* bottom */
     np->ResizeClient(MC_BORDER | MC_BORDER_S, x, y);
@@ -1277,9 +1330,11 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
   for (x = 1; x <= 2; x++) {
     if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_STICKY]) {
       actionStick = 1;
-    } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
+    } else if (event->data.l[x]
+        == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
       maxFlags |= MAX_VERT;
-    } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
+    } else if (event->data.l[x]
+        == (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
       maxFlags |= MAX_HORIZ;
     } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SHADED]) {
       actionShade = 1;
@@ -1287,7 +1342,8 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
       actionFullScreen = 1;
     } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_HIDDEN]) {
       actionMinimize = 1;
-    } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
+    } else if (event->data.l[x]
+        == (long) atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
       actionNolist = 1;
     } else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SKIP_PAGER]) {
       actionNopager = 1;
@@ -1444,7 +1500,8 @@ void _HandleMotionNotify(const XMotionEvent *event) {
 
   np = ClientNode::FindClientByParent(event->window);
   if (np) {
-    const MouseContextType context = Border::GetBorderContext(np, event->x, event->y);
+    const MouseContextType context = Border::GetBorderContext(np, event->x,
+        event->y);
     if (np->getMouseContext() != context) {
       np->setMouseContext(context);
       cur = GetFrameCursor(context);
@@ -1552,7 +1609,8 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
         np->getState()->status &= ~(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED);
         JXUngrabButton(display, AnyButton, AnyModifier, np->getWindow());
         np->GravitateClient(1);
-        JXReparentWindow(display, np->getWindow(), rootWindow, np->getX(), np->getY());
+        JXReparentWindow(display, np->getWindow(), rootWindow, np->getX(),
+            np->getY());
         WriteState(np);
         JXRemoveFromSaveSet(display, np->getWindow());
         np->RemoveClient();
@@ -1574,7 +1632,8 @@ char _HandleDestroyNotify(const XDestroyWindowEvent *event) {
     np->RemoveClient();
     return 1;
   } else {
-    return DesktopEnvironment::DefaultEnvironment()->HandleDockDestroy(event->window);
+    return DesktopEnvironment::DefaultEnvironment()->HandleDockDestroy(
+        event->window);
   }
 }
 
