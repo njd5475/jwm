@@ -30,3 +30,4 @@ libtool
 ltmain.sh
 test-driver
 /Makefile.in
+.settings/
