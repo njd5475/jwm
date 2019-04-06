@@ -233,7 +233,6 @@ void EventLoop(void) {
 
   /* Loop processing events until it's time to exit. */
   while (JLIKELY(!shouldExit)) {
-    Log("In event loop\n");
     if (JLIKELY(_WaitForEvent(&event))) {
       _ProcessEvent(&event);
     }
