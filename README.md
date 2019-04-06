@@ -36,3 +36,8 @@ License
 See LICENSE for license information.
 
 For more information see http://joewing.net/projects/jwm/
+
+Test
+===
+
+To test jwm for development you can use `Xephyr :1 -ac -screen 1024x768 &` and then `DISPLAY=:1 src/jwm` after building with `make`

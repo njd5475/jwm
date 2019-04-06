@@ -420,7 +420,7 @@ void DockType::_UpdateDock(void) {
 /** Get the size of a particular window on the dock. */
 void DockType::_GetDockItemSize(int *size) {
   /* Determine the default size of items in the dock. */
-  if (orientation == SYSTEM_TRAY_ORIENTATION_HORZ) {
+  if (0 == SYSTEM_TRAY_ORIENTATION_HORZ) {
     *size = dock->getHeight();
   } else {
     *size = dock->getWidth();
@@ -438,7 +438,14 @@ void DockType::_GetDockSize(int *width, int *height) {
   Assert(dock != NULL);
 
   /* Get the dock item size. */
-  _GetDockItemSize(&itemSize);
+  if(0 == SYSTEM_TRAY_ORIENTATION_HORZ) {
+	  itemSize = dock->getHeight();
+  }else{
+	  itemSize = dock->getWidth();
+  }
+  if(dock->itemSize > 0 && itemSize > dock->itemSize) {
+	  itemSize = dock->itemSize;
+  }
 
   /* Determine the size of the items on the dock. */
   for (np = dock->nodes; np; np = np->next) {

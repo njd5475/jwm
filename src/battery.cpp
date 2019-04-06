@@ -91,8 +91,7 @@ void StartupBattery(void) {
 TrayComponentType *CreateBattery(int width, int height) {
   Warning(_("Creating Battery Component"));
   TrayComponentType *cp;
-  BatteryType *bat;
-  bat = new BatteryType;
+  BatteryType *bat = new BatteryType;
   bat->next = batteries;
 
   batteries = bat; //move to head
@@ -162,6 +161,7 @@ float QueryBatteryPercentage() {
 
 /** Update a Battery tray component. */
 void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
+  Logger::Log("PollBattery::Callback called");
   DrawBattery((BatteryType*)data, QueryBatteryPercentage());
 }
 

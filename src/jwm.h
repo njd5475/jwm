@@ -145,6 +145,7 @@
 
 #include "debug.h"
 #include "jxlib.h"
+#include "logger.h"
 
 #endif /* JWM_H */
 

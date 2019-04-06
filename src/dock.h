@@ -65,37 +65,37 @@ public:
   /** Handle a client message sent to the dock window.
    * @param event The event.
    */
-  void _HandleDockEvent(const XClientMessageEvent *event);
+  static void _HandleDockEvent(const XClientMessageEvent *event);
 
   /** Handle a destroy event.
    * @param win The window that was destroyed.
    * @return 1 if handled, 0 otherwise.
    */
-  char _HandleDockDestroy(Window win);
+  static char _HandleDockDestroy(Window win);
 
   /** Handle a selection clear event.
    * @param event The selection clear event.
    * @return 1 if handled, 0 otherwise.
    */
-  char _HandleDockSelectionClear(const XSelectionClearEvent *event);
+  static char _HandleDockSelectionClear(const XSelectionClearEvent *event);
 
   /** Handle a resize request.
    * @param event The resize request event.
    * @return 1 if handled, 0 otherwise.
    */
-  char _HandleDockResizeRequest(const XResizeRequestEvent *event);
+  static char _HandleDockResizeRequest(const XResizeRequestEvent *event);
 
   /** Handle a configure request.
    * @param event The configure request event.
    * @return 1 if handled, 0 otherwise.
    */
-  char _HandleDockConfigureRequest(const XConfigureRequestEvent *event);
+  static char _HandleDockConfigureRequest(const XConfigureRequestEvent *event);
 
   /** Handle a reparent notify event.
    * @param event The reparent notify event.
    * @return 1 if handled, 0 otherwise.
    */
-  char _HandleDockReparentNotify(const XReparentEvent *event);
+  static char _HandleDockReparentNotify(const XReparentEvent *event);
 
 };
 #endif

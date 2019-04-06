@@ -66,15 +66,15 @@ static void SendRestart(void);
 static void SendExit(void);
 static void SendReload(void);
 static void SendJWMMessage(const char *message);
-static void log(int fd, const char *message);
 
-static int fd = 0;
+#define Log(x) Logger::Log(x);
+
 /** The main entry point. */
 #ifndef UNIT_TEST
 int main(int argc, char *argv[]) {
-  fd = open("/var/log/jwm/jwm.log", O_CREAT | O_WRONLY | O_APPEND);
 
-  log(fd, "Hello World!\n");
+  Logger::AddFile("/var/log/jwm/jwm.log");
+  Log("Hello World!\n");
 
   int x;
   enum {
@@ -113,24 +113,28 @@ int main(int argc, char *argv[]) {
       DoExit(1);
     }
   }
-  log(fd, "Finished parsing command line options.\n");
+  Log("Finished parsing command line options.\n");
 
   switch (action) {
   case COMMAND_PARSE:
-    log(fd, "Initializing\n");
+    Log("Initializing\n")
+    ;
     Initialize();
     ParseConfig(configPath);
     DoExit(0);
   case COMMAND_RESTART:
-    log(fd, "Restarting\n");
+    Log("Restarting\n")
+    ;
     SendRestart();
     DoExit(0);
   case COMMAND_EXIT:
-    log(fd, "Exiting\n");
+    Log("Exiting\n")
+    ;
     SendExit();
     DoExit(0);
   case COMMAND_RELOAD:
-    log(fd, "Reloading\n");
+    Log("Reloading\n")
+    ;
     SendReload();
     DoExit(0);
   default:
@@ -145,12 +149,12 @@ int main(int argc, char *argv[]) {
   textdomain("jwm");
 #endif
 
-  //log(fd, "Registering Components\n");
+  //Log("Registering Components\n");
   //environment.RegisterComponent(new DockComponent());
   //environment.RegisterComponent(new DesktopComponent());
   //environment.RegisterComponent(new BackgroundComponent());
   /* The main loop. */
-  log(fd, "Starting connection...\n");
+  Log("Starting connection...\n");
   StartupConnection();
   do {
 
@@ -160,27 +164,27 @@ int main(int argc, char *argv[]) {
     shouldReload = 0;
 
     /* Prepare JWM components. */
-    log(fd, "Initializing...\n");
+    Log("Initializing...\n");
     Initialize();
 
     /* Parse the configuration file. */
-    log(fd, "Parsing Config...\n");
+    Log("Parsing Config...\n");
     ParseConfig(configPath);
 
     /* Start up the JWM components. */
-    log(fd, "Starting up components...\n");
+    Log("Starting up components...\n");
     Startup();
 
     /* The main event loop. */
-    log(fd, "Starting Event Loop\n");
+    Log("Starting Event Loop\n");
     EventLoop();
 
     /* Shutdown JWM components. */
-    log(fd, "Shutting down components\n");
+    Log("Shutting down components\n");
     Shutdown();
 
     /* Perform any extra cleanup. */
-    log(fd, "Destroying components\n");
+    Log("Destroying components\n");
     Destroy();
 
   } while (shouldRestart);
@@ -195,18 +199,13 @@ int main(int argc, char *argv[]) {
     DoExit(0);
   }
 
-  close(fd);
+  Logger::Close();
 
   /* Control shoud never get here. */
   return -1;
 
 }
 #endif
-
-void log(int fd, const char *message) {
-  int len = strlen(message) + 1;
-  write(fd, message, len);
-}
 
 /** Exit with the specified status code. */
 void DoExit(int code) {
@@ -234,6 +233,7 @@ void EventLoop(void) {
 
   /* Loop processing events until it's time to exit. */
   while (JLIKELY(!shouldExit)) {
+    Log("In event loop\n");
     if (JLIKELY(_WaitForEvent(&event))) {
       _ProcessEvent(&event);
     }
@@ -288,7 +288,7 @@ void StartupConnection(void) {
   int revert;
 
   initializing = 1;
-  if(!environment->OpenConnection()) {
+  if (!environment->OpenConnection()) {
     DoExit(1);
   }
 
@@ -413,7 +413,7 @@ void HandleChild(int sig) {
  * This is called before the X connection is opened.
  */
 #define ILog(fn) \
-  log(fd, #fn "\n");\
+  Logger::Log(#fn "\n");\
   fn();
 
 void Initialize(void) {
@@ -591,7 +591,7 @@ void SendReload(void) {
 /** Send a JWM message to the root window. */
 void SendJWMMessage(const char *message) {
   XEvent event;
-  if(!environment->OpenConnection()) {
+  if (!environment->OpenConnection()) {
     DoExit(1);
   }
   memset(&event, 0, sizeof(event));

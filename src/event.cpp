@@ -85,6 +85,7 @@ static void _HandleShapeEvent(const XShapeEvent *event);
 
 /** Wait for an event and process it. */
 char _WaitForEvent(XEvent *event) {
+  Logger::Log("Waiting for events\n");
   struct timeval timeout;
   CallbackNode *cp;
   fd_set fds;
@@ -105,6 +106,7 @@ char _WaitForEvent(XEvent *event) {
       sleepTime = cp->freq;
     }
   }
+  Logger::Log("Computed sleep time\n");
 
   do {
 
@@ -121,11 +123,18 @@ char _WaitForEvent(XEvent *event) {
       }
     }
 
+    Logger::Log("Right before signal, woza!\n");
     _Signal();
+    Logger::Log("After signal\n");
 
+    Logger::Log("About to get next event\n");
     JXNextEvent(display, event);
     _UpdateTime(event);
 
+    Logger::Log("Updated time\n");
+    char buf[80];
+    sprintf(buf, "Event received %d\n", event->type);
+    Logger::Log(buf);
     switch (event->type) {
     case ConfigureRequest:
       _HandleConfigureRequest(&event->xconfigurerequest);
@@ -236,31 +245,39 @@ void _Signal(void) {
   y;
 
   if (restack_pending) {
+    Logger::Log("Restacking Clients\n");
     ClientNode::RestackClients();
     restack_pending = 0;
   }
   if (task_update_pending) {
+    Logger::Log("Updating task bars\n");
     TaskBarType::UpdateTaskBar();
     task_update_pending = 0;
   }
   if (pager_update_pending) {
+    Logger::Log("Updating pager\n");
     PagerType::UpdatePager();
     pager_update_pending = 0;
   }
 
+  Logger::Log("Updating time difference\n");
   GetCurrentTime(&now);
   if (GetTimeDifference(&now, &last) < MIN_TIME_DELTA) {
     return;
   }
   last = now;
 
+  Logger::Log("Getting mouse position\n");
   GetMousePosition(&x, &y, &w);
+  Logger::Log("Processing callbacks\n");
   for (cp = callbacks; cp; cp = cp->next) {
     if (cp->freq == 0 || GetTimeDifference(&now, &cp->last) >= cp->freq) {
       cp->last = now;
+      Logger::Log("Callback\n");
       (cp->callback)(&now, x, y, w, cp->data);
     }
   }
+  Logger::Log("Done with signal\n");
 }
 
 /** Process an event. */
@@ -1605,8 +1622,8 @@ void _UpdateTime(const XEvent *event) {
 
 /** Register a callback. */
 void _RegisterCallback(int freq, SignalCallback callback, void *data) {
-  CallbackNode *cp;
-  cp = new CallbackNode;
+  Logger::Log("Logging callback");
+  CallbackNode *cp = new CallbackNode;
   cp->last.seconds = 0;
   cp->last.ms = 0;
   cp->freq = freq;
