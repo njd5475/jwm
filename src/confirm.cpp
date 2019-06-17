@@ -219,7 +219,7 @@ char HandleDialogButtonPress(const XButtonEvent *event) {
 /** Handle a key press. */
 char HandleDialogKeyPress(const XKeyEvent *event) {
   if (dialog && event->window == dialog->node->getWindow()) {
-    const ActionType key = GetKey(MC_NONE, event->state, event->keycode);
+    const ActionType key = Binding::GetKey(MC_NONE, event->state, event->keycode);
     switch (key.action) {
     case ENTER:
       RunDialogAction();

@@ -451,7 +451,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
     }
   } else {
     /* Click over window content. */
-    const unsigned int mask = event->state & ~lockMask;
+    const unsigned int mask = event->state & ~Binding::lockMask;
     np = ClientNode::FindClientByWindow(event->window);
     if (np) {
       const char move_resize = (np->getState()->status & STAT_DRAG)
@@ -505,11 +505,11 @@ void _ToggleMaximized(ClientNode *np, MaxFlags flags) {
 /** Process a key or mouse binding. */
 void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
     int code, int x, int y) {
-  const ActionType key = GetKey(context, state, code);
+  const ActionType key = Binding::GetKey(context, state, code);
   const char keyAction = context == MC_NONE;
   switch (key.action) {
   case EXEC:
-    RunKeyCommand(context, state, code);
+    Binding::RunKeyCommand(context, state, code);
     break;
   case DESKTOP:
     DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(key.extra);
@@ -645,7 +645,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
     _ToggleMaximized(np, MAX_HORIZ);
     break;
   case ROOT:
-    ShowKeyMenu(context, state, code);
+    Binding::ShowKeyMenu(context, state, code);
     break;
   case WIN:
     if (np) {
@@ -737,7 +737,7 @@ void _HandleKeyPress(const XKeyEvent *event) {
 
 /** Handle a key release event. */
 void _HandleKeyRelease(const XKeyEvent *event) {
-  const ActionType key = GetKey(MC_NONE, event->state, event->keycode);
+  const ActionType key = Binding::GetKey(MC_NONE, event->state, event->keycode);
   if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV
       && key.action != PREVSTACK) {
     StopWindowWalk();

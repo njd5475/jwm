@@ -416,7 +416,7 @@ void HandleChild(int sig) {
   fn();
 
 void Initialize(void) {
-  ILog(InitializeBindings);
+  ILog(Binding::InitializeBindings);
   ILog(InitializeClients);
   ILog(InitializeBattery);
   ILog(InitializeColors);
@@ -469,7 +469,7 @@ void Startup(void) {
   StartupHints();
   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
   TrayType::StartupTray();
-  StartupBindings();
+  Binding::StartupBindings();
   StartupPlacement();
 
 #  ifndef DISABLE_CONFIRM
@@ -517,7 +517,7 @@ void Shutdown(void) {
   ShutdownDialogs();
 #  endif
   ShutdownPopup();
-  ShutdownBindings();
+  Binding::ShutdownBindings();
   PagerType::ShutdownPager();
   ShutdownRootMenu();
   DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
@@ -559,7 +559,7 @@ void Destroy(void) {
   DestroyGroups();
   DestroyHints();
   DestroyIcons();
-  DestroyBindings();
+  Binding::DestroyBindings();
   PagerType::DestroyPager();
   DestroyPlacement();
   DestroyPopup();

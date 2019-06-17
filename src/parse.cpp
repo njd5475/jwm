@@ -186,7 +186,7 @@ void ParseConfig(const char *fileName) {
       ParseError(NULL, _("could not open %s or %s"), CONFIG_FILES[0], SYSTEM_CONFIG);
     }
   }
-  ValidateKeys();
+  Binding::ValidateKeys();
 }
 
 /**
@@ -383,7 +383,7 @@ void ParseMoveMode(const TokenNode *tp) {
   }
   str = FindAttribute(tp->attributes, "mask");
   if (str && *str) {
-    settings.moveMask = ParseModifierString(str);
+    settings.moveMask = Binding::ParseModifierString(str);
   }
 
   settings.moveStatusType = ParseStatusWindowType(tp);
@@ -810,7 +810,7 @@ void ParseKey(const TokenNode *tp) {
   if (JUNLIKELY(k.action == INVALID)) {
     ParseError(tp, _("invalid Key action: \"%s\""), action);
   } else {
-    InsertBinding(k, mask, key, code, command);
+    Binding::InsertBinding(k, mask, key, code, command);
   }
 }
 
@@ -847,7 +847,7 @@ void ParseMouse(const TokenNode *tp) {
     ParseError(tp, _("invalid Mouse context: \"%s\""), context);
   } else {
     const MouseContextType mc = (MouseContextType) x;
-    InsertMouseBinding(button, mask, mc, key, command);
+    Binding::InsertMouseBinding(button, mask, mc, key, command);
   }
 }
 
