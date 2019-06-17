@@ -165,36 +165,36 @@ void TrayType::DestroyTray(void) {
 }
 
 /** Create an empty tray. */
-TrayType *TrayType::CreateTray(void) {
-  TrayType *tp = new TrayType;
+TrayType::TrayType() {
+  this->requestedX = 0;
+  this->requestedY = -1;
+  this->x = 0;
+  this->y = -1;
+  this->requestedWidth = 0;
+  this->requestedHeight = 0;
+  this->width = 0;
+  this->height = 0;
+  this->layer = DEFAULT_TRAY_LAYER;
+  this->layout = LAYOUT_HORIZONTAL;
+  this->valign = TALIGN_FIXED;
+  this->halign = TALIGN_FIXED;
 
-  tp->requestedX = 0;
-  tp->requestedY = -1;
-  tp->x = 0;
-  tp->y = -1;
-  tp->requestedWidth = 0;
-  tp->requestedHeight = 0;
-  tp->width = 0;
-  tp->height = 0;
-  tp->layer = DEFAULT_TRAY_LAYER;
-  tp->layout = LAYOUT_HORIZONTAL;
-  tp->valign = TALIGN_FIXED;
-  tp->halign = TALIGN_FIXED;
+  GetCurrentTime(&this->showTime);
+  this->autoHide = THIDE_OFF;
+  this->autoHideDelay = 0;
+  this->hidden = 0;
 
-  GetCurrentTime(&tp->showTime);
-  tp->autoHide = THIDE_OFF;
-  tp->autoHideDelay = 0;
-  tp->hidden = 0;
+  this->window = None;
 
-  tp->window = None;
+  this->components = NULL;
+  this->componentsTail = NULL;
 
-  tp->components = NULL;
-  tp->componentsTail = NULL;
+  this->next = trays;
+  trays = this;
+}
 
-  tp->next = trays;
-  trays = tp;
+TrayType::~TrayType() {
 
-  return tp;
 }
 
 void TrayComponentType::addAction(const char* action, int mask) {
@@ -757,6 +757,7 @@ void TrayType::DrawSpecificTray() {
   TrayComponentType *cp;
 
   for (cp = this->components; cp; cp = cp->getNext()) {
+    cp->Redraw();
     cp->UpdateSpecificTray(this);
   }
 

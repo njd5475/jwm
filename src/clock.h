@@ -18,8 +18,6 @@ public:
   ClockType(const char *format, const char *zone, int width, int height);
   virtual ~ClockType() {}
 private:
-  TrayComponentType *cp; /**< Common component data. */
-
   char *format; /**< The time format to use. */
   char *zone; /**< The time zone to use (NULL = local). */
   //struct ActionNode *actions; /**< Actions */
@@ -48,7 +46,7 @@ public:
   static void ProcessClockButtonRelease(TrayComponentType *cp, int x, int y, int button);
   static void ProcessClockMotionEvent(TrayComponentType *cp, int x, int y, int mask);
 
-  static void DrawClock(ClockType *clk, const TimeType *now);
+  void DrawClock(const TimeType *now);
 
   static void SignalClock(const struct TimeType *now, int x, int y, Window w, void *data);
 

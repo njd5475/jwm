@@ -31,3 +31,4 @@ ltmain.sh
 test-driver
 /Makefile.in
 .settings/
+/googletest/

@@ -94,6 +94,8 @@ class TrayType {
 
   struct TrayType *next; /**< Next tray. */
 public:
+  TrayType();
+  virtual ~TrayType();
   LayoutType getLayout() const {return this->layout;}
   Window getWindow() const {return this->window;}
   TrayType *getNext() const {return this->next;}
