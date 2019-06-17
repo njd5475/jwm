@@ -12,11 +12,11 @@
 bool BackgroundComponent::registered = environment->RegisterComponent(new BackgroundComponent());
 
 void BackgroundComponent::set(int desktop, const char* type, const char* value) {
-  _SetBackground(desktop, type, value);
+  Backgrounds::_SetBackground(desktop, type, value);
 }
 
 void BackgroundComponent::loadBackground(int desktop) {
-  _LoadBackground(desktop);
+  Backgrounds::_LoadBackground(desktop);
 }
 
 BackgroundComponent::BackgroundComponent() {
@@ -29,18 +29,18 @@ BackgroundComponent::~BackgroundComponent() {
 }
 
 void BackgroundComponent::initialize() {
-  _InitializeBackgrounds();
+  Backgrounds::_InitializeBackgrounds();
 }
 
 void BackgroundComponent::start() {
-  _StartupBackgrounds();
+  Backgrounds::_StartupBackgrounds();
 }
 
 void BackgroundComponent::stop() {
-  _ShutdownBackgrounds();
+  Backgrounds::_ShutdownBackgrounds();
 }
 
 void BackgroundComponent::destroy() {
-  _DestroyBackgrounds();
+  Backgrounds::_DestroyBackgrounds();
 }
 

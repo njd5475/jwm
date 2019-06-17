@@ -67,7 +67,7 @@ void DesktopEnvironment::HandleDockEvent(const XClientMessageEvent* event) {
 }
 
 void DesktopEnvironment::LoadBackground(unsigned int num) {
-  _LoadBackground(num);
+  Backgrounds::_LoadBackground(num);
 }
 
 void DesktopEnvironment::ChangeDesktop(unsigned short int num) {
@@ -166,7 +166,7 @@ void DesktopEnvironment::SetDesktopName(int num, const char* name) {
 }
 
 void DesktopEnvironment::SetBackground(int id, const char* file, char* const name) {
-  _SetBackground(id, file, name);
+  Backgrounds::_SetBackground(id, file, name);
 }
 
 TrayComponentType* DesktopEnvironment::CreateDock(int width) {
