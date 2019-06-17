@@ -1393,7 +1393,7 @@ void ParseBattery(const TokenNode *tp, TrayType *tray) {
     height = 0;
   }
 
-  cp = CreateBattery(width, height);
+  cp = new Battery(width, height);
   if (JLIKELY(cp)) {
     tray->AddTrayComponent(cp);
   }

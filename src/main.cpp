@@ -418,7 +418,7 @@ void HandleChild(int sig) {
 void Initialize(void) {
   ILog(Binding::InitializeBindings);
   ILog(InitializeClients);
-  ILog(InitializeBattery);
+  ILog(Battery::InitializeBattery);
   ILog(InitializeColors);
   ILog(InitializeCommands);
   ILog(InitializeCursors);
@@ -463,7 +463,7 @@ void Startup(void) {
   StartupCursors();
 
   PagerType::StartupPager();
-  StartupBattery();
+  Battery::StartupBattery();
   StartupTaskBar();
   TrayButton::StartupTrayButtons();
   StartupHints();
@@ -547,7 +547,7 @@ void Shutdown(void) {
  */
 void Destroy(void) {
   DestroyClients();
-  DestroyBattery();
+  Battery::DestroyBattery();
   DestroyColors();
   DestroyCommands();
   DestroyCursors();

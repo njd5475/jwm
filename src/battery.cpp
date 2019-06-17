@@ -23,32 +23,6 @@
 #include "event.h"
 #include "action.h"
 
-/** Structure to represent a Battery tray component. */
-typedef struct BatteryType {
-  TrayComponentType *cp; /**< Common component data. */
-
-  float lastLevel; /**< Currently displayed level */
-  struct ActionNode *actions; /**< Actions */
-
-  /* The following are used to control popups. */
-  int mousex; /**< Last mouse x-coordinate. */
-  int mousey; /**< Last mouse y-coordinate. */
-  TimeType mouseTime; /**< Time of the last mouse motion. */
-
-  int userWidth; /**< User-specified Battery width (or 0). */
-
-  struct BatteryType *next; /**< Next Battery in the list. */
-} BatteryType;
-
-static BatteryType *batteries;
-
-static void Create(TrayComponentType *cp);
-static void Resize(TrayComponentType *cp);
-static void Destroy(TrayComponentType *cp);
-static void ProcessBatteryButtonPress(TrayComponentType *cp, int x, int y, int button);
-static void ProcessBatteryButtonRelease(TrayComponentType *cp, int x, int y, int button);
-static void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask);
-static void DrawBattery(BatteryType *bat, float percentage);
 static void PollBattery(const struct TimeType *now, int x, int y, Window w, void *data);
 static char *quickFileRead(int fd);
 static int readAsInt(int fd);
@@ -61,13 +35,16 @@ static int chargeNowFile;
 static int chargeFullFile;
 
 /** Initialize Batterys. */
-void InitializeBattery(void) {
+void Battery::InitializeBattery(void) {
   Warning(_("Battery tray has been initialized"));
-  batteries = NULL;
+}
+
+void Battery::StartupBattery() {
+
 }
 
 /** Destroy Battery(s). */
-void DestroyBattery(void) {
+void Battery::DestroyBattery(void) {
   close(chargeFullFile);
   close(chargeNowFile);
   Warning(_("Battery destroyed files closed"));
@@ -88,69 +65,34 @@ void StartupBattery(void) {
 }
 
 /** Create a Battery tray component. */
-TrayComponentType *CreateBattery(int width, int height) {
+Battery::Battery(int width, int height) : TrayComponentType() {
   Warning(_("Creating Battery Component"));
-  TrayComponentType *cp;
-  BatteryType *bat = new BatteryType;
-  bat->next = batteries;
+  this->SetSize(20, 20);
 
-  batteries = bat; //move to head
+  _RegisterCallback(900, PollBattery, this);
+}
 
-  cp = new TrayComponentType();
-  cp->SetSize(20, 20);
-  bat->cp = cp;
+Battery::~Battery() {
 
-  _RegisterCallback(900, PollBattery, bat);
-
-  return cp;
 }
 
 /** Add an action to a Battery. */
-void AddBatteryAction(TrayComponentType *cp, const char *action, int mask) {
-}
-
-/** Initialize a Battery tray component. */
-void Create(TrayComponentType *cp) {
+void Battery::AddBatteryAction(const char *action, int mask) {
 }
 
 /** Resize a Battery tray component. */
-void Resize(TrayComponentType *cp) {
-  Warning(_("Battery received a resize call, width: %d, height: %d"), cp->getWidth(), cp->getHeight());
-
-  BatteryType *bat;
+void Battery::Resize() {
+  Warning(_("Battery received a resize call, width: %d, height: %d"), this->getWidth(), this->getHeight());
   TimeType now;
 
-  Assert(cp);
-
-  bat = (BatteryType*)cp->getObject();
-
-  Assert(clk);
-
-  if(cp->getPixmap() != None) {
+  if(this->getPixmap() != None) {
     Warning(_("Battery pixmap released!"));
-     JXFreePixmap(display, cp->getPixmap());
+     JXFreePixmap(display, this->getPixmap());
   }
 
-  cp->setPixmap(JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(), rootDepth));
+  this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
 
-  DrawBattery(bat, QueryBatteryPercentage());
-}
-
-/** Destroy a Battery tray component. */
-void Destroy(TrayComponentType *cp) {
-
-}
-
-/** Process a press event on a Battery tray component. */
-void ProcessBatteryButtonPress(TrayComponentType *cp, int x, int y, int button) {
-}
-
-void ProcessBatteryButtonRelease(TrayComponentType *cp, int x, int y,
-    int button) {
-}
-
-/** Process a motion event on a Battery tray component. */
-void ProcessBatteryMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
+  Draw();
 }
 
 float QueryBatteryPercentage() {
@@ -161,35 +103,37 @@ float QueryBatteryPercentage() {
 
 /** Update a Battery tray component. */
 void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
-  DrawBattery((BatteryType*)data, QueryBatteryPercentage());
+
+  ((Battery*)data)->Draw();
 }
 
 /** Draw a Battery tray component. */
-void DrawBattery(BatteryType *bat, float percentage) {
-  if(percentage == bat->lastLevel) {
-    return; //short circuit since there was no change
+void Battery::Draw() {
+  float percentage = QueryBatteryPercentage();
+  if(percentage == this->lastLevel) {
+    return; //no change
   }
 
   JXSetForeground(display, rootGC, colors[COLOR_CLOCK_BG1]);
-  JXFillRectangle(display, bat->cp->getPixmap(), rootGC, 0, 0, bat->cp->getWidth(), bat->cp->getHeight());
+  JXFillRectangle(display, this->getPixmap(), rootGC, 0, 0, this->getWidth(), this->getHeight());
 
   static char buf[80];
   sprintf(buf, "%d%%", (int)percentage);
   int strWidth = GetStringWidth(FONT_CLOCK, buf); 
   strWidth += 16;
-  if(strWidth == bat->cp->getRequestedWidth()) {
-     RenderString(bat->cp->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG,
-       (bat->cp->getWidth() - strWidth)/2, (bat->cp->getHeight() - GetStringHeight(FONT_CLOCK))/2, bat->cp->getWidth(), buf);
+  if(strWidth == this->getRequestedWidth()) {
+     RenderString(this->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG,
+       (this->getWidth() - strWidth)/2, (this->getHeight() - GetStringHeight(FONT_CLOCK))/2, this->getWidth(), buf);
 
-     bat->cp->UpdateSpecificTray(bat->cp->getTray());
+     this->UpdateSpecificTray(this->getTray());
   } else {
     Warning(_("Requesting the tray to give us a better size"));
-    bat->cp->requestNewSize(strWidth, bat->cp->getRequestedHeight());
-    bat->cp->getTray()->ResizeTray();
+    this->requestNewSize(strWidth, this->getRequestedHeight());
+    this->getTray()->ResizeTray();
   }
 
   //update battery level
-  bat->lastLevel = percentage;
+  this->lastLevel = percentage;
 }
 
 int readAsInt(int fd) {

@@ -10,34 +10,37 @@
 #ifndef BATTERY_H
 #define BATTERY_H
 
-struct TrayComponentType;
+#include "tray.h"
 
-/*@{*/
-void InitializeBattery(void);
-void StartupBattery(void);
+class Battery : public TrayComponentType {
+public:
+
+  /*@{*/
+  static void InitializeBattery(void);
+  static void StartupBattery(void);
 #define ShutdownBattery() (void)(0)
-void DestroyBattery(void);
-/*@}*/
+  static void DestroyBattery(void);
+  /*@}*/
 
-/**
- * Create a battery component for the tray.
- *
- * @param format The format of the battery.
- * @param zone The timezone of the battery (NULL for local time).
- * @param width The width of the battery (0 for auto).
- * @param height The height of the battery (0 for auto).
- */
-struct TrayComponentType *CreateBattery(int width, int height);
+public:
+  Battery(int width, int height);
+  virtual ~Battery();
 
-/**
- * Add an action to a battery.
- *
- * @param cp The battery.
- * @param action The action to take.
- * @param mask The mouse button mask.
- */
-void AddBatteryAction(struct TrayComponentType *cp,
-                    const char *action,
-                    int mask);
+  /**
+   * Add an action to a battery.
+   *
+   * @param cp The battery.
+   * @param action The action to take.
+   * @param mask The mouse button mask.
+   */
+  void AddBatteryAction(const char *action, int mask);
+
+  void Resize();
+  void Draw();
+
+private:
+  float lastLevel; /**< Currently displayed level */
+
+};
 
 #endif /* BATTERY_H */
