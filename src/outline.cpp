@@ -17,7 +17,7 @@ static int lastX, lastY;
 static int lastWidth, lastHeight;
 
 /** Draw an outline. */
-void DrawOutline(int x, int y, int width, int height)
+void Outline::DrawOutline(int x, int y, int width, int height)
 {
    XGCValues gcValues;
    gcValues.function = GXinvert;
@@ -35,7 +35,7 @@ void DrawOutline(int x, int y, int width, int height)
 }
 
 /** Clear the last outline. */
-void ClearOutline(void)
+void Outline::ClearOutline(void)
 {
    if(outlineGC != None) {
       JXDrawRectangle(display, rootWindow, outlineGC,

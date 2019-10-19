@@ -64,7 +64,7 @@ static void UpdateDesktop(const TimeType *now);
 /** Callback for stopping moves. */
 void MoveController(int wasDestroyed) {
   if (settings.moveMode == MOVE_OUTLINE) {
-    ClearOutline();
+    Outline::ClearOutline();
   }
 
   JXUngrabPointer(display, CurrentTime);
@@ -215,7 +215,7 @@ char ClientNode::MoveClient(int startx, int starty) {
           }
           if (flags != this->getState()->maxFlags) {
             if (settings.moveMode == MOVE_OUTLINE) {
-              ClearOutline();
+              Outline::ClearOutline();
             }
             this->MaximizeClient(flags);
           }
@@ -241,12 +241,12 @@ char ClientNode::MoveClient(int startx, int starty) {
 
       if (doMove) {
         if (settings.moveMode == MOVE_OUTLINE) {
-          ClearOutline();
+          Outline::ClearOutline();
           height = north + south;
           if (!(this->getState()->status & STAT_SHADED)) {
             height += this->getHeight();
           }
-          DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
+          Outline::DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
         } else {
           if (this->getParent() != None) {
             JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
@@ -384,8 +384,8 @@ char ClientNode::MoveClientKeyboard() {
     if (moved) {
 
       if (settings.moveMode == MOVE_OUTLINE) {
-        ClearOutline();
-        DrawOutline(this->getX() - west, this->getY() - west, this->getWidth() + west + east, height + north + west);
+        Outline::ClearOutline();
+        Outline::DrawOutline(this->getX() - west, this->getY() - west, this->getWidth() + west + east, height + north + west);
       } else {
         JXMoveWindow(display, win, this->getX() - west, this->getY() - north);
         this->SendConfigureEvent();
@@ -500,7 +500,7 @@ void ClientNode::DoSnapScreen() {
 /** Snap to window borders. */
 void ClientNode::DoSnapBorder() {
 
-  const ClientNode *tp;
+  ClientNode *tp;
   const TrayType *tray;
   RectangleType client, other;
   RectangleType left = { 0 };

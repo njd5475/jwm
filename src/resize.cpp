@@ -26,7 +26,7 @@ static void ResizeController(int wasDestroyed);
 /** Callback to stop a resize. */
 void ResizeController(int wasDestroyed) {
   if (settings.resizeMode == RESIZE_OUTLINE) {
-    ClearOutline();
+    Outline::ClearOutline();
   }
   JXUngrabPointer(display, CurrentTime);
   JXUngrabKeyboard(display, CurrentTime);
@@ -186,11 +186,11 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
         UpdateResizeWindow(this, gwidth, gheight);
 
         if (settings.resizeMode == RESIZE_OUTLINE) {
-          ClearOutline();
+          Outline::ClearOutline();
           if (this->state.status & STAT_SHADED) {
-            DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
+            Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
           } else {
-            DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
+            Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
           }
         } else {
           Border::ResetBorder(this);
@@ -360,11 +360,11 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
       UpdateResizeWindow(this, gwidth, gheight);
 
       if (settings.resizeMode == RESIZE_OUTLINE) {
-        ClearOutline();
+        Outline::ClearOutline();
         if (this->state.status & STAT_SHADED) {
-          DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
+          Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
         } else {
-          DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
+          Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
         }
       } else {
         Border::ResetBorder(this);
@@ -395,7 +395,7 @@ void ClientNode::StopResize() {
   }
 
   if (settings.resizeMode == RESIZE_OUTLINE) {
-    ClearOutline();
+    Outline::ClearOutline();
   }
 
   JXUngrabPointer(display, CurrentTime);

@@ -10,16 +10,20 @@
 #ifndef OUTLINE_H
 #define OUTLINE_H
 
-/** Draw an outline.
- * @param x The x-coordinate.
- * @param y The y-coordinate.
- * @param width The width of the outline.
- * @param height The height of the outline.
- */
-void DrawOutline(int x, int y, int width, int height);
+class Outline {
+public:
+	/** Draw an outline.
+	 * @param x The x-coordinate.
+	 * @param y The y-coordinate.
+	 * @param width The width of the outline.
+	 * @param height The height of the outline.
+	 */
+	static void DrawOutline(int x, int y, int width, int height);
 
-/** Clear an outline. */
-void ClearOutline(void);
+	/** Clear an outline. */
+	static void ClearOutline(void);
+
+};
 
 #endif /* OUTLINE_H */
 
