@@ -182,7 +182,7 @@ char _WaitForEvent(XEvent *event) {
       break;
     case MotionNotify:
       eventName = "MotionNotify";
-      SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
+      Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
           event->xmotion.window);
       handled = 0;
       break;
@@ -193,19 +193,19 @@ char _WaitForEvent(XEvent *event) {
       } else {
         eventName = "ButtonRelease";
       }
-      SetMousePosition(event->xbutton.x_root, event->xbutton.y_root,
+      Cursors::SetMousePosition(event->xbutton.x_root, event->xbutton.y_root,
           event->xbutton.window);
       handled = 0;
       break;
     case EnterNotify:
       eventName = "EnterNotify";
-      SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
+      Cursors::SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
           event->xcrossing.window);
       handled = 0;
       break;
     case LeaveNotify:
       eventName = "LeaveNotify";
-      SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
+      Cursors::SetMousePosition(event->xcrossing.x_root, event->xcrossing.y_root,
       None);
       handled = 0;
       break;
@@ -300,7 +300,7 @@ void _Signal(void) {
   }
   last = now;
 
-  GetMousePosition(&x, &y, &w);
+  Cursors::GetMousePosition(&x, &y, &w);
   for (cp = callbacks; cp; cp = cp->next) {
     if (cp->freq == 0 || GetTimeDifference(&now, &cp->last) >= cp->freq) {
       cp->last = now;
@@ -357,7 +357,7 @@ void _DiscardMotionEvents(XEvent *event, Window w) {
   JXSync(display, False);
   while (JXCheckTypedEvent(display, MotionNotify, &temp)) {
     _UpdateTime(&temp);
-    SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root,
+    Cursors::SetMousePosition(temp.xmotion.x_root, temp.xmotion.y_root,
         temp.xmotion.window);
     if (temp.xmotion.window == w) {
       *event = temp;
@@ -379,8 +379,7 @@ void _DiscardEnterEvents() {
   JXSync(display, False);
   while (JXCheckMaskEvent(display, EnterWindowMask, &event)) {
     _UpdateTime(&event);
-    SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
-        event.xmotion.window);
+    Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
   }
 }
 
@@ -730,7 +729,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
 /** Process a key press event. */
 void _HandleKeyPress(const XKeyEvent *event) {
   ClientNode *np;
-  SetMousePosition(event->x_root, event->y_root, event->window);
+  Cursors::SetMousePosition(event->x_root, event->y_root, event->window);
   np = ClientNode::GetActiveClient();
   _ProcessBinding(MC_NONE, np, event->state, event->keycode, 0, 0);
 }
@@ -912,10 +911,10 @@ void _HandleEnterNotify(const XCrossingEvent *event) {
     }
     if (np->getParent() == event->window) {
       np->setMouseContext(Border::GetBorderContext(np, event->x, event->y));
-      cur = GetFrameCursor(np->getMouseContext());
+      cur = Cursors::GetFrameCursor(np->getMouseContext());
       JXDefineCursor(display, np->getParent(), cur);
     } else if (np->getMouseContext() != MC_NONE) {
-      SetDefaultCursor(np->getParent());
+      Cursors::SetDefaultCursor(np->getParent());
       np->setMouseContext(MC_NONE);
     }
   }
@@ -1504,7 +1503,7 @@ void _HandleMotionNotify(const XMotionEvent *event) {
         event->y);
     if (np->getMouseContext() != context) {
       np->setMouseContext(context);
-      cur = GetFrameCursor(context);
+      cur = Cursors::GetFrameCursor(context);
       JXDefineCursor(display, np->getParent(), cur);
     }
   }

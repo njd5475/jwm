@@ -439,7 +439,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
   /* Initialize and position the menu. */
   InitializeMenu(menu);
   sp = GetCurrentScreen(bar->cp->getScreenX(), bar->cp->getScreenY());
-  GetMousePosition(&x, &y, &w);
+  Cursors::GetMousePosition(&x, &y, &w);
   if (bar->layout == LAYOUT_HORIZONTAL) {
     if (bar->cp->getScreenY() + bar->cp->getHeight() / 2 < sp->y + sp->height / 2) {
       /* Bottom of the screen: menus go up. */
@@ -499,13 +499,13 @@ void TaskBarType::RunTaskBarCommand(MenuAction *action, unsigned button) {
     if (button == Button3) {
       Window w;
       int x, y;
-      GetMousePosition(&x, &y, &w);
+      Cursors::GetMousePosition(&x, &y, &w);
       ShowWindowMenu(action->context, x, y, 0);
     } else {
       ClientNode *np = action->context;
       np->RestoreClient(1);
       np->FocusClient();
-      MoveMouse(np->getWindow(), np->getWidth() / 2, np->getHeight() / 2);
+      Cursors::MoveMouse(np->getWindow(), np->getWidth() / 2, np->getHeight() / 2);
     }
   } else {
     RunWindowCommand(action, button);

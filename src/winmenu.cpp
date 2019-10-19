@@ -191,7 +191,7 @@ void ChooseWindow(MenuAction *action) {
   XEvent event;
   ClientNode *np;
 
-  if (!GrabMouseForChoose()) {
+  if (!Cursors::GrabMouseForChoose()) {
     return;
   }
 

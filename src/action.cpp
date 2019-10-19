@@ -58,7 +58,7 @@ void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y, 
 
         } else {
 
-          if (!GrabMouse(cp->getTray()->getWindow())) {
+          if (!Cursors::GrabMouse(cp->getTray()->getWindow())) {
             return;
           }
 

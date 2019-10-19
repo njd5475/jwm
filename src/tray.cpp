@@ -76,7 +76,7 @@ void TrayType::StartupTray(void) {
       SetCardinalAtom(tp->window, ATOM_NET_WM_WINDOW_OPACITY, settings.trayOpacity);
     }
 
-    SetDefaultCursor(tp->window);
+    Cursors::SetDefaultCursor(tp->window);
 
     /* Create and layout items on the tray. */
     xoffset = TRAY_BORDER_SIZE;
@@ -524,7 +524,7 @@ void TrayType::ShowTray() {
     JXMoveWindow(display, this->window, this->x, this->y);
 
     JXQueryPointer(display, rootWindow, &win1, &win2, &mousex, &mousey, &winx, &winy, &mask);
-    SetMousePosition(mousex, mousey, win2);
+    Cursors::SetMousePosition(mousex, mousey, win2);
 
   }
 }

@@ -197,12 +197,12 @@ char ShowMenu(Menu *menu, RunMenuCommandType runner,
 
    if(x < 0 && y < 0) {
       Window w;
-      GetMousePosition(&x, &y, &w);
+      Cursors::GetMousePosition(&x, &y, &w);
       x -= menu->itemHeight / 2;
       y -= menu->itemHeight / 2 + menu->offsets[0];
    }
 
-   if(!GrabMouse(rootWindow)) {
+   if(!Cursors::GrabMouse(rootWindow)) {
       return 0;
    }
    if(JXGrabKeyboard(display, rootWindow, False, GrabModeAsync,
@@ -380,7 +380,7 @@ char MenuLoop(Menu *menu, RunMenuCommandType runner)
 
    hadMotion = 0;
 
-   GetMousePosition(&pressx, &pressy, &pressw);
+   Cursors::GetMousePosition(&pressx, &pressy, &pressw);
 
    for(;;) {
 
@@ -585,7 +585,7 @@ void MapMenu(Menu *menu, int x, int y, char keyboard)
       const int y = menu->offsets[0] + menu->itemHeight / 2;
       menu->lastIndex = 0;
       menu->currentIndex = 0;
-      MoveMouse(menu->window, menu->itemHeight / 2, y);
+      Cursors::MoveMouse(menu->window, menu->itemHeight / 2, y);
    } else {
       menu->lastIndex = -1;
       menu->currentIndex = -1;
@@ -648,7 +648,7 @@ MenuSelectionType UpdateMotion(Menu *menu,
 
    if(event->type == MotionNotify) {
 
-      SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
+      Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
                        event->xmotion.window);
       _DiscardMotionEvents(event, menu->window);
 
@@ -1030,8 +1030,8 @@ void SetPosition(Menu *tp, int index)
 
    /* We need to do this twice so the event gets registered
     * on the submenu if one exists. */
-   MoveMouse(tp->window, tp->itemHeight / 2, y);
-   MoveMouse(tp->window, tp->itemHeight / 2, y);
+   Cursors::MoveMouse(tp->window, tp->itemHeight / 2, y);
+   Cursors::MoveMouse(tp->window, tp->itemHeight / 2, y);
 
 }
 

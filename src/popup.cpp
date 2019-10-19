@@ -119,7 +119,7 @@ void ShowPopup(int x, int y, const char *text,
       return;
    }
 
-   GetMousePosition(&popup.mx, &popup.my, &popup.mw);
+   Cursors::GetMousePosition(&popup.mx, &popup.my, &popup.mw);
    popup.text = CopyString(text);
 
    MeasurePopupText();

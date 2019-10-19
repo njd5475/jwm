@@ -109,7 +109,7 @@ const ScreenType *GetMouseScreen(void)
    Window w;
    int x, y;
 
-   GetMousePosition(&x, &y, &w);
+   Cursors::GetMousePosition(&x, &y, &w);
    return GetCurrentScreen(x, y);
 
 #else

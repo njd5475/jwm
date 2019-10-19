@@ -460,7 +460,7 @@ void Startup(void) {
   StartupColors();
   StartupFonts();
   StartupIcons();
-  StartupCursors();
+  Cursors::StartupCursors();
 
   PagerType::StartupPager();
   Battery::StartupBattery();
@@ -479,7 +479,7 @@ void Startup(void) {
 
   StartupRootMenu();
 
-  SetDefaultCursor(rootWindow);
+  Cursors::SetDefaultCursor(rootWindow);
   ReadCurrentDesktop();
   JXFlush(display);
 
@@ -527,7 +527,7 @@ void Shutdown(void) {
   ClockType::ShutdownClock();
   ShutdownBattery();
   ShutdownIcons();
-  ShutdownCursors();
+  Cursors::ShutdownCursors();
   ShutdownFonts();
   ShutdownColors();
   ShutdownGroups();

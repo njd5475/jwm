@@ -269,7 +269,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
   }
 
   /* Start the move. */
-  if (!GrabMouseForMove()) {
+  if (!Cursors::GrabMouseForMove()) {
     return;
   }
 
@@ -291,7 +291,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
   startx = x;
   starty = y;
 
-  if (!(GetMouseMask() & Button3Mask)) {
+  if (!(Cursors::GetMouseMask() & Button3Mask)) {
     np->StopPagerMove(oldx, oldy, oldDesk, maxFlags);
   }
 
@@ -316,7 +316,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 
     case MotionNotify:
 
-      SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
+      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
 
       /* Get the mouse position on the pager. */
       x = event.xmotion.x_root - cp->getScreenX();

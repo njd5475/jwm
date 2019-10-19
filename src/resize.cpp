@@ -124,7 +124,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
     WriteState(this);
     Border::ResetBorder(this);
   }
-  if (JUNLIKELY(!GrabMouseForResize(context))) {
+  if (JUNLIKELY(!Cursors::GrabMouseForResize(context))) {
     return;
   }
 
@@ -147,7 +147,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
   CreateResizeWindow(this);
   UpdateResizeWindow(this, gwidth, gheight);
 
-  if (!(GetMouseMask() & (Button1Mask | Button3Mask))) {
+  if (!(Cursors::GetMouseMask() & (Button1Mask | Button3Mask))) {
     this->StopResize();
     return;
   }
@@ -170,7 +170,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
       break;
     case MotionNotify:
 
-      SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
+      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
       _DiscardMotionEvents(&event, this->window);
 
       this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx, starty, oldx, oldy, oldw, oldh);
@@ -237,7 +237,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
   if (JUNLIKELY(JXGrabKeyboard(display, this->parent, True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)) {
     return;
   }
-  if (!GrabMouseForResize(context)) {
+  if (!Cursors::GrabMouseForResize(context)) {
     JXUngrabKeyboard(display, CurrentTime);
     return;
   }
@@ -276,7 +276,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
   } else {
     startx = this->x + this->width / 2;
   }
-  MoveMouse(rootWindow, startx, starty);
+  Cursors::MoveMouse(rootWindow, startx, starty);
   _DiscardMotionEvents(&event, this->window);
 
   for (;;) {
@@ -340,7 +340,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
 
     } else if (event.type == MotionNotify) {
 
-      SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
+      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
       _DiscardMotionEvents(&event, this->window);
 
       this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx, starty, oldx, oldy, oldw, oldh);

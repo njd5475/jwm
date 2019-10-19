@@ -96,7 +96,7 @@ char ClientNode::MoveClient(int startx, int starty) {
     return 0;
   }
 
-  if (!GrabMouseForMove()) {
+  if (!Cursors::GrabMouseForMove()) {
     return 0;
   }
 
@@ -107,7 +107,7 @@ char ClientNode::MoveClient(int startx, int starty) {
   oldx = this->getX();
   oldy = this->getY();
 
-  if (!(GetMouseMask() & (Button1Mask | Button2Mask))) {
+  if (!(Cursors::GetMouseMask() & (Button1Mask | Button2Mask))) {
     this->StopMove(0, oldx, oldy);
     return 0;
   }
@@ -125,7 +125,7 @@ char ClientNode::MoveClient(int startx, int starty) {
 
     if (shouldStopMove) {
       this->controller = NULL;
-      SetDefaultCursor(this->parent);
+      Cursors::SetDefaultCursor(this->parent);
       _UnregisterCallback(SignalMove, NULL);
       return doMove;
     }
@@ -290,7 +290,7 @@ char ClientNode::MoveClientKeyboard() {
     Debug("MoveClient: could not grab keyboard");
     return 0;
   }
-  if (!GrabMouseForMove()) {
+  if (!Cursors::GrabMouseForMove()) {
     JXUngrabKeyboard(display, CurrentTime);
     return 0;
   }
@@ -307,7 +307,7 @@ char ClientNode::MoveClientKeyboard() {
   CreateMoveWindow(this);
   UpdateMoveWindow(this);
 
-  MoveMouse(rootWindow, this->getX(), this->getY());
+  Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
   _DiscardMotionEvents(&event, this->window);
 
   if (this->getState()->status & STAT_SHADED) {
@@ -323,7 +323,7 @@ char ClientNode::MoveClientKeyboard() {
 
     if (shouldStopMove) {
       this->controller = NULL;
-      SetDefaultCursor(this->parent);
+      Cursors::SetDefaultCursor(this->parent);
       _UnregisterCallback(SignalMove, NULL);
       return 1;
     }
@@ -361,7 +361,7 @@ char ClientNode::MoveClientKeyboard() {
         return 1;
       }
 
-      MoveMouse(rootWindow, this->getX(), this->getY());
+      Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
       _DiscardMotionEvents(&event, this->window);
 
       moved = 1;
@@ -410,7 +410,7 @@ void ClientNode::StopMove(int doMove, int oldx, int oldy) {
 
   this->controller = NULL;
 
-  SetDefaultCursor(this->parent);
+  Cursors::SetDefaultCursor(this->parent);
   _UnregisterCallback(SignalMove, NULL);
 
   if (!doMove) {

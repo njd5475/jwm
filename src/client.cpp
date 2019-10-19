@@ -170,7 +170,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   }
   nodes[this->state.layer] = this;
 
-  SetDefaultCursor(this->window);
+  Cursors::SetDefaultCursor(this->window);
 
   if (notOwner) {
     XSetWindowAttributes sattr;
