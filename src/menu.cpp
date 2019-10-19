@@ -30,41 +30,16 @@
 #define BASE_ICON_OFFSET   3
 #define MENU_BORDER_SIZE   1
 
-typedef unsigned char MenuSelectionType;
 #define MENU_NOSELECTION   0
 #define MENU_LEAVE         1
 #define MENU_SUBSELECT     2
 
-static char ShowSubmenu(Menu *menu, Menu *parent,
-                        RunMenuCommandType runner,
-                        int x, int y, char keyboard);
 
-static void PatchMenu(Menu *menu);
-static void UnpatchMenu(Menu *menu);
-static void MapMenu(Menu *menu, int x, int y, char keyboard);
-static void HideMenu(Menu *menu);
-static void DrawMenu(Menu *menu);
-
-static char MenuLoop(Menu *menu, RunMenuCommandType runner);
-static void MenuCallback(const TimeType *now, int x, int y,
-                         Window w, void *data);
-static MenuSelectionType UpdateMotion(Menu *menu,
-                                      RunMenuCommandType runner,
-                                      XEvent *event);
-
-static void UpdateMenu(Menu *menu);
-static void DrawMenuItem(Menu *menu, MenuItem *item, int index);
-static MenuItem *GetMenuItem(Menu *menu, int index);
-static int GetNextMenuIndex(Menu *menu);
-static int GetPreviousMenuIndex(Menu *menu);
-static int GetMenuIndex(Menu *menu, int index);
-static void SetPosition(Menu *tp, int index);
-static char IsMenuValid(const Menu *menu);
 
 int menuShown = 0;
 
 /** Allocate an empty menu. */
-Menu *CreateMenu()
+Menu *Menus::CreateMenu()
 {
    Menu *menu = new Menu;
    menu->itemHeight = 0;
@@ -76,7 +51,7 @@ Menu *CreateMenu()
 }
 
 /** Create an empty menu item. */
-MenuItem *CreateMenuItem(MenuItemType type)
+MenuItem *Menus::CreateMenuItem(MenuItemType type)
 {
    MenuItem *item = new MenuItem;
    memset(item, 0, sizeof(MenuItem));
@@ -85,7 +60,7 @@ MenuItem *CreateMenuItem(MenuItemType type)
 }
 
 /** Initialize a menu. */
-void InitializeMenu(Menu *menu)
+void Menus::InitializeMenu(Menu *menu)
 {
 
    MenuItem *np;
@@ -180,7 +155,7 @@ void InitializeMenu(Menu *menu)
 }
 
 /** Show a menu. */
-char ShowMenu(Menu *menu, RunMenuCommandType runner,
+char Menus::ShowMenu(Menu *menu, RunMenuCommandType runner,
               int x, int y, char keyboard)
 {
    /* Don't show the menu if there isn't anything to show. */
@@ -228,7 +203,7 @@ char ShowMenu(Menu *menu, RunMenuCommandType runner,
 }
 
 /** Hide a menu. */
-void HideMenu(Menu *menu)
+void Menus::HideMenu(Menu *menu)
 {
    Menu *mp;
    for(mp = menu; mp; mp = mp->parent) {
@@ -237,7 +212,7 @@ void HideMenu(Menu *menu)
 }
 
 /** Destroy a menu. */
-void DestroyMenu(Menu *menu)
+void Menus::DestroyMenu(Menu *menu)
 {
    MenuItem *np;
    if(menu) {
@@ -283,7 +258,7 @@ void DestroyMenu(Menu *menu)
 }
 
 /** Show a submenu. */
-char ShowSubmenu(Menu *menu, Menu *parent,
+char Menus::ShowSubmenu(Menu *menu, Menu *parent,
                  RunMenuCommandType runner,
                  int x, int y, char keyboard)
 {
@@ -306,7 +281,7 @@ char ShowSubmenu(Menu *menu, Menu *parent,
 }
 
 /** Prepare a menu to be shown. */
-void PatchMenu(Menu *menu)
+void Menus::PatchMenu(Menu *menu)
 {
    MenuItem *item;
    for(item = menu->items; item; item = item->next) {
@@ -345,7 +320,7 @@ void PatchMenu(Menu *menu)
 }
 
 /** Remove temporary items from a menu. */
-void UnpatchMenu(Menu *menu)
+void Menus::UnpatchMenu(Menu *menu)
 {
    MenuItem *item;
    for(item = menu->items; item; item = item->next) {
@@ -369,7 +344,7 @@ void UnpatchMenu(Menu *menu)
 /** Menu process loop.
  * Returns 0 if no selection was made or 1 if a selection was made.
  */
-char MenuLoop(Menu *menu, RunMenuCommandType runner)
+char Menus::MenuLoop(Menu *menu, RunMenuCommandType runner)
 {
 
    XEvent event;
@@ -470,7 +445,7 @@ char MenuLoop(Menu *menu, RunMenuCommandType runner)
 }
 
 /** Signal for showing popups. */
-void MenuCallback(const TimeType *now, int x, int y, Window w, void *data)
+void Menus::MenuCallback(const TimeType *now, int x, int y, Window w, void *data)
 {
    Menu *menu = data;
    MenuItem *item;
@@ -524,7 +499,7 @@ void MenuCallback(const TimeType *now, int x, int y, Window w, void *data)
 }
 
 /** Create and map a menu. */
-void MapMenu(Menu *menu, int x, int y, char keyboard)
+void Menus::MapMenu(Menu *menu, int x, int y, char keyboard)
 {
    XSetWindowAttributes attr;
    unsigned long attrMask;
@@ -594,7 +569,7 @@ void MapMenu(Menu *menu, int x, int y, char keyboard)
 }
 
 /** Draw a menu. */
-void DrawMenu(Menu *menu)
+void Menus::DrawMenu(Menu *menu)
 {
 
    MenuItem *np;
@@ -637,7 +612,7 @@ void DrawMenu(Menu *menu)
 }
 
 /** Determine the action to take given an event. */
-MenuSelectionType UpdateMotion(Menu *menu,
+MenuSelectionType Menus::UpdateMotion(Menu *menu,
                                RunMenuCommandType runner,
                                XEvent *event)
 {
@@ -812,7 +787,7 @@ MenuSelectionType UpdateMotion(Menu *menu,
 }
 
 /** Update the menu selection. */
-void UpdateMenu(Menu *menu)
+void Menus::UpdateMenu(Menu *menu)
 {
 
    MenuItem *ip;
@@ -833,7 +808,7 @@ void UpdateMenu(Menu *menu)
 }
 
 /** Draw a menu item. */
-void DrawMenuItem(Menu *menu, MenuItem *item, int index)
+void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index)
 {
 
    ButtonNode button;
@@ -916,7 +891,7 @@ void DrawMenuItem(Menu *menu, MenuItem *item, int index)
 }
 
 /** Get the next item in the menu. */
-int GetNextMenuIndex(Menu *menu)
+int Menus::GetNextMenuIndex(Menu *menu)
 {
    MenuItem *item;
    int x;
@@ -942,7 +917,7 @@ int GetNextMenuIndex(Menu *menu)
 }
 
 /** Get the previous item in the menu. */
-int GetPreviousMenuIndex(Menu *menu)
+int Menus::GetPreviousMenuIndex(Menu *menu)
 {
    MenuItem *item;
    int x;
@@ -968,7 +943,7 @@ int GetPreviousMenuIndex(Menu *menu)
 }
 
 /** Get the item in the menu given a y-coordinate. */
-int GetMenuIndex(Menu *menu, int y)
+int Menus::GetMenuIndex(Menu *menu, int y)
 {
 
    int x;
@@ -986,7 +961,7 @@ int GetMenuIndex(Menu *menu, int y)
 }
 
 /** Get the menu item associated with an index. */
-MenuItem *GetMenuItem(Menu *menu, int index)
+MenuItem *Menus::GetMenuItem(Menu *menu, int index)
 {
 
    MenuItem *ip;
@@ -1007,7 +982,7 @@ MenuItem *GetMenuItem(Menu *menu, int index)
 }
 
 /** Set the active menu item. */
-void SetPosition(Menu *tp, int index)
+void Menus::SetPosition(Menu *tp, int index)
 {
    int y = tp->offsets[index] + tp->itemHeight / 2;
    if(tp->height > tp->screen->height) {
@@ -1036,7 +1011,7 @@ void SetPosition(Menu *tp, int index)
 }
 
 /** Determine if a menu is valid (and can be shown). */
-char IsMenuValid(const Menu *menu)
+char Menus::IsMenuValid(const Menu *menu)
 {
    if(menu) {
       MenuItem *ip;

@@ -402,7 +402,7 @@ Menu *ParseMenu(const TokenNode *start) {
   const char *value;
   Menu *menu;
 
-  menu = CreateMenu();
+  menu = Menus::CreateMenu();
 
   value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);
   if (value) {
@@ -451,7 +451,7 @@ void ParseRootMenu(const TokenNode *start) {
 
 /** Insert a new menu item into a menu. */
 MenuItem *InsertMenuItem(MenuItem *last) {
-  MenuItem *item = CreateMenuItem(MENU_ITEM_NORMAL);
+  MenuItem *item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
   if (last) {
     last->next = item;
   }
@@ -514,7 +514,7 @@ MenuItem *ParseMenuItem(const TokenNode *start, Menu *menu, MenuItem *last) {
       value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
       last->tooltip = CopyString(value);
 
-      last->submenu = CreateMenu();
+      last->submenu = Menus::CreateMenu();
       child = last->submenu;
 
       value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);

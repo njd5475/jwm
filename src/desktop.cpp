@@ -212,10 +212,10 @@ Menu *_CreateDesktopMenu(unsigned int mask, void *context)
    Menu *menu;
    int x;
 
-   menu = CreateMenu();
+   menu = Menus::CreateMenu();
    for(x = settings.desktopCount - 1; x >= 0; x--) {
       const size_t len = strlen(desktopNames[x]);
-      MenuItem *item = CreateMenuItem(MENU_ITEM_NORMAL);
+      MenuItem *item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
       item->next = menu->items;
       menu->items = item;
 
@@ -241,10 +241,10 @@ Menu *_CreateSendtoMenu(MenuActionType mask, void *context)
    Menu *menu;
    int x;
 
-   menu = CreateMenu();
+   menu = Menus::CreateMenu();
    for(x = settings.desktopCount - 1; x >= 0; x--) {
       const size_t len = strlen(desktopNames[x]);
-      MenuItem *item = CreateMenuItem(MENU_ITEM_NORMAL);
+      MenuItem *item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
       item->next = menu->items;
       menu->items = item;
 

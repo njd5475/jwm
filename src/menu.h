@@ -46,14 +46,14 @@ struct Menu;
 /** Structure to represent a menu action for callbacks. */
 typedef struct MenuAction {
 
-   void *context;                /**< Action context (client, etc.). */
+	void *context; /**< Action context (client, etc.). */
 
-   /* Extra data for the action. */
-   char *str;
-   unsigned value;
-   unsigned timeout_ms;
+	/* Extra data for the action. */
+	char *str;
+	unsigned value;
+	unsigned timeout_ms;
 
-   MenuActionType type;          /**< Type of action. */
+	MenuActionType type; /**< Type of action. */
 
 } MenuAction;
 
@@ -66,79 +66,111 @@ typedef unsigned char MenuItemType;
 /** Structure to represent a menu item. */
 typedef struct MenuItem {
 
-   MenuItemType type;      /**< The menu item type. */
-   char *name;             /**< Name to display (or NULL). */
-   char *tooltip;          /**< Tooltip to display (or NULL). */
-   MenuAction action;      /**< Action to take if selected (or NULL). */
-   char *iconName;         /**< Name of an icon to show (or NULL). */
-   struct Menu *submenu;   /**< Submenu (or NULL). */
-   struct MenuItem *next;  /**< Next item in the menu. */
+	MenuItemType type; /**< The menu item type. */
+	char *name; /**< Name to display (or NULL). */
+	char *tooltip; /**< Tooltip to display (or NULL). */
+	MenuAction action; /**< Action to take if selected (or NULL). */
+	char *iconName; /**< Name of an icon to show (or NULL). */
+	struct Menu *submenu; /**< Submenu (or NULL). */
+	struct MenuItem *next; /**< Next item in the menu. */
 
-   /** An icon for this menu item.
-    * This field is handled by menu.c if iconName is set. */
-   struct IconNode *icon;  /**< Icon to display. */
+	/** An icon for this menu item.
+	 * This field is handled by menu.c if iconName is set. */
+	struct IconNode *icon; /**< Icon to display. */
 
 } MenuItem;
 
 /** Structure to represent a menu or submenu. */
 typedef struct Menu {
 
-   /* These fields must be set before calling ShowMenu */
-   struct MenuItem *items; /**< Menu items. */
-   char *label;            /**< Menu label (NULL for no label). */
-   char *dynamic;          /**< Generating command of dynamic menu. */
-   unsigned timeout_ms;    /**< Timeout in milliseconds for dynamic menus. */
-   int itemHeight;         /**< User-specified menu item height. */
+	/* These fields must be set before calling ShowMenu */
+	struct MenuItem *items; /**< Menu items. */
+	char *label; /**< Menu label (NULL for no label). */
+	char *dynamic; /**< Generating command of dynamic menu. */
+	unsigned timeout_ms; /**< Timeout in milliseconds for dynamic menus. */
+	int itemHeight; /**< User-specified menu item height. */
 
-   /* These fields are handled by menu.c */
-   Window window;          /**< The menu window. */
-   Pixmap pixmap;          /**< Pixmap where the menu is rendered. */
-   int x;                  /**< The x-coordinate of the menu. */
-   int y;                  /**< The y-coordinate of the menu. */
-   int width;              /**< The width of the menu. */
-   int height;             /**< The height of the menu. */
-   int currentIndex;       /**< The current menu selection. */
-   int lastIndex;          /**< The last menu selection. */
-   unsigned int itemCount; /**< Number of menu items (excluding separators). */
-   int parentOffset;       /**< y-offset of this menu wrt the parent. */
-   int textOffset;         /**< x-offset of text in the menu. */
-   int *offsets;           /**< y-offsets of menu items. */
-   struct Menu *parent;    /**< The parent menu (or NULL). */
-   const struct ScreenType *screen;
-   int mousex, mousey;
-   TimeType lastTime;
+	/* These fields are handled by menu.c */
+	Window window; /**< The menu window. */
+	Pixmap pixmap; /**< Pixmap where the menu is rendered. */
+	int x; /**< The x-coordinate of the menu. */
+	int y; /**< The y-coordinate of the menu. */
+	int width; /**< The width of the menu. */
+	int height; /**< The height of the menu. */
+	int currentIndex; /**< The current menu selection. */
+	int lastIndex; /**< The last menu selection. */
+	unsigned int itemCount; /**< Number of menu items (excluding separators). */
+	int parentOffset; /**< y-offset of this menu wrt the parent. */
+	int textOffset; /**< x-offset of text in the menu. */
+	int *offsets; /**< y-offsets of menu items. */
+	struct Menu *parent; /**< The parent menu (or NULL). */
+	const struct ScreenType *screen;
+	int mousex, mousey;
+	TimeType lastTime;
 
 } Menu;
 
 typedef void (*RunMenuCommandType)(MenuAction *action, unsigned button);
 
-/** Allocate an empty menu. */
-Menu *CreateMenu();
+typedef unsigned char MenuSelectionType;
 
-/** Create an empty menu item. */
-MenuItem *CreateMenuItem(MenuItemType type);
+class Menus {
 
-/** Initialize a menu structure to be shown.
- * @param menu The menu to initialize.
- */
-void InitializeMenu(Menu *menu);
+public:
+	/** Allocate an empty menu. */
+	static Menu *CreateMenu();
 
-/** Show a menu.
- * @param menu The menu to show.
- * @param runner Callback executed when an item is selected.
- * @param x The x-coordinate of the menu.
- * @param y The y-coordinate of the menu.
- * @param keyboard Set if the request came from a key binding.
- * @return 1 if the menu was shown, 0 otherwise.
- */
-char ShowMenu(Menu *menu, RunMenuCommandType runner,
-              int x, int y, char keyboard);
+	/** Create an empty menu item. */
+	static MenuItem *CreateMenuItem(MenuItemType type);
 
-/** Destroy a menu structure.
- * @param menu The menu to destroy.
- */
-void DestroyMenu(Menu *menu);
+	/** Initialize a menu structure to be shown.
+	 * @param menu The menu to initialize.
+	 */
+	static void InitializeMenu(Menu *menu);
 
+	/** Show a menu.
+	 * @param menu The menu to show.
+	 * @param runner Callback executed when an item is selected.
+	 * @param x The x-coordinate of the menu.
+	 * @param y The y-coordinate of the menu.
+	 * @param keyboard Set if the request came from a key binding.
+	 * @return 1 if the menu was shown, 0 otherwise.
+	 */
+	static char ShowMenu(Menu *menu, RunMenuCommandType runner,
+			int x, int y, char keyboard);
+
+	/** Destroy a menu structure.
+	 * @param menu The menu to destroy.
+	 */
+	static void DestroyMenu(Menu *menu);
+private:
+	static char ShowSubmenu(Menu *menu, Menu *parent,
+	                        RunMenuCommandType runner,
+	                        int x, int y, char keyboard);
+
+	static void PatchMenu(Menu *menu);
+	static void UnpatchMenu(Menu *menu);
+	static void MapMenu(Menu *menu, int x, int y, char keyboard);
+	static void HideMenu(Menu *menu);
+	static void DrawMenu(Menu *menu);
+
+	static char MenuLoop(Menu *menu, RunMenuCommandType runner);
+	static void MenuCallback(const TimeType *now, int x, int y,
+	                         Window w, void *data);
+	static MenuSelectionType UpdateMotion(Menu *menu,
+	                                      RunMenuCommandType runner,
+	                                      XEvent *event);
+
+	static void UpdateMenu(Menu *menu);
+	static void DrawMenuItem(Menu *menu, MenuItem *item, int index);
+	static MenuItem *GetMenuItem(Menu *menu, int index);
+	static int GetNextMenuIndex(Menu *menu);
+	static int GetPreviousMenuIndex(Menu *menu);
+	static int GetMenuIndex(Menu *menu, int index);
+	static void SetPosition(Menu *tp, int index);
+	static char IsMenuValid(const Menu *menu);
+
+};
 /** The number of open menus. */
 extern int menuShown;
 

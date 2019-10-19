@@ -55,7 +55,7 @@ void StartupRootMenu(void)
             }
          }
          if(!found) {
-            InitializeMenu(rootMenu[x]);
+            Menus::InitializeMenu(rootMenu[x]);
          }
       }
    }
@@ -70,7 +70,7 @@ void DestroyRootMenu(void)
 
    for(x = 0; x < ROOT_MENU_COUNT; x++) {
       if(rootMenu[x]) {
-         DestroyMenu(rootMenu[x]);
+         Menus::DestroyMenu(rootMenu[x]);
          for(y = x + 1; y < ROOT_MENU_COUNT; y++) {
             if(rootMenu[x] == rootMenu[y]) {
                rootMenu[y] = NULL;
@@ -144,7 +144,7 @@ void SetRootMenu(const char *indexes, Menu *m)
 
          /* If we have an orphan, destroy it. */
          if(!found) {
-            DestroyMenu(rootMenu[index]);
+            Menus::DestroyMenu(rootMenu[index]);
          }
 
       }
@@ -192,13 +192,13 @@ char ShowRootMenu(int index, int x, int y, char keyboard)
       Menu *menu = rootMenu[index];
       menu = ParseDynamicMenu(menu->timeout_ms, menu->dynamic);
       if(menu) {
-         InitializeMenu(menu);
-         ShowMenu(menu, RunRootCommand, x, y, keyboard);
-         DestroyMenu(menu);
+         Menus::InitializeMenu(menu);
+         Menus::ShowMenu(menu, RunRootCommand, x, y, keyboard);
+         Menus::DestroyMenu(menu);
          return 1;
       }
    }
-   ShowMenu(rootMenu[index], RunRootCommand, x, y, keyboard);
+   Menus::ShowMenu(rootMenu[index], RunRootCommand, x, y, keyboard);
    return 1;
 }
 

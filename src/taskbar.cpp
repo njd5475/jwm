@@ -371,30 +371,30 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
 
   if (settings.groupTasks) {
 
-    menu = CreateMenu();
+    menu = Menus::CreateMenu();
 
-    item = CreateMenuItem(MENU_ITEM_NORMAL);
+    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
     item->name = CopyString(_("Close"));
     item->action.type = MA_CLOSE | MA_GROUP_MASK;
     item->action.context = tp;
     item->next = menu->items;
     menu->items = item;
 
-    item = CreateMenuItem(MENU_ITEM_NORMAL);
+    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
     item->name = CopyString(_("Minimize"));
     item->action.type = MA_MINIMIZE | MA_GROUP_MASK;
     item->action.context = tp;
     item->next = menu->items;
     menu->items = item;
 
-    item = CreateMenuItem(MENU_ITEM_NORMAL);
+    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
     item->name = CopyString(_("Restore"));
     item->action.type = MA_RESTORE | MA_GROUP_MASK;
     item->action.context = tp;
     item->next = menu->items;
     menu->items = item;
 
-    item = CreateMenuItem(MENU_ITEM_SUBMENU);
+    item = Menus::CreateMenuItem(MENU_ITEM_SUBMENU);
     item->name = CopyString(_("Send To"));
     item->action.type = MA_SENDTO_MENU | MA_GROUP_MASK;
     item->action.context = tp;
@@ -402,7 +402,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
     menu->items = item;
 
     /* Load the separator and group actions. */
-    item = CreateMenuItem(MENU_ITEM_SEPARATOR);
+    item = Menus::CreateMenuItem(MENU_ITEM_SEPARATOR);
     item->next = menu->items;
     menu->items = item;
 
@@ -411,7 +411,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
       if (!ShouldFocus(cp->client, 0)) {
         continue;
       }
-      item = CreateMenuItem(MENU_ITEM_NORMAL);
+      item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
       if (cp->client->getState()->status & STAT_MINIMIZED) {
         size_t len = 0;
         if (cp->client->getName()) {
@@ -437,7 +437,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
   }
 
   /* Initialize and position the menu. */
-  InitializeMenu(menu);
+  Menus::InitializeMenu(menu);
   sp = GetCurrentScreen(bar->cp->getScreenX(), bar->cp->getScreenY());
   Cursors::GetMousePosition(&x, &y, &w);
   if (bar->layout == LAYOUT_HORIZONTAL) {
@@ -462,9 +462,9 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
     y = Max(y, sp->y);
   }
 
-  ShowMenu(menu, RunTaskBarCommand, x, y, 0);
+  Menus::ShowMenu(menu, RunTaskBarCommand, x, y, 0);
 
-  DestroyMenu(menu);
+  Menus::DestroyMenu(menu);
 
 }
 

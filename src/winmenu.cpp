@@ -26,9 +26,9 @@ static void AddWindowMenuItem(Menu *menu, const char *name, MenuActionType type,
 /** Show a window menu. */
 void ShowWindowMenu(ClientNode *np, int x, int y, char keyboard) {
   Menu *menu = CreateWindowMenu(np);
-  InitializeMenu(menu);
-  ShowMenu(menu, RunWindowCommand, x, y, keyboard);
-  DestroyMenu(menu);
+  Menus::InitializeMenu(menu);
+  Menus::ShowMenu(menu, RunWindowCommand, x, y, keyboard);
+  Menus::DestroyMenu(menu);
 }
 
 /** Create a new window menu. */
@@ -36,7 +36,7 @@ Menu *CreateWindowMenu(ClientNode *np) {
 
   Menu *menu;
 
-  menu = CreateMenu();
+  menu = Menus::CreateMenu();
 
   /* Note that items are added in reverse order of display. */
 
@@ -123,13 +123,13 @@ void CreateWindowLayerMenu(Menu *menu, ClientNode *np) {
   Menu *submenu;
   MenuItem *item;
 
-  item = CreateMenuItem(MENU_ITEM_SUBMENU);
+  item = Menus::CreateMenuItem(MENU_ITEM_SUBMENU);
   item->name = CopyString(_("Layer"));
   item->action.type = MA_NONE;
   item->next = menu->items;
   menu->items = item;
 
-  submenu = CreateMenu();
+  submenu = Menus::CreateMenu();
   item->submenu = submenu;
 
   if (np->getState()->layer == LAYER_ABOVE) {
@@ -175,7 +175,7 @@ void AddWindowMenuItem(Menu *menu, const char *name, MenuActionType type, Client
 
   MenuItem *item;
 
-  item = CreateMenuItem(name ? MENU_ITEM_NORMAL : MENU_ITEM_SEPARATOR);
+  item = Menus::CreateMenuItem(name ? MENU_ITEM_NORMAL : MENU_ITEM_SEPARATOR);
   item->name = CopyString(name);
   item->action.type = type;
   item->action.context = np;
