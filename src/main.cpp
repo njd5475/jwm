@@ -431,7 +431,7 @@ void Initialize(void) {
   ILog(InitializeHints);
   ILog(InitializeIcons);
   ILog(PagerType::InitializePager);
-  ILog(InitializePlacement);
+  ILog(Places::InitializePlacement);
   ILog(InitializePopup);
   ILog(InitializeRootMenu);
   ILog(InitializeScreens);
@@ -470,7 +470,7 @@ void Startup(void) {
   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
   TrayType::StartupTray();
   Binding::StartupBindings();
-  StartupPlacement();
+  Places::StartupPlacement();
 
 #  ifndef DISABLE_CONFIRM
   StartupDialogs();
@@ -532,7 +532,7 @@ void Shutdown(void) {
   ShutdownColors();
   ShutdownGroups();
 
-  ShutdownPlacement();
+  Places::ShutdownPlacement();
   ShutdownHints();
   ShutdownScreens();
   ShutdownSettings();
@@ -561,7 +561,7 @@ void Destroy(void) {
   DestroyIcons();
   Binding::DestroyBindings();
   PagerType::DestroyPager();
-  DestroyPlacement();
+  Places::DestroyPlacement();
   DestroyPopup();
   DestroyRootMenu();
   DestroyScreens();

@@ -246,10 +246,10 @@ void ApplyGroup(const GroupType *gp, ClientNode *np)
    for(lp = gp->options; lp; lp = lp->next) {
       switch(lp->option) {
       case OPTION_STICKY:
-         np->getState()->status |= STAT_STICKY;
+         np->setSticky();
          break;
       case OPTION_NOLIST:
-         np->getState()->status |= STAT_NOLIST;
+         np->setNoList();
          noList = 1;
          break;
       case OPTION_ILIST:
@@ -286,7 +286,7 @@ void ApplyGroup(const GroupType *gp, ClientNode *np)
          break;
       case OPTION_DESKTOP:
          if(JLIKELY(lp->value.u >= 1 && lp->value.u <= settings.desktopCount)) {
-            np->getState()->desktop = lp->value.u - 1;
+            np->setCurrentDesktop(lp->value.u - 1);
          } else {
             Warning(_("invalid group desktop: %d"), lp->value.u);
          }

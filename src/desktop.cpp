@@ -288,7 +288,7 @@ void _ShowDesktop(void)
                }
                if(np->getState()->status & (STAT_MAPPED | STAT_SHADED)) {
                   np->MinimizeClient(0);
-                  np->getState()->status |= STAT_SDESKTOP;
+                  np->setSDesktopStatus();
                }
             }
          }

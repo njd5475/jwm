@@ -183,7 +183,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   JXGrabButton(display, AnyButton, AnyModifier, this->window, True, ButtonPressMask, GrabModeSync, GrabModeAsync, None,
       None);
 
-  PlaceClient(this, alreadyMapped);
+  Places::PlaceClient(this, alreadyMapped);
   this->ReparentClient();
   XSaveContext(display, this->window, clientContext, (char*) this);
 
@@ -243,7 +243,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
     this->HideClient();
   }
 
-  ReadClientStrut(this);
+  Places::ReadClientStrut(this);
 
   /* Focus transients if their parent has focus. */
   if (this->owner != None) {
@@ -322,6 +322,61 @@ void ClientNode::MinimizeTransients(char lower) {
 
   WriteState(this);
 
+}
+
+void ClientNode::saveBounds() {
+	this->oldx = this->x;
+	this->oldy = this->y;
+	this->oldWidth = this->width;
+	this->oldHeight = this->height;
+}
+
+/** Determine which way to move the client for the border. */
+void ClientNode::GetGravityDelta(int gravity, int *x, int *y) {
+  int north, south, east, west;
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  switch (gravity) {
+  case NorthWestGravity:
+    *y = -north;
+    *x = -west;
+    break;
+  case NorthGravity:
+    *y = -north;
+    *x = (west - east) / 2;
+    break;
+  case NorthEastGravity:
+    *y = -north;
+    *x = west;
+    break;
+  case WestGravity:
+    *x = -west;
+    *y = (north - south) / 2;
+    break;
+  case CenterGravity:
+    *y = (north - south) / 2;
+    *x = (west - east) / 2;
+    break;
+  case EastGravity:
+    *x = west;
+    *y = (north - south) / 2;
+    break;
+  case SouthWestGravity:
+    *y = south;
+    *x = -west;
+    break;
+  case SouthGravity:
+    *x = (west - east) / 2;
+    *y = south;
+    break;
+  case SouthEastGravity:
+    *y = south;
+    *x = west;
+    break;
+  default: /* Static */
+    *x = 0;
+    *y = 0;
+    break;
+  }
 }
 
 /** Shade a client. */
@@ -481,7 +536,7 @@ void ClientNode::_UpdateState() {
 
   /* We don't handle mapping the window, so restore its mapped state. */
   if (!alreadyMapped) {
-    this->getState()->status &= ~STAT_MAPPED;
+    this->resetMappedState();
   }
 
   /* Add to the layer list. */
@@ -799,7 +854,7 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
     }
 
     sp = GetCurrentScreen(this->x, this->y);
-    GetScreenBounds(sp, &box);
+    Places::GetScreenBounds(sp, &box);
 
     Border::GetBorderSize(&this->state, &north, &south, &east, &west);
     box.x += west;
@@ -1269,7 +1324,7 @@ void ClientNode::RemoveClient() {
   }
 
   TaskBarType::RemoveClientFromTaskBar(this);
-  RemoveClientStrut(this);
+  Places::RemoveClientStrut(this);
 
   while (this->colormaps) {
     cp = this->colormaps->next;

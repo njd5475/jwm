@@ -17,29 +17,8 @@
 #include "clientlist.h"
 #include "misc.h"
 
-typedef struct Strut {
-  ClientNode *client;
-  BoundingBox box;
-  struct Strut *next;
-} Strut;
-
-static Strut *struts = NULL;
-
-/* desktopCount x screenCount */
-/* Note that we assume x and y are 0 based for all screens here. */
-static int *cascadeOffsets = NULL;
-
-static char DoRemoveClientStrut(ClientNode *np);
-static void InsertStrut(const BoundingBox *box, ClientNode *np);
-static int IntComparator(const void *a, const void *b);
-
-static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
-static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
-static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
-static void SetWorkarea(void);
-
 /** Startup placement. */
-void StartupPlacement(void) {
+void Places::StartupPlacement(void) {
   const unsigned titleHeight = Border::GetTitleHeight();
   int count;
   int x;
@@ -55,7 +34,7 @@ void StartupPlacement(void) {
 }
 
 /** Shutdown placement. */
-void ShutdownPlacement(void) {
+void Places::ShutdownPlacement(void) {
 
   Strut *sp;
 
@@ -70,14 +49,14 @@ void ShutdownPlacement(void) {
 }
 
 /** Remove struts associated with a client. */
-void RemoveClientStrut(ClientNode *np) {
+void Places::RemoveClientStrut(ClientNode *np) {
   if (DoRemoveClientStrut(np)) {
     SetWorkarea();
   }
 }
 
 /** Remove struts associated with a client. */
-char DoRemoveClientStrut(ClientNode *np) {
+char Places::DoRemoveClientStrut(ClientNode *np) {
   char updated = 0;
   Strut **spp = &struts;
   while (*spp) {
@@ -94,7 +73,7 @@ char DoRemoveClientStrut(ClientNode *np) {
 }
 
 /** Insert a bounding box to the list of struts. */
-void InsertStrut(const BoundingBox *box, ClientNode *np) {
+void Places::InsertStrut(const BoundingBox *box, ClientNode *np) {
   if (JLIKELY(box->width > 0 && box->height > 0)) {
     Strut *sp = new Strut;
     sp->client = np;
@@ -105,7 +84,7 @@ void InsertStrut(const BoundingBox *box, ClientNode *np) {
 }
 
 /** Add client specified struts to our list. */
-void ReadClientStrut(ClientNode *np) {
+void Places::ReadClientStrut(ClientNode *np) {
 
   BoundingBox box;
   int status;
@@ -253,7 +232,7 @@ void ReadClientStrut(ClientNode *np) {
 }
 
 /** Get the screen bounds. */
-void GetScreenBounds(const ScreenType *sp, BoundingBox *box) {
+void Places::GetScreenBounds(const ScreenType *sp, BoundingBox *box) {
   box->x = sp->x;
   box->y = sp->y;
   box->width = sp->width;
@@ -261,7 +240,7 @@ void GetScreenBounds(const ScreenType *sp, BoundingBox *box) {
 }
 
 /** Shrink dest such that it does not intersect with src. */
-void SubtractBounds(const BoundingBox *src, BoundingBox *dest) {
+void Places::SubtractBounds(const BoundingBox *src, BoundingBox *dest) {
 
   BoundingBox boxes[4];
 
@@ -325,7 +304,7 @@ void SubtractBounds(const BoundingBox *src, BoundingBox *dest) {
 }
 
 /** Subtract tray area from the bounding box. */
-void SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
+void Places::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
   const TrayType *tp;
   BoundingBox src;
   BoundingBox last;
@@ -359,7 +338,7 @@ void SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
 }
 
 /** Remove struts from the bounding box. */
-void SubtractStrutBounds(BoundingBox *box, const ClientNode *np) {
+void Places::SubtractStrutBounds(BoundingBox *box, const ClientNode *np) {
 
   Strut *sp;
   BoundingBox last;
@@ -389,7 +368,7 @@ void ClientNode::CenterClient(const BoundingBox *box) {
 }
 
 /** Compare two integers. */
-int IntComparator(const void *a, const void *b) {
+int Places::IntComparator(const void *a, const void *b) {
   const int ia = *(const int*) a;
   const int ib = *(const int*) b;
   return ia - ib;
@@ -405,7 +384,8 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
   int overlap;
 
   /* Set the client position. */
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
+  ClientState newState = *this->getState();
+  Border::GetBorderSize(&newState, &north, &south, &east, &west);
   this->x = x + west;
   this->y = y + north;
   this->ConstrainSize();
@@ -440,11 +420,11 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
       }
 
       /* Get the boundaries of the other client. */
-      Border::GetBorderSize(tp->getState(), &north, &south, &east, &west);
+      Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
       ox1 = tp->x - west;
       ox2 = tp->x + tp->width + east;
       oy1 = tp->y - north;
-      oy2 = tp->y + tp->height + south;
+      oy2 = tp->y + tp->height + south;s
 
       /* Check for an overlap. */
       if (x2 <= ox1 || x1 >= ox2) {
@@ -461,7 +441,7 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
 }
 
 /** Tiled placement. */
-char ClientNode::TileClient(const BoundingBox *box) {
+char Places::TileClient(const BoundingBox *box) {
 
   const ClientNode *tp;
   int layer;
@@ -480,7 +460,7 @@ char ClientNode::TileClient(const BoundingBox *box) {
       if (!IsClientOnCurrentDesktop(tp)) {
         continue;
       }
-      if (!(tp->state.status & STAT_MAPPED)) {
+      if (!(tp->getStatus() & STAT_MAPPED)) {
         continue;
       }
       if (tp == this) {
@@ -503,30 +483,30 @@ char ClientNode::TileClient(const BoundingBox *box) {
       if (!IsClientOnCurrentDesktop(tp)) {
         continue;
       }
-      if (!(tp->state.status & STAT_MAPPED)) {
+      if (!(tp->getStatus() & STAT_MAPPED)) {
         continue;
       }
       if (tp == this) {
         continue;
       }
-      Border::GetBorderSize(&tp->state, &north, &south, &east, &west);
-      xs[count + 0] = tp->x - west;
-      xs[count + 1] = tp->x + tp->width + east;
-      ys[count + 0] = tp->y - north;
-      ys[count + 1] = tp->y + tp->height + south;
+      Border::GetBorderSize(tp->getState(), &north, &south, &east, &west);
+      xs[count + 0] = tp->getX() - west;
+      xs[count + 1] = tp->getX() + tp->getWidth() + east;
+      ys[count + 0] = tp->getY() - north;
+      ys[count + 1] = tp->getY() + tp->getHeight() + south;
       count += 2;
     }
   }
 
   /* Try placing at lower right edge of box, too. */
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
-  xs[count] = box->x + box->width - this->width - east - west;
-  ys[count] = box->y + box->height - this->height - north - south;
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  xs[count] = box->x + box->width - this->getWidth() - east - west;
+  ys[count] = box->y + box->height - this->getHeight() - north - south;
   count += 1;
 
   /* Sort the points. */
-  qsort(xs, count, sizeof(int), IntComparator);
-  qsort(ys, count, sizeof(int), IntComparator);
+  qsort(xs, count, sizeof(int), Places::IntComparator);
+  qsort(ys, count, sizeof(int), Places::IntComparator);
 
   /* Try all possible positions. */
   leastOverlap = INT_MAX;
@@ -551,9 +531,9 @@ char ClientNode::TileClient(const BoundingBox *box) {
 
   if (leastOverlap < INT_MAX) {
     /* Set the client position. */
-    Border::GetBorderSize(&this->state, &north, &south, &east, &west);
-    this->x = bestx + west;
-    this->y = besty + north;
+    Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+    this->setX(bestx + west);
+    this->setY(besty + north);
     this->ConstrainSize();
     this->ConstrainPosition();
     return 1;
@@ -564,40 +544,40 @@ char ClientNode::TileClient(const BoundingBox *box) {
 }
 
 /** Cascade placement. */
-void ClientNode::CascadeClient(const BoundingBox *box) {
+void Places::CascadeClient(const BoundingBox *box) {
   const ScreenType *sp;
   const unsigned titleHeight = Border::GetTitleHeight();
   int north, south, east, west;
   int cascadeIndex;
   char overflow;
 
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
   sp = GetMouseScreen();
   cascadeIndex = sp->index * settings.desktopCount + currentDesktop;
 
   /* Set the cascaded location. */
-  this->x = box->x + west + cascadeOffsets[cascadeIndex];
-  this->y = box->y + north + cascadeOffsets[cascadeIndex];
+  this->setX( box->x + west + cascadeOffsets[cascadeIndex]);
+  this->setY( box->y + north + cascadeOffsets[cascadeIndex]);
   cascadeOffsets[cascadeIndex] += settings.borderWidth + titleHeight;
 
   /* Check for cascade overflow. */
   overflow = 0;
-  if (this->x + this->width - box->x > box->width) {
+  if (this->getX() + this->getWidth() - box->x > box->width) {
     overflow = 1;
-  } else if (this->y + this->height - box->y > box->height) {
+  } else if (this->getY() + this->getHeight() - box->y > box->height) {
     overflow = 1;
   }
 
   if (overflow) {
     cascadeOffsets[cascadeIndex] = settings.borderWidth + titleHeight;
-    this->x = box->x + west + cascadeOffsets[cascadeIndex];
-    this->y = box->y + north + cascadeOffsets[cascadeIndex];
+    this->setX(box->x + west + cascadeOffsets[cascadeIndex]);
+    this->setY(box->y + north + cascadeOffsets[cascadeIndex]);
 
     /* Check for client overflow and update cascade position. */
-    if (this->x + this->width - box->x > box->width) {
-      this->x = box->x + west;
-    } else if (this->y + this->height - box->y > box->height) {
-      this->y = box->y + north;
+    if (this->getX() + this->getWidth() - box->x > box->width) {
+      this->setX(box->x + west);
+    } else if (this->getY() + this->getHeight() - box->y > box->height) {
+      this->setY(box->y + north);
     } else {
       cascadeOffsets[cascadeIndex] += settings.borderWidth + titleHeight;
     }
@@ -609,7 +589,7 @@ void ClientNode::CascadeClient(const BoundingBox *box) {
 }
 
 /** Place a client on the screen. */
-void PlaceClient(ClientNode *np, char alreadyMapped) {
+void Places::PlaceClient(ClientNode *np, char alreadyMapped) {
 
   BoundingBox box;
   const ScreenType *sp;
@@ -651,69 +631,75 @@ void PlaceClient(ClientNode *np, char alreadyMapped) {
 }
 
 /** Constrain the size of the client. */
-char ClientNode::ConstrainSize() {
+char Places::ConstrainSize() {
 
   BoundingBox box;
   const ScreenType *sp;
   int north, south, east, west;
-  const int oldWidth = this->width;
-  const int oldHeight = this->height;
+  const int oldWidth = this->getWidth();
+  const int oldHeight = this->getHeight();
 
+  int x = this->getX();
+  int y = this->getY();
+  int width = this->getWidth();
+  int height = this->getHeight();
   /* First we make sure the window isn't larger than the program allows.
    * We do this here to avoid moving the window below.
    */
-  this->width = Min(this->width, this->maxWidth);
-  this->height = Min(this->height, this->maxHeight);
+  width = Min(width, this->getMaxWidth());
+  height = Min(height, this->getMaxHeight());
 
+  const ClientState *state = this->getState();
   /* Constrain the width if necessary. */
-  sp = GetCurrentScreen(this->x, this->y);
+  sp = GetCurrentScreen(this->getX(), this->getY());
   GetScreenBounds(sp, &box);
-  SubtractTrayBounds(&box, this->state.layer);
+  SubtractTrayBounds(&box, state->layer);
   SubtractStrutBounds(&box, this);
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
-  if (this->width + east + west > sp->width) {
+  Border::GetBorderSize(state, &north, &south, &east, &west);
+  if (width + east + west > sp->width) {
     box.x += west;
     box.width -= east + west;
-    if (box.width > this->maxWidth) {
-      box.width = this->maxWidth;
+    if (box.width > this->getMaxWidth()) {
+      box.width = this->getMaxWidth();
     }
-    if (box.width > this->width) {
-      box.width = this->width;
+    if (box.width > width) {
+      box.width = width;
     }
-    this->x = box.x;
-    this->width = box.width - (box.width % this->xinc);
+    x = box.x;
+    width = box.width - (box.width % this->getXInc());
   }
 
   /* Constrain the height if necessary. */
-  if (this->height + north + south > sp->height) {
+  if (height + north + south > sp->height) {
     box.y += north;
     box.height -= north + south;
-    if (box.height > this->maxHeight) {
-      box.height = this->maxHeight;
+    if (box.height > this->getMaxHeight()) {
+      box.height = this->getMaxHeight();
     }
-    if (box.height > this->height) {
-      box.height = this->height;
+    if (box.height > height) {
+      box.height = height;
     }
-    this->y = box.y;
-    this->height = box.height - (box.height % this->yinc);
+    y = box.y;
+    height = box.height - (box.height % this->getYInc());
   }
 
   /* If the program has a minimum constraint, we apply that here.
    * Note that this could cause the window to overlap something. */
-  this->width = Max(this->width, this->minWidth);
-  this->height = Max(this->height, this->minHeight);
+  width = Max(width, this->getMinWidth());
+  height = Max(height, this->getMinHeight());
 
   /* Fix the aspect ratio. */
-  if (this->sizeFlags & PAspect) {
-    if (this->width * this->aspect.miny < this->height * this->aspect.minx) {
-      this->height = (this->width * this->aspect.miny) / this->aspect.minx;
+  if (this->getSizeFlags() & PAspect) {
+	AspectRatio aspect = this->getAspect();
+    if (width * aspect.miny < height * aspect.minx) {
+      height = (width * aspect.miny) / aspect.minx;
     }
-    if (this->width * this->aspect.maxy > this->height * this->aspect.maxx) {
-      this->width = (this->height * this->aspect.maxx) / this->aspect.maxy;
+    if (width * aspect.maxy > height * aspect.maxx) {
+      width = (height * aspect.maxx) / aspect.maxy;
     }
   }
 
-  if (this->width != oldWidth || this->height != oldHeight) {
+  if (width != oldWidth || height != oldHeight) {
     return 1;
   } else {
     return 0;
@@ -722,7 +708,7 @@ char ClientNode::ConstrainSize() {
 }
 
 /** Constrain the position of a client. */
-void ClientNode::ConstrainPosition() {
+void Places::ConstrainPosition() {
 
   BoundingBox box;
   int north, south, east, west;
@@ -732,165 +718,131 @@ void ClientNode::ConstrainPosition() {
   box.y = 0;
   box.width = rootWidth;
   box.height = rootHeight;
-  SubtractTrayBounds(&box, this->state.layer);
+  SubtractTrayBounds(&box, this->getState()->layer);
   SubtractStrutBounds(&box, this);
 
   /* Fix the position. */
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
-  if (this->x + this->width + east + west > box.x + box.width) {
-    this->x = box.x + box.width - this->width - east;
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  int width = this->getWidth();
+  int height = this->getHeight();
+  int x = this->getX();
+  int y = this->getY();
+  if (y + width + east + west > box.x + box.width) {
+    x = box.x + box.width - width - east;
   }
-  if (this->y + this->height + north + south > box.y + box.height) {
-    this->y = box.y + box.height - this->height - south;
+  if (y + height + north + south > box.y + box.height) {
+    y = box.y + box.height - height - south;
   }
-  if (this->x < box.x + west) {
-    this->x = box.x + west;
+  if (x < box.x + west) {
+    x = box.x + west;
   }
-  if (this->y < box.y + north) {
-    this->y = box.y + north;
+  if (y < box.y + north) {
+    y = box.y + north;
   }
 
+  this->setX(x);
+  this->setY(y);
+  this->setWidth(width);
+  this->setHeight(height);
 }
 
 /** Place a maximized client on the screen. */
-void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
+void Places::PlaceMaximizedClient(ClientNode *cp, MaxFlags flags) {
   BoundingBox box;
   const ScreenType *sp;
   int north, south, east, west;
 
-  this->oldx = this->x;
-  this->oldy = this->y;
-  this->oldWidth = this->width;
-  this->oldHeight = this->height;
-  this->state.maxFlags = flags;
+  this->saveBounds();
+  this->setStateMaxFlags(flags);
 
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
+  ClientState newState;
+  memcpy(&newState, this->getState(), sizeof(newState));
+  Border::GetBorderSize(&newState, &north, &south, &east, &west);
 
-  sp = GetCurrentScreen(this->x + (east + west + this->width) / 2, this->y + (north + south + this->height) / 2);
-  GetScreenBounds(sp, &box);
+  sp = GetCurrentScreen(this->getX() + (east + west + this->getWidth()) / 2, this->getY() + (north + south + this->getHeight()) / 2);
+  Places::GetScreenBounds(sp, &box);
   if (!(flags & (MAX_HORIZ | MAX_LEFT | MAX_RIGHT))) {
-    box.x = this->x;
-    box.width = this->width;
+    box.x = this->getX();
+    box.width = this->getWidth();
   }
   if (!(flags & (MAX_VERT | MAX_TOP | MAX_BOTTOM))) {
-    box.y = this->y;
-    box.height = this->height;
+    box.y = this->getY();
+    box.height = this->getHeight();
   }
-  SubtractTrayBounds(&box, this->state.layer);
-  SubtractStrutBounds(&box, this);
+  Places::SubtractTrayBounds(&box, newState.layer);
+  Places::SubtractStrutBounds(&box, this);
 
-  if (box.width > this->maxWidth) {
-    box.width = this->maxWidth;
+  if (box.width > this->getMaxWidth()) {
+    box.width = this->getMaxWidth();
   }
-  if (box.height > this->maxHeight) {
-    box.height = this->maxHeight;
+  if (box.height > this->getMaxHeight()) {
+    box.height = this->getMaxHeight();
   }
 
-  if (this->sizeFlags & PAspect) {
-    if (box.width * this->aspect.miny < box.height * this->aspect.minx) {
-      box.height = (box.width * this->aspect.miny) / this->aspect.minx;
+  if (this->getSizeFlags() & PAspect) {
+    if (box.width * this->getAspect().miny < box.height * this->getAspect().minx) {
+      box.height = (box.width * this->getAspect().miny) / this->getAspect().minx;
     }
-    if (box.width * this->aspect.maxy > box.height * this->aspect.maxx) {
-      box.width = (box.height * this->aspect.maxx) / this->aspect.maxy;
+    if (box.width * this->getAspect().maxy > box.height * this->getAspect().maxx) {
+      box.width = (box.height * this->getAspect().maxx) / this->getAspect().maxy;
     }
   }
 
+  int newX, newY, newHeight, newWidth;
   /* If maximizing horizontally, update width. */
   if (flags & MAX_HORIZ) {
-    this->x = box.x + west;
-    this->width = box.width - east - west;
-    if (!(this->state.status & STAT_IIGNORE)) {
-      this->width -= ((this->width - this->baseWidth) % this->xinc);
+    newX = box.x + west;
+    newWidth = box.width - east - west;
+    if (!(newState.status & STAT_IIGNORE)) {
+      newWidth -= ((this->getWidth() - this->getBaseWidth()) % this->getXInc());
     }
   } else if (flags & MAX_LEFT) {
-    this->x = box.x + west;
-    this->width = box.width / 2 - east - west;
-    if (!(this->state.status & STAT_IIGNORE)) {
-      this->width -= ((this->width - this->baseWidth) % this->xinc);
+    newX = box.x + west;
+    newWidth = box.width / 2 - east - west;
+    if (!(newState.status & STAT_IIGNORE)) {
+      newWidth -= ((this->getWidth() - this->getBaseWidth()) % this->getXInc());
     }
   } else if (flags & MAX_RIGHT) {
-    this->x = box.x + box.width / 2 + west;
-    this->width = box.width / 2 - east - west;
-    if (!(this->state.status & STAT_IIGNORE)) {
-      this->width -= ((this->width - this->baseWidth) % this->xinc);
+    newX = box.x + box.width / 2 + west;
+    newWidth = box.width / 2 - east - west;
+    if (!(newState.status & STAT_IIGNORE)) {
+      newWidth -= ((this->getWidth() - this->getBaseWidth()) % this->getXInc());
     }
   }
 
   /* If maximizing vertically, update height. */
   if (flags & MAX_VERT) {
-    this->y = box.y + north;
-    this->height = box.height - north - south;
-    if (!(this->state.status & STAT_IIGNORE)) {
-      this->height -= ((this->height - this->baseHeight) % this->yinc);
+    newY = box.y + north;
+    newHeight = box.height - north - south;
+    if (!(newState.status & STAT_IIGNORE)) {
+      newHeight -= ((this->getHeight() - this->getBaseHeight()) % this->getYInc());
     }
   } else if (flags & MAX_TOP) {
-    this->y = box.y + north;
-    this->height = box.height / 2 - north - south;
-    if (!(this->state.status & STAT_IIGNORE)) {
-      this->height -= ((this->height - this->baseHeight) % this->yinc);
+    newY = box.y + north;
+    newHeight = box.height / 2 - north - south;
+    if (!(newState.status & STAT_IIGNORE)) {
+      newHeight -= ((this->getHeight() - this->getBaseHeight()) % this->getYInc());
     }
   } else if (flags & MAX_BOTTOM) {
-    this->y = box.y + box.height / 2 + north;
-    this->height = box.height / 2 - north - south;
-    if (!(this->state.status & STAT_IIGNORE)) {
-      this->height -= ((this->height - this->baseHeight) % this->yinc);
+    newY = box.y + box.height / 2 + north;
+    newHeight = box.height / 2 - north - south;
+    if (!(newState.status & STAT_IIGNORE)) {
+      newHeight -= ((this->getHeight() - this->getBaseHeight()) % this->getYInc());
     }
   }
 
+  this->setX(newX);
+  this->setY(newY);
+  this->setWidth(newWidth);
+  this->setHeight(newHeight);
 }
 
-/** Determine which way to move the client for the border. */
-void GetGravityDelta(const ClientNode *np, int gravity, int *x, int *y) {
-  int north, south, east, west;
-  Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
-  switch (gravity) {
-  case NorthWestGravity:
-    *y = -north;
-    *x = -west;
-    break;
-  case NorthGravity:
-    *y = -north;
-    *x = (west - east) / 2;
-    break;
-  case NorthEastGravity:
-    *y = -north;
-    *x = west;
-    break;
-  case WestGravity:
-    *x = -west;
-    *y = (north - south) / 2;
-    break;
-  case CenterGravity:
-    *y = (north - south) / 2;
-    *x = (west - east) / 2;
-    break;
-  case EastGravity:
-    *x = west;
-    *y = (north - south) / 2;
-    break;
-  case SouthWestGravity:
-    *y = south;
-    *x = -west;
-    break;
-  case SouthGravity:
-    *x = (west - east) / 2;
-    *y = south;
-    break;
-  case SouthEastGravity:
-    *y = south;
-    *x = west;
-    break;
-  default: /* Static */
-    *x = 0;
-    *y = 0;
-    break;
-  }
-}
+
 
 /** Move the window in the specified direction for reparenting. */
 void ClientNode::GravitateClient(char negate) {
   int deltax, deltay;
-  GetGravityDelta(this, this->gravity, &deltax, &deltay);
+  this->GetGravityDelta(this->gravity, &deltax, &deltay);
   if (negate) {
     this->x += deltax;
     this->y += deltay;
@@ -901,7 +853,7 @@ void ClientNode::GravitateClient(char negate) {
 }
 
 /** Set _NET_WORKAREA. */
-void SetWorkarea(void) {
+void Places::SetWorkarea(void) {
   BoundingBox box;
   unsigned long *array;
   unsigned int count;
@@ -915,8 +867,8 @@ void SetWorkarea(void) {
   box.width = rootWidth;
   box.height = rootHeight;
 
-  SubtractTrayBounds(&box, LAYER_NORMAL);
-  SubtractStrutBounds(&box, NULL);
+  Places::SubtractTrayBounds(&box, LAYER_NORMAL);
+  Places::SubtractStrutBounds(&box, NULL);
 
   for (x = 0; x < settings.desktopCount; x++) {
     array[x * 4 + 0] = box.x;

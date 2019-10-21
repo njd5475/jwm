@@ -307,7 +307,7 @@ void ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...) {
   if(np) {
     dialog->node->setOwner(np->getWindow());
   }
-  dialog->node->getState()->status |= STAT_WMDIALOG;
+  dialog->node->setWMDialogStatus();
   dialog->node->FocusClient();
 
   /* Grab the mouse. */

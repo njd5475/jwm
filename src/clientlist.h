@@ -26,7 +26,7 @@ extern struct ClientNode *nodeTail[LAYER_COUNT];
  */
 #define IsClientOnCurrentDesktop( np ) \
    ((np->getState()->desktop == currentDesktop) \
-      || (np->getState()->status & STAT_STICKY))
+      || (np->getStatus() & STAT_STICKY))
 
 /** Determine if a client is allowed focus.
  * @param np The client.
