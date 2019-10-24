@@ -75,7 +75,7 @@ static char _HandleSelectionClear(const XSelectionClearEvent *event);
 
 static void _HandleNetMoveResize(const XClientMessageEvent *event,
 		ClientNode *np);
-static void _HandleNetWMMoveResize(const XClientMessageEvent *evnet,
+static void HandleNetWMMoveResize(const XClientMessageEvent *evnet,
 		ClientNode *np);
 static void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np);
 static void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np);
@@ -1103,7 +1103,7 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
 		} else if (event->message_type == atoms[ATOM_NET_WM_MOVERESIZE]) {
 
-			_HandleNetWMMoveResize(event, np);
+			HandleNetWMMoveResize(event, np);
 
 		} else if (event->message_type == atoms[ATOM_NET_RESTACK_WINDOW]) {
 
@@ -1164,7 +1164,7 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 }
 
 /** Handle a _NET_MOVERESIZE_WINDOW request. */
-void _HandleNetMoveResize(const XClientMessageEvent *event, Places *np) {
+void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 
 	long flags;
 	int gravity;
@@ -1249,7 +1249,7 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, Places *np) {
 }
 
 /** Handle a _NET_WM_MOVERESIZE request. */
-void HandleNetWMMoveResize(const XClientMessageEvent *event, Places *np) {
+void HandleNetWMMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 
 	long x = event->data.l[0] - np->getX();
 	long y = event->data.l[1] - np->getY();

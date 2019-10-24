@@ -111,7 +111,19 @@ typedef struct AspectRatio {
 	int maxy; /**< The y component of the maximum aspect ratio. */
 } AspectRatio;
 
-struct BoundingBox;
+/** Bounding box. */
+typedef struct BoundingBox {
+	int x; /**< x-coordinate of the bounding box. */
+	int y; /**< y-coordinate of the bounding box. */
+	int width; /**< Width of the bounding box. */
+	int height; /**< Height of the bounding box. */
+} BoundingBox;
+
+typedef struct Strut {
+	ClientNode *client;
+	BoundingBox box;
+	struct Strut *next;
+} Strut;
 
 /** Struture to store information about a client window. */
 class ClientNode {
@@ -169,6 +181,9 @@ protected:
 		this->state.maxFlags = flags;
 	}
 public:
+
+	static char DoRemoveClientStrut(ClientNode *np);
+	static void InsertStrut(const BoundingBox *box, ClientNode *np);
 	/** Get the x and y deltas for gravitating a client.
 	 * @param np The client.
 	 * @param gravity The gravity to use.
@@ -176,6 +191,16 @@ public:
 	 * @param y Location to store the y delta.
 	 */
 	void GetGravityDelta(int gravity, int *x, int *y);
+
+	/** Get the bounding box for the screen.
+	 * @param sp A pointer to the screen whose bounds to get.
+	 * @param box The bounding box for the screen.
+	 */
+	static void GetScreenBounds(const struct ScreenType *sp, BoundingBox *box);
+
+	static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
+	static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
+	static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
 
 	/** The number of clients (maintained in client.c). */
 	static unsigned int clientCount;
@@ -268,6 +293,9 @@ public:
 	void setNoPager() {
 		this->state.status |= STAT_NOPAGER;
 	}
+	void setPositionFromConfig() {
+		this->state.status |= STAT_POSITION;
+	}
 	void setHasNoList() {
 		this->state.status ^= STAT_NOLIST;
 	}
@@ -277,6 +305,9 @@ public:
 	void setSticky() {
 		this->state.status |= STAT_STICKY;
 	}
+	void setNoDrag() {
+		this->state.status |= STAT_NODRAG;
+	}
 	void clearToNoList() {
 		this->state.status &= ~STAT_NOLIST;
 	}
@@ -284,16 +315,175 @@ public:
 		this->state.status &= ~STAT_NOPAGER;
 	}
 	void resetMappedState() {
-	    this->state.status &= ~STAT_MAPPED;
+		this->state.status &= ~STAT_MAPPED;
 	}
 	void clearToSticky() {
 		this->state.status &= ~STAT_STICKY;
+	}
+	void setEdgeSnap() {
+		this->state.status |= STAT_AEROSNAP;
+	}
+	void setDrag() {
+		this->state.status |= STAT_DRAG;
+	}
+	void setFixed() {
+		this->state.status |= STAT_FIXED;
 	}
 	void setCurrentDesktop(unsigned int desktop) {
 		this->state.desktop = desktop;
 	}
 	void setState(ClientState *state) {
 		this->state = *state;
+	}
+	void ignoreProgramList() {
+		this->state.status |= STAT_PIGNORE;
+	}
+	void ignoreProgramSpecificPager() {
+		this->state.status |= STAT_IPAGER;
+	}
+	void setFullscreen() {
+		this->state.status |= STAT_FULLSCREEN;
+	}
+	void setMaximized() {
+		this->state.status |= MAX_HORIZ | MAX_VERT;
+	}
+	void setCentered() {
+		this->state.status |= STAT_CENTERED;
+	}
+	void setTiled() {
+		this->state.status |= STAT_TILED;
+	}
+	void setNotUrgent() {
+		this->state.status |= STAT_NOTURGENT;
+	}
+	void setTaskListSkipped() {
+		this->state.status |= STAT_NOLIST;
+	}
+	void setNoFocus() {
+		this->state.status |= STAT_NOFOCUS;
+	}
+	void setOpacityFixed() {
+		this->state.status |= STAT_OPACITY;
+	}
+	void ignoreProgramSpecificPosition() {
+		this->state.status |= STAT_PIGNORE;
+	}
+	void ignoreIncrementWhenMaximized() {
+		this->state.status |= STAT_IIGNORE;
+	}
+
+	void setBorderOutline() {
+		/**< Window has a border. */
+		this->state.border |= BORDER_OUTLINE;
+	}
+	void setBorderTitle() {
+		/**< Window has a title bar. */
+		this->state.border |= BORDER_TITLE;
+	}
+	void setBorderMin() {
+		/**< Window supports minimize. */
+		this->state.border |= BORDER_MIN;
+	}
+	void setBorderMax() {
+		/**< Window supports maximize. */
+		this->state.border |= BORDER_MAX;
+	}
+	void setBorderClose() {
+		/**< Window supports close. */
+		this->state.border |= BORDER_CLOSE;
+	}
+	void setBorderResize() {
+		/**< Window supports resizing. */
+		this->state.border |= BORDER_RESIZE;
+	}
+	void setBorderMove() {
+		/**< Window supports moving. */
+		this->state.border |= BORDER_MOVE;
+	}
+	void setBorderMaxVert() {
+		/**< Maximize vertically. */
+		this->state.border |= BORDER_MAX_V;
+	}
+	void setBorderMaxHoriz() {
+		/**< Maximize horizontally. */
+		this->state.border |= BORDER_MAX_H;
+	}
+	void setBorderShade() {
+		/**< Allow shading. */
+		this->state.border |= BORDER_SHADE;
+	}
+	void setBorderConstrain() {
+		/**< Constrain to the screen. */
+		this->state.border |= BORDER_CONSTRAIN;
+	}
+	void setBorderFullscreen() {
+		/**< Allow fullscreen. */
+		this->state.border |= BORDER_FULLSCREEN;
+	}
+
+	void setNoBorderOutline() {
+		/**< Window has a border. */
+		this->state.border &= ~BORDER_OUTLINE;
+	}
+	void setNoBorderTitle() {
+		/**< Window has a title bar. */
+		this->state.border &= ~BORDER_TITLE;
+	}
+	void setNoBorderMin() {
+		/**< Window supports minimize. */
+		this->state.border &= ~BORDER_MIN;
+	}
+	void setNoBorderMax() {
+		/**< Window supports maximize. */
+		this->state.border &= ~BORDER_MAX;
+	}
+	void setNoBorderClose() {
+		/**< Window supports close. */
+		this->state.border &= ~BORDER_CLOSE;
+	}
+	void setNoBorderResize() {
+		/**< Window supports resizing. */
+		this->state.border &= ~BORDER_RESIZE;
+	}
+	void setNoBorderMove() {
+		/**< Window supports moving. */
+		this->state.border &= ~BORDER_MOVE;
+	}
+	void setNoBorderMaxVert() {
+		/**< Maximize vertically. */
+		this->state.border &= ~BORDER_MAX_V;
+	}
+	void setNoBorderMaxHoriz() {
+		/**< Maximize horizontally. */
+		this->state.border &= ~BORDER_MAX_H;
+	}
+	void setNoBorderShade() {
+		/**< Allow shading. */
+		this->state.border &= ~BORDER_SHADE;
+	}
+	void setNoBorderConstrain() {
+		/**< Constrain to the screen. */
+		this->state.border &= ~BORDER_CONSTRAIN;
+	}
+	void setNoBorderFullscreen() {
+		/**< Allow fullscreen. */
+		this->state.border &= ~BORDER_FULLSCREEN;
+	}
+
+	void unsetNoPager() {
+		this->state.status &= ~STAT_NOPAGER;
+	}
+
+	void unsetSkippingInTaskList() {
+		this->state.status &= ~STAT_NOLIST;
+	}
+
+	void setNotHidden() {
+		this->state.status &= ~STAT_HIDDEN;
+	}
+
+	void setHidden() {
+		this->state.status |= STAT_HIDDEN;
 	}
 
 	ClientNode *getNext() const {
@@ -337,6 +527,9 @@ public:
 		return this->sizeFlags;
 	}
 
+	void setLayer(unsigned int layer) {
+		this->state.layer = layer;
+	}
 	void SetOpacity(unsigned int opacity, char force);
 	void _UpdateState();
 	void UpdateWindowState(char alreadyMapped);
@@ -359,6 +552,13 @@ public:
 
 	void GravitateClient(char negate);
 	void PlaceMaximizedClient(MaxFlags flags);
+
+	/** Place a maximized client on the screen.
+	 * @param np The client to place.
+	 * @param flags The type of maximization to perform.
+	 */
+	void PlaceMaximizedClient(ClientNode *np, MaxFlags flags);
+
 	void ConstrainPosition();
 	char ConstrainSize();
 	void CascadeClient(const BoundingBox *box);
@@ -547,6 +747,12 @@ public:
 	 */
 	void SendConfigureEvent();
 
+	/** Place a client on the screen.
+	 * @param np The client to place.
+	 * @param alreadyMapped 1 if already mapped, 0 if unmapped.
+	 */
+	static void PlaceClient(ClientNode *np, char alreadyMapped);
+
 	/** Send a message to a client.
 	 * @param w The client window.
 	 * @param type The type of message to send.
@@ -558,6 +764,12 @@ public:
 	static void SignalUrgent(const struct TimeType *now, int x, int y, Window w,
 			void *data);
 private:
+
+	static Strut *struts;
+	/* desktopCount x screenCount */
+	/* Note that we assume x and y are 0 based for all screens here. */
+	static int *cascadeOffsets;
+
 	static void LoadFocus(void);
 	void RestackTransients();
 	void MinimizeTransients(char lower);

@@ -802,7 +802,7 @@ void UpdateDesktop(const TimeType *now) {
 
   /* We temporarily mark the client as hidden to avoid hidding it
    * when changing desktops. */
-  currentClient->getState()->status |= STAT_HIDDEN;
+  currentClient->setHidden();
   if (atLeft && DesktopEnvironment::DefaultEnvironment()->LeftDesktop()) {
     currentClient->SetClientDesktop(currentDesktop);
     _RequireRestack();
@@ -816,5 +816,5 @@ void UpdateDesktop(const TimeType *now) {
     currentClient->SetClientDesktop(currentDesktop);
     _RequireRestack();
   }
-  currentClient->getState()->status &= ~STAT_HIDDEN;
+  currentClient->setNotHidden();
 }
