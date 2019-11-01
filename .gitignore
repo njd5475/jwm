@@ -25,10 +25,11 @@ doc
 ar-lib
 .dirstamp
 *.m4
-googletest/
 libtool
 ltmain.sh
 test-driver
 /Makefile.in
 .settings/
+googletest/
 /googletest/
+googletest
