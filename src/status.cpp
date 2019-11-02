@@ -66,8 +66,8 @@ void CreateMoveResizeWindow(const ClientNode *np, StatusWindowType type)
       return;
    }
 
-   statusWindowHeight = GetStringHeight(FONT_MENU) + 10;
-   statusWindowWidth = GetStringWidth(FONT_MENU, " 00000 x 00000 ") + 2;
+   statusWindowHeight = Fonts::GetStringHeight(FONT_MENU) + 10;
+   statusWindowWidth = Fonts::GetStringWidth(FONT_MENU, " 00000 x 00000 ") + 2;
 
    GetMoveResizeCoordinates(np, type, &statusWindowX, &statusWindowY);
 
@@ -159,8 +159,8 @@ void UpdateMoveWindow(ClientNode *np)
    DrawMoveResizeWindow(np, settings.moveStatusType);
 
    snprintf(str, sizeof(str), "(%d, %d)", np->getX(), np->getY());
-   width = GetStringWidth(FONT_MENU, str);
-   RenderString(statusWindow, FONT_MENU, COLOR_MENU_FG,
+   width = Fonts::GetStringWidth(FONT_MENU, str);
+   Fonts::RenderString(statusWindow, FONT_MENU, COLOR_MENU_FG,
                 (statusWindowWidth - width) / 2, 5, rootWidth, str);
 }
 
@@ -190,8 +190,8 @@ void UpdateResizeWindow(ClientNode *np, int gwidth, int gheight)
    DrawMoveResizeWindow(np, settings.resizeStatusType);
 
    snprintf(str, sizeof(str), "%d x %d", gwidth, gheight);
-   fontWidth = GetStringWidth(FONT_MENU, str);
-   RenderString(statusWindow, FONT_MENU, COLOR_MENU_FG,
+   fontWidth = Fonts::GetStringWidth(FONT_MENU, str);
+   Fonts::RenderString(statusWindow, FONT_MENU, COLOR_MENU_FG,
                 (statusWindowWidth - fontWidth) / 2, 5, rootWidth, str);
 
 }

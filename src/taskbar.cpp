@@ -103,7 +103,7 @@ void TaskBarType::ComputeItemSize() {
     if (this->userHeight > 0) {
       this->itemHeight = this->userHeight;
     } else {
-      this->itemHeight = GetStringHeight(FONT_TASKLIST) + 12;
+      this->itemHeight = Fonts::GetStringHeight(FONT_TASKLIST) + 12;
     }
     this->itemWidth = this->getWidth();
 
@@ -604,7 +604,7 @@ void TaskBarType::UpdateTaskBar(void) {
       if (bar->userHeight > 0) {
         bar->itemHeight = bar->userHeight;
       } else {
-        bar->itemHeight = GetStringHeight(FONT_TASKLIST) + 12;
+        bar->itemHeight = Fonts::GetStringHeight(FONT_TASKLIST) + 12;
       }
       bar->requestedHeight = 0;
       for (taskEntry = taskEntries; taskEntry; taskEntry = taskEntry->next) {

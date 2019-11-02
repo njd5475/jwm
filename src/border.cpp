@@ -419,8 +419,8 @@ void Border::DrawBorderHelper(const ClientNode *np)
       /* Draw the title. */
       if(np->getName() && np->getName()[0] && point.x < point.y) {
          unsigned titleWidth = point.y - point.x;
-         const int sheight = GetStringHeight(FONT_BORDER);
-         const int textWidth = GetStringWidth(FONT_BORDER, np->getName());
+         const int sheight = Fonts::GetStringHeight(FONT_BORDER);
+         const int textWidth = Fonts::GetStringWidth(FONT_BORDER, np->getName());
          unsigned titlex, titley;
          int xoffset = 0;
 
@@ -442,7 +442,7 @@ void Border::DrawBorderHelper(const ClientNode *np)
          if(settings.windowDecorations == DECO_MOTIF) {
             titley += settings.borderWidth - 1;
          }
-         RenderString(canvas, FONT_BORDER, borderTextColor,
+         Fonts::RenderString(canvas, FONT_BORDER, borderTextColor,
                       titlex, titley, titleWidth, np->getName());
       }
 
@@ -1132,7 +1132,7 @@ void Border::ExposeCurrentDesktop(void)
 unsigned Border::GetTitleHeight(void)
 {
    if(JUNLIKELY(settings.titleHeight == 0)) {
-      settings.titleHeight = GetStringHeight(FONT_BORDER) + 4;
+      settings.titleHeight = Fonts::GetStringHeight(FONT_BORDER) + 4;
    }
    return settings.titleHeight;
 }

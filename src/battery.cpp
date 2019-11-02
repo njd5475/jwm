@@ -119,11 +119,11 @@ void Battery::Draw() {
 
   static char buf[80];
   sprintf(buf, "%d%%", (int)percentage);
-  int strWidth = GetStringWidth(FONT_CLOCK, buf); 
+  int strWidth = Fonts::GetStringWidth(FONT_CLOCK, buf);
   strWidth += 16;
   if(strWidth == this->getRequestedWidth()) {
-     RenderString(this->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG,
-       (this->getWidth() - strWidth)/2, (this->getHeight() - GetStringHeight(FONT_CLOCK))/2, this->getWidth(), buf);
+	  Fonts::RenderString(this->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG,
+       (this->getWidth() - strWidth)/2, (this->getHeight() - Fonts::GetStringHeight(FONT_CLOCK))/2, this->getWidth(), buf);
 
      this->UpdateSpecificTray(this->getTray());
   } else {

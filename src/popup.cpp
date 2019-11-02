@@ -65,7 +65,7 @@ void ShutdownPopup(void)
 /** Calculate dimensions of a popup window given the popup text. */
 void MeasurePopupText()
 {
-   const int textHeight = GetStringHeight(FONT_POPUP) + 1;
+   const int textHeight = Fonts::GetStringHeight(FONT_POPUP) + 1;
    char *ptr;
 
    popup.lines = CopyString(popup.text);
@@ -80,7 +80,7 @@ void MeasurePopupText()
       if(end) {
          *end = 0;
       }
-      currentWidth = GetStringWidth(FONT_POPUP, ptr) + 9;
+      currentWidth = Fonts::GetStringWidth(FONT_POPUP, ptr) + 9;
       popup.width = Max(popup.width, currentWidth);
       popup.height += textHeight;
       popup.lineCount += 1;
@@ -132,7 +132,7 @@ void ShowPopup(int x, int y, const char *text,
    if(y + 2 * popup.height + 2 >= sp->height) {
       popup.y = y - popup.height - 2;
    } else {
-      popup.y = y + GetStringHeight(FONT_POPUP) + 2;
+      popup.y = y + Fonts::GetStringHeight(FONT_POPUP) + 2;
    }
 
    if(popup.width + popup.x > sp->x + sp->width) {
@@ -192,9 +192,9 @@ void ShowPopup(int x, int y, const char *text,
    JXDrawRectangle(display, popup.pmap, rootGC, 0, 0,
                    popup.width - 1, popup.height - 1);
    ptr = popup.lines;
-   textHeight = GetStringHeight(FONT_POPUP) + 1;
+   textHeight = Fonts::GetStringHeight(FONT_POPUP) + 1;
    for(i = 0; i < popup.lineCount; i++) {
-      RenderString(popup.pmap, FONT_POPUP, COLOR_POPUP_FG, 4,
+	   Fonts::RenderString(popup.pmap, FONT_POPUP, COLOR_POPUP_FG, 4,
                    textHeight * i + 1, popup.width, ptr);
       ptr += strlen(ptr) + 1;
    }

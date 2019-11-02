@@ -78,7 +78,7 @@ void Menus::InitializeMenu(Menu *menu)
    if(userHeight < 0) {
       userHeight = 0;
    }
-   menu->itemHeight = GetStringHeight(FONT_MENU);
+   menu->itemHeight = Fonts::GetStringHeight(FONT_MENU);
    for(np = menu->items; np; np = np->next) {
       if(np->iconName) {
          np->icon = LoadNamedIcon(np->iconName, 1, 1);
@@ -105,7 +105,7 @@ void Menus::InitializeMenu(Menu *menu)
 
    /* Make sure the menu is wide enough for a label if it is labeled. */
    if(menu->label) {
-      temp = GetStringWidth(FONT_MENU, menu->label);
+      temp = Fonts::GetStringWidth(FONT_MENU, menu->label);
       if(temp > menu->width) {
          menu->width = temp;
       }
@@ -133,7 +133,7 @@ void Menus::InitializeMenu(Menu *menu)
          menu->height += menu->itemHeight;
       }
       if(np->name) {
-         temp = GetStringWidth(FONT_MENU, np->name);
+         temp = Fonts::GetStringWidth(FONT_MENU, np->name);
          if(temp > menu->width) {
             menu->width = temp;
          }

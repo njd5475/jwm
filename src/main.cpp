@@ -426,7 +426,7 @@ void Initialize(void) {
   ILog(InitializeDialogs);
 #endif
   ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
-  ILog(InitializeFonts);
+  ILog(Fonts::InitializeFonts);
   ILog(InitializeGroups);
   ILog(InitializeHints);
   ILog(InitializeIcons);
@@ -458,7 +458,7 @@ void Startup(void) {
 
   StartupGroups();
   Colors::StartupColors();
-  StartupFonts();
+  Fonts::StartupFonts();
   StartupIcons();
   Cursors::StartupCursors();
 
@@ -528,7 +528,7 @@ void Shutdown(void) {
   ShutdownBattery();
   ShutdownIcons();
   Cursors::ShutdownCursors();
-  ShutdownFonts();
+  Fonts::ShutdownFonts();
   Colors::ShutdownColors();
   ShutdownGroups();
 
@@ -555,7 +555,7 @@ void Destroy(void) {
   DestroyDialogs();
 #endif
   DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
-  DestroyFonts();
+  Fonts::DestroyFonts();
   DestroyGroups();
   DestroyHints();
   DestroyIcons();

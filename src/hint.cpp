@@ -654,7 +654,7 @@ void ClientNode::ReadWMName() {
     memcpy(this->name, name, count);
     this->name[count] = 0;
     JXFree(name);
-    this->name = ConvertFromUTF8(this->name);
+    this->name = Fonts::ConvertFromUTF8(this->name);
   }
 
 #ifdef USE_XUTF8

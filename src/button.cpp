@@ -164,8 +164,8 @@ void DrawButton(ButtonNode *bp)
    textWidth = 0;
    textHeight = 0;
    if(bp->text && (width > height || !bp->icon)) {
-      textWidth = GetStringWidth(bp->font, bp->text);
-      textHeight = GetStringHeight(bp->font);
+      textWidth = Fonts::GetStringWidth(bp->font, bp->text);
+      textHeight = Fonts::GetStringHeight(bp->font);
       if(iconWidth > 0 && textWidth + iconWidth + 7 > width) {
          textWidth = width - iconWidth - 7;
       } else if(iconWidth == 0 && textWidth + 5 > width) {
@@ -196,7 +196,7 @@ void DrawButton(ButtonNode *bp)
    /* Display the label. */
    if(textWidth > 0) {
       yoffset = (height - textHeight + 1) / 2;
-      RenderString(drawable, bp->font, fg,
+      Fonts::RenderString(drawable, bp->font, fg,
                    x + xoffset, y + yoffset,
                    textWidth, bp->text);
    }

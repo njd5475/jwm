@@ -358,8 +358,8 @@ void ComputeDimensions(const ClientNode *np) {
 
   /* Get the min width from the size of the buttons. */
   if (!minWidth) {
-    minWidth = GetStringWidth(FONT_MENU, GetCancelString()) * 3;
-    width = GetStringWidth(FONT_MENU, GetOKString()) * 3;
+    minWidth = Fonts::GetStringWidth(FONT_MENU, GetCancelString()) * 3;
+    width = Fonts::GetStringWidth(FONT_MENU, GetOKString()) * 3;
     if (width > minWidth) {
       minWidth = width;
     }
@@ -369,12 +369,12 @@ void ComputeDimensions(const ClientNode *np) {
 
   /* Take into account the size of the message. */
   for (x = 0; x < dialog->lineCount; x++) {
-    width = GetStringWidth(FONT_MENU, dialog->message[x]);
+    width = Fonts::GetStringWidth(FONT_MENU, dialog->message[x]);
     if (width > dialog->width) {
       dialog->width = width;
     }
   }
-  dialog->lineHeight = GetStringHeight(FONT_MENU);
+  dialog->lineHeight = Fonts::GetStringHeight(FONT_MENU);
   dialog->width += 8;
   dialog->height = (dialog->lineCount + 2) * dialog->lineHeight;
 
@@ -423,7 +423,7 @@ void DrawDialog(void) {
   /* Draw the message. */
   yoffset = 4;
   for (x = 0; x < dialog->lineCount; x++) {
-    RenderString(dialog->pmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset, dialog->width, dialog->message[x]);
+	  Fonts::RenderString(dialog->pmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset, dialog->width, dialog->message[x]);
     yoffset += dialog->lineHeight;
   }
 
@@ -440,8 +440,8 @@ void DrawButtons(void) {
 
   Assert(dialog);
 
-  dialog->buttonWidth = GetStringWidth(FONT_MENU, GetCancelString());
-  temp = GetStringWidth(FONT_MENU, GetOKString());
+  dialog->buttonWidth = Fonts::GetStringWidth(FONT_MENU, GetCancelString());
+  temp = Fonts::GetStringWidth(FONT_MENU, GetOKString());
   if (temp > dialog->buttonWidth) {
     dialog->buttonWidth = temp;
   }
