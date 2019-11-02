@@ -1577,7 +1577,7 @@ void ClientNode::KillClientHandler(ClientNode *np) {
 
 /** Kill a client window. */
 void ClientNode::KillClient() {
-	ShowConfirmDialog(this, ClientNode::KillClientHandler,
+	Dialogs::ShowConfirmDialog(this, ClientNode::KillClientHandler,
 	_("Kill this window?"),
 	_("This may cause data to be lost!"),
 	NULL);

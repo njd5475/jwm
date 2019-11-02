@@ -207,7 +207,7 @@ void Restart(void) {
 /** Exit with optional confirmation. */
 void Exit(char confirm) {
 	if (confirm) {
-		ShowConfirmDialog(NULL, ExitHandler,
+		Dialogs::ShowConfirmDialog(NULL, ExitHandler,
 		_("Exit JWM"),
 		_("Are you sure?"),
 		NULL);

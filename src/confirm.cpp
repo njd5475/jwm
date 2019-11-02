@@ -73,8 +73,20 @@ static const char *GetCancelString() {
   return _("Cancel");
 }
 
+void Dialogs::DestroyDialogs() {
+
+}
+
+void Dialogs::InitializeDialogs() {
+
+}
+
+void Dialogs::StartupDialogs() {
+
+}
+
 /** Stop dialog processing. */
-void ShutdownDialogs(void) {
+void Dialogs::ShutdownDialogs(void) {
   if (dialog) {
     DestroyConfirmDialog();
     dialog = NULL;
@@ -94,7 +106,7 @@ void RunDialogAction(void) {
 }
 
 /** Handle an event on a dialog window. */
-char ProcessDialogEvent(const XEvent *event) {
+char Dialogs::ProcessDialogEvent(const XEvent *event) {
 
   Assert(event);
 
@@ -238,7 +250,7 @@ char HandleDialogKeyPress(const XKeyEvent *event) {
 }
 
 /** Show a confirm dialog. */
-void ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...) {
+void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...) {
 
   va_list ap;
   XSetWindowAttributes attrs;
@@ -484,13 +496,13 @@ void DrawButtons(void) {
 #else /* DISABLE_CONFIRM */
 
 /** Process an event on a dialog window. */
-char ProcessDialogEvent(const XEvent *event)
+char Dialogs::ProcessDialogEvent(const XEvent *event)
 {
   return 0;
 }
 
 /** Show a confirm dialog. */
-void ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...)
+void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...)
 {
   Assert(action);
   (action)(np);

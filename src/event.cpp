@@ -254,7 +254,7 @@ char _WaitForEvent(XEvent *event) {
 			handled = TrayType::ProcessTrayEvent(event);
 		}
 		if (!handled) {
-			handled = ProcessDialogEvent(event);
+			handled = Dialogs::ProcessDialogEvent(event);
 		}
 		if (!handled) {
 			handled = SwallowNode::ProcessSwallowEvent(event);

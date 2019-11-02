@@ -423,7 +423,7 @@ void Initialize(void) {
   ILog(Commands::InitializeCommands);
   ILog(Cursors::InitializeCursors);
 #ifndef DISABLE_CONFIRM
-  ILog(InitializeDialogs);
+  ILog(Dialogs::InitializeDialogs);
 #endif
   ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
   ILog(Fonts::InitializeFonts);
@@ -473,7 +473,7 @@ void Startup(void) {
   Places::StartupPlacement();
 
 #  ifndef DISABLE_CONFIRM
-  StartupDialogs();
+  Dialogs::StartupDialogs();
 #  endif
   StartupPopup();
 
@@ -514,7 +514,7 @@ void Shutdown(void) {
   ShutdownSwallow();
 
 #  ifndef DISABLE_CONFIRM
-  ShutdownDialogs();
+  Dialogs::ShutdownDialogs();
 #  endif
   ShutdownPopup();
   Binding::ShutdownBindings();
@@ -552,7 +552,7 @@ void Destroy(void) {
   Commands::DestroyCommands();
   Cursors::DestroyCursors();
 #ifndef DISABLE_CONFIRM
-  DestroyDialogs();
+  Dialogs::DestroyDialogs();
 #endif
   DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
   Fonts::DestroyFonts();
