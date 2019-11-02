@@ -114,7 +114,7 @@ void Battery::Draw() {
     return; //no change
   }
 
-  JXSetForeground(display, rootGC, colors[COLOR_CLOCK_BG1]);
+  JXSetForeground(display, rootGC, Colors::colors[COLOR_CLOCK_BG1]);
   JXFillRectangle(display, this->getPixmap(), rootGC, 0, 0, this->getWidth(), this->getHeight());
 
   static char buf[80];

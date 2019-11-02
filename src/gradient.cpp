@@ -68,7 +68,7 @@ void DrawHorizontalGradient(Drawable d, GC g,
       colors[0].green = (unsigned short)(green >> shift);
       colors[0].blue = (unsigned short)(blue >> shift);
 
-      GetColor(&colors[0]);
+      Colors::GetColor(&colors[0]);
 
       /* Draw the line. */
       JXSetForeground(display, g, colors[0].pixel);

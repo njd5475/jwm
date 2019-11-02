@@ -1136,6 +1136,13 @@ void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
   this->setHeight(newHeight);
 }
 
+void ClientNode::InitializeClients() {
+
+}
+
+void ClientNode::DestroyClients() {
+
+}
 
 
 /** Set a client's full screen state. */
@@ -2016,7 +2023,7 @@ void ClientNode::ReparentClient() {
 		attr.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask;
 
 		attrMask |= CWBackPixel;
-		attr.background_pixel = colors[COLOR_TITLE_BG2];
+		attr.background_pixel = Colors::colors[COLOR_TITLE_BG2];
 
 		attrMask |= CWBorderPixel;
 		attr.border_pixel = 0;

@@ -78,39 +78,43 @@ typedef unsigned char ColorType;
 #define COLOR_CLOCK_BG2                60
 #define COLOR_COUNT                    61
 
-extern unsigned long colors[COLOR_COUNT];
+class Colors {
+public:
+static unsigned long colors[COLOR_COUNT];
 
 /*@{*/
-#define InitializeColors() (void)(0)
-void StartupColors(void);
-void ShutdownColors(void);
-void DestroyColors(void);
+static void InitializeColors();
+static void StartupColors();
+static void ShutdownColors();
+static void DestroyColors();
 /*@}*/
 
 /** Set the color to use for a component.
  * @param c The component whose color to set.
  * @param value The color to use.
  */
-void SetColor(ColorType c, const char *value);
+static void SetColor(ColorType c, const char *value);
 
 /** Parse a color.
  * @param value The color name or hex value.
  * @param c The color return value (with pixel and components filled).
  * @return 1 on success, 0 on failure.
  */
-char ParseColor(const char *value, XColor *c);
+static char ParseColor(const char *value, XColor *c);
 
 /** Get the color pixel from red, green, and blue values.
  * @param c The structure containing the rgb values and the pixel value.
  */
-void GetColor(XColor *c);
+static void GetColor(XColor *c);
 
 #ifdef USE_XFT
 /** Get an XFT color.
  * @param type The color whose XFT color to get.
  * @return The XFT color.
  */
-XftColor *GetXftColor(ColorType type);
+static XftColor *GetXftColor(ColorType type);
 #endif
+
+};
 
 #endif /* COLOR_H */

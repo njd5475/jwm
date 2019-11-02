@@ -700,7 +700,7 @@ ScaledIconNode *GetScaledIcon(IconNode *icon, long fg,
             color.green |= color.green << 8;
             color.blue = data[index + 3];
             color.blue |= color.blue << 8;
-            GetColor(&color);
+            Colors::GetColor(&color);
             XPutPixel(image, x, y, color.pixel);
             if(data[index] >= 128) {
                points[pindex].x = x;

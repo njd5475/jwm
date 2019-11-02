@@ -234,7 +234,7 @@ void LoadGradientBackground(BackgroundNode *bp) {
     temp = AllocateStack(len + 1);
     memcpy(temp, bp->value, len);
     temp[len] = 0;
-    ParseColor(temp, &color1);
+    Colors::ParseColor(temp, &color1);
     ReleaseStack(temp);
 
     /* Get the second color. */
@@ -242,13 +242,13 @@ void LoadGradientBackground(BackgroundNode *bp) {
     temp = AllocateStack(len + 1);
     memcpy(temp, sep + 1, len);
     temp[len] = 0;
-    ParseColor(temp, &color2);
+    Colors::ParseColor(temp, &color2);
     ReleaseStack(temp);
 
   } else {
 
     /* Solid background. */
-    ParseColor(bp->value, &color1);
+    Colors::ParseColor(bp->value, &color1);
     color2.pixel = color1.pixel;
 
   }

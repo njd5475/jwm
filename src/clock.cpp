@@ -189,13 +189,13 @@ void ClockType::DrawClock(const TimeType *now) {
   }
 
   /* Clear the area. */
-  if (colors[COLOR_CLOCK_BG1] == colors[COLOR_CLOCK_BG2]) {
-    JXSetForeground(display, rootGC, colors[COLOR_CLOCK_BG1]);
+  if (Colors::colors[COLOR_CLOCK_BG1] == Colors::colors[COLOR_CLOCK_BG2]) {
+    JXSetForeground(display, rootGC, Colors::colors[COLOR_CLOCK_BG1]);
     JXFillRectangle(display, this->getPixmap(), rootGC, 0, 0, this->getWidth(),
         this->getHeight());
   } else {
-    DrawHorizontalGradient(this->getPixmap(), rootGC, colors[COLOR_CLOCK_BG1],
-        colors[COLOR_CLOCK_BG2], 0, 0, this->getWidth(), this->getHeight());
+    DrawHorizontalGradient(this->getPixmap(), rootGC, Colors::colors[COLOR_CLOCK_BG1],
+    		Colors::colors[COLOR_CLOCK_BG2], 0, 0, this->getWidth(), this->getHeight());
   }
 
   /* Determine if the clock is the right size. */

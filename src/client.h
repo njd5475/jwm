@@ -597,10 +597,10 @@ public:
 	static ClientNode *GetActiveClient(void);
 
 	/*@{*/
-#define InitializeClients()   (void)(0)
-	void StartupClients(void);
-	void ShutdownClients(void);
-#define DestroyClients()      (void)(0)
+	static void InitializeClients();
+	static void StartupClients(void);
+	static void ShutdownClients(void);
+    static void DestroyClients();
 	/*@}*/
 
 	/** Add a window to management.

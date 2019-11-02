@@ -426,11 +426,11 @@ void PagerType::DrawPager() {
   deskHeight = this->deskHeight;
 
   /* Draw the background. */
-  JXSetForeground(display, rootGC, colors[COLOR_PAGER_BG]);
+  JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_BG]);
   JXFillRectangle(display, buffer, rootGC, 0, 0, width, height);
 
   /* Highlight the current desktop. */
-  JXSetForeground(display, rootGC, colors[COLOR_PAGER_ACTIVE_BG]);
+  JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_ACTIVE_BG]);
   dx = currentDesktop % settings.desktopWidth;
   dy = currentDesktop / settings.desktopWidth;
   JXFillRectangle(display, buffer, rootGC, dx * (deskWidth + 1), dy * (deskHeight + 1), deskWidth, deskHeight);
@@ -462,7 +462,7 @@ void PagerType::DrawPager() {
   }
 
   /* Draw the desktop dividers. */
-  JXSetForeground(display, rootGC, colors[COLOR_PAGER_OUTLINE]);
+  JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_OUTLINE]);
   for (x = 1; x < settings.desktopHeight; x++) {
     JXDrawLine(display, buffer, rootGC, 0, (deskHeight + 1) * x - 1, width, (deskHeight + 1) * x - 1);
   }
@@ -569,7 +569,7 @@ void PagerType::DrawPagerClient(ClientNode *np) {
   y += offy;
 
   /* Draw the client outline. */
-  JXSetForeground(display, rootGC, colors[COLOR_PAGER_OUTLINE]);
+  JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_OUTLINE]);
   JXDrawRectangle(display, this->getPixmap(), rootGC, x, y, width, height);
 
   /* Fill the client if there's room. */
@@ -583,7 +583,7 @@ void PagerType::DrawPagerClient(ClientNode *np) {
     } else {
       fillColor = COLOR_PAGER_FG;
     }
-    JXSetForeground(display, rootGC, colors[fillColor]);
+    JXSetForeground(display, rootGC, Colors::colors[fillColor]);
     JXFillRectangle(display, this->getPixmap(), rootGC, x + 1, y + 1, width - 1, height - 1);
   }
 

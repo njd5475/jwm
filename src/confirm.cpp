@@ -280,7 +280,7 @@ void ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...) {
       rootDepth);
 
   /* Create the window. */
-  attrs.background_pixel = colors[COLOR_MENU_BG];
+  attrs.background_pixel = Colors::colors[COLOR_MENU_BG];
   attrs.event_mask = ButtonPressMask
   | ButtonReleaseMask
   | KeyPressMask
@@ -417,7 +417,7 @@ void DrawDialog(void) {
   Assert(dialog);
 
   /* Clear the dialog. */
-  JXSetForeground(display, rootGC, colors[COLOR_MENU_BG]);
+  JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_BG]);
   JXFillRectangle(display, dialog->pmap, rootGC, 0, 0, dialog->width, dialog->height);
 
   /* Draw the message. */

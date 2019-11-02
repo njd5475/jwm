@@ -400,7 +400,7 @@ void RenderString(Drawable d, FontType font, ColorType color,
    /* Display the string. */
 #ifdef USE_XFT
    JXftDrawSetClip(xd, renderRegion);
-   JXftDrawStringUtf8(xd, GetXftColor(color), fonts[font],
+   JXftDrawStringUtf8(xd, Colors::GetXftColor(color), fonts[font],
                       x, y + fonts[font]->ascent,
                       (const unsigned char*)output, len);
    JXftDrawChange(xd, rootWindow);

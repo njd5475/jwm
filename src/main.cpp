@@ -417,9 +417,9 @@ void HandleChild(int sig) {
 
 void Initialize(void) {
   ILog(Binding::InitializeBindings);
-  ILog(InitializeClients);
+  ILog(ClientNode::InitializeClients);
   ILog(Battery::InitializeBattery);
-  ILog(InitializeColors);
+  ILog(Colors::InitializeColors);
   ILog(InitializeCommands);
   ILog(InitializeCursors);
 #ifndef DISABLE_CONFIRM
@@ -457,7 +457,7 @@ void Startup(void) {
   StartupScreens();
 
   StartupGroups();
-  StartupColors();
+  Colors::StartupColors();
   StartupFonts();
   StartupIcons();
   Cursors::StartupCursors();
@@ -529,7 +529,7 @@ void Shutdown(void) {
   ShutdownIcons();
   Cursors::ShutdownCursors();
   ShutdownFonts();
-  ShutdownColors();
+  Colors::ShutdownColors();
   ShutdownGroups();
 
   Places::ShutdownPlacement();
@@ -546,9 +546,9 @@ void Shutdown(void) {
  * Note that it is possible for this to be called more than once.
  */
 void Destroy(void) {
-  DestroyClients();
+  ClientNode::DestroyClients();
   Battery::DestroyBattery();
-  DestroyColors();
+  Colors::DestroyColors();
   DestroyCommands();
   DestroyCursors();
 #ifndef DISABLE_CONFIRM

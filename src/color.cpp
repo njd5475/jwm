@@ -20,7 +20,7 @@ typedef struct {
    unsigned int value;
 } DefaultColorNode;
 
-unsigned long colors[COLOR_COUNT];
+unsigned long Colors::colors[COLOR_COUNT];
 static unsigned long rgbColors[COLOR_COUNT];
 
 /* Map a linear 8-bit RGB space to pixel values. */
@@ -172,7 +172,7 @@ static void LightenColor(ColorType oldColor, ColorType newColor);
 static void DarkenColor(ColorType oldColor, ColorType newColor);
 
 /** Startup color support. */
-void StartupColors(void)
+void Colors::StartupColors(void)
 {
    unsigned int x;
    XColor c;
@@ -249,11 +249,15 @@ void StartupColors(void)
       }
    }
 
-   DestroyColors();
+   Colors::DestroyColors();
+}
+
+void Colors::InitializeColors() {
+
 }
 
 /** Shutdown color support. */
-void ShutdownColors(void)
+void Colors::ShutdownColors(void)
 {
    unsigned x;
 
@@ -276,9 +280,9 @@ void ShutdownColors(void)
       for(x = 0; x < COLOR_COUNT; x++) {
          if(rgbColors[x] != ULONG_MAX) {
             unsigned y;
-            JXFreeColors(display, rootColormap, &colors[x], 1, 0);
+            JXFreeColors(display, rootColormap, &Colors::colors[x], 1, 0);
             for(y = x; y < COLOR_COUNT; y++) {
-               if(colors[y] == colors[x]) {
+               if(Colors::colors[y] == Colors::colors[x]) {
                   rgbColors[y] = ULONG_MAX;
                }
             }
@@ -291,7 +295,7 @@ void ShutdownColors(void)
 }
 
 /** Release color data. */
-void DestroyColors(void)
+void Colors::DestroyColors(void)
 {
    if(names) {
       unsigned int x;
@@ -333,7 +337,7 @@ unsigned long GetRGBFromXColor(const XColor *c)
 }
 
 /** Set the color to use for a component. */
-void SetColor(ColorType c, const char *value)
+void Colors::SetColor(ColorType c, const char *value)
 {
    if(JUNLIKELY(!value)) {
       Warning("empty color tag");
@@ -382,10 +386,10 @@ char ParseColorToRGB(const char *value, XColor *c)
 }
 
 /** Parse a color for a component. */
-char ParseColor(const char *value, XColor *c)
+char Colors::ParseColor(const char *value, XColor *c)
 {
    if(JLIKELY(ParseColorToRGB(value, c))) {
-      GetColor(c);
+      Colors::GetColor(c);
       return 1;
    } else {
       return 0;
@@ -466,7 +470,7 @@ void AllocateColor(ColorType type, XColor *c)
       /* First see if we already know about this color. */
       for(i = 0; i < COLOR_COUNT; i++) {
          if(i != type && rgbColors[i] == rgbColors[type]) {
-            colors[type] = colors[i];
+            Colors::colors[type] = Colors::colors[i];
             return;
          }
       }
@@ -475,11 +479,11 @@ void AllocateColor(ColorType type, XColor *c)
       JXAllocColor(display, rootColormap, c);
       break;
    }
-   colors[type] = c->pixel;
+   Colors::colors[type] = c->pixel;
 }
 
 /** Compute the pixel value from RGB components. */
-void GetColor(XColor *c)
+void Colors::GetColor(XColor *c)
 {
    switch(rootVisual->c_class) {
    case DirectColor:
@@ -494,7 +498,7 @@ void GetColor(XColor *c)
 
 /** Get an XFT color for the specified component. */
 #ifdef USE_XFT
-XftColor *GetXftColor(ColorType type)
+XftColor *Colors::GetXftColor(ColorType type)
 {
 
    if(!xftColors[type]) {

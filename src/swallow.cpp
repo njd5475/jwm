@@ -187,7 +187,7 @@ char SwallowNode::CheckSwallowMap(Window win) {
       /* Swallow the window. */
       JXSelectInput(display, win, StructureNotifyMask | ResizeRedirectMask);
       JXAddToSaveSet(display, win);
-      JXSetWindowBorder(display, win, colors[COLOR_TRAY_BG2]);
+      JXSetWindowBorder(display, win, Colors::colors[COLOR_TRAY_BG2]);
       JXReparentWindow(display, win, np->getTray()->getWindow(), 0, 0);
       JXMapRaised(display, win);
       np->window = win;

@@ -892,7 +892,7 @@ void ParseWindowStyle(const TokenNode *tp) {
       ParseActiveWindowStyle(np);
       break;
     case TOK_FOREGROUND:
-      SetColor(COLOR_TITLE_FG, np->value);
+      Colors::SetColor(COLOR_TITLE_FG, np->value);
       break;
     case TOK_BACKGROUND:
       ParseGradient(np->value, COLOR_TITLE_BG1, COLOR_TITLE_BG2);
@@ -920,7 +920,7 @@ void ParseActiveWindowStyle(const TokenNode *tp) {
   for (np = tp->subnodeHead; np; np = np->next) {
     switch (np->type) {
     case TOK_FOREGROUND:
-      SetColor(COLOR_TITLE_ACTIVE_FG, np->value);
+      Colors::SetColor(COLOR_TITLE_ACTIVE_FG, np->value);
       break;
     case TOK_BACKGROUND:
       ParseGradient(np->value,
@@ -1080,7 +1080,7 @@ void ParseTrayStyle(const TokenNode *tp, FontType font, ColorType fg) {
       ParseGradient(np->value, bg1, bg2);
       break;
     case TOK_FOREGROUND:
-      SetColor(fg, np->value);
+      Colors::SetColor(fg, np->value);
       break;
     case TOK_OUTLINE:
       ParseGradient(np->value, down, up);
@@ -1107,13 +1107,13 @@ void ParseActive(const TokenNode *tp, ColorType fg, ColorType bg1, ColorType bg2
     switch (np->type) {
     case TOK_BACKGROUND:
       if (bg1 == bg2) {
-        SetColor(bg1, np->value);
+        Colors::SetColor(bg1, np->value);
       } else {
         ParseGradient(np->value, bg1, bg2);
       }
       break;
     case TOK_FOREGROUND:
-      SetColor(fg, np->value);
+      Colors::SetColor(fg, np->value);
       break;
     case TOK_OUTLINE:
       if (up != COLOR_COUNT) {
@@ -1282,7 +1282,7 @@ void ParseTrayButtonStyle(const TokenNode *tp) {
       ParseGradient(np->value, COLOR_TRAYBUTTON_BG1, COLOR_TRAYBUTTON_BG2);
       break;
     case TOK_FOREGROUND:
-      SetColor(COLOR_TRAYBUTTON_FG, np->value);
+      Colors::SetColor(COLOR_TRAYBUTTON_FG, np->value);
       break;
     case TOK_OUTLINE:
       ParseGradient(np->value, COLOR_TRAYBUTTON_DOWN, COLOR_TRAYBUTTON_UP);
@@ -1541,13 +1541,13 @@ void ParsePagerStyle(const TokenNode *tp) {
   for (np = tp->subnodeHead; np; np = np->next) {
     switch (np->type) {
     case TOK_OUTLINE:
-      SetColor(COLOR_PAGER_OUTLINE, np->value);
+      Colors::SetColor(COLOR_PAGER_OUTLINE, np->value);
       break;
     case TOK_FOREGROUND:
-      SetColor(COLOR_PAGER_FG, np->value);
+      Colors::SetColor(COLOR_PAGER_FG, np->value);
       break;
     case TOK_BACKGROUND:
-      SetColor(COLOR_PAGER_BG, np->value);
+      Colors::SetColor(COLOR_PAGER_BG, np->value);
       break;
     case TOK_ACTIVE:
       ParseActive(np, COLOR_PAGER_ACTIVE_FG,
@@ -1558,7 +1558,7 @@ void ParsePagerStyle(const TokenNode *tp) {
       SetFont(FONT_PAGER, np->value);
       break;
     case TOK_TEXT:
-      SetColor(COLOR_PAGER_TEXT, np->value);
+      Colors::SetColor(COLOR_PAGER_TEXT, np->value);
       break;
     default:
       InvalidTag(np, TOK_PAGERSTYLE);
@@ -1574,7 +1574,7 @@ void ParseClockStyle(const TokenNode *tp) {
   for (np = tp->subnodeHead; np; np = np->next) {
     switch (np->type) {
     case TOK_FOREGROUND:
-      SetColor(COLOR_CLOCK_FG, np->value);
+      Colors::SetColor(COLOR_CLOCK_FG, np->value);
       break;
     case TOK_BACKGROUND:
       ParseGradient(np->value, COLOR_CLOCK_BG1, COLOR_CLOCK_BG2);
@@ -1623,13 +1623,13 @@ void ParsePopupStyle(const TokenNode *tp) {
       SetFont(FONT_POPUP, np->value);
       break;
     case TOK_FOREGROUND:
-      SetColor(COLOR_POPUP_FG, np->value);
+      Colors::SetColor(COLOR_POPUP_FG, np->value);
       break;
     case TOK_BACKGROUND:
-      SetColor(COLOR_POPUP_BG, np->value);
+      Colors::SetColor(COLOR_POPUP_BG, np->value);
       break;
     case TOK_OUTLINE:
-      SetColor(COLOR_POPUP_OUTLINE, np->value);
+      Colors::SetColor(COLOR_POPUP_OUTLINE, np->value);
       break;
     default:
       InvalidTag(np, TOK_POPUPSTYLE);
@@ -1650,10 +1650,10 @@ void ParseMenuStyle(const TokenNode *tp) {
       SetFont(FONT_MENU, np->value);
       break;
     case TOK_FOREGROUND:
-      SetColor(COLOR_MENU_FG, np->value);
+      Colors::SetColor(COLOR_MENU_FG, np->value);
       break;
     case TOK_BACKGROUND:
-      SetColor(COLOR_MENU_BG, np->value);
+      Colors::SetColor(COLOR_MENU_BG, np->value);
       break;
     case TOK_ACTIVE:
       ParseActive(np, COLOR_MENU_ACTIVE_FG,
@@ -1774,8 +1774,8 @@ void ParseGradient(const char *value, ColorType a, ColorType b) {
   if (!sep) {
 
     /* Only one color given - use the same color for both. */
-    SetColor(a, value);
-    SetColor(b, value);
+    Colors::SetColor(a, value);
+    Colors::SetColor(b, value);
 
   } else {
 
@@ -1786,7 +1786,7 @@ void ParseGradient(const char *value, ColorType a, ColorType b) {
     temp = AllocateStack(len + 1);
     memcpy(temp, value, len);
     temp[len] = 0;
-    SetColor(a, temp);
+    Colors::SetColor(a, temp);
     ReleaseStack(temp);
 
     /* Get the second color. */
@@ -1794,7 +1794,7 @@ void ParseGradient(const char *value, ColorType a, ColorType b) {
     temp = AllocateStack(len + 1);
     memcpy(temp, sep + 1, len);
     temp[len] = 0;
-    SetColor(b, temp);
+    Colors::SetColor(b, temp);
     ReleaseStack(temp);
 
   }

@@ -535,7 +535,7 @@ void Menus::MapMenu(Menu *menu, int x, int y, char keyboard)
    attr.event_mask = ExposureMask;
 
    attrMask |= CWBackPixel;
-   attr.background_pixel = colors[COLOR_MENU_BG];
+   attr.background_pixel = Colors::colors[COLOR_MENU_BG];
 
    attrMask |= CWSaveUnder;
    attr.save_under = True;
@@ -575,24 +575,24 @@ void Menus::DrawMenu(Menu *menu)
    MenuItem *np;
    int x;
 
-   JXSetForeground(display, rootGC, colors[COLOR_MENU_BG]);
+   JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_BG]);
    JXFillRectangle(display, menu->pixmap, rootGC, 0, 0,
                    menu->width, menu->height);
 
    if(settings.menuDecorations == DECO_MOTIF) {
-      JXSetForeground(display, rootGC, colors[COLOR_MENU_UP]);
+      JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_UP]);
       JXDrawLine(display, menu->pixmap, rootGC,
                  0, 0, menu->width, 0);
       JXDrawLine(display, menu->pixmap, rootGC,
                  0, 0, 0, menu->height);
 
-      JXSetForeground(display, rootGC, colors[COLOR_MENU_DOWN]);
+      JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_DOWN]);
       JXDrawLine(display, menu->pixmap, rootGC,
                  0, menu->height - 1, menu->width, menu->height - 1);
       JXDrawLine(display, menu->pixmap, rootGC,
                  menu->width - 1, 0, menu->width - 1, menu->height);
    } else {
-      JXSetForeground(display, rootGC, colors[COLOR_MENU_DOWN]);
+      JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_DOWN]);
       JXDrawRectangle(display, menu->pixmap, rootGC,
                       0, 0, menu->width - 1, menu->height - 1);
    }
@@ -859,7 +859,7 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index)
          int x = menu->width - 2 * asize - 1;
          int i;
 
-         JXSetForeground(display, rootGC, colors[fg]);
+         JXSetForeground(display, rootGC, Colors::colors[fg]);
          for(i = 0; i < asize; i++) {
             const int y1 = y - asize + i;
             const int y2 = y + asize - i;
@@ -872,16 +872,16 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index)
 
    } else {
       if(settings.menuDecorations == DECO_MOTIF) {
-         JXSetForeground(display, rootGC, colors[COLOR_MENU_DOWN]);
+         JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_DOWN]);
          JXDrawLine(display, menu->pixmap, rootGC, 4,
                     menu->offsets[index] + 2, menu->width - 6,
                     menu->offsets[index] + 2);
-         JXSetForeground(display, rootGC, colors[COLOR_MENU_UP]);
+         JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_UP]);
          JXDrawLine(display, menu->pixmap, rootGC, 4,
                     menu->offsets[index] + 3, menu->width - 6,
                     menu->offsets[index] + 3);
       } else {
-         JXSetForeground(display, rootGC, colors[COLOR_MENU_FG]);
+         JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_FG]);
          JXDrawLine(display, menu->pixmap, rootGC, 4,
                     menu->offsets[index] + 2, menu->width - 6,
                     menu->offsets[index] + 2);
