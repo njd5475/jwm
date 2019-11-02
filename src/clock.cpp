@@ -22,7 +22,7 @@
 #include "event.h"
 #include "action.h"
 
-static ClockType *ClockType::clocks;
+ClockType *ClockType::clocks = NULL;
 
 /** Initialize clocks. */
 void ClockType::InitializeClock(void) {
@@ -31,7 +31,7 @@ void ClockType::InitializeClock(void) {
 
 /** Start clock(s). */
 void ClockType::StartupClock(void) {
-	ClockType *clk;
+	TrayComponentType *clk;
 	for (clk = clocks; clk; clk = clk->getNext()) {
 		int newWidth = clk->getWidth();
 		int newHeight = clk->getHeight();
@@ -63,7 +63,7 @@ void ClockType::DestroyClock(void) {
 	}
 }
 
-const char *ClockType::DEFAULT_FORMAT;
+const char *ClockType::DEFAULT_FORMAT  = "%I:%M %p";
 
 /** Create a clock tray component. */
 ClockType::ClockType(const char *format, const char *zone, int width,

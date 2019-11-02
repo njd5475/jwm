@@ -58,64 +58,67 @@ typedef unsigned char OptionType;
 #define OPTION_WIDTH          40    /**< Initial window width. */
 #define OPTION_HEIGHT         41    /**< Initial window height. */
 
-/*@{*/
-#define InitializeGroups() (void)(0)
-#define StartupGroups()    (void)(0)
-#define ShutdownGroups()   (void)(0)
-void DestroyGroups(void);
-/*@}*/
+class Groups {
+public:
+	/*@{*/
+	static void InitializeGroups() {}
+	static void StartupGroups() {}
+	static void ShutdownGroups() {}
+	static void DestroyGroups(void);
+	/*@}*/
 
-/** Create an empty group.
- * @return An empty group.
- */
-struct GroupType *CreateGroup(void);
+	/** Create an empty group.
+	 * @return An empty group.
+	 */
+	static struct GroupType *CreateGroup(void);
 
-/** Add a window class to a group.
- * @param gp The group.
- * @param pattern A pattern to match with the window class.
- */
-void AddGroupClass(struct GroupType *gp, const char *pattern);
+	/** Add a window class to a group.
+	 * @param gp The group.
+	 * @param pattern A pattern to match with the window class.
+	 */
+	static void AddGroupClass(struct GroupType *gp, const char *pattern);
 
-/** Add a window name to a group.
- * @param gp The group.
- * @param pattern A pattern to match with the window name.
- */
-void AddGroupName(struct GroupType *gp, const char *pattern);
+	/** Add a window name to a group.
+	 * @param gp The group.
+	 * @param pattern A pattern to match with the window name.
+	 */
+	static void AddGroupName(struct GroupType *gp, const char *pattern);
 
-/** Add a group option that doesn't take a value.
- * @param gp The group.
- * @param option The option.
- */
-void AddGroupOption(struct GroupType *gp, OptionType option);
+	/** Add a group option that doesn't take a value.
+	 * @param gp The group.
+	 * @param option The option.
+	 */
+	static void AddGroupOption(struct GroupType *gp, OptionType option);
 
-/** Add a group option that takes a string.
- * @param gp The group.
- * @param option The option.
- * @param value The option value.
- */
-void AddGroupOptionString(struct GroupType *gp, OptionType option,
-                          const char *value);
+	/** Add a group option that takes a string.
+	 * @param gp The group.
+	 * @param option The option.
+	 * @param value The option value.
+	 */
+	static void AddGroupOptionString(struct GroupType *gp, OptionType option,
+			const char *value);
 
-/** Add a group option that takes an unsigned integer.
- * @param gp The group.
- * @param option The option.
- * @param value The option value.
- */
-void AddGroupOptionUnsigned(struct GroupType *gp, OptionType option,
-                            unsigned value);
+	/** Add a group option that takes an unsigned integer.
+	 * @param gp The group.
+	 * @param option The option.
+	 * @param value The option value.
+	 */
+	static void AddGroupOptionUnsigned(struct GroupType *gp, OptionType option,
+			unsigned value);
 
-/** Add a group option that takes a signed integer.
- * @param gp The group.
- * @param option The option.
- * @param value The option value.
- */
-void AddGroupOptionSigned(struct GroupType *gp, OptionType option,
-                          int value);
+	/** Add a group option that takes a signed integer.
+	 * @param gp The group.
+	 * @param option The option.
+	 * @param value The option value.
+	 */
+	static void AddGroupOptionSigned(struct GroupType *gp, OptionType option,
+			int value);
 
-/** Apply any matching groups to a client.
- * @param np The client.
- */
-void ApplyGroups(struct ClientNode *np);
+	/** Apply any matching groups to a client.
+	 * @param np The client.
+	 */
+	static void ApplyGroups(struct ClientNode *np);
+};
 
 #endif /* GROUP_H */
 

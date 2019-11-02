@@ -59,7 +59,7 @@ static void ApplyGroup(const GroupType *gp, ClientNode *np);
 static char Match(const char *pattern, const char *expression);
 
 /** Destroy group data. */
-void DestroyGroups(void) {
+void Groups::DestroyGroups(void) {
 	GroupType *gp;
 	while (groups) {
 		gp = groups->next;
@@ -95,7 +95,7 @@ void ReleaseOptionList(OptionListType *lp) {
 }
 
 /** Create an empty group. */
-GroupType* CreateGroup(void) {
+GroupType* Groups::CreateGroup(void) {
 	GroupType *tp;
 	tp = new GroupType;
 	tp->patterns = NULL;
@@ -106,7 +106,7 @@ GroupType* CreateGroup(void) {
 }
 
 /** Add a window class to a group. */
-void AddGroupClass(GroupType *gp, const char *pattern) {
+void Groups::AddGroupClass(GroupType *gp, const char *pattern) {
 	Assert(gp);
 	if (JLIKELY(pattern)) {
 		AddPattern(&gp->patterns, pattern, MATCH_CLASS);
@@ -116,7 +116,7 @@ void AddGroupClass(GroupType *gp, const char *pattern) {
 }
 
 /** Add a window name to a group. */
-void AddGroupName(GroupType *gp, const char *pattern) {
+void Groups::AddGroupName(GroupType *gp, const char *pattern) {
 	Assert(gp);
 	if (JLIKELY(pattern)) {
 		AddPattern(&gp->patterns, pattern, MATCH_NAME);
@@ -138,7 +138,7 @@ void AddPattern(PatternListType **lp, const char *pattern, MatchType match) {
 }
 
 /** Add an option to a group. */
-void AddGroupOption(GroupType *gp, OptionType option) {
+void Groups::AddGroupOption(GroupType *gp, OptionType option) {
 	OptionListType *lp;
 	lp = new OptionListType;
 	lp->option = option;
@@ -148,7 +148,7 @@ void AddGroupOption(GroupType *gp, OptionType option) {
 }
 
 /** Add an option (with a string) to a group. */
-void AddGroupOptionString(GroupType *gp, OptionType option, const char *value) {
+void Groups::AddGroupOptionString(GroupType *gp, OptionType option, const char *value) {
 	OptionListType *lp;
 	Assert(value);
 	lp = new OptionListType;
@@ -159,7 +159,7 @@ void AddGroupOptionString(GroupType *gp, OptionType option, const char *value) {
 }
 
 /** Add an option (with an unsigned integer) to a group. */
-void AddGroupOptionUnsigned(GroupType *gp, OptionType option, unsigned value) {
+void Groups::AddGroupOptionUnsigned(GroupType *gp, OptionType option, unsigned value) {
 	OptionListType *lp;
 	Assert(value);
 	lp = new OptionListType;
@@ -171,7 +171,7 @@ void AddGroupOptionUnsigned(GroupType *gp, OptionType option, unsigned value) {
 }
 
 /** Add an option (with a signed integer) to a group. */
-void AddGroupOptionSigned(GroupType *gp, OptionType option, int value) {
+void Groups::AddGroupOptionSigned(GroupType *gp, OptionType option, int value) {
 	OptionListType *lp;
 	Assert(value);
 	lp = new OptionListType;
@@ -183,7 +183,7 @@ void AddGroupOptionSigned(GroupType *gp, OptionType option, int value) {
 }
 
 /** Apply groups to a client. */
-void ApplyGroups(ClientNode *np) {
+void Groups::ApplyGroups(ClientNode *np) {
 	PatternListType *lp;
 	GroupType *gp;
 	char hasClass;

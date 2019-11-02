@@ -1731,15 +1731,15 @@ void ParseGroup(const TokenNode *tp) {
 
 	Assert(tp);
 
-	group = CreateGroup();
+	group = Groups::CreateGroup();
 
 	for (np = tp->subnodeHead; np; np = np->next) {
 		switch (np->type) {
 		case TOK_CLASS:
-			AddGroupClass(group, np->value);
+			Groups::AddGroupClass(group, np->value);
 			break;
 		case TOK_NAME:
-			AddGroupName(group, np->value);
+			Groups::AddGroupName(group, np->value);
 			break;
 		case TOK_OPTION:
 			ParseGroupOption(np, group, np->value);
@@ -1764,34 +1764,34 @@ void ParseGroupOption(const TokenNode *tp, struct GroupType *group,
 	/* Look up the option in the option map using binary search. */
 	x = FindValue(OPTION_MAP, OPTION_MAP_COUNT, option);
 	if (x >= 0) {
-		AddGroupOption(group, (OptionType) x);
+		Groups::AddGroupOption(group, (OptionType) x);
 		return;
 	}
 
 	/* These options have arguments and so we handled them separately. */
 	if (!strncmp(option, "layer:", 6)) {
 		const WinLayerType layer = ParseLayer(tp, option + 6);
-		AddGroupOptionUnsigned(group, OPTION_LAYER, layer);
+		Groups::AddGroupOptionUnsigned(group, OPTION_LAYER, layer);
 	} else if (!strncmp(option, "desktop:", 8)) {
 		const unsigned desktop = (unsigned) atoi(option + 8);
-		AddGroupOptionUnsigned(group, OPTION_DESKTOP, desktop);
+		Groups::AddGroupOptionUnsigned(group, OPTION_DESKTOP, desktop);
 	} else if (!strncmp(option, "icon:", 5)) {
-		AddGroupOptionString(group, OPTION_ICON, option + 5);
+		Groups::AddGroupOptionString(group, OPTION_ICON, option + 5);
 	} else if (!strncmp(option, "opacity:", 8)) {
 		const unsigned opacity = ParseOpacity(tp, option + 8);
-		AddGroupOptionUnsigned(group, OPTION_OPACITY, opacity);
+		Groups::AddGroupOptionUnsigned(group, OPTION_OPACITY, opacity);
 	} else if (!strncmp(option, "x:", 2)) {
 		const int x = atoi(option + 2);
-		AddGroupOptionSigned(group, OPTION_X, x);
+		Groups::AddGroupOptionSigned(group, OPTION_X, x);
 	} else if (!strncmp(option, "y:", 2)) {
 		const int y = atoi(option + 2);
-		AddGroupOptionSigned(group, OPTION_Y, y);
+		Groups::AddGroupOptionSigned(group, OPTION_Y, y);
 	} else if (!strncmp(option, "width:", 6)) {
 		const unsigned width = (unsigned) atoi(option + 6);
-		AddGroupOptionUnsigned(group, OPTION_WIDTH, width);
+		Groups::AddGroupOptionUnsigned(group, OPTION_WIDTH, width);
 	} else if (!strncmp(option, "height:", 7)) {
 		const unsigned height = (unsigned) atoi(option + 7);
-		AddGroupOptionUnsigned(group, OPTION_HEIGHT, height);
+		Groups::AddGroupOptionUnsigned(group, OPTION_HEIGHT, height);
 	} else {
 		ParseError(tp, _("invalid Group Option: %s"), option);
 	}

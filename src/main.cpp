@@ -427,7 +427,7 @@ void Initialize(void) {
 #endif
   ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
   ILog(Fonts::InitializeFonts);
-  ILog(InitializeGroups);
+  ILog(Groups::InitializeGroups);
   ILog(InitializeHints);
   ILog(InitializeIcons);
   ILog(PagerType::InitializePager);
@@ -456,7 +456,7 @@ void Startup(void) {
   StartupSettings();
   StartupScreens();
 
-  StartupGroups();
+  Groups::StartupGroups();
   Colors::StartupColors();
   Fonts::StartupFonts();
   StartupIcons();
@@ -530,7 +530,7 @@ void Shutdown(void) {
   Cursors::ShutdownCursors();
   Fonts::ShutdownFonts();
   Colors::ShutdownColors();
-  ShutdownGroups();
+  Groups::ShutdownGroups();
 
   Places::ShutdownPlacement();
   ShutdownHints();
@@ -556,7 +556,7 @@ void Destroy(void) {
 #endif
   DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
   Fonts::DestroyFonts();
-  DestroyGroups();
+  Groups::DestroyGroups();
   DestroyHints();
   DestroyIcons();
   Binding::DestroyBindings();

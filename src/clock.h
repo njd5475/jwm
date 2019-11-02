@@ -33,7 +33,7 @@ private:
   struct ClockType *next; /**< Next clock in the list. */
 
   /** The default time format to use. */
-  static const char *DEFAULT_FORMAT = "%I:%M %p";
+  static const char *DEFAULT_FORMAT;
 
   static ClockType *clocks;
 

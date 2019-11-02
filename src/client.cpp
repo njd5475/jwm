@@ -267,7 +267,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 		this->state.defaultLayer = LAYER_ABOVE;
 	}
 
-	ApplyGroups(this);
+	Groups::ApplyGroups(this);
 	if (this->icon == NULL) {
 		this->LoadIcon();
 	}
