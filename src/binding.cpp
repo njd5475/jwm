@@ -30,34 +30,34 @@
 #define MASK_MOD5    (1 << Mod5MapIndex)
 
 typedef struct ModifierNode {
-  char name;
-  unsigned int mask;
+	char name;
+	unsigned int mask;
 } ModifierNode;
 
-static const ModifierNode MODIFIERS[] =
-    { { 'C', MASK_CTRL }, { 'S', MASK_SHIFT }, { 'A', MASK_MOD1 }, { '1',
-        MASK_MOD1 }, { '2', MASK_MOD2 }, { '3', MASK_MOD3 }, { '4', MASK_MOD4 },
-        { '5', MASK_MOD5 } };
+static const ModifierNode MODIFIERS[] = { { 'C', MASK_CTRL },
+		{ 'S', MASK_SHIFT }, { 'A', MASK_MOD1 }, { '1',
+		MASK_MOD1 }, { '2', MASK_MOD2 }, { '3', MASK_MOD3 }, { '4', MASK_MOD4 },
+		{ '5', MASK_MOD5 } };
 static const unsigned MODIFIER_COUNT = ARRAY_LENGTH(MODIFIERS);
 
 typedef struct KeyNode {
 
-  /* These are filled in when the configuration file is parsed */
-  ActionType action;
-  MouseContextType context;
-  unsigned int state;
-  KeySym symbol;
-  char *command;
-  struct KeyNode *next;
+	/* These are filled in when the configuration file is parsed */
+	ActionType action;
+	MouseContextType context;
+	unsigned int state;
+	KeySym symbol;
+	char *command;
+	struct KeyNode *next;
 
-  /* This is filled in by StartupKeys if it isn't already set. */
-  int code;
+	/* This is filled in by StartupKeys if it isn't already set. */
+	int code;
 
 } KeyNode;
 
 typedef struct LockNode {
-  KeySym symbol;
-  unsigned int mask;
+	KeySym symbol;
+	unsigned int mask;
 } LockNode;
 
 static LockNode lockMods[] = { { XK_Caps_Lock, 0 }, { XK_Num_Lock, 0 } };
@@ -72,424 +72,426 @@ static void GrabKey(KeyNode *np, Window win);
 
 /** Initialize binding data. */
 void Binding::InitializeBindings(void) {
-  memset(bindings, 0, sizeof(bindings));
-  lockMask = 0;
+	memset(bindings, 0, sizeof(bindings));
+	lockMask = 0;
 }
 
 /** Startup bindings. */
 void Binding::StartupBindings(void) {
 
-  XModifierKeymap *modmap;
-  KeyNode *np;
-  TrayType *tp;
-  int x;
+	XModifierKeymap *modmap;
+	KeyNode *np;
+	TrayType *tp;
+	int x;
 
-  /* Get the keys that we don't care about (num lock, etc). */
-  modmap = JXGetModifierMapping(display);
-  for (x = 0; x < ARRAY_LENGTH(lockMods); x++) {
-    lockMods[x].mask = GetModifierMask(modmap, lockMods[x].symbol);
-    lockMask |= lockMods[x].mask;
-  }
-  JXFreeModifiermap(modmap);
-  lockMask |= Button1Mask | Button2Mask | Button3Mask | Button4Mask
-      | Button5Mask | (1 << 13) | (1 << 14);
+	/* Get the keys that we don't care about (num lock, etc). */
+	modmap = JXGetModifierMapping(display);
+	for (x = 0; x < ARRAY_LENGTH(lockMods); x++) {
+		lockMods[x].mask = GetModifierMask(modmap, lockMods[x].symbol);
+		lockMask |= lockMods[x].mask;
+	}
+	JXFreeModifiermap(modmap);
+	lockMask |= Button1Mask | Button2Mask | Button3Mask | Button4Mask
+			| Button5Mask | (1 << 13) | (1 << 14);
 
-  /* Look up and grab the keys. */
-  for (np = bindings[MC_NONE]; np; np = np->next) {
+	/* Look up and grab the keys. */
+	for (np = bindings[MC_NONE]; np; np = np->next) {
 
-    /* Determine the key code. */
-    if (!np->code) {
-      np->code = JXKeysymToKeycode(display, np->symbol);
-    }
+		/* Determine the key code. */
+		if (!np->code) {
+			np->code = JXKeysymToKeycode(display, np->symbol);
+		}
 
-    /* Grab the key if needed. */
-    if (ShouldGrab(np->action)) {
+		/* Grab the key if needed. */
+		if (ShouldGrab(np->action)) {
 
-      /* Grab on the root. */
-      GrabKey(np, rootWindow);
+			/* Grab on the root. */
+			GrabKey(np, rootWindow);
 
-      /* Grab on the trays. */
-      for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
-        GrabKey(np, tp->getWindow());
-      }
+			/* Grab on the trays. */
+			for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+				GrabKey(np, tp->getWindow());
+			}
 
-    }
+		}
 
-  }
+	}
 }
 
 /** Shutdown bindings. */
 void Binding::ShutdownBindings(void) {
-  ClientNode *np;
-  TrayType *tp;
-  unsigned int layer;
+	ClientNode *np;
+	TrayType *tp;
+	unsigned int layer;
 
-  /* Ungrab keys on client windows. */
-  for (layer = 0; layer < LAYER_COUNT; layer++) {
-    for (np = nodes[layer]; np; np = np->getNext()) {
-      JXUngrabKey(display, AnyKey, AnyModifier, np->getWindow());
-    }
-  }
+	/* Ungrab keys on client windows. */
+	for (layer = 0; layer < LAYER_COUNT; layer++) {
+		for (np = nodes[layer]; np; np = np->getNext()) {
+			JXUngrabKey(display, AnyKey, AnyModifier, np->getWindow());
+		}
+	}
 
-  /* Ungrab keys on trays, only really needed if we are restarting. */
-  for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
-    JXUngrabKey(display, AnyKey, AnyModifier, tp->getWindow());
-  }
+	/* Ungrab keys on trays, only really needed if we are restarting. */
+	for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+		JXUngrabKey(display, AnyKey, AnyModifier, tp->getWindow());
+	}
 
-  /* Ungrab keys on the root. */
-  JXUngrabKey(display, AnyKey, AnyModifier, rootWindow);
+	/* Ungrab keys on the root. */
+	JXUngrabKey(display, AnyKey, AnyModifier, rootWindow);
 }
 
 /** Destroy key data. */
 void Binding::DestroyBindings(void) {
-  unsigned i;
-  for (i = 0; i < MC_COUNT; i++) {
-    while (bindings[i]) {
-      KeyNode *np = bindings[i]->next;
-      if (bindings[i]->command) {
-        Release(bindings[i]->command);
-      }
-      Release(bindings[i]);
-      bindings[i] = np;
-    }
-  }
+	unsigned i;
+	for (i = 0; i < MC_COUNT; i++) {
+		while (bindings[i]) {
+			KeyNode *np = bindings[i]->next;
+			if (bindings[i]->command) {
+				Release(bindings[i]->command);
+			}
+			Release(bindings[i]);
+			bindings[i] = np;
+		}
+	}
 }
 
 /** Grab a key. */
 void GrabKey(KeyNode *np, Window win) {
-  unsigned int x;
-  unsigned int index, maxIndex;
-  unsigned int mask;
+	unsigned int x;
+	unsigned int index, maxIndex;
+	unsigned int mask;
 
-  /* Don't attempt to grab if there is nothing to grab. */
-  if (!np->code) {
-    return;
-  }
+	/* Don't attempt to grab if there is nothing to grab. */
+	if (!np->code) {
+		return;
+	}
 
-  /* Grab for each lock modifier. */
-  maxIndex = 1 << ARRAY_LENGTH(lockMods);
-  for (index = 0; index < maxIndex; index++) {
+	/* Grab for each lock modifier. */
+	maxIndex = 1 << ARRAY_LENGTH(lockMods);
+	for (index = 0; index < maxIndex; index++) {
 
-    /* Compute the modifier mask. */
-    mask = 0;
-    for (x = 0; x < ARRAY_LENGTH(lockMods); x++) {
-      if (index & (1 << x)) {
-        mask |= lockMods[x].mask;
-      }
-    }
-    mask |= np->state;
+		/* Compute the modifier mask. */
+		mask = 0;
+		for (x = 0; x < ARRAY_LENGTH(lockMods); x++) {
+			if (index & (1 << x)) {
+				mask |= lockMods[x].mask;
+			}
+		}
+		mask |= np->state;
 
-    /* Grab the key. */
-    JXGrabKey(display, np->code, mask, win, True, GrabModeAsync, GrabModeAsync);
+		/* Grab the key. */
+		JXGrabKey(display, np->code, mask, win, True, GrabModeAsync,
+				GrabModeAsync);
 
-  }
+	}
 
 }
 
 /** Get the key action from an event. */
 ActionType Binding::GetKey(MouseContextType context, unsigned state, int code) {
-  KeyNode *np;
-  ActionType result;
+	KeyNode *np;
+	ActionType result;
 
-  /* Remove modifiers we don't care about from the state. */
-  state &= ~lockMask;
+	/* Remove modifiers we don't care about from the state. */
+	state &= ~lockMask;
 
-  /* Mask off flags. */
-  context &= MC_MASK;
+	/* Mask off flags. */
+	context &= MC_MASK;
 
-  /* Loop looking for a matching key binding. */
-  for (np = bindings[context]; np; np = np->next) {
-    if (np->state == state && np->code == code) {
-      return np->action;
-    }
-  }
+	/* Loop looking for a matching key binding. */
+	for (np = bindings[context]; np; np = np->next) {
+		if (np->state == state && np->code == code) {
+			return np->action;
+		}
+	}
 
-  result.action = NONE;
-  result.extra = 0;
-  return result;
+	result.action = NONE;
+	result.extra = 0;
+	return result;
 }
 
 /** Run a command invoked from a key binding. */
 void Binding::RunKeyCommand(MouseContextType context, unsigned state,
-    int code) {
-  KeyNode *np;
+		int code) {
+	KeyNode *np;
 
-  /* Remove the lock key modifiers. */
-  state &= ~lockMask;
+	/* Remove the lock key modifiers. */
+	state &= ~lockMask;
 
-  /* Mask off flags. */
-  context &= MC_MASK;
+	/* Mask off flags. */
+	context &= MC_MASK;
 
-  for (np = bindings[context]; np; np = np->next) {
-    if (np->state == state && np->code == code) {
-      RunCommand(np->command);
-      return;
-    }
-  }
+	for (np = bindings[context]; np; np = np->next) {
+		if (np->state == state && np->code == code) {
+			Commands::RunCommand(np->command);
+			return;
+		}
+	}
 }
 
 /** Show a root menu caused by a key binding. */
 void Binding::ShowKeyMenu(MouseContextType context, unsigned state, int code) {
-  KeyNode *np;
+	KeyNode *np;
 
-  /* Remove the lock key modifiers. */
-  state &= ~lockMask;
+	/* Remove the lock key modifiers. */
+	state &= ~lockMask;
 
-  /* Mask off flags. */
-  context &= MC_MASK;
+	/* Mask off flags. */
+	context &= MC_MASK;
 
-  for (np = bindings[context]; np; np = np->next) {
-    if (np->state == state && np->code == code) {
-      const int button = GetRootMenuIndexFromString(np->command);
-      if (JLIKELY(button >= 0)) {
-        ShowRootMenu(button, -1, -1, 1);
-      }
-      return;
-    }
-  }
+	for (np = bindings[context]; np; np = np->next) {
+		if (np->state == state && np->code == code) {
+			const int button = GetRootMenuIndexFromString(np->command);
+			if (JLIKELY(button >= 0)) {
+				ShowRootMenu(button, -1, -1, 1);
+			}
+			return;
+		}
+	}
 }
 
 /** Determine if a key should be grabbed on client windows. */
 char ShouldGrab(ActionType action) {
-  switch (action.action) {
-  case NEXT:
-  case NEXTSTACK:
-  case PREV:
-  case PREVSTACK:
-  case CLOSE:
-  case MIN:
-  case MAX:
-  case SHADE:
-  case STICK:
-  case MOVE:
-  case RESIZE:
-  case ROOT:
-  case WIN:
-  case DESKTOP:
-  case RDESKTOP:
-  case LDESKTOP:
-  case DDESKTOP:
-  case UDESKTOP:
-  case SHOWDESK:
-  case SHOWTRAY:
-  case EXEC:
-  case RESTART:
-  case EXIT:
-  case FULLSCREEN:
-  case SEND:
-  case SENDR:
-  case SENDL:
-  case SENDU:
-  case SENDD:
-  case MAXTOP:
-  case MAXBOTTOM:
-  case MAXLEFT:
-  case MAXRIGHT:
-  case MAXV:
-  case MAXH:
-  case RESTORE:
-    return 1;
-  default:
-    return 0;
-  }
+	switch (action.action) {
+	case NEXT:
+	case NEXTSTACK:
+	case PREV:
+	case PREVSTACK:
+	case CLOSE:
+	case MIN:
+	case MAX:
+	case SHADE:
+	case STICK:
+	case MOVE:
+	case RESIZE:
+	case ROOT:
+	case WIN:
+	case DESKTOP:
+	case RDESKTOP:
+	case LDESKTOP:
+	case DDESKTOP:
+	case UDESKTOP:
+	case SHOWDESK:
+	case SHOWTRAY:
+	case EXEC:
+	case RESTART:
+	case EXIT:
+	case FULLSCREEN:
+	case SEND:
+	case SENDR:
+	case SENDL:
+	case SENDU:
+	case SENDD:
+	case MAXTOP:
+	case MAXBOTTOM:
+	case MAXLEFT:
+	case MAXRIGHT:
+	case MAXV:
+	case MAXH:
+	case RESTORE:
+		return 1;
+	default:
+		return 0;
+	}
 }
 
 /** Get the modifier mask for a key. */
 unsigned GetModifierMask(XModifierKeymap *modmap, KeySym key) {
 
-  KeyCode temp;
-  int x;
+	KeyCode temp;
+	int x;
 
-  temp = JXKeysymToKeycode(display, key);
-  if (JUNLIKELY(temp == 0)) {
-    Warning(_("Specified KeySym is not defined for any KeyCode"));
-  }
-  for (x = 0; x < 8 * modmap->max_keypermod; x++) {
-    if (modmap->modifiermap[x] == temp) {
-      return 1 << (x / modmap->max_keypermod);
-    }
-  }
+	temp = JXKeysymToKeycode(display, key);
+	if (JUNLIKELY(temp == 0)) {
+		Warning(_("Specified KeySym is not defined for any KeyCode"));
+	}
+	for (x = 0; x < 8 * modmap->max_keypermod; x++) {
+		if (modmap->modifiermap[x] == temp) {
+			return 1 << (x / modmap->max_keypermod);
+		}
+	}
 
-  Warning(_("modifier not found for keysym 0x%0x"), key);
+	Warning(_("modifier not found for keysym 0x%0x"), key);
 
-  return 0;
+	return 0;
 
 }
 
 /** Parse a modifier mask string. */
 unsigned int Binding::ParseModifierString(const char *str) {
-  unsigned mask = MASK_NONE;
-  unsigned x;
+	unsigned mask = MASK_NONE;
+	unsigned x;
 
-  if (!str) {
-    return mask;
-  }
+	if (!str) {
+		return mask;
+	}
 
-  for (x = 0; str[x]; x++) {
-    unsigned y;
-    char found = 0;
-    for (y = 0; y < MODIFIER_COUNT; y++) {
-      if (MODIFIERS[y].name == str[x]) {
-        mask |= MODIFIERS[y].mask;
-        found = 1;
-        break;
-      }
-    }
+	for (x = 0; str[x]; x++) {
+		unsigned y;
+		char found = 0;
+		for (y = 0; y < MODIFIER_COUNT; y++) {
+			if (MODIFIERS[y].name == str[x]) {
+				mask |= MODIFIERS[y].mask;
+				found = 1;
+				break;
+			}
+		}
 
-    if (JUNLIKELY(!found)) {
-      Warning(_("invalid modifier: \"%c\""), str[x]);
-    }
-  }
+		if (JUNLIKELY(!found)) {
+			Warning(_("invalid modifier: \"%c\""), str[x]);
+		}
+	}
 
-  return mask;
+	return mask;
 
 }
 
 /** Parse a key string. */
 KeySym ParseKeyString(const char *str) {
-  KeySym symbol;
-  symbol = JXStringToKeysym(str);
-  if (JUNLIKELY(symbol == NoSymbol)) {
-    Warning(_("invalid key symbol: \"%s\""), str);
-  }
-  return symbol;
+	KeySym symbol;
+	symbol = JXStringToKeysym(str);
+	if (JUNLIKELY(symbol == NoSymbol)) {
+		Warning(_("invalid key symbol: \"%s\""), str);
+	}
+	return symbol;
 }
 
 /** Remove a binding. */
 void RemoveDuplicates(KeyNode *bp) {
-  KeyNode **npp = &bindings[bp->context];
-  while (*npp) {
-    KeyNode *np = *npp;
-    if (np != bp && np->symbol == bp->symbol && np->state == bp->state
-        && np->code == bp->code) {
-      *npp = np->next;
-      if (np->command) {
-        Release(np->command);
-      }
-      Release(np);
-    } else {
-      npp = &np->next;
-    }
-  }
+	KeyNode **npp = &bindings[bp->context];
+	while (*npp) {
+		KeyNode *np = *npp;
+		if (np != bp && np->symbol == bp->symbol && np->state == bp->state
+				&& np->code == bp->code) {
+			*npp = np->next;
+			if (np->command) {
+				Release(np->command);
+			}
+			Release(np);
+		} else {
+			npp = &np->next;
+		}
+	}
 }
 
 /** Insert a key binding. */
 void Binding::InsertBinding(ActionType action, const char *modifiers,
-    const char *stroke, const char *code, const char *command) {
+		const char *stroke, const char *code, const char *command) {
 
-  KeyNode *np;
-  unsigned int mask;
-  char *temp;
-  KeySym sym;
+	KeyNode *np;
+	unsigned int mask;
+	char *temp;
+	KeySym sym;
 
-  mask = ParseModifierString(modifiers);
+	mask = ParseModifierString(modifiers);
 
-  if (stroke && strlen(stroke) > 0) {
-    int offset;
+	if (stroke && strlen(stroke) > 0) {
+		int offset;
 
-    for (offset = 0; stroke[offset]; offset++) {
-      if (stroke[offset] == '#') {
+		for (offset = 0; stroke[offset]; offset++) {
+			if (stroke[offset] == '#') {
 
-        temp = CopyString(stroke);
+				temp = CopyString(stroke);
 
-        for (temp[offset] = '1'; temp[offset] <= '9'; temp[offset]++) {
+				for (temp[offset] = '1'; temp[offset] <= '9'; temp[offset]++) {
 
-          sym = ParseKeyString(temp);
-          if (sym == NoSymbol) {
-            Release(temp);
-            return;
-          }
+					sym = ParseKeyString(temp);
+					if (sym == NoSymbol) {
+						Release(temp);
+						return;
+					}
 
-          np = new KeyNode;
-          np->next = bindings[MC_NONE];
-          bindings[MC_NONE] = np;
+					np = new KeyNode;
+					np->next = bindings[MC_NONE];
+					bindings[MC_NONE] = np;
 
-          np->context = MC_NONE;
-          np->action = action;
-          np->action.extra = temp[offset] - '1';
-          np->state = mask;
-          np->symbol = sym;
-          np->command = NULL;
-          np->code = 0;
-          RemoveDuplicates(np);
+					np->context = MC_NONE;
+					np->action = action;
+					np->action.extra = temp[offset] - '1';
+					np->state = mask;
+					np->symbol = sym;
+					np->command = NULL;
+					np->code = 0;
+					RemoveDuplicates(np);
 
-        }
+				}
 
-        Release(temp);
+				Release(temp);
 
-        return;
-      }
-    }
+				return;
+			}
+		}
 
-    sym = ParseKeyString(stroke);
-    if (sym == NoSymbol) {
-      return;
-    }
+		sym = ParseKeyString(stroke);
+		if (sym == NoSymbol) {
+			return;
+		}
 
-    np = new KeyNode();
-    np->next = bindings[MC_NONE];
-    bindings[MC_NONE] = np;
+		np = new KeyNode();
+		np->next = bindings[MC_NONE];
+		bindings[MC_NONE] = np;
 
-    np->context = MC_NONE;
-    np->action = action;
-    np->state = mask;
-    np->symbol = sym;
-    np->command = CopyString(command);
-    np->code = 0;
-    RemoveDuplicates(np);
+		np->context = MC_NONE;
+		np->action = action;
+		np->state = mask;
+		np->symbol = sym;
+		np->command = CopyString(command);
+		np->code = 0;
+		RemoveDuplicates(np);
 
-  } else if (code && strlen(code) > 0) {
+	} else if (code && strlen(code) > 0) {
 
-    np = new KeyNode();
-    np->next = bindings[MC_NONE];
-    bindings[MC_NONE] = np;
+		np = new KeyNode();
+		np->next = bindings[MC_NONE];
+		bindings[MC_NONE] = np;
 
-    np->context = MC_NONE;
-    np->action = action;
-    np->state = mask;
-    np->symbol = NoSymbol;
-    np->command = CopyString(command);
-    np->code = atoi(code);
-    RemoveDuplicates(np);
+		np->context = MC_NONE;
+		np->action = action;
+		np->state = mask;
+		np->symbol = NoSymbol;
+		np->command = CopyString(command);
+		np->code = atoi(code);
+		RemoveDuplicates(np);
 
-  } else {
+	} else {
 
-    Warning(_("neither key nor keycode specified for Key"));
-    np = NULL;
+		Warning(_("neither key nor keycode specified for Key"));
+		np = NULL;
 
-  }
+	}
 }
 
 /** Insert a mouse binding. */
 void Binding::InsertMouseBinding(int button, const char *mask,
-    MouseContextType context, ActionType action, const char *command) {
-  KeyNode *np = new KeyNode();
-  np->next = bindings[context];
-  bindings[context] = np;
+		MouseContextType context, ActionType action, const char *command) {
+	KeyNode *np = new KeyNode();
+	np->next = bindings[context];
+	bindings[context] = np;
 
-  np->command = CopyString(command);
-  np->action = action;
-  np->state = ParseModifierString(mask);
-  np->symbol = NoSymbol;
-  np->code = button;
-  np->context = context;
-  RemoveDuplicates(np);
+	np->command = CopyString(command);
+	np->action = action;
+	np->state = ParseModifierString(mask);
+	np->symbol = NoSymbol;
+	np->code = button;
+	np->context = context;
+	RemoveDuplicates(np);
 }
 
 /** Validate key bindings. */
 void Binding::ValidateKeys(void) {
-  KeyNode *kp;
-  unsigned i;
+	KeyNode *kp;
+	unsigned i;
 
-  for (i = 0; i < MC_COUNT; i++) {
-    for (kp = bindings[i]; kp; kp = kp->next) {
-      if (kp->action.action == ROOT && kp->command) {
-        const int bindex = GetRootMenuIndexFromString(kp->command);
-        if (JUNLIKELY(!IsRootMenuDefined(bindex))) {
-          Warning(_("key binding: root menu \"%s\" not defined"), kp->command);
-        }
-      }
-    }
-  }
+	for (i = 0; i < MC_COUNT; i++) {
+		for (kp = bindings[i]; kp; kp = kp->next) {
+			if (kp->action.action == ROOT && kp->command) {
+				const int bindex = GetRootMenuIndexFromString(kp->command);
+				if (JUNLIKELY(!IsRootMenuDefined(bindex))) {
+					Warning(_("key binding: root menu \"%s\" not defined"),
+							kp->command);
+				}
+			}
+		}
+	}
 }
 

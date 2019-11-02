@@ -420,7 +420,7 @@ void Initialize(void) {
   ILog(ClientNode::InitializeClients);
   ILog(Battery::InitializeBattery);
   ILog(Colors::InitializeColors);
-  ILog(InitializeCommands);
+  ILog(Commands::InitializeCommands);
   ILog(InitializeCursors);
 #ifndef DISABLE_CONFIRM
   ILog(InitializeDialogs);
@@ -500,7 +500,7 @@ void Startup(void) {
   DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
 
   /* Run any startup commands. */
-  StartupCommands();
+  Commands::StartupCommands();
 
 }
 
@@ -537,7 +537,7 @@ void Shutdown(void) {
   ShutdownScreens();
   ShutdownSettings();
 
-  ShutdownCommands();
+  Commands::ShutdownCommands();
 
 }
 
@@ -549,7 +549,7 @@ void Destroy(void) {
   ClientNode::DestroyClients();
   Battery::DestroyBattery();
   Colors::DestroyColors();
-  DestroyCommands();
+  Commands::DestroyCommands();
   DestroyCursors();
 #ifndef DISABLE_CONFIRM
   DestroyDialogs();

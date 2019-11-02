@@ -315,19 +315,19 @@ void Parse(const TokenNode *start, int depth) {
 					ParseResizeMode(tp);
 					break;
 				case TOK_RESTARTCOMMAND:
-					AddRestartCommand(tp->value);
+					Commands::AddRestartCommand(tp->value);
 					break;
 				case TOK_ROOTMENU:
 					ParseRootMenu(tp);
 					break;
 				case TOK_SHUTDOWNCOMMAND:
-					AddShutdownCommand(tp->value);
+					Commands::AddShutdownCommand(tp->value);
 					break;
 				case TOK_SNAPMODE:
 					ParseSnapMode(tp);
 					break;
 				case TOK_STARTUPCOMMAND:
-					AddStartupCommand(tp->value);
+					Commands::AddStartupCommand(tp->value);
 					break;
 				case TOK_TRAY:
 					ParseTray(tp);
@@ -1937,7 +1937,7 @@ TokenNode* TokenizePipe(const char *command, unsigned timeout_ms) {
 	path = CopyString(command);
 	ExpandPath(&path);
 
-	buffer = ReadFromProcess(path, timeout_ms);
+	buffer = Commands::ReadFromProcess(path, timeout_ms);
 	Release(path);
 	if (JUNLIKELY(!buffer)) {
 		return NULL;
