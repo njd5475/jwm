@@ -16,10 +16,10 @@ class Cursors {
 
 public:
 	/*@{*/
-#define InitializeCursors()   (void)(0)
+	static void InitializeCursors();
 	static void StartupCursors(void);
 	static void ShutdownCursors(void);
-#define DestroyCursors()      (void)(0)
+    static void DestroyCursors();
 	/*@}*/
 
 	/** Grab the mouse for resizing a window.

@@ -421,7 +421,7 @@ void Initialize(void) {
   ILog(Battery::InitializeBattery);
   ILog(Colors::InitializeColors);
   ILog(Commands::InitializeCommands);
-  ILog(InitializeCursors);
+  ILog(Cursors::InitializeCursors);
 #ifndef DISABLE_CONFIRM
   ILog(InitializeDialogs);
 #endif
@@ -550,7 +550,7 @@ void Destroy(void) {
   Battery::DestroyBattery();
   Colors::DestroyColors();
   Commands::DestroyCommands();
-  DestroyCursors();
+  Cursors::DestroyCursors();
 #ifndef DISABLE_CONFIRM
   DestroyDialogs();
 #endif

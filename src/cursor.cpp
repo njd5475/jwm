@@ -50,6 +50,13 @@ static int mousex;
 static int mousey;
 static Window mousew;
 
+void Cursors::InitializeCursors() {
+
+}
+
+void Cursors::DestroyCursors() {
+
+}
 /** Startup cursor support. */
 void Cursors::StartupCursors(void) {
 
