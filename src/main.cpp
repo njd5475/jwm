@@ -432,7 +432,7 @@ void Initialize(void) {
   ILog(Icons::InitializeIcons);
   ILog(PagerType::InitializePager);
   ILog(Places::InitializePlacement);
-  ILog(InitializePopup);
+  ILog(Popups::InitializePopup);
   ILog(InitializeRootMenu);
   ILog(InitializeScreens);
   ILog(InitializeSettings);
@@ -475,7 +475,7 @@ void Startup(void) {
 #  ifndef DISABLE_CONFIRM
   Dialogs::StartupDialogs();
 #  endif
-  StartupPopup();
+  Popups::StartupPopup();
 
   StartupRootMenu();
 
@@ -516,7 +516,7 @@ void Shutdown(void) {
 #  ifndef DISABLE_CONFIRM
   Dialogs::ShutdownDialogs();
 #  endif
-  ShutdownPopup();
+  Popups::ShutdownPopup();
   Binding::ShutdownBindings();
   PagerType::ShutdownPager();
   ShutdownRootMenu();
@@ -562,7 +562,7 @@ void Destroy(void) {
   Binding::DestroyBindings();
   PagerType::DestroyPager();
   Places::DestroyPlacement();
-  DestroyPopup();
+  Popups::DestroyPopup();
   DestroyRootMenu();
   DestroyScreens();
   DestroySettings();

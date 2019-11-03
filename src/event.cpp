@@ -260,7 +260,7 @@ char _WaitForEvent(XEvent *event) {
 			handled = SwallowNode::ProcessSwallowEvent(event);
 		}
 		if (!handled) {
-			handled = ProcessPopupEvent(event);
+			handled = Popups::ProcessPopupEvent(event);
 		}
 
 	} while (handled && JLIKELY(!shouldExit));

@@ -634,11 +634,11 @@ void TaskBarType::SignalTaskbar(const TimeType *now, int x, int y, Window w, voi
       ep = bp->GetEntry(x - bp->getScreenX(), y - bp->getScreenY());
       if (settings.groupTasks) {
         if (ep && ep->clients->client->getClassName()) {
-          ShowPopup(x, y, ep->clients->client->getClassName(), POPUP_TASK);
+        	Popups::ShowPopup(x, y, ep->clients->client->getClassName(), POPUP_TASK);
         }
       } else {
         if (ep && ep->clients->client->getName()) {
-          ShowPopup(x, y, ep->clients->client->getName(), POPUP_TASK);
+        	Popups::ShowPopup(x, y, ep->clients->client->getName(), POPUP_TASK);
         }
       }
     }

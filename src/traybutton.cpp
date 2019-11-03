@@ -244,7 +244,7 @@ void TrayButton::SignalTrayButton(const TimeType *now, int x, int y, Window w,
 			&& abs(bp->mousex - x) < settings.doubleClickDelta
 			&& abs(bp->mousey - y) < settings.doubleClickDelta) {
 		if (GetTimeDifference(now, &bp->mouseTime) >= settings.popupDelay) {
-			ShowPopup(x, y, popup, POPUP_BUTTON);
+			Popups::ShowPopup(x, y, popup, POPUP_BUTTON);
 		}
 	}
 }

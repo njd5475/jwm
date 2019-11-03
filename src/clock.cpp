@@ -171,7 +171,7 @@ void ClockType::SignalClock(const TimeType *now, int x, int y, Window w,
 			&& abs(clk->mousey - y) < settings.doubleClickDelta) {
 		if (GetTimeDifference(now, &clk->mouseTime) >= settings.popupDelay) {
 			longTime = GetTimeString("%c", clk->zone);
-			ShowPopup(x, y, longTime, POPUP_CLOCK);
+			Popups::ShowPopup(x, y, longTime, POPUP_CLOCK);
 		}
 	}
 

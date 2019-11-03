@@ -522,7 +522,7 @@ void PagerType::SignalPager(const TimeType *now, int x, int y, Window w,
 						DesktopEnvironment::DefaultEnvironment()->GetDesktopName(
 								desktop);
 				if (desktopName) {
-					ShowPopup(x, y, desktopName, POPUP_PAGER);
+					Popups::ShowPopup(x, y, desktopName, POPUP_PAGER);
 				}
 			}
 

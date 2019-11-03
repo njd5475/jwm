@@ -493,7 +493,7 @@ void Menus::MenuCallback(const TimeType *now, int x, int y, Window w, void *data
       item = item->next;
    }
    if(item->tooltip) {
-      ShowPopup(x, y, item->tooltip, POPUP_MENU);
+	   Popups::ShowPopup(x, y, item->tooltip, POPUP_MENU);
    }
 
 }
