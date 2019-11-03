@@ -41,7 +41,7 @@ void GetMoveResizeCoordinates(const ClientNode *np, StatusWindowType type,
       return;
    }
 
-   sp = GetCurrentScreen(np->getX(), np->getY());
+   sp = Screens::GetCurrentScreen(np->getX(), np->getY());
 
    if(type == SW_CORNER) {
       *x = sp->x;

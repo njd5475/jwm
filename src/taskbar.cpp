@@ -438,7 +438,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
 
   /* Initialize and position the menu. */
   Menus::InitializeMenu(menu);
-  sp = GetCurrentScreen(bar->cp->getScreenX(), bar->cp->getScreenY());
+  sp = Screens::GetCurrentScreen(bar->cp->getScreenX(), bar->cp->getScreenY());
   Cursors::GetMousePosition(&x, &y, &w);
   if (bar->layout == LAYOUT_HORIZONTAL) {
     if (bar->cp->getScreenY() + bar->cp->getHeight() / 2 < sp->y + sp->height / 2) {

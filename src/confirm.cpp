@@ -411,7 +411,7 @@ void ComputeDimensions(const ClientNode *np) {
 
   } else {
 
-    sp = GetMouseScreen();
+    sp = Screens::GetMouseScreen();
 
     dialog->x = (sp->width - dialog->width) / 2 + sp->x;
     dialog->y = (sp->height - dialog->height) / 2 + sp->y;

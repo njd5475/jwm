@@ -434,7 +434,7 @@ void Initialize(void) {
   ILog(Places::InitializePlacement);
   ILog(Popups::InitializePopup);
   ILog(Roots::InitializeRootMenu);
-  ILog(InitializeScreens);
+  ILog(Screens::InitializeScreens);
   ILog(InitializeSettings);
   ILog(InitializeSwallow);
   ILog(TaskBarType::InitializeTaskBar);
@@ -454,7 +454,7 @@ void Startup(void) {
   GrabServer();
 
   StartupSettings();
-  StartupScreens();
+  Screens::StartupScreens();
 
   Groups::StartupGroups();
   Colors::StartupColors();
@@ -534,7 +534,7 @@ void Shutdown(void) {
 
   Places::ShutdownPlacement();
   Hints::ShutdownHints();
-  ShutdownScreens();
+  Screens::ShutdownScreens();
   ShutdownSettings();
 
   Commands::ShutdownCommands();
@@ -564,7 +564,7 @@ void Destroy(void) {
   Places::DestroyPlacement();
   Popups::DestroyPopup();
   Roots::DestroyRootMenu();
-  DestroyScreens();
+  Screens::DestroyScreens();
   DestroySettings();
   SwallowNode::DestroySwallow();
   TaskBarType::DestroyTaskBar();

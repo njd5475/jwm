@@ -21,39 +21,38 @@ static ScreenType *screens = NULL;
 static int screenCount;
 
 /** Startup screens. */
-void StartupScreens(void)
-{
+void Screens::StartupScreens(void) {
 #ifdef USE_XINERAMA
 
-   XineramaScreenInfo *info;
-   int x;
+	XineramaScreenInfo *info;
+	int x;
 
-   if(XineramaIsActive(display)) {
+	if (XineramaIsActive(display)) {
 
-      info = XineramaQueryScreens(display, &screenCount);
+		info = XineramaQueryScreens(display, &screenCount);
 
-      screens = new ScreenType[screenCount];
-      for(x = 0; x < screenCount; x++) {
-         screens[x].index = x;
-         screens[x].x = info[x].x_org;
-         screens[x].y = info[x].y_org;
-         screens[x].width = info[x].width;
-         screens[x].height = info[x].height;
-      }
+		screens = new ScreenType[screenCount];
+		for (x = 0; x < screenCount; x++) {
+			screens[x].index = x;
+			screens[x].x = info[x].x_org;
+			screens[x].y = info[x].y_org;
+			screens[x].width = info[x].width;
+			screens[x].height = info[x].height;
+		}
 
-      JXFree(info);
+		JXFree(info);
 
-   } else {
+	} else {
 
-      screenCount = 1;
-      screens = new ScreenType;
-      screens->index = 0;
-      screens->x = 0;
-      screens->y = 0;
-      screens->width = rootWidth;
-      screens->height = rootHeight;
+		screenCount = 1;
+		screens = new ScreenType;
+		screens->index = 0;
+		screens->x = 0;
+		screens->y = 0;
+		screens->width = rootWidth;
+		screens->height = rootHeight;
 
-   }
+	}
 
 #else
 
@@ -69,48 +68,45 @@ void StartupScreens(void)
 }
 
 /** Shutdown screens. */
-void ShutdownScreens(void)
-{
-   if(screens) {
-      Release(screens);
-      screens = NULL;
-   }
+void Screens::ShutdownScreens(void) {
+	if (screens) {
+		Release(screens);
+		screens = NULL;
+	}
 }
 
 /** Get the screen given global screen coordinates. */
-const ScreenType *GetCurrentScreen(int x, int y)
-{
+const ScreenType* Screens::GetCurrentScreen(int x, int y) {
 
-   ScreenType *sp;
-   int index;
+	ScreenType *sp;
+	int index;
 
-   x = Max(0, x);
-   x = Min(x, rootWidth - 1);
-   y = Max(0, y);
-   y = Min(y, rootHeight - 1);
-   for(index = 1; index < screenCount; index++) {
-      sp = &screens[index];
-      if(x >= sp->x && x < sp->x + sp->width) {
-         if(y >= sp->y && y < sp->y + sp->height) {
-            return sp;
-         }
-      }
-   }
+	x = Max(0, x);
+	x = Min(x, rootWidth - 1);
+	y = Max(0, y);
+	y = Min(y, rootHeight - 1);
+	for (index = 1; index < screenCount; index++) {
+		sp = &screens[index];
+		if (x >= sp->x && x < sp->x + sp->width) {
+			if (y >= sp->y && y < sp->y + sp->height) {
+				return sp;
+			}
+		}
+	}
 
-   return &screens[0];
+	return &screens[0];
 
 }
 
 /** Get the screen the mouse is currently on. */
-const ScreenType *GetMouseScreen(void)
-{
+const ScreenType* Screens::GetMouseScreen(void) {
 #ifdef USE_XINERAMA
 
-   Window w;
-   int x, y;
+	Window w;
+	int x, y;
 
-   Cursors::GetMousePosition(&x, &y, &w);
-   return GetCurrentScreen(x, y);
+	Cursors::GetMousePosition(&x, &y, &w);
+	return GetCurrentScreen(x, y);
 
 #else
 
@@ -120,20 +116,17 @@ const ScreenType *GetMouseScreen(void)
 }
 
 /** Get data for a screen. */
-const ScreenType *GetScreen(int index)
-{
+const ScreenType* Screens::GetScreen(int index) {
 
-   Assert(index >= 0);
-   Assert(index < screenCount);
+	Assert(index >= 0);
+	Assert(index < screenCount);
 
-   return &screens[index];
+	return &screens[index];
 
 }
 
 /** Get the number of screens. */
-int GetScreenCount(void)
-{
-   return screenCount;
+int Screens::GetScreenCount(void) {
+	return screenCount;
 }
-
 

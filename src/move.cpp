@@ -155,7 +155,7 @@ char ClientNode::MoveClient(int startx, int starty) {
       }
 
       /* Determine if we are at a border for desktop switching. */
-      sp = GetCurrentScreen(this->getX() + this->getWidth() / 2, this->getY() + this->getHeight() / 2);
+      sp = Screens::GetCurrentScreen(this->getX() + this->getWidth() / 2, this->getY() + this->getHeight() / 2);
       atLeft = atTop = atRight = atBottom = 0;
       if (event.xmotion.x_root <= sp->x) {
         atLeft = 1;
@@ -472,10 +472,10 @@ void ClientNode::DoSnapScreen() {
 
   Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
 
-  screenCount = GetScreenCount();
+  screenCount = Screens::GetScreenCount();
   for (screen = 0; screen < screenCount; screen++) {
 
-    sp = GetScreen(screen);
+    sp = Screens::GetScreen(screen);
 
     if (abs(client.right - sp->width - sp->x) <= settings.snapDistance) {
       this->x = sp->x + sp->width - west - this->getWidth();

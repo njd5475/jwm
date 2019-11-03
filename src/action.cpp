@@ -83,7 +83,7 @@ void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
 	}
 
 	Roots::GetRootMenuSize(menu, &mwidth, &mheight);
-	sp = GetCurrentScreen(cp->getScreenX(), cp->getScreenY());
+	sp = Screens::GetCurrentScreen(cp->getScreenX(), cp->getScreenY());
 	if (cp->getTray()->getLayout() == LAYOUT_HORIZONTAL) {
 		x = cp->getScreenX() - 1;
 		if (cp->getScreenY() + cp->getHeight() / 2 < sp->y + sp->height / 2) {

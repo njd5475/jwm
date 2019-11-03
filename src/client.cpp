@@ -76,7 +76,7 @@ void ClientNode::StartupClients(void) {
 	int count;
 //	int x;
 
-	count = settings.desktopCount * GetScreenCount();
+	count = settings.desktopCount * Screens::GetScreenCount();
 	cascadeOffsets = new int[count];
 
 	for (x = 0; x < count; x++) {
@@ -105,7 +105,7 @@ void ClientNode::PlaceClient(ClientNode *np, char alreadyMapped) {
 
 	} else {
 
-		sp = GetMouseScreen();
+		sp = Screens::GetMouseScreen();
 		GetScreenBounds(sp, &box);
 		SubtractTrayBounds(&box, np->getState()->layer);
 		SubtractStrutBounds(&box, np);
@@ -137,7 +137,7 @@ void ClientNode::CascadeClient(const BoundingBox *box) {
 	char overflow;
 
 	Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
-	sp = GetMouseScreen();
+	sp = Screens::GetMouseScreen();
 	cascadeIndex = sp->index * settings.desktopCount + currentDesktop;
 
 	/* Set the cascaded location. */
@@ -1058,7 +1058,7 @@ void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
   memcpy(&newState, this->getState(), sizeof(newState));
   Border::GetBorderSize(&newState, &north, &south, &east, &west);
 
-  sp = GetCurrentScreen(this->getX() + (east + west + this->getWidth()) / 2, this->getY() + (north + south + this->getHeight()) / 2);
+  sp = Screens::GetCurrentScreen(this->getX() + (east + west + this->getWidth()) / 2, this->getY() + (north + south + this->getHeight()) / 2);
   Places::GetScreenBounds(sp, &box);
   if (!(flags & (MAX_HORIZ | MAX_LEFT | MAX_RIGHT))) {
     box.x = this->getX();
@@ -1178,7 +1178,7 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
 			this->oldHeight = this->height;
 		}
 
-		sp = GetCurrentScreen(this->x, this->y);
+		sp = Screens::GetCurrentScreen(this->x, this->y);
 		Places::GetScreenBounds(sp, &box);
 
 		Border::GetBorderSize(&this->state, &north, &south, &east, &west);
@@ -1247,7 +1247,7 @@ char ClientNode::ConstrainSize() {
 
 	const ClientState *state = this->getState();
 	/* Constrain the width if necessary. */
-	sp = GetCurrentScreen(this->getX(), this->getY());
+	sp = Screens::GetCurrentScreen(this->getX(), this->getY());
 	GetScreenBounds(sp, &box);
 	SubtractTrayBounds(&box, state->layer);
 	SubtractStrutBounds(&box, this);
@@ -2072,7 +2072,7 @@ void ClientNode::SendConfigureEvent() {
 	event.event = this->window;
 	event.window = this->window;
 	if (this->state.status & STAT_FULLSCREEN) {
-		sp = GetCurrentScreen(this->x, this->y);
+		sp = Screens::GetCurrentScreen(this->x, this->y);
 		event.x = sp->x;
 		event.y = sp->y;
 		event.width = sp->width;

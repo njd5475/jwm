@@ -447,7 +447,7 @@ void TrayType::ComputeTraySize() {
     }
     break;
   }
-  sp = GetCurrentScreen(x, y);
+  sp = Screens::GetCurrentScreen(x, y);
 
   /* Determine the missing dimension. */
   if (this->layout == LAYOUT_HORIZONTAL) {
@@ -556,7 +556,7 @@ void TrayType::HideTray() {
   this->hidden = 1;
 
   /* Derive the location for hiding the tray. */
-  sp = GetCurrentScreen(this->x, this->y);
+  sp = Screens::GetCurrentScreen(this->x, this->y);
   layout = this->autoHide;
   if (layout == THIDE_ON) {
     if (this->layout == LAYOUT_HORIZONTAL) {

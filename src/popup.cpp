@@ -119,7 +119,7 @@ void Popups::ShowPopup(int x, int y, const char *text,
 	popup.text = CopyString(text);
 
 	MeasurePopupText();
-	sp = GetCurrentScreen(x, y);
+	sp = Screens::GetCurrentScreen(x, y);
 	if (popup.width > sp->width) {
 		popup.width = sp->width;
 	}
