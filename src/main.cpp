@@ -429,7 +429,7 @@ void Initialize(void) {
   ILog(Fonts::InitializeFonts);
   ILog(Groups::InitializeGroups);
   ILog(Hints::InitializeHints);
-  ILog(InitializeIcons);
+  ILog(Icons::InitializeIcons);
   ILog(PagerType::InitializePager);
   ILog(Places::InitializePlacement);
   ILog(InitializePopup);
@@ -459,7 +459,7 @@ void Startup(void) {
   Groups::StartupGroups();
   Colors::StartupColors();
   Fonts::StartupFonts();
-  StartupIcons();
+  Icons::StartupIcons();
   Cursors::StartupCursors();
 
   PagerType::StartupPager();
@@ -526,7 +526,7 @@ void Shutdown(void) {
   TaskBarType::ShutdownTaskBar();
   ClockType::ShutdownClock();
   ShutdownBattery();
-  ShutdownIcons();
+  Icons::ShutdownIcons();
   Cursors::ShutdownCursors();
   Fonts::ShutdownFonts();
   Colors::ShutdownColors();
@@ -558,7 +558,7 @@ void Destroy(void) {
   Fonts::DestroyFonts();
   Groups::DestroyGroups();
   Hints::DestroyHints();
-  DestroyIcons();
+  Icons::DestroyIcons();
   Binding::DestroyBindings();
   PagerType::DestroyPager();
   Places::DestroyPlacement();

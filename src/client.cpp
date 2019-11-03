@@ -1940,7 +1940,7 @@ void ClientNode::RemoveClient() {
 		this->colormaps = cp;
 	}
 
-	DestroyIcon(this->getIcon());
+	Icons::DestroyIcon(this->getIcon());
 
 	delete this;
 

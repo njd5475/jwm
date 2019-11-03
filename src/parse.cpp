@@ -288,7 +288,7 @@ void Parse(const TokenNode *start, int depth) {
 					ParseGroup(tp);
 					break;
 				case TOK_ICONPATH:
-					AddIconPath(tp->value);
+					Icons::AddIconPath(tp->value);
 					break;
 				case TOK_INCLUDE:
 					ParseInclude(tp, depth);
@@ -363,7 +363,7 @@ void Parse(const TokenNode *start, int depth) {
 					Border::SetBorderIcon(BI_MENU, tp->value);
 					break;
 				case TOK_DEFAULTICON:
-					SetDefaultIcon(tp->value);
+					Icons::SetDefaultIcon(tp->value);
 					break;
 				case TOK_TITLEBUTTONORDER:
 					SetTitleButtonOrder(tp->value);

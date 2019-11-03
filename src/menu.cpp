@@ -81,7 +81,7 @@ void Menus::InitializeMenu(Menu *menu)
    menu->itemHeight = Fonts::GetStringHeight(FONT_MENU);
    for(np = menu->items; np; np = np->next) {
       if(np->iconName) {
-         np->icon = LoadNamedIcon(np->iconName, 1, 1);
+         np->icon = Icons::LoadNamedIcon(np->iconName, 1, 1);
          if(np->icon) {
             hasIcon = 1;
          }
@@ -139,7 +139,7 @@ void Menus::InitializeMenu(Menu *menu)
          }
       }
       if(hasIcon && !np->icon) {
-         np->icon = &emptyIcon;
+         np->icon = &Icons::emptyIcon;
       }
       if(np->submenu) {
          hasSubmenu = (menu->itemHeight + 3) / 4;

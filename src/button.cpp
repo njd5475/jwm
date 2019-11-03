@@ -141,7 +141,7 @@ void DrawButton(ButtonNode *bp)
    iconWidth = 0;
    iconHeight = 0;
    if(bp->icon) {
-      if(bp->icon == &emptyIcon) {
+      if(bp->icon == &Icons::emptyIcon) {
          iconWidth = Min(width - 4, height - 4);
          iconHeight = iconWidth;
       } else {
@@ -187,7 +187,7 @@ void DrawButton(ButtonNode *bp)
    /* Display the icon. */
    if(bp->icon) {
       yoffset = (height - iconHeight + 1) / 2;
-      PutIcon(bp->icon, drawable, Colors::colors[fg],
+      Icons::PutIcon(bp->icon, drawable, Colors::colors[fg],
               x + xoffset, y + yoffset,
               iconWidth, iconHeight);
       xoffset += iconWidth + 2;

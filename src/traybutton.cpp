@@ -38,7 +38,7 @@ void TrayButton::StartupTrayButtons(void) {
 			bp->requestNewSize(0, 0);
 		}
 		if (bp->iconName) {
-			bp->icon = LoadNamedIcon(bp->iconName, 1, 1);
+			bp->icon = Icons::LoadNamedIcon(bp->iconName, 1, 1);
 			if (JLIKELY(bp->icon)) {
 				int rWidth = 0, rHeight = 0;
 				rWidth = bp->getRequestedWidth() + bp->icon->width + 4;

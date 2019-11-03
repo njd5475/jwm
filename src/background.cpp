@@ -276,7 +276,7 @@ void LoadImageBackground(BackgroundNode *bp) {
 
 	/* Load the icon. */
 	ExpandPath(&bp->value);
-	ip = LoadNamedIcon(bp->value, 0, bp->type == BACKGROUND_SCALE);
+	ip = Icons::LoadNamedIcon(bp->value, 0, bp->type == BACKGROUND_SCALE);
 	if (JUNLIKELY(!ip || ip->width == 0)) {
 		bp->pixmap = None;
 		Warning(_("background image not found: \"%s\""), bp->value);
@@ -300,9 +300,9 @@ void LoadImageBackground(BackgroundNode *bp) {
 	JXFillRectangle(display, bp->pixmap, rootGC, 0, 0, width, height);
 
 	/* Draw the icon on the background pixmap. */
-	PutIcon(ip, bp->pixmap, 0, 0, 0, width, height);
+	Icons::PutIcon(ip, bp->pixmap, 0, 0, 0, width, height);
 
 	/* We don't need the icon anymore. */
-	DestroyIcon(ip);
+	Icons::DestroyIcon(ip);
 
 }

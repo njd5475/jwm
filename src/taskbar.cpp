@@ -425,7 +425,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
       } else {
         item->name = CopyString(cp->client->getName());
       }
-      item->icon = cp->client->getIcon() ? cp->client->getIcon() : GetDefaultIcon();
+      item->icon = cp->client->getIcon() ? cp->client->getIcon() : Icons::GetDefaultIcon();
       item->action.type = MA_EXECUTE;
       item->action.context = cp->client;
       item->next = menu->items;
@@ -699,7 +699,7 @@ void TaskBarType::Render() {
     button.x = x;
     button.y = y;
     if (!tp->clients->client->getIcon()) {
-      button.icon = GetDefaultIcon();
+      button.icon = Icons::GetDefaultIcon();
     } else {
       button.icon = tp->clients->client->getIcon();
     }
