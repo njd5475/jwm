@@ -269,7 +269,7 @@ void _ShowDesktop(void)
    ClientNode *np;
    int layer;
 
-   GrabServer();
+   Grabs::GrabServer();
    for(layer = 0; layer < LAYER_COUNT; layer++) {
       for(np = nodes[layer]; np; np = np->getNext()) {
          if(np->getState()->status & STAT_NOLIST) {
@@ -322,7 +322,7 @@ void _ShowDesktop(void)
    }
    Hints::SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
                    showingDesktop[currentDesktop]);
-   UngrabServer();
+   Grabs::UngrabServer();
    TrayType::DrawTray();
 
 }

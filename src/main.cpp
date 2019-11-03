@@ -73,136 +73,140 @@ static void SendJWMMessage(const char *message);
 #ifndef UNIT_TEST
 int main(int argc, char *argv[]) {
 
-  Logger::AddFile("/var/log/jwm/jwm.log");
-  Log("Hello World!\n");
+	Logger::AddFile("/var/log/jwm/jwm.log");
+	Log("Hello World!\n");
 
-  int x;
-  enum {
-    COMMAND_RUN, COMMAND_RESTART, COMMAND_EXIT, COMMAND_RELOAD, COMMAND_PARSE
-  } action;
+	int x;
+	enum {
+		COMMAND_RUN,
+		COMMAND_RESTART,
+		COMMAND_EXIT,
+		COMMAND_RELOAD,
+		COMMAND_PARSE
+	} action;
 
-  StartDebug();
+	StartDebug();
 
-  /* Parse command line options. */
-  action = COMMAND_RUN;
-  for (x = 1; x < argc; x++) {
-    if (!strcmp(argv[x], "-v")) {
-      DisplayAbout();
-      DoExit(0);
-    } else if (!strcmp(argv[x], "-h")) {
-      DisplayHelp();
-      DoExit(0);
-    } else if (!strcmp(argv[x], "-p")) {
-      action = COMMAND_PARSE;
-    } else if (!strcmp(argv[x], "-restart")) {
-      action = COMMAND_RESTART;
-    } else if (!strcmp(argv[x], "-exit")) {
-      action = COMMAND_EXIT;
-    } else if (!strcmp(argv[x], "-reload")) {
-      action = COMMAND_RELOAD;
-    } else if (!strcmp(argv[x], "-display") && x + 1 < argc) {
-      displayString = argv[++x];
-    } else if (!strcmp(argv[x], "-f") && x + 1 < argc) {
-      if (configPath) {
-        Release(configPath);
-      }
-      configPath = CopyString(argv[++x]);
-    } else {
-      printf("unrecognized option: %s\n", argv[x]);
-      DisplayHelp();
-      DoExit(1);
-    }
-  }
-  Log("Finished parsing command line options.\n");
+	/* Parse command line options. */
+	action = COMMAND_RUN;
+	for (x = 1; x < argc; x++) {
+		if (!strcmp(argv[x], "-v")) {
+			DisplayAbout();
+			DoExit(0);
+		} else if (!strcmp(argv[x], "-h")) {
+			DisplayHelp();
+			DoExit(0);
+		} else if (!strcmp(argv[x], "-p")) {
+			action = COMMAND_PARSE;
+		} else if (!strcmp(argv[x], "-restart")) {
+			action = COMMAND_RESTART;
+		} else if (!strcmp(argv[x], "-exit")) {
+			action = COMMAND_EXIT;
+		} else if (!strcmp(argv[x], "-reload")) {
+			action = COMMAND_RELOAD;
+		} else if (!strcmp(argv[x], "-display") && x + 1 < argc) {
+			displayString = argv[++x];
+		} else if (!strcmp(argv[x], "-f") && x + 1 < argc) {
+			if (configPath) {
+				Release(configPath);
+			}
+			configPath = CopyString(argv[++x]);
+		} else {
+			printf("unrecognized option: %s\n", argv[x]);
+			DisplayHelp();
+			DoExit(1);
+		}
+	}
+	Log("Finished parsing command line options.\n");
 
-  switch (action) {
-  case COMMAND_PARSE:
-    Log("Initializing\n")
-    ;
-    Initialize();
-    ParseConfig(configPath);
-    DoExit(0);
-  case COMMAND_RESTART:
-    Log("Restarting\n")
-    ;
-    SendRestart();
-    DoExit(0);
-  case COMMAND_EXIT:
-    Log("Exiting\n")
-    ;
-    SendExit();
-    DoExit(0);
-  case COMMAND_RELOAD:
-    Log("Reloading\n")
-    ;
-    SendReload();
-    DoExit(0);
-  default:
-    break;
-  }
+	switch (action) {
+	case COMMAND_PARSE:
+		Log("Initializing\n")
+		;
+		Initialize();
+		ParseConfig(configPath);
+		DoExit(0);
+	case COMMAND_RESTART:
+		Log("Restarting\n")
+		;
+		SendRestart();
+		DoExit(0);
+	case COMMAND_EXIT:
+		Log("Exiting\n")
+		;
+		SendExit();
+		DoExit(0);
+	case COMMAND_RELOAD:
+		Log("Reloading\n")
+		;
+		SendReload();
+		DoExit(0);
+	default:
+		break;
+	}
 
 #if defined(HAVE_SETLOCALE) && (defined(ENABLE_NLS) || defined(ENABLE_ICONV))
-  setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "");
 #endif
 #ifdef HAVE_GETTEXT
-  bindtextdomain("jwm", LOCALEDIR);
-  textdomain("jwm");
+	bindtextdomain("jwm", LOCALEDIR);
+	textdomain("jwm");
 #endif
 
-  //Log("Registering Components\n");
-  //environment.RegisterComponent(new DockComponent());
-  //environment.RegisterComponent(new DesktopComponent());
-  //environment.RegisterComponent(new BackgroundComponent());
-  /* The main loop. */
-  Log("Starting connection...\n");
-  StartupConnection();
-  do {
+	//Log("Registering Components\n");
+	//environment.RegisterComponent(new DockComponent());
+	//environment.RegisterComponent(new DesktopComponent());
+	//environment.RegisterComponent(new BackgroundComponent());
+	/* The main loop. */
+	Log("Starting connection...\n");
+	StartupConnection();
+	do {
 
-    isRestarting = shouldRestart;
-    shouldExit = 0;
-    shouldRestart = 0;
-    shouldReload = 0;
+		isRestarting = shouldRestart;
+		shouldExit = 0;
+		shouldRestart = 0;
+		shouldReload = 0;
 
-    /* Prepare JWM components. */
-    Log("Initializing...\n");
-    Initialize();
+		/* Prepare JWM components. */
+		Log("Initializing...\n");
+		Initialize();
 
-    /* Parse the configuration file. */
-    Log("Parsing Config...\n");
-    ParseConfig(configPath);
+		/* Parse the configuration file. */
+		Log("Parsing Config...\n");
+		ParseConfig(configPath);
 
-    /* Start up the JWM components. */
-    Log("Starting up components...\n");
-    Startup();
+		/* Start up the JWM components. */
+		Log("Starting up components...\n");
+		Startup();
 
-    /* The main event loop. */
-    Log("Starting Event Loop\n");
-    EventLoop();
+		/* The main event loop. */
+		Log("Starting Event Loop\n");
+		EventLoop();
 
-    /* Shutdown JWM components. */
-    Log("Shutting down components\n");
-    Shutdown();
+		/* Shutdown JWM components. */
+		Log("Shutting down components\n");
+		Shutdown();
 
-    /* Perform any extra cleanup. */
-    Log("Destroying components\n");
-    Destroy();
+		/* Perform any extra cleanup. */
+		Log("Destroying components\n");
+		Destroy();
 
-  } while (shouldRestart);
-  ShutdownConnection();
+	} while (shouldRestart);
+	ShutdownConnection();
 
-  /* If we have a command to execute on shutdown, run it now. */
-  if (exitCommand) {
-    execl(SHELL_NAME, SHELL_NAME, "-c", exitCommand, NULL);
-    Warning(_("exec failed: (%s) %s"), SHELL_NAME, exitCommand);
-    DoExit(1);
-  } else {
-    DoExit(0);
-  }
+	/* If we have a command to execute on shutdown, run it now. */
+	if (exitCommand) {
+		execl(SHELL_NAME, SHELL_NAME, "-c", exitCommand, NULL);
+		Warning(_("exec failed: (%s) %s"), SHELL_NAME, exitCommand);
+		DoExit(1);
+	} else {
+		DoExit(0);
+	}
 
-  Logger::Close();
+	Logger::Close();
 
-  /* Control shoud never get here. */
-  return -1;
+	/* Control shoud never get here. */
+	return -1;
 
 }
 #endif
@@ -210,202 +214,206 @@ int main(int argc, char *argv[]) {
 /** Exit with the specified status code. */
 void DoExit(int code) {
 
-  Destroy();
+	Destroy();
 
-  if (configPath) {
-    Release(configPath);
-    configPath = NULL;
-  }
-  if (exitCommand) {
-    Release(exitCommand);
-    exitCommand = NULL;
-  }
+	if (configPath) {
+		Release(configPath);
+		configPath = NULL;
+	}
+	if (exitCommand) {
+		Release(exitCommand);
+		exitCommand = NULL;
+	}
 
-  StopDebug();
-  exit(code);
+	StopDebug();
+	exit(code);
 }
 
 /** Main JWM event loop. */
 void EventLoop(void) {
 
-  XEvent event;
-  TimeType start;
+	XEvent event;
+	TimeType start;
 
-  /* Loop processing events until it's time to exit. */
-  while (JLIKELY(!shouldExit)) {
-    if (JLIKELY(_WaitForEvent(&event))) {
-      _ProcessEvent(&event);
-    }
-  }
+	/* Loop processing events until it's time to exit. */
+	while (JLIKELY(!shouldExit)) {
+		if (JLIKELY(_WaitForEvent(&event))) {
+			_ProcessEvent(&event);
+		}
+	}
 
-  /* Process events one last time. */
-  GetCurrentTime(&start);
-  for (;;) {
-    if (JXPending(display) == 0) {
-      if (!SwallowNode::IsSwallowPending()) {
-        break;
-      } else {
-        TimeType now;
-        GetCurrentTime(&now);
-        if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
-          break;
-        }
-      }
-    }
-    if (_WaitForEvent(&event)) {
-      _ProcessEvent(&event);
-    }
-  }
+	/* Process events one last time. */
+	GetCurrentTime(&start);
+	for (;;) {
+		if (JXPending(display) == 0) {
+			if (!SwallowNode::IsSwallowPending()) {
+				break;
+			} else {
+				TimeType now;
+				GetCurrentTime(&now);
+				if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
+					break;
+				}
+			}
+		}
+		if (_WaitForEvent(&event)) {
+			_ProcessEvent(&event);
+		}
+	}
 
 }
 
 /** Predicate for XIfEvent to determine if we got the WM_Sn selection. */
 Bool SelectionReleased(Display *d, XEvent *e, XPointer arg) {
-  if (e->type == DestroyNotify) {
-    if (e->xdestroywindow.window == *(Window*) arg) {
-      return True;
-    }
-  }
-  return False;
+	if (e->type == DestroyNotify) {
+		if (e->xdestroywindow.window == *(Window*) arg) {
+			return True;
+		}
+	}
+	return False;
 }
 
 /** Prepare the connection. */
 void StartupConnection(void) {
 
-  XSetWindowAttributes attr;
+	XSetWindowAttributes attr;
 #ifdef USE_SHAPE
-  int shapeError;
+	int shapeError;
 #endif
 #ifdef USE_XRENDER
-  int renderEvent;
-  int renderError;
+	int renderEvent;
+	int renderError;
 #endif
-  struct sigaction sa;
-  char name[32];
-  Window win;
-  XEvent event;
-  int revert;
+	struct sigaction sa;
+	char name[32];
+	Window win;
+	XEvent event;
+	int revert;
 
-  initializing = 1;
-  if (!environment->OpenConnection()) {
-    DoExit(1);
-  }
+	initializing = 1;
+	if (!environment->OpenConnection()) {
+		DoExit(1);
+	}
 
 #if 0
   XSynchronize(display, True);
 #endif
 
-  /* Create the supporting window used to verify JWM is running. */
-  supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0, 0);
+	/* Create the supporting window used to verify JWM is running. */
+	supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0,
+			0, 0);
 
-  /* Get the atom used for the window manager selection. */
-  snprintf(name, 32, "WM_S%d", rootScreen);
-  managerSelection = JXInternAtom(display, name, False);
+	/* Get the atom used for the window manager selection. */
+	snprintf(name, 32, "WM_S%d", rootScreen);
+	managerSelection = JXInternAtom(display, name, False);
 
-  /* Get the current window manager and take the selection. */
-  GrabServer();
-  win = JXGetSelectionOwner(display, managerSelection);
-  if (win != None) {
-    JXSelectInput(display, win, StructureNotifyMask);
-  }
-  JXSetSelectionOwner(display, managerSelection, supportingWindow, CurrentTime);
-  UngrabServer();
+	/* Get the current window manager and take the selection. */
+	Grabs::GrabServer();
+	win = JXGetSelectionOwner(display, managerSelection);
+	if (win != None) {
+		JXSelectInput(display, win, StructureNotifyMask);
+	}
+	JXSetSelectionOwner(display, managerSelection, supportingWindow,
+			CurrentTime);
+	Grabs::UngrabServer();
 
-  /* Wait for the current selection owner to give up the selection. */
-  if (win != None) {
-    /* Note that we need to wait for the current selection owner
-     * to exit before we can expect to select SubstructureRedirectMask. */
-    XIfEvent(display, &event, SelectionReleased, (XPointer) &win);
-    JXSync(display, False);
-  }
+	/* Wait for the current selection owner to give up the selection. */
+	if (win != None) {
+		/* Note that we need to wait for the current selection owner
+		 * to exit before we can expect to select SubstructureRedirectMask. */
+		XIfEvent(display, &event, SelectionReleased, (XPointer) &win);
+		JXSync(display, False);
+	}
 
-  event.xclient.display = display;
-  event.xclient.type = ClientMessage;
-  event.xclient.window = rootWindow;
-  event.xclient.message_type = JXInternAtom(display, managerProperty, False);
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = CurrentTime;
-  event.xclient.data.l[1] = managerSelection;
-  event.xclient.data.l[2] = supportingWindow;
-  event.xclient.data.l[3] = 2;
-  event.xclient.data.l[4] = 0;
-  JXSendEvent(display, rootWindow, False, StructureNotifyMask, &event);
-  JXSync(display, False);
+	event.xclient.display = display;
+	event.xclient.type = ClientMessage;
+	event.xclient.window = rootWindow;
+	event.xclient.message_type = JXInternAtom(display, managerProperty, False);
+	event.xclient.format = 32;
+	event.xclient.data.l[0] = CurrentTime;
+	event.xclient.data.l[1] = managerSelection;
+	event.xclient.data.l[2] = supportingWindow;
+	event.xclient.data.l[3] = 2;
+	event.xclient.data.l[4] = 0;
+	JXSendEvent(display, rootWindow, False, StructureNotifyMask, &event);
+	JXSync(display, False);
 
-  JXSetErrorHandler(ErrorHandler);
+	JXSetErrorHandler(ErrorHandler);
 
-  clientContext = XUniqueContext();
-  frameContext = XUniqueContext();
+	clientContext = XUniqueContext();
+	frameContext = XUniqueContext();
 
-  /* Set the events we want for the root window.
-   * Note that asking for SubstructureRedirect will fail
-   * if another window manager is already running.
-   */
-  attr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask | StructureNotifyMask | PropertyChangeMask
-      | ColormapChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | PointerMotionHintMask;
-  JXChangeWindowAttributes(display, rootWindow, CWEventMask, &attr);
+	/* Set the events we want for the root window.
+	 * Note that asking for SubstructureRedirect will fail
+	 * if another window manager is already running.
+	 */
+	attr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask
+			| StructureNotifyMask | PropertyChangeMask | ColormapChangeMask
+			| ButtonPressMask | ButtonReleaseMask | PointerMotionMask
+			| PointerMotionHintMask;
+	JXChangeWindowAttributes(display, rootWindow, CWEventMask, &attr);
 
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_flags = 0;
-  sa.sa_handler = HandleExit;
-  sigaction(SIGTERM, &sa, NULL);
-  sigaction(SIGINT, &sa, NULL);
-  sigaction(SIGHUP, &sa, NULL);
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_flags = 0;
+	sa.sa_handler = HandleExit;
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGHUP, &sa, NULL);
 
-  sa.sa_handler = HandleChild;
-  sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = HandleChild;
+	sigaction(SIGCHLD, &sa, NULL);
 
 #ifdef USE_SHAPE
-  haveShape = JXShapeQueryExtension(display, &shapeEvent, &shapeError);
-  if (haveShape) {
-    Debug("shape extension enabled");
-  } else {
-    Debug("shape extension disabled");
-  }
+	haveShape = JXShapeQueryExtension(display, &shapeEvent, &shapeError);
+	if (haveShape) {
+		Debug("shape extension enabled");
+	} else {
+		Debug("shape extension disabled");
+	}
 #endif
 
 #ifdef USE_XRENDER
-  haveRender = JXRenderQueryExtension(display, &renderEvent, &renderError);
-  if (haveRender) {
-    Debug("render extension enabled");
-  } else {
-    Debug("render extension disabled");
-  }
+	haveRender = JXRenderQueryExtension(display, &renderEvent, &renderError);
+	if (haveRender) {
+		Debug("render extension enabled");
+	} else {
+		Debug("render extension disabled");
+	}
 #endif
 
-  /* Make sure we have input focus. */
-  win = None;
-  JXGetInputFocus(display, &win, &revert);
-  if (win == None) {
-    JXSetInputFocus(display, rootWindow, RevertToParent, CurrentTime);
-  }
+	/* Make sure we have input focus. */
+	win = None;
+	JXGetInputFocus(display, &win, &revert);
+	if (win == None) {
+		JXSetInputFocus(display, rootWindow, RevertToParent, CurrentTime);
+	}
 
-  initializing = 0;
+	initializing = 0;
 
 }
 
 /** Close the X server connection. */
 void CloseConnection(void) {
-  JXFlush(display);
-  JXCloseDisplay(display);
+	JXFlush(display);
+	JXCloseDisplay(display);
 }
 
 /** Close the X server connection. */
 void ShutdownConnection(void) {
-  CloseConnection();
+	CloseConnection();
 }
 
 /** Signal handler. */
 void HandleExit(int sig) {
-  shouldExit = 1;
+	shouldExit = 1;
 }
 
 /** Signal handler for SIGCHLD. */
 void HandleChild(int sig) {
-  const int savedErrno = errno;
-  while (waitpid((pid_t) -1, NULL, WNOHANG) > 0)
-    ;
-  errno = savedErrno;
+	const int savedErrno = errno;
+	while (waitpid((pid_t) -1, NULL, WNOHANG) > 0)
+		;
+	errno = savedErrno;
 }
 
 /** Initialize data structures.
@@ -416,30 +424,30 @@ void HandleChild(int sig) {
   fn();
 
 void Initialize(void) {
-  ILog(Binding::InitializeBindings);
-  ILog(ClientNode::InitializeClients);
-  ILog(Battery::InitializeBattery);
-  ILog(Colors::InitializeColors);
-  ILog(Commands::InitializeCommands);
-  ILog(Cursors::InitializeCursors);
+	ILog(Binding::InitializeBindings);
+	ILog(ClientNode::InitializeClients);
+	ILog(Battery::InitializeBattery);
+	ILog(Colors::InitializeColors);
+	ILog(Commands::InitializeCommands);
+	ILog(Cursors::InitializeCursors);
 #ifndef DISABLE_CONFIRM
-  ILog(Dialogs::InitializeDialogs);
+	ILog(Dialogs::InitializeDialogs);
 #endif
-  ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
-  ILog(Fonts::InitializeFonts);
-  ILog(Groups::InitializeGroups);
-  ILog(Hints::InitializeHints);
-  ILog(Icons::InitializeIcons);
-  ILog(PagerType::InitializePager);
-  ILog(Places::InitializePlacement);
-  ILog(Popups::InitializePopup);
-  ILog(Roots::InitializeRootMenu);
-  ILog(Screens::InitializeScreens);
-  ILog(Setting::InitializeSettings);
-  ILog(InitializeSwallow);
-  ILog(TaskBarType::InitializeTaskBar);
-  ILog(TrayType::InitializeTray);
-  ILog(InitializeTrayButtons);
+	ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
+	ILog(Fonts::InitializeFonts);
+	ILog(Groups::InitializeGroups);
+	ILog(Hints::InitializeHints);
+	ILog(Icons::InitializeIcons);
+	ILog(PagerType::InitializePager);
+	ILog(Places::InitializePlacement);
+	ILog(Popups::InitializePopup);
+	ILog(Roots::InitializeRootMenu);
+	ILog(Screens::InitializeScreens);
+	ILog(Setting::InitializeSettings);
+	ILog(SwallowNode::InitializeSwallow);
+	ILog(TaskBarType::InitializeTaskBar);
+	ILog(TrayType::InitializeTray);
+	ILog(TrayButton::InitializeTrayButtons);
 }
 
 /** Startup the various JWM components.
@@ -447,60 +455,60 @@ void Initialize(void) {
  */
 void Startup(void) {
 
-  /* This order is important. */
+	/* This order is important. */
 
-  /* First we grab the server to prevent clients from changing things
-   * while we're still loading. */
-  GrabServer();
+	/* First we grab the server to prevent clients from changing things
+	 * while we're still loading. */
+	Grabs::GrabServer();
 
-  Setting::StartupSettings();
-  Screens::StartupScreens();
+	Setting::StartupSettings();
+	Screens::StartupScreens();
 
-  Groups::StartupGroups();
-  Colors::StartupColors();
-  Fonts::StartupFonts();
-  Icons::StartupIcons();
-  Cursors::StartupCursors();
+	Groups::StartupGroups();
+	Colors::StartupColors();
+	Fonts::StartupFonts();
+	Icons::StartupIcons();
+	Cursors::StartupCursors();
 
-  PagerType::StartupPager();
-  Battery::StartupBattery();
-  StartupTaskBar();
-  TrayButton::StartupTrayButtons();
-  Hints::StartupHints();
-  DesktopEnvironment::DefaultEnvironment()->StartupComponents();
-  TrayType::StartupTray();
-  Binding::StartupBindings();
-  Places::StartupPlacement();
+	PagerType::StartupPager();
+	Battery::StartupBattery();
+	TaskBarType::StartupTaskBar();
+	TrayButton::StartupTrayButtons();
+	Hints::StartupHints();
+	DesktopEnvironment::DefaultEnvironment()->StartupComponents();
+	TrayType::StartupTray();
+	Binding::StartupBindings();
+	Places::StartupPlacement();
 
 #  ifndef DISABLE_CONFIRM
-  Dialogs::StartupDialogs();
+	Dialogs::StartupDialogs();
 #  endif
-  Popups::StartupPopup();
+	Popups::StartupPopup();
 
-  Roots::StartupRootMenu();
+	Roots::StartupRootMenu();
 
-  Cursors::SetDefaultCursor(rootWindow);
-  Hints::ReadCurrentDesktop();
-  JXFlush(display);
+	Cursors::SetDefaultCursor(rootWindow);
+	Hints::ReadCurrentDesktop();
+	JXFlush(display);
 
-  _RequireRestack();
+	_RequireRestack();
 
-  /* Allow clients to do their thing. */
-  JXSync(display, True);
-  UngrabServer();
+	/* Allow clients to do their thing. */
+	JXSync(display, True);
+	Grabs::UngrabServer();
 
-  SwallowNode::StartupSwallow();
+	SwallowNode::StartupSwallow();
 
-  TrayType::DrawTray();
+	TrayType::DrawTray();
 
-  /* Send expose events. */
-  Border::ExposeCurrentDesktop();
+	/* Send expose events. */
+	Border::ExposeCurrentDesktop();
 
-  /* Draw the background (if backgrounds are used). */
-  DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
+	/* Draw the background (if backgrounds are used). */
+	DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
 
-  /* Run any startup commands. */
-  Commands::StartupCommands();
+	/* Run any startup commands. */
+	Commands::StartupCommands();
 
 }
 
@@ -509,35 +517,35 @@ void Startup(void) {
  */
 void Shutdown(void) {
 
-  /* This order is important. */
+	/* This order is important. */
 
-  ShutdownSwallow();
+	SwallowNode::ShutdownSwallow();
 
 #  ifndef DISABLE_CONFIRM
-  Dialogs::ShutdownDialogs();
+	Dialogs::ShutdownDialogs();
 #  endif
-  Popups::ShutdownPopup();
-  Binding::ShutdownBindings();
-  PagerType::ShutdownPager();
-  Roots::ShutdownRootMenu();
-  DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
-  TrayType::ShutdownTray();
-  ShutdownTrayButtons();
-  TaskBarType::ShutdownTaskBar();
-  ClockType::ShutdownClock();
-  ShutdownBattery();
-  Icons::ShutdownIcons();
-  Cursors::ShutdownCursors();
-  Fonts::ShutdownFonts();
-  Colors::ShutdownColors();
-  Groups::ShutdownGroups();
+	Popups::ShutdownPopup();
+	Binding::ShutdownBindings();
+	PagerType::ShutdownPager();
+	Roots::ShutdownRootMenu();
+	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
+	TrayType::ShutdownTray();
+	TrayButton::ShutdownTrayButtons();
+	TaskBarType::ShutdownTaskBar();
+	ClockType::ShutdownClock();
+	ShutdownBattery();
+	Icons::ShutdownIcons();
+	Cursors::ShutdownCursors();
+	Fonts::ShutdownFonts();
+	Colors::ShutdownColors();
+	Groups::ShutdownGroups();
 
-  Places::ShutdownPlacement();
-  Hints::ShutdownHints();
-  Screens::ShutdownScreens();
-  Setting::ShutdownSettings();
+	Places::ShutdownPlacement();
+	Hints::ShutdownHints();
+	Screens::ShutdownScreens();
+	Setting::ShutdownSettings();
 
-  Commands::ShutdownCommands();
+	Commands::ShutdownCommands();
 
 }
 
@@ -546,59 +554,59 @@ void Shutdown(void) {
  * Note that it is possible for this to be called more than once.
  */
 void Destroy(void) {
-  ClientNode::DestroyClients();
-  Battery::DestroyBattery();
-  Colors::DestroyColors();
-  Commands::DestroyCommands();
-  Cursors::DestroyCursors();
+	ClientNode::DestroyClients();
+	Battery::DestroyBattery();
+	Colors::DestroyColors();
+	Commands::DestroyCommands();
+	Cursors::DestroyCursors();
 #ifndef DISABLE_CONFIRM
-  Dialogs::DestroyDialogs();
+	Dialogs::DestroyDialogs();
 #endif
-  DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
-  Fonts::DestroyFonts();
-  Groups::DestroyGroups();
-  Hints::DestroyHints();
-  Icons::DestroyIcons();
-  Binding::DestroyBindings();
-  PagerType::DestroyPager();
-  Places::DestroyPlacement();
-  Popups::DestroyPopup();
-  Roots::DestroyRootMenu();
-  Screens::DestroyScreens();
-  Setting::DestroySettings();
-  SwallowNode::DestroySwallow();
-  TaskBarType::DestroyTaskBar();
-  TrayType::DestroyTray();
-  TrayButton::DestroyTrayButtons();
+	DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
+	Fonts::DestroyFonts();
+	Groups::DestroyGroups();
+	Hints::DestroyHints();
+	Icons::DestroyIcons();
+	Binding::DestroyBindings();
+	PagerType::DestroyPager();
+	Places::DestroyPlacement();
+	Popups::DestroyPopup();
+	Roots::DestroyRootMenu();
+	Screens::DestroyScreens();
+	Setting::DestroySettings();
+	SwallowNode::DestroySwallow();
+	TaskBarType::DestroyTaskBar();
+	TrayType::DestroyTray();
+	TrayButton::DestroyTrayButtons();
 }
 
 /** Send _JWM_RESTART to the root window. */
 void SendRestart(void) {
-  SendJWMMessage(jwmRestart);
+	SendJWMMessage(jwmRestart);
 }
 
 /** Send _JWM_EXIT to the root window. */
 void SendExit(void) {
-  SendJWMMessage(jwmExit);
+	SendJWMMessage(jwmExit);
 }
 
 /** Send _JWM_RELOAD to the root window. */
 void SendReload(void) {
-  SendJWMMessage(jwmReload);
+	SendJWMMessage(jwmReload);
 }
 
 /** Send a JWM message to the root window. */
 void SendJWMMessage(const char *message) {
-  XEvent event;
-  if (!environment->OpenConnection()) {
-    DoExit(1);
-  }
-  memset(&event, 0, sizeof(event));
-  event.xclient.type = ClientMessage;
-  event.xclient.window = rootWindow;
-  event.xclient.message_type = JXInternAtom(display, message, False);
-  event.xclient.format = 32;
-  JXSendEvent(display, rootWindow, False, SubstructureRedirectMask, &event);
-  CloseConnection();
+	XEvent event;
+	if (!environment->OpenConnection()) {
+		DoExit(1);
+	}
+	memset(&event, 0, sizeof(event));
+	event.xclient.type = ClientMessage;
+	event.xclient.window = rootWindow;
+	event.xclient.message_type = JXInternAtom(display, message, False);
+	event.xclient.format = 32;
+	JXSendEvent(display, rootWindow, False, SubstructureRedirectMask, &event);
+	CloseConnection();
 }
 

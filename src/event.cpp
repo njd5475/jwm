@@ -1561,7 +1561,7 @@ void _HandleMapRequest(const XMapEvent *event) {
 	}
 	np = ClientNode::FindClientByWindow(event->window);
 	if (!np) {
-		GrabServer();
+		Grabs::GrabServer();
 		np = new ClientNode(event->window, 0, 1);
 		if (np) {
 			if (!(np->getState()->status & STAT_NOFOCUS)) {
@@ -1570,7 +1570,7 @@ void _HandleMapRequest(const XMapEvent *event) {
 		} else {
 			JXMapWindow(display, event->window);
 		}
-		UngrabServer();
+		Grabs::UngrabServer();
 	} else {
 		if (!(np->getState()->status & STAT_MAPPED)) {
 			np->_UpdateState();
@@ -1613,7 +1613,7 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
 
 		/* Grab the server to prevent the client from destroying the
 		 * window after we check for a DestroyNotify. */
-		GrabServer();
+		Grabs::GrabServer();
 
 		if (np->getController()) {
 			(np->getController())(1);
@@ -1640,7 +1640,7 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
 				np->RemoveClient();
 			}
 		}
-		UngrabServer();
+		Grabs::UngrabServer();
 
 	}
 }

@@ -10,11 +10,17 @@
 #ifndef GRAB_H
 #define GRAB_H
 
-/** Grab the server and sync. */
-void GrabServer(void);
+class Grabs {
+public:
 
-/** Ungrab the server. */
-void UngrabServer(void);
+	/** Grab the server and sync. */
+	static void GrabServer(void);
+
+	/** Ungrab the server. */
+	static void UngrabServer(void);
+private:
+	static unsigned int grabCount;
+};
 
 #endif /* GRAB_H */
 
