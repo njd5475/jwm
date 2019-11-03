@@ -366,7 +366,7 @@ void Parse(const TokenNode *start, int depth) {
 					Icons::SetDefaultIcon(tp->value);
 					break;
 				case TOK_TITLEBUTTONORDER:
-					SetTitleButtonOrder(tp->value);
+					Setting::SetTitleButtonOrder(tp->value);
 					break;
 				default:
 					InvalidTag(tp, TOK_JWM);

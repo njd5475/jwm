@@ -85,53 +85,56 @@ typedef unsigned char MouseContextType;
 
 /** Settings. */
 typedef struct {
-   unsigned doubleClickSpeed;
-   unsigned doubleClickDelta;
-   unsigned snapDistance;
-   unsigned popupDelay;
-   unsigned trayOpacity;
-   unsigned activeClientOpacity;
-   unsigned inactiveClientOpacity;
-   unsigned borderWidth;
-   unsigned titleHeight;
-   unsigned desktopWidth;
-   unsigned desktopHeight;
-   unsigned desktopCount;
-   unsigned menuOpacity;
-   unsigned desktopDelay;
-   unsigned cornerRadius;
-   unsigned moveMask;
-   unsigned dockSpacing;
-   AlignmentType titleTextAlignment;
-   SnapModeType snapMode;
-   MoveModeType moveMode;
-   StatusWindowType moveStatusType;
-   StatusWindowType resizeStatusType;
-   FocusModelType focusModel;
-   ResizeModeType resizeMode;
-   DecorationsType windowDecorations;
-   DecorationsType trayDecorations;
-   DecorationsType taskListDecorations;
-   DecorationsType menuDecorations;
-   PopupMaskType popupMask;
-   MouseContextType titleBarLayout[TBC_COUNT + 1];
-   char groupTasks;
-   char listAllTasks;
+	unsigned doubleClickSpeed;
+	unsigned doubleClickDelta;
+	unsigned snapDistance;
+	unsigned popupDelay;
+	unsigned trayOpacity;
+	unsigned activeClientOpacity;
+	unsigned inactiveClientOpacity;
+	unsigned borderWidth;
+	unsigned titleHeight;
+	unsigned desktopWidth;
+	unsigned desktopHeight;
+	unsigned desktopCount;
+	unsigned menuOpacity;
+	unsigned desktopDelay;
+	unsigned cornerRadius;
+	unsigned moveMask;
+	unsigned dockSpacing;
+	AlignmentType titleTextAlignment;
+	SnapModeType snapMode;
+	MoveModeType moveMode;
+	StatusWindowType moveStatusType;
+	StatusWindowType resizeStatusType;
+	FocusModelType focusModel;
+	ResizeModeType resizeMode;
+	DecorationsType windowDecorations;
+	DecorationsType trayDecorations;
+	DecorationsType taskListDecorations;
+	DecorationsType menuDecorations;
+	PopupMaskType popupMask;
+	MouseContextType titleBarLayout[TBC_COUNT + 1];
+	char groupTasks;
+	char listAllTasks;
 } Settings;
 
 extern Settings settings;
 
-/*@{*/
-void InitializeSettings(void);
-void StartupSettings(void);
-#define ShutdownSettings()    (void)(0)
-#define DestroySettings()     (void)(0)
-/*@}*/
+class Setting {
+public:
+	/*@{*/
+	static void InitializeSettings(void);
+	static void StartupSettings(void);
+	static void ShutdownSettings() {}
+	static void DestroySettings() {}
+	/*@}*/
 
-/** Update a string setting. */
-void SetPathString(char **dest, const char *src);
+	/** Update a string setting. */
+	static void SetPathString(char **dest, const char *src);
 
-/** Set the title button order. */
-void SetTitleButtonOrder(const char *order);
+	/** Set the title button order. */
+	static void SetTitleButtonOrder(const char *order);
 
+};
 #endif

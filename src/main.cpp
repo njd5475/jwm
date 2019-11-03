@@ -435,7 +435,7 @@ void Initialize(void) {
   ILog(Popups::InitializePopup);
   ILog(Roots::InitializeRootMenu);
   ILog(Screens::InitializeScreens);
-  ILog(InitializeSettings);
+  ILog(Setting::InitializeSettings);
   ILog(InitializeSwallow);
   ILog(TaskBarType::InitializeTaskBar);
   ILog(TrayType::InitializeTray);
@@ -453,7 +453,7 @@ void Startup(void) {
    * while we're still loading. */
   GrabServer();
 
-  StartupSettings();
+  Setting::StartupSettings();
   Screens::StartupScreens();
 
   Groups::StartupGroups();
@@ -535,7 +535,7 @@ void Shutdown(void) {
   Places::ShutdownPlacement();
   Hints::ShutdownHints();
   Screens::ShutdownScreens();
-  ShutdownSettings();
+  Setting::ShutdownSettings();
 
   Commands::ShutdownCommands();
 
@@ -565,7 +565,7 @@ void Destroy(void) {
   Popups::DestroyPopup();
   Roots::DestroyRootMenu();
   Screens::DestroyScreens();
-  DestroySettings();
+  Setting::DestroySettings();
   SwallowNode::DestroySwallow();
   TaskBarType::DestroyTaskBar();
   TrayType::DestroyTray();
