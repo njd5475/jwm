@@ -71,7 +71,7 @@ void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
 				return;
 
 			} else {
-				menu = GetRootMenuIndexFromString(&this->action[5]);
+				menu = Roots::GetRootMenuIndexFromString(&this->action[5]);
 			}
 		} else {
 			menu = 1;
@@ -82,7 +82,7 @@ void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
 		return;
 	}
 
-	GetRootMenuSize(menu, &mwidth, &mheight);
+	Roots::GetRootMenuSize(menu, &mwidth, &mheight);
 	sp = GetCurrentScreen(cp->getScreenX(), cp->getScreenY());
 	if (cp->getTray()->getLayout() == LAYOUT_HORIZONTAL) {
 		x = cp->getScreenX() - 1;
@@ -104,7 +104,7 @@ void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
 	cp->Redraw();
 	cp->UpdateSpecificTray(cp->getTray());
 
-	if (ShowRootMenu(menu, x, y, 0)) {
+	if (Roots::ShowRootMenu(menu, x, y, 0)) {
 		cp->ungrab();
 		cp->Redraw();
 		cp->UpdateSpecificTray(cp->getTray());
@@ -149,8 +149,8 @@ void ActionNode::ProcessActionRelease(struct TrayComponentType *cp, int x,
 /** Validate actions. */
 void ActionNode::ValidateAction() {
 	if (this->action && !strncmp(this->action, "root:", 5)) {
-		const int bindex = GetRootMenuIndexFromString(&this->action[5]);
-		if (JUNLIKELY(!IsRootMenuDefined(bindex))) {
+		const int bindex = Roots::GetRootMenuIndexFromString(&this->action[5]);
+		if (JUNLIKELY(!Roots::IsRootMenuDefined(bindex))) {
 			Warning(_("action: root menu \"%s\" not defined"),
 					&this->action[5]);
 		}

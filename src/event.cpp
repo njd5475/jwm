@@ -448,7 +448,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
 	} else if (event->window == rootWindow) {
 		/* Click on the root.
 		 * Note that we use the raw button from the event for ShowRootMenu. */
-		if (!ShowRootMenu(event->button, event->x, event->y, 0)) {
+		if (!Roots::ShowRootMenu(event->button, event->x, event->y, 0)) {
 			_ProcessBinding(MC_ROOT, NULL, event->state, button, 0, 0);
 		}
 	} else {
@@ -668,10 +668,10 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
 		}
 		break;
 	case RESTART:
-		Restart();
+		Roots::Restart();
 		break;
 	case EXIT:
-		Exit(1);
+		Roots::Exit(1);
 		break;
 	case FULLSCREEN:
 		if (np) {
@@ -1126,11 +1126,11 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 	} else if (event->window == rootWindow) {
 
 		if (event->message_type == Hints::atoms[ATOM_JWM_RESTART]) {
-			Restart();
+			Roots::Restart();
 		} else if (event->message_type == Hints::atoms[ATOM_JWM_EXIT]) {
-			Exit(0);
+			Roots::Exit(0);
 		} else if (event->message_type == Hints::atoms[ATOM_JWM_RELOAD]) {
-			ReloadMenu();
+			Roots::ReloadMenu();
 		} else if (event->message_type == Hints::atoms[ATOM_NET_CURRENT_DESKTOP]) {
 			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
 					event->data.l[0]);

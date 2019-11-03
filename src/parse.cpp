@@ -481,7 +481,7 @@ void ParseRootMenu(const TokenNode *start) {
 	menu->dynamic = CopyString(value);
 	menu->timeout_ms = ParseTimeout(start);
 
-	SetRootMenu(onroot, menu);
+	Roots::SetRootMenu(onroot, menu);
 }
 
 /** Insert a new menu item into a menu. */

@@ -241,9 +241,9 @@ void Binding::ShowKeyMenu(MouseContextType context, unsigned state, int code) {
 
 	for (np = bindings[context]; np; np = np->next) {
 		if (np->state == state && np->code == code) {
-			const int button = GetRootMenuIndexFromString(np->command);
+			const int button = Roots::GetRootMenuIndexFromString(np->command);
 			if (JLIKELY(button >= 0)) {
-				ShowRootMenu(button, -1, -1, 1);
+				Roots::ShowRootMenu(button, -1, -1, 1);
 			}
 			return;
 		}
@@ -485,8 +485,8 @@ void Binding::ValidateKeys(void) {
 	for (i = 0; i < MC_COUNT; i++) {
 		for (kp = bindings[i]; kp; kp = kp->next) {
 			if (kp->action.action == ROOT && kp->command) {
-				const int bindex = GetRootMenuIndexFromString(kp->command);
-				if (JUNLIKELY(!IsRootMenuDefined(bindex))) {
+				const int bindex = Roots::GetRootMenuIndexFromString(kp->command);
+				if (JUNLIKELY(!Roots::IsRootMenuDefined(bindex))) {
 					Warning(_("key binding: root menu \"%s\" not defined"),
 							kp->command);
 				}

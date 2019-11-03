@@ -30,7 +30,7 @@ static void ExitHandler(ClientNode *np);
 static void RunRootCommand(MenuAction *action, unsigned button);
 
 /** Initialize root menu data. */
-void InitializeRootMenu(void) {
+void Roots::InitializeRootMenu(void) {
 	unsigned int x;
 	for (x = 0; x < ROOT_MENU_COUNT; x++) {
 		rootMenu[x] = NULL;
@@ -38,7 +38,7 @@ void InitializeRootMenu(void) {
 }
 
 /** Startup root menus. */
-void StartupRootMenu(void) {
+void Roots::StartupRootMenu(void) {
 
 	unsigned int x, y;
 	char found;
@@ -61,7 +61,7 @@ void StartupRootMenu(void) {
 }
 
 /** Destroy root menu data. */
-void DestroyRootMenu(void) {
+void Roots::DestroyRootMenu(void) {
 
 	unsigned int x, y;
 
@@ -80,7 +80,7 @@ void DestroyRootMenu(void) {
 }
 
 /** Get the index for a root menu character. */
-int GetRootMenuIndex(char ch) {
+int Roots::GetRootMenuIndex(char ch) {
 	if (ch >= '0' && ch <= '9') {
 		return ch - '0';
 	} else if (ch >= 'A' && ch <= 'Z') {
@@ -93,7 +93,7 @@ int GetRootMenuIndex(char ch) {
 }
 
 /** Get the index for a root menu string. */
-int GetRootMenuIndexFromString(const char *str) {
+int Roots::GetRootMenuIndexFromString(const char *str) {
 	unsigned int temp = 0;
 	while (*str && IsSpace(*str, &temp)) {
 		str += 1;
@@ -110,7 +110,7 @@ int GetRootMenuIndexFromString(const char *str) {
 }
 
 /** Set a root menu. */
-void SetRootMenu(const char *indexes, Menu *m) {
+void Roots::SetRootMenu(const char *indexes, Menu *m) {
 
 	unsigned x;
 
@@ -150,7 +150,7 @@ void SetRootMenu(const char *indexes, Menu *m) {
 }
 
 /** Determine if the specified root menu is defined. */
-char IsRootMenuDefined(int index) {
+char Roots::IsRootMenuDefined(int index) {
 	if (index >= 0 && index < ROOT_MENU_COUNT && rootMenu[index]) {
 		return 1;
 	} else {
@@ -159,7 +159,7 @@ char IsRootMenuDefined(int index) {
 }
 
 /** Determine the size of a root menu. */
-void GetRootMenuSize(int index, int *width, int *height) {
+void Roots::GetRootMenuSize(int index, int *width, int *height) {
 
 	if (!rootMenu[index]) {
 		*width = 0;
@@ -172,7 +172,7 @@ void GetRootMenuSize(int index, int *width, int *height) {
 }
 
 /** Show a root menu. */
-char ShowRootMenu(int index, int x, int y, char keyboard) {
+char Roots::ShowRootMenu(int index, int x, int y, char keyboard) {
 	if (!rootMenu[index]) {
 		return 0;
 	}
@@ -199,13 +199,13 @@ void ExitHandler(ClientNode *np) {
 }
 
 /** Restart callback for the restart menu item. */
-void Restart(void) {
+void Roots::Restart(void) {
 	shouldRestart = 1;
 	shouldExit = 1;
 }
 
 /** Exit with optional confirmation. */
-void Exit(char confirm) {
+void Roots::Exit(char confirm) {
 	if (confirm) {
 		Dialogs::ShowConfirmDialog(NULL, ExitHandler,
 		_("Exit JWM"),
@@ -217,7 +217,7 @@ void Exit(char confirm) {
 }
 
 /** Reload the menu. */
-void ReloadMenu(void) {
+void Roots::ReloadMenu(void) {
 	shouldReload = 1;
 	if (!menuShown) {
 		ShutdownRootMenu();
@@ -237,14 +237,14 @@ void RunRootCommand(MenuAction *action, unsigned button) {
 		Commands::RunCommand(action->str);
 		break;
 	case MA_RESTART:
-		Restart();
+		Roots::Restart();
 		break;
 	case MA_EXIT:
 		if (exitCommand) {
 			Release(exitCommand);
 		}
 		exitCommand = CopyString(action->str);
-		Exit(action->value);
+		Roots::Exit(action->value);
 		break;
 	case MA_DESKTOP:
 		DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(action->value);

@@ -433,7 +433,7 @@ void Initialize(void) {
   ILog(PagerType::InitializePager);
   ILog(Places::InitializePlacement);
   ILog(Popups::InitializePopup);
-  ILog(InitializeRootMenu);
+  ILog(Roots::InitializeRootMenu);
   ILog(InitializeScreens);
   ILog(InitializeSettings);
   ILog(InitializeSwallow);
@@ -477,7 +477,7 @@ void Startup(void) {
 #  endif
   Popups::StartupPopup();
 
-  StartupRootMenu();
+  Roots::StartupRootMenu();
 
   Cursors::SetDefaultCursor(rootWindow);
   Hints::ReadCurrentDesktop();
@@ -519,7 +519,7 @@ void Shutdown(void) {
   Popups::ShutdownPopup();
   Binding::ShutdownBindings();
   PagerType::ShutdownPager();
-  ShutdownRootMenu();
+  Roots::ShutdownRootMenu();
   DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
   TrayType::ShutdownTray();
   ShutdownTrayButtons();
@@ -563,7 +563,7 @@ void Destroy(void) {
   PagerType::DestroyPager();
   Places::DestroyPlacement();
   Popups::DestroyPopup();
-  DestroyRootMenu();
+  Roots::DestroyRootMenu();
   DestroyScreens();
   DestroySettings();
   SwallowNode::DestroySwallow();

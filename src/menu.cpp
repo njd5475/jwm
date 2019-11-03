@@ -196,7 +196,7 @@ char Menus::ShowMenu(Menu *menu, RunMenuCommandType runner,
    ClientNode::RefocusClient();
 
    if(shouldReload) {
-      ReloadMenu();
+	   Roots::ReloadMenu();
    }
 
    return 1;
