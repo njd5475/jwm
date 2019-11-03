@@ -410,7 +410,7 @@ IconNode *ReadNetWMIcon(Window win)
    Atom realType;
    int realFormat;
    unsigned char *data;
-   status = JXGetWindowProperty(display, win, atoms[ATOM_NET_WM_ICON],
+   status = JXGetWindowProperty(display, win, Hints::atoms[ATOM_NET_WM_ICON],
                                 0, MAX_LENGTH, False, XA_CARDINAL,
                                 &realType, &realFormat, &count, &extra, &data);
    if(status == Success && realFormat != 0 && data) {

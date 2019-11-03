@@ -428,7 +428,7 @@ void Initialize(void) {
   ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
   ILog(Fonts::InitializeFonts);
   ILog(Groups::InitializeGroups);
-  ILog(InitializeHints);
+  ILog(Hints::InitializeHints);
   ILog(InitializeIcons);
   ILog(PagerType::InitializePager);
   ILog(Places::InitializePlacement);
@@ -466,7 +466,7 @@ void Startup(void) {
   Battery::StartupBattery();
   StartupTaskBar();
   TrayButton::StartupTrayButtons();
-  StartupHints();
+  Hints::StartupHints();
   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
   TrayType::StartupTray();
   Binding::StartupBindings();
@@ -480,7 +480,7 @@ void Startup(void) {
   StartupRootMenu();
 
   Cursors::SetDefaultCursor(rootWindow);
-  ReadCurrentDesktop();
+  Hints::ReadCurrentDesktop();
   JXFlush(display);
 
   _RequireRestack();
@@ -533,7 +533,7 @@ void Shutdown(void) {
   Groups::ShutdownGroups();
 
   Places::ShutdownPlacement();
-  ShutdownHints();
+  Hints::ShutdownHints();
   ShutdownScreens();
   ShutdownSettings();
 
@@ -557,7 +557,7 @@ void Destroy(void) {
   DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
   Fonts::DestroyFonts();
   Groups::DestroyGroups();
-  DestroyHints();
+  Hints::DestroyHints();
   DestroyIcons();
   Binding::DestroyBindings();
   PagerType::DestroyPager();

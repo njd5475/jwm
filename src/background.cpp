@@ -211,7 +211,7 @@ void Backgrounds::_LoadBackground(int desktop) {
 	attrValues = CWBackPixmap;
 	attr.background_pixmap = bp->pixmap;
 	JXChangeWindowAttributes(display, rootWindow, attrValues, &attr);
-	SetPixmapAtom(rootWindow, ATOM_XROOTPMAP_ID, bp->pixmap);
+	Hints::SetPixmapAtom(rootWindow, ATOM_XROOTPMAP_ID, bp->pixmap);
 	JXClearWindow(display, rootWindow);
 
 }

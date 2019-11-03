@@ -258,7 +258,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 	this->state.border = BORDER_DEFAULT;
 	this->mouseContext = MC_NONE;
 
-	ReadClientInfo(this, alreadyMapped);
+	Hints::ReadClientInfo(this, alreadyMapped);
 
 	if (!notOwner) {
 		this->state.border = BORDER_OUTLINE | BORDER_TITLE | BORDER_MOVE;
@@ -317,9 +317,9 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 		this->SetOpacity(settings.inactiveClientOpacity, 1);
 	}
 	if (this->state.status & STAT_STICKY) {
-		SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, ~0UL);
+		Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, ~0UL);
 	} else {
-		SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, this->state.desktop);
+		Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, this->state.desktop);
 	}
 
 	/* Shade the client if requested. */
@@ -349,7 +349,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 	TaskBarType::AddClientToTaskBar(this);
 
 	/* Make sure we're still in sync */
-	WriteState(this);
+	Hints::WriteState(this);
 	this->SendConfigureEvent();
 
 	/* Hide the client if we're not on the right desktop. */
@@ -436,7 +436,7 @@ void ClientNode::MinimizeTransients(char lower) {
 		}
 	}
 
-	WriteState(this);
+	Hints::WriteState(this);
 
 }
 
@@ -508,7 +508,7 @@ void ClientNode::ShadeClient() {
 	this->UnmapClient();
 	this->state.status |= STAT_SHADED;
 
-	WriteState(this);
+	Hints::WriteState(this);
 	Border::ResetBorder(this);
 	_RequirePagerUpdate();
 
@@ -529,7 +529,7 @@ void ClientNode::UnshadeClient() {
 	}
 	this->state.status &= ~STAT_SHADED;
 
-	WriteState(this);
+	Hints::WriteState(this);
 	Border::ResetBorder(this);
 	RefocusClient();
 	_RequirePagerUpdate();
@@ -564,7 +564,7 @@ void ClientNode::SetClientWithdrawn() {
 	this->state.status &= ~STAT_MINIMIZED;
 	this->state.status &= ~STAT_SDESKTOP;
 
-	WriteState(this);
+	Hints::WriteState(this);
 	_RequireTaskUpdate();
 	_RequirePagerUpdate();
 
@@ -610,7 +610,7 @@ void ClientNode::RestoreTransients(char raise) {
 		this->FocusClient();
 		this->RaiseClient();
 	}
-	WriteState(this);
+	Hints::WriteState(this);
 
 }
 
@@ -649,7 +649,7 @@ void ClientNode::_UpdateState() {
 	if (this->getState()->status & STAT_URGENT) {
 		_UnregisterCallback(ClientNode::SignalUrgent, this);
 	}
-	this->state = ReadWindowState(this->getWindow(), alreadyMapped);
+	this->state = Hints::ReadWindowState(this->getWindow(), alreadyMapped);
 	if (this->getState()->status & STAT_URGENT) {
 		_RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, this);
 	}
@@ -677,7 +677,7 @@ void ClientNode::_UpdateState() {
 
 void ClientNode::UpdateWindowState(char alreadyMapped) {
 	/* Read the window state. */
-	this->state = ReadWindowState(this->window, alreadyMapped);
+	this->state = Hints::ReadWindowState(this->window, alreadyMapped);
 	if (this->minWidth == this->maxWidth
 			&& this->minHeight == this->maxHeight) {
 		this->state.border &= ~BORDER_RESIZE;
@@ -741,7 +741,7 @@ void ClientNode::SetClientLayer(unsigned int layer) {
 
 					/* Set the new layer */
 					tp->state.layer = layer;
-					WriteState(tp);
+					Hints::WriteState(tp);
 
 				}
 				tp = next;
@@ -776,8 +776,8 @@ void ClientNode::SetClientSticky(char isSticky) {
 			for (tp = nodes[x]; tp; tp = tp->next) {
 				if (tp == this || tp->owner == this->window) {
 					tp->state.status |= STAT_STICKY;
-					SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, ~0UL);
-					WriteState(tp);
+					Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, ~0UL);
+					Hints::WriteState(tp);
 				}
 			}
 		}
@@ -790,7 +790,7 @@ void ClientNode::SetClientSticky(char isSticky) {
 			for (tp = nodes[x]; tp; tp = tp->next) {
 				if (tp == this || tp->owner == this->window) {
 					tp->state.status &= ~STAT_STICKY;
-					WriteState(tp);
+					Hints::WriteState(tp);
 				}
 			}
 		}
@@ -830,7 +830,7 @@ void ClientNode::SetClientDesktop(unsigned int desktop) {
 						tp->HideClient();
 					}
 
-					SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP,
+					Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP,
 							tp->state.desktop);
 				}
 			}
@@ -911,7 +911,7 @@ void ClientNode::MaximizeClient(MaxFlags flags) {
 		this->PlaceMaximizedClient(flags);
 	}
 
-	WriteState(this);
+	Hints::WriteState(this);
 	Border::ResetBorder(this);
 	Border::DrawBorder(this);
 	this->SendConfigureEvent();
@@ -1220,7 +1220,7 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
 
 	}
 
-	WriteState(this);
+	Hints::WriteState(this);
 	this->SendConfigureEvent();
 	_RequireRestack();
 
@@ -1517,7 +1517,7 @@ void ClientNode::FocusClient() {
 				activeClient->SetOpacity(settings.inactiveClientOpacity, 0);
 			}
 			Border::DrawBorder(activeClient);
-			WriteNetState(activeClient);
+			Hints::WriteNetState(activeClient);
 		}
 		this->state.status |= STAT_ACTIVE;
 		activeClient = this;
@@ -1532,8 +1532,8 @@ void ClientNode::FocusClient() {
 
 	if (this->state.status & STAT_MAPPED) {
 		this->UpdateClientColormap(-1);
-		SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, this->window);
-		WriteNetState(this);
+		Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, this->window);
+		Hints::WriteNetState(this);
 		if (this->state.status & STAT_CANFOCUS) {
 			JXSetInputFocus(display, this->window, RevertToParent, eventTime);
 		}
@@ -1557,7 +1557,7 @@ void ClientNode::RefocusClient(void) {
 /** Send a delete message to a client. */
 void ClientNode::DeleteClient() {
 	Assert(np);
-	ReadWMProtocols(this->window, &this->state);
+	Hints::ReadWMProtocols(this->window, &this->state);
 	if (this->state.status & STAT_DELETE) {
 		SendClientMessage(this->window, ATOM_WM_PROTOCOLS,
 				ATOM_WM_DELETE_WINDOW);
@@ -1840,9 +1840,9 @@ void ClientNode::SendClientMessage(Window w, AtomType type, AtomType message) {
 	memset(&event, 0, sizeof(event));
 	event.xclient.type = ClientMessage;
 	event.xclient.window = w;
-	event.xclient.message_type = atoms[type];
+	event.xclient.message_type = Hints::atoms[type];
 	event.xclient.format = 32;
-	event.xclient.data.l[0] = atoms[message];
+	event.xclient.data.l[0] = Hints::atoms[message];
 	event.xclient.data.l[1] = eventTime;
 
 	status = JXSendEvent(display, w, False, 0, &event);
@@ -1888,7 +1888,7 @@ void ClientNode::RemoveClient() {
 	if (activeClient == this) {
 
 		/* Must be the last client. */
-		SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, None);
+		Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, None);
 		activeClient = NULL;
 		JXSetInputFocus(display, rootWindow, RevertToParent, eventTime);
 

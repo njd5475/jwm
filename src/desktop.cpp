@@ -194,8 +194,8 @@ void _ChangeDesktop(unsigned int desktop)
 
    currentDesktop = desktop;
 
-   SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
-   SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
+   Hints::SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
+   Hints::SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
                    showingDesktop[currentDesktop]);
 
    _RequireRestack();
@@ -320,7 +320,7 @@ void _ShowDesktop(void)
    } else {
       showingDesktop[currentDesktop] = 1;
    }
-   SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
+   Hints::SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP,
                    showingDesktop[currentDesktop]);
    UngrabServer();
    TrayType::DrawTray();

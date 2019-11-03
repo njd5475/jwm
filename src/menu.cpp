@@ -544,13 +544,13 @@ void Menus::MapMenu(Menu *menu, int x, int y, char keyboard)
                                  menu->width, menu->height, 0,
                                  CopyFromParent, InputOutput,
                                  CopyFromParent, attrMask, &attr);
-   SetAtomAtom(menu->window, ATOM_NET_WM_WINDOW_TYPE,
+   Hints::SetAtomAtom(menu->window, ATOM_NET_WM_WINDOW_TYPE,
                ATOM_NET_WM_WINDOW_TYPE_MENU);
    menu->pixmap = JXCreatePixmap(display, menu->window,
                                  menu->width, menu->height, rootDepth);
 
    if(settings.menuOpacity < UINT_MAX) {
-      SetCardinalAtom(menu->window, ATOM_NET_WM_WINDOW_OPACITY,
+	   Hints::SetCardinalAtom(menu->window, ATOM_NET_WM_WINDOW_OPACITY,
                       settings.menuOpacity);
    }
 

@@ -930,7 +930,7 @@ void TaskBarType::UpdateNetClientList(void) {
     }
   }
   Assert(count <= clientCount);
-  JXChangeProperty(display, rootWindow, atoms[ATOM_NET_CLIENT_LIST], XA_WINDOW, 32, PropModeReplace,
+  JXChangeProperty(display, rootWindow, Hints::atoms[ATOM_NET_CLIENT_LIST], XA_WINDOW, 32, PropModeReplace,
       (unsigned char* )windows, count);
 
   /* Set _NET_CLIENT_LIST_STACKING */
@@ -941,7 +941,7 @@ void TaskBarType::UpdateNetClientList(void) {
       count += 1;
     }
   }
-  JXChangeProperty(display, rootWindow, atoms[ATOM_NET_CLIENT_LIST_STACKING], XA_WINDOW, 32, PropModeReplace,
+  JXChangeProperty(display, rootWindow, Hints::atoms[ATOM_NET_CLIENT_LIST_STACKING], XA_WINDOW, 32, PropModeReplace,
       (unsigned char* )windows, count);
 
   if (windows != NULL) {

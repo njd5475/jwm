@@ -169,7 +169,7 @@ void ShowPopup(int x, int y, const char *text,
                                     popup.width, popup.height, 0,
                                     CopyFromParent, InputOutput,
                                     CopyFromParent, attrMask, &attr);
-      SetAtomAtom(popup.window, ATOM_NET_WM_WINDOW_TYPE,
+      Hints::SetAtomAtom(popup.window, ATOM_NET_WM_WINDOW_TYPE,
                   ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION);
       JXMapRaised(display, popup.window);
 

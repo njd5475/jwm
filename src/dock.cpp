@@ -149,7 +149,7 @@ void DockType::Create() {
   }
 
   /* Set the orientation atom. */
-  SetCardinalAtom(dock->getWindow(), ATOM_NET_SYSTEM_TRAY_ORIENTATION, orientation);
+  Hints::SetCardinalAtom(dock->getWindow(), ATOM_NET_SYSTEM_TRAY_ORIENTATION, orientation);
 
   /* Get the selection if we don't already own it.
    * If we did already own it, getting it again would cause problems
@@ -169,7 +169,7 @@ void DockType::Create() {
       memset(&event, 0, sizeof(event));
       event.xclient.type = ClientMessage;
       event.xclient.window = rootWindow;
-      event.xclient.message_type = atoms[ATOM_MANAGER];
+      event.xclient.message_type = Hints::atoms[ATOM_MANAGER];
       event.xclient.format = 32;
       event.xclient.data.l[0] = CurrentTime;
       event.xclient.data.l[1] = dockAtom;

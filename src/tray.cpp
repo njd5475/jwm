@@ -70,10 +70,10 @@ void TrayType::StartupTray(void) {
     Assert(tp->getHeight() > 0);
     tp->window = JXCreateWindow(display, rootWindow, tp->x, tp->y, tp->width, tp->height, 0, rootDepth, InputOutput,
         rootVisual, attrMask, &attr);
-    SetAtomAtom(tp->window, ATOM_NET_WM_WINDOW_TYPE, ATOM_NET_WM_WINDOW_TYPE_DOCK);
+    Hints::SetAtomAtom(tp->window, ATOM_NET_WM_WINDOW_TYPE, ATOM_NET_WM_WINDOW_TYPE_DOCK);
 
     if (settings.trayOpacity < UINT_MAX) {
-      SetCardinalAtom(tp->window, ATOM_NET_WM_WINDOW_OPACITY, settings.trayOpacity);
+    	Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_WINDOW_OPACITY, settings.trayOpacity);
     }
 
     Cursors::SetDefaultCursor(tp->window);

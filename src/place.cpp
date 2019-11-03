@@ -64,7 +64,7 @@ void Places::ReadClientStrut(ClientNode *np) {
    *   top_start_x, top_end_x, bottom_start_x, bottom_end_x
    */
   count = 0;
-  status = JXGetWindowProperty(display, np->getWindow(), atoms[ATOM_NET_WM_STRUT_PARTIAL], 0, 12, False, XA_CARDINAL,
+  status = JXGetWindowProperty(display, np->getWindow(), Hints::atoms[ATOM_NET_WM_STRUT_PARTIAL], 0, 12, False, XA_CARDINAL,
       &actualType, &actualFormat, &count, &bytesLeft, &value);
   if (status == Success && actualFormat != 0) {
     if (JLIKELY(count == 12)) {
@@ -129,7 +129,7 @@ void Places::ReadClientStrut(ClientNode *np) {
   /* Next try to read _NET_WM_STRUT */
   /* Format is: left_width, right_width, top_width, bottom_width */
   count = 0;
-  status = JXGetWindowProperty(display, np->getWindow(), atoms[ATOM_NET_WM_STRUT], 0, 4, False, XA_CARDINAL,
+  status = JXGetWindowProperty(display, np->getWindow(), Hints::atoms[ATOM_NET_WM_STRUT], 0, 4, False, XA_CARDINAL,
       &actualType, &actualFormat, &count, &bytesLeft, &value);
   if (status == Success && actualFormat != 0) {
     if (JLIKELY(count == 4)) {
@@ -304,7 +304,7 @@ void Places::SetWorkarea(void) {
     array[x * 4 + 2] = box.width;
     array[x * 4 + 3] = box.height;
   }
-  JXChangeProperty(display, rootWindow, atoms[ATOM_NET_WORKAREA], XA_CARDINAL, 32, PropModeReplace,
+  JXChangeProperty(display, rootWindow, Hints::atoms[ATOM_NET_WORKAREA], XA_CARDINAL, 32, PropModeReplace,
       (unsigned char* )array, settings.desktopCount * 4);
 
   ReleaseStack(array);

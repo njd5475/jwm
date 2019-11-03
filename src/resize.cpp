@@ -121,7 +121,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
   }
   if (this->state.maxFlags) {
     this->state.maxFlags = MAX_NONE;
-    WriteState(this);
+    Hints::WriteState(this);
     Border::ResetBorder(this);
   }
   if (JUNLIKELY(!Cursors::GrabMouseForResize(context))) {
@@ -230,7 +230,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
   }
   if (this->state.maxFlags) {
     this->state.maxFlags = MAX_NONE;
-    WriteState(this);
+    Hints::WriteState(this);
     Border::ResetBorder(this);
   }
 

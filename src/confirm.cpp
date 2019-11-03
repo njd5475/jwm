@@ -307,7 +307,7 @@ void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...
   shints.flags = PPosition;
   JXSetWMNormalHints(display, window, &shints);
   JXStoreName(display, window, _("Confirm"));
-  SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE,
+  Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE,
       ATOM_NET_WM_WINDOW_TYPE_DIALOG);
 
   /* Draw the dialog. */

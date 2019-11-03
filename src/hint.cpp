@@ -60,19 +60,16 @@ typedef struct {
   const char *name;
 } ProtocolNode;
 
-typedef struct {
-  Atom *atom;
-  const char *name;
-} AtomNode;
 
-Atom atoms[ATOM_COUNT];
+
+Atom Hints::atoms[ATOM_COUNT];
 
 const char jwmRestart[] = "_JWM_RESTART";
 const char jwmExit[] = "_JWM_EXIT";
 const char jwmReload[] = "_JWM_RELOAD";
 const char managerProperty[] = "MANAGER";
 
-static const AtomNode atomList[] = {
+const Hints::AtomNode Hints::atomList[] = {
 
 { &atoms[ATOM_COMPOUND_TEXT], "COMPOUND_TEXT" }, { &atoms[ATOM_UTF8_STRING], "UTF8_STRING" }, {
     &atoms[ATOM_XROOTPMAP_ID], "_XROOTPMAP_ID" }, { &atoms[ATOM_MANAGER], &managerProperty[0] },
@@ -146,7 +143,7 @@ static void ReadWMState(Window win, ClientState *state);
 static void ReadMotifHints(Window win, ClientState *state);
 
 /** Set root hints and intern atoms. */
-void StartupHints(void) {
+void Hints::StartupHints(void) {
 
   unsigned long *array;
   char *data;
@@ -183,7 +180,7 @@ void StartupHints(void) {
       (unsigned char* )supported, LAST_NET_ATOM - FIRST_NET_ATOM + 1);
 
   /* _NET_NUMBER_OF_DESKTOPS */
-  SetCardinalAtom(rootWindow, ATOM_NET_NUMBER_OF_DESKTOPS, settings.desktopCount);
+  Hints::SetCardinalAtom(rootWindow, ATOM_NET_NUMBER_OF_DESKTOPS, settings.desktopCount);
 
   /* _NET_DESKTOP_NAMES */
   count = 0;
@@ -218,28 +215,28 @@ void StartupHints(void) {
   JXChangeProperty(display, win, atoms[ATOM_NET_WM_PID], XA_CARDINAL, 32, PropModeReplace, (unsigned char* )array, 1);
 
   /* _NET_SUPPORTING_WM_CHECK */
-  SetWindowAtom(rootWindow, ATOM_NET_SUPPORTING_WM_CHECK, win);
-  SetWindowAtom(win, ATOM_NET_SUPPORTING_WM_CHECK, win);
+  Hints::SetWindowAtom(rootWindow, ATOM_NET_SUPPORTING_WM_CHECK, win);
+  Hints::SetWindowAtom(win, ATOM_NET_SUPPORTING_WM_CHECK, win);
 
   ReleaseStack(data);
 
 }
 
 /** Determine the current desktop. */
-void ReadCurrentDesktop(void) {
+void Hints::ReadCurrentDesktop(void) {
   unsigned long temp;
   currentDesktop = 0;
-  if (GetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, &temp)) {
+  if (Hints::GetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, &temp)) {
     DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(temp);
   } else {
-    SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
+	  Hints::SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
   }
 }
 
 /** Read client hints.
  * This is called while the client is being added to management.
  */
-void ReadClientInfo(ClientNode *np, char alreadyMapped) {
+void Hints::ReadClientInfo(ClientNode *np, char alreadyMapped) {
 
   Status status;
 
@@ -262,7 +259,7 @@ void ReadClientInfo(ClientNode *np, char alreadyMapped) {
 }
 
 /** Write the window state hint for a client. */
-void WriteState(ClientNode *np) {
+void Hints::WriteState(ClientNode *np) {
   unsigned long data[2];
 
   if (np->getState()->status & STAT_MAPPED) {
@@ -283,8 +280,8 @@ void WriteState(ClientNode *np) {
         (unsigned char* )data, 2);
   }
 
-  WriteNetState(np);
-  WriteFrameExtents(np->getWindow(), np->getState());
+  Hints::WriteNetState(np);
+  Hints::WriteFrameExtents(np->getWindow(), np->getState());
   WriteNetAllowed(np);
 }
 
@@ -298,14 +295,14 @@ void ClientNode::SetOpacity(unsigned int opacity, char force) {
   w = this->parent != None ? this->parent : this->window;
   this->state.opacity = opacity;
   if (opacity == 0xFFFFFFFF) {
-    JXDeleteProperty(display, w, atoms[ATOM_NET_WM_WINDOW_OPACITY]);
+    JXDeleteProperty(display, w, Hints::atoms[ATOM_NET_WM_WINDOW_OPACITY]);
   } else {
-    SetCardinalAtom(w, ATOM_NET_WM_WINDOW_OPACITY, opacity);
+	  Hints::SetCardinalAtom(w, ATOM_NET_WM_WINDOW_OPACITY, opacity);
   }
 }
 
 /** Write the net state hint for a client. */
-void WriteNetState(ClientNode *np) {
+void Hints::WriteNetState(ClientNode *np) {
   unsigned long values[16];
   int index;
 
@@ -382,7 +379,7 @@ void WriteNetState(ClientNode *np) {
 }
 
 /** Set _NET_FRAME_EXTENTS. */
-void WriteFrameExtents(Window win, ClientState *state) {
+void Hints::WriteFrameExtents(Window win, ClientState *state) {
   unsigned long values[4];
   int north, south, east, west;
 
@@ -410,40 +407,40 @@ void WriteNetAllowed(ClientNode *np) {
   index = 0;
 
   if (np->getState()->border & BORDER_SHADE) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_SHADE];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_SHADE];
   }
 
   if (np->getState()->border & BORDER_MIN) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_MINIMIZE];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MINIMIZE];
   }
 
   if (np->getState()->border & BORDER_MAX) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_MAXIMIZE_HORZ];
-    values[index++] = atoms[ATOM_NET_WM_ACTION_MAXIMIZE_VERT];
-    values[index++] = atoms[ATOM_NET_WM_ACTION_FULLSCREEN];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MAXIMIZE_HORZ];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MAXIMIZE_VERT];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_FULLSCREEN];
   }
 
   if (np->getState()->border & BORDER_CLOSE) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_CLOSE];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_CLOSE];
   }
 
   if (np->getState()->border & BORDER_RESIZE) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_RESIZE];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_RESIZE];
   }
 
   if (np->getState()->border & BORDER_MOVE) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_MOVE];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MOVE];
   }
 
   if (!(np->getState()->status & STAT_STICKY)) {
-    values[index++] = atoms[ATOM_NET_WM_ACTION_CHANGE_DESKTOP];
+    values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_CHANGE_DESKTOP];
   }
 
-  values[index++] = atoms[ATOM_NET_WM_ACTION_STICK];
-  values[index++] = atoms[ATOM_NET_WM_ACTION_BELOW];
-  values[index++] = atoms[ATOM_NET_WM_ACTION_ABOVE];
+  values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_STICK];
+  values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_BELOW];
+  values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_ABOVE];
 
-  JXChangeProperty(display, np->getWindow(), atoms[ATOM_NET_WM_ALLOWED_ACTIONS], XA_ATOM, 32, PropModeReplace,
+  JXChangeProperty(display, np->getWindow(), Hints::atoms[ATOM_NET_WM_ALLOWED_ACTIONS], XA_ATOM, 32, PropModeReplace,
       (unsigned char* )values, index);
 
 }
@@ -467,7 +464,7 @@ char CheckShape(Window win) {
 }
 
 /** Read all hints needed to determine the current window state. */
-ClientState ReadWindowState(Window win, char alreadyMapped) {
+ClientState Hints::ReadWindowState(Window win, char alreadyMapped) {
 
   ClientState result;
   Status status;
@@ -490,14 +487,14 @@ ClientState ReadWindowState(Window win, char alreadyMapped) {
   result.desktop = currentDesktop;
   result.opacity = UINT_MAX;
 
-  ReadWMProtocols(win, &result);
-  ReadWMHints(win, &result, alreadyMapped);
+  Hints::ReadWMProtocols(win, &result);
+  Hints::ReadWMHints(win, &result, alreadyMapped);
   ReadWMState(win, &result);
   ReadMotifHints(win, &result);
-  ReadWMOpacity(win, &result.opacity);
+  Hints::ReadWMOpacity(win, &result.opacity);
 
   /* _NET_WM_DESKTOP */
-  if (GetCardinalAtom(win, ATOM_NET_WM_DESKTOP, &card)) {
+  if (Hints::GetCardinalAtom(win, ATOM_NET_WM_DESKTOP, &card)) {
     if (card == ~0UL) {
       result.status |= STAT_STICKY;
     } else if (card < settings.desktopCount) {
@@ -606,12 +603,12 @@ ClientState ReadWindowState(Window win, char alreadyMapped) {
   }
 
   /* _NET_WM_USER_TIME_WINDOW */
-  if (!GetWindowAtom(win, ATOM_NET_WM_USER_TIME_WINDOW, &utwin)) {
+  if (!Hints::GetWindowAtom(win, ATOM_NET_WM_USER_TIME_WINDOW, &utwin)) {
     utwin = win;
   }
 
   /* _NET_WM_USER_TIME */
-  if (GetCardinalAtom(utwin, ATOM_NET_WM_USER_TIME, &card)) {
+  if (Hints::GetCardinalAtom(utwin, ATOM_NET_WM_USER_TIME, &card)) {
     if (card == 0) {
       result.status |= STAT_NOFOCUS;
     }
@@ -645,8 +642,8 @@ void ClientNode::ReadWMName() {
     Release(this->getName());
   }
 
-  status = JXGetWindowProperty(display, this->getWindow(), atoms[ATOM_NET_WM_NAME], 0, 1024, False,
-      atoms[ATOM_UTF8_STRING], &realType, &realFormat, &count, &extra, &name);
+  status = JXGetWindowProperty(display, this->getWindow(), Hints::atoms[ATOM_NET_WM_NAME], 0, 1024, False,
+		  Hints::atoms[ATOM_UTF8_STRING], &realType, &realFormat, &count, &extra, &name);
   if (status != Success || realFormat == 0) {
     this->name = NULL;
   } else {
@@ -659,14 +656,14 @@ void ClientNode::ReadWMName() {
 
 #ifdef USE_XUTF8
   if (!this->getName()) {
-    status = JXGetWindowProperty(display, this->getWindow(), XA_WM_NAME, 0, 1024, False, atoms[ATOM_COMPOUND_TEXT],
+    status = JXGetWindowProperty(display, this->getWindow(), XA_WM_NAME, 0, 1024, False, Hints::atoms[ATOM_COMPOUND_TEXT],
         &realType, &realFormat, &count, &extra, &name);
     if (status == Success && realFormat != 0) {
       char **tlist;
       XTextProperty tprop;
       int tcount;
       tprop.value = name;
-      tprop.encoding = atoms[ATOM_COMPOUND_TEXT];
+      tprop.encoding = Hints::atoms[ATOM_COMPOUND_TEXT];
       tprop.format = realFormat;
       tprop.nitems = count;
       if (XmbTextPropertyToTextList(display, &tprop, &tlist, &tcount) == Success && tcount > 0) {
@@ -702,7 +699,7 @@ void ClientNode::ReadWMClass() {
 }
 
 /** Read the protocols hint for a window. */
-void ReadWMProtocols(Window w, ClientState *state) {
+void Hints::ReadWMProtocols(Window w, ClientState *state) {
 
   unsigned long count, x;
   int status;
@@ -816,7 +813,7 @@ void ReadWMState(Window win, ClientState *state) {
   unsigned long *temp;
 
   count = 0;
-  status = JXGetWindowProperty(display, win, atoms[ATOM_WM_STATE], 0, 2, False, atoms[ATOM_WM_STATE], &realType,
+  status = JXGetWindowProperty(display, win, Hints::atoms[ATOM_WM_STATE], 0, 2, False, Hints::atoms[ATOM_WM_STATE], &realType,
       &realFormat, &count, &extra, (unsigned char** )&temp);
   if (JLIKELY(status == Success && realFormat != 0)) {
     if (JLIKELY(count == 2)) {
@@ -837,7 +834,7 @@ void ReadWMState(Window win, ClientState *state) {
 }
 
 /** Read the WM hints for a window. */
-void ReadWMHints(Window win, ClientState *state, char alreadyMapped) {
+void Hints::ReadWMHints(Window win, ClientState *state, char alreadyMapped) {
 
   XWMHints *wmhints;
 
@@ -870,9 +867,9 @@ void ReadWMHints(Window win, ClientState *state, char alreadyMapped) {
 }
 
 /** Read _NET_WM_WINDOW_OPACITY. */
-void ReadWMOpacity(Window win, unsigned *opacity) {
+void Hints::ReadWMOpacity(Window win, unsigned *opacity) {
   unsigned long card;
-  if (GetCardinalAtom(win, ATOM_NET_WM_WINDOW_OPACITY, &card)) {
+  if (Hints::GetCardinalAtom(win, ATOM_NET_WM_WINDOW_OPACITY, &card)) {
     *opacity = card;
   } else {
     *opacity = UINT_MAX;
@@ -892,7 +889,7 @@ void ReadMotifHints(Window win, ClientState *state) {
   Assert(win != None);
   Assert(state);
 
-  status = JXGetWindowProperty(display, win, atoms[ATOM_MOTIF_WM_HINTS], 0L, 20L, False, atoms[ATOM_MOTIF_WM_HINTS],
+  status = JXGetWindowProperty(display, win, Hints::atoms[ATOM_MOTIF_WM_HINTS], 0L, 20L, False, Hints::atoms[ATOM_MOTIF_WM_HINTS],
       &type, &format, &itemCount, &bytesLeft, &data);
   if (status != Success || type == 0) {
     return;
@@ -935,7 +932,7 @@ void ReadMotifHints(Window win, ClientState *state) {
 }
 
 /** Read a cardinal atom. */
-char GetCardinalAtom(Window window, AtomType atom, unsigned long *value) {
+char Hints::GetCardinalAtom(Window window, AtomType atom, unsigned long *value) {
 
   unsigned long count;
   int status;
@@ -965,13 +962,13 @@ char GetCardinalAtom(Window window, AtomType atom, unsigned long *value) {
 }
 
 /** Set a cardinal atom. */
-void SetCardinalAtom(Window window, AtomType atom, unsigned long value) {
+void Hints::SetCardinalAtom(Window window, AtomType atom, unsigned long value) {
   Assert(window != None);
   JXChangeProperty(display, window, atoms[atom], XA_CARDINAL, 32, PropModeReplace, (unsigned char* )&value, 1);
 }
 
 /** Read a window atom. */
-char GetWindowAtom(Window window, AtomType atom, Window *value) {
+char Hints::GetWindowAtom(Window window, AtomType atom, Window *value) {
 
   unsigned long count;
   int status;
@@ -1001,19 +998,19 @@ char GetWindowAtom(Window window, AtomType atom, Window *value) {
 }
 
 /** Set a window atom. */
-void SetWindowAtom(Window window, AtomType atom, unsigned long value) {
+void Hints::SetWindowAtom(Window window, AtomType atom, unsigned long value) {
   Assert(window != None);
   JXChangeProperty(display, window, atoms[atom], XA_WINDOW, 32, PropModeReplace, (unsigned char* )&value, 1);
 }
 
 /** Set a pixmap atom. */
-void SetPixmapAtom(Window window, AtomType atom, Pixmap value) {
+void Hints::SetPixmapAtom(Window window, AtomType atom, Pixmap value) {
   Assert(window != None);
-  JXChangeProperty(display, window, atoms[atom], XA_PIXMAP, 32, PropModeReplace, (unsigned char* )&value, 1);
+  JXChangeProperty(display, window, Hints::atoms[atom], XA_PIXMAP, 32, PropModeReplace, (unsigned char* )&value, 1);
 }
 
 /** Set an atom atom. */
-void SetAtomAtom(Window window, AtomType atom, AtomType value) {
+void Hints::SetAtomAtom(Window window, AtomType atom, AtomType value) {
   Assert(window != None);
   JXChangeProperty(display, window, atoms[atom], XA_ATOM, 32, PropModeReplace, (unsigned char* )&atoms[value], 1);
 }

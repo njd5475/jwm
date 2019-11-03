@@ -978,11 +978,11 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
 			if (np->getState()->status & STAT_URGENT) {
 				_UnregisterCallback(ClientNode::SignalUrgent, np);
 			}
-			ReadWMHints(np->getWindow(), np->getState(), 1);
+			Hints::ReadWMHints(np->getWindow(), np->getState(), 1);
 			if (np->getState()->status & STAT_URGENT) {
 				_RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, np);
 			}
-			WriteState(np);
+			Hints::WriteState(np);
 			break;
 		case XA_WM_TRANSIENT_FOR:
 			unsigned long int owner = np->getOwner();
@@ -993,31 +993,31 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
 		case XA_WM_CLIENT_MACHINE:
 			break;
 		default:
-			if (event->atom == atoms[ATOM_WM_COLORMAP_WINDOWS]) {
+			if (event->atom == Hints::atoms[ATOM_WM_COLORMAP_WINDOWS]) {
 				np->ReadWMColormaps();
 				np->UpdateClientColormap(-1);
-			} else if (event->atom == atoms[ATOM_WM_PROTOCOLS]) {
-				ReadWMProtocols(np->getWindow(), np->getState());
-			} else if (event->atom == atoms[ATOM_NET_WM_ICON]) {
+			} else if (event->atom == Hints::atoms[ATOM_WM_PROTOCOLS]) {
+				Hints::ReadWMProtocols(np->getWindow(), np->getState());
+			} else if (event->atom == Hints::atoms[ATOM_NET_WM_ICON]) {
 				LoadIcon(np);
 				changed = 1;
-			} else if (event->atom == atoms[ATOM_NET_WM_NAME]) {
-				ReadWMName(np);
+			} else if (event->atom == Hints::atoms[ATOM_NET_WM_NAME]) {
+				Hints::ReadWMName(np);
 				changed = 1;
-			} else if (event->atom == atoms[ATOM_NET_WM_STRUT_PARTIAL]) {
+			} else if (event->atom == Hints::atoms[ATOM_NET_WM_STRUT_PARTIAL]) {
 				Places::ReadClientStrut(np);
-			} else if (event->atom == atoms[ATOM_NET_WM_STRUT]) {
+			} else if (event->atom == Hints::atoms[ATOM_NET_WM_STRUT]) {
 				Places::ReadClientStrut(np);
-			} else if (event->atom == atoms[ATOM_MOTIF_WM_HINTS]) {
+			} else if (event->atom == Hints::atoms[ATOM_MOTIF_WM_HINTS]) {
 				np->_UpdateState();
-				WriteState(np);
+				Hints::WriteState(np);
 				Border::ResetBorder(np);
 				changed = 1;
-			} else if (event->atom == atoms[ATOM_NET_WM_WINDOW_OPACITY]) {
+			} else if (event->atom == Hints::atoms[ATOM_NET_WM_WINDOW_OPACITY]) {
 				unsigned int opacity;
-				ReadWMOpacity(np->getWindow(), &opacity);
+				Hints::ReadWMOpacity(np->getWindow(), &opacity);
 				if (np->getParent() != None) {
-					SetOpacity(np, &opacity, 1);
+					Hints::SetOpacity(np, &opacity, 1);
 				}
 				np->setOpacity(opacity);
 			}
@@ -1049,7 +1049,7 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
 	np = ClientNode::FindClientByWindow(event->window);
 	if (np) {
-		if (event->message_type == atoms[ATOM_WM_CHANGE_STATE]) {
+		if (event->message_type == Hints::atoms[ATOM_WM_CHANGE_STATE]) {
 
 			if (np->getController()) {
 				(np->getController())(0);
@@ -1069,13 +1069,13 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 				break;
 			}
 
-		} else if (event->message_type == atoms[ATOM_NET_ACTIVE_WINDOW]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_ACTIVE_WINDOW]) {
 
 			np->RestoreClient(1);
 			np->ShadeClient();
 			np->FocusClient();
 
-		} else if (event->message_type == atoms[ATOM_NET_WM_DESKTOP]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_WM_DESKTOP]) {
 
 			if (event->data.l[0] == ~0L) {
 				np->SetClientSticky(1);
@@ -1093,23 +1093,23 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 				}
 			}
 
-		} else if (event->message_type == atoms[ATOM_NET_CLOSE_WINDOW]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_CLOSE_WINDOW]) {
 
 			np->DeleteClient();
 
-		} else if (event->message_type == atoms[ATOM_NET_MOVERESIZE_WINDOW]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_MOVERESIZE_WINDOW]) {
 
 			_HandleNetMoveResize(event, np);
 
-		} else if (event->message_type == atoms[ATOM_NET_WM_MOVERESIZE]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_WM_MOVERESIZE]) {
 
 			HandleNetWMMoveResize(event, np);
 
-		} else if (event->message_type == atoms[ATOM_NET_RESTACK_WINDOW]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_RESTACK_WINDOW]) {
 
 			_HandleNetRestack(event, np);
 
-		} else if (event->message_type == atoms[ATOM_NET_WM_STATE]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_WM_STATE]) {
 
 			_HandleNetWMState(event, np);
 
@@ -1125,16 +1125,16 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
 	} else if (event->window == rootWindow) {
 
-		if (event->message_type == atoms[ATOM_JWM_RESTART]) {
+		if (event->message_type == Hints::atoms[ATOM_JWM_RESTART]) {
 			Restart();
-		} else if (event->message_type == atoms[ATOM_JWM_EXIT]) {
+		} else if (event->message_type == Hints::atoms[ATOM_JWM_EXIT]) {
 			Exit(0);
-		} else if (event->message_type == atoms[ATOM_JWM_RELOAD]) {
+		} else if (event->message_type == Hints::atoms[ATOM_JWM_RELOAD]) {
 			ReloadMenu();
-		} else if (event->message_type == atoms[ATOM_NET_CURRENT_DESKTOP]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_CURRENT_DESKTOP]) {
 			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
 					event->data.l[0]);
-		} else if (event->message_type == atoms[ATOM_NET_SHOWING_DESKTOP]) {
+		} else if (event->message_type == Hints::atoms[ATOM_NET_SHOWING_DESKTOP]) {
 			DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
 		} else {
 #ifdef DEBUG
@@ -1144,11 +1144,13 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 #endif
 		}
 
-	} else if (event->message_type == atoms[ATOM_NET_REQUEST_FRAME_EXTENTS]) {
+	} else if (event->message_type
+			== Hints::atoms[ATOM_NET_REQUEST_FRAME_EXTENTS]) {
 
 		_HandleFrameExtentsRequest(event);
 
-	} else if (event->message_type == atoms[ATOM_NET_SYSTEM_TRAY_OPCODE]) {
+	} else if (event->message_type
+			== Hints::atoms[ATOM_NET_SYSTEM_TRAY_OPCODE]) {
 
 		DesktopEnvironment::DefaultEnvironment()->HandleDockEvent(event);
 
@@ -1338,30 +1340,34 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
 	actionAbove = 0;
 
 	for (x = 1; x <= 2; x++) {
-		if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_STICKY]) {
+		if (event->data.l[x] == (long) Hints::atoms[ATOM_NET_WM_STATE_STICKY]) {
 			actionStick = 1;
 		} else if (event->data.l[x]
-				== (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
 			maxFlags |= MAX_VERT;
 		} else if (event->data.l[x]
-				== (long) atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
 			maxFlags |= MAX_HORIZ;
-		} else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_SHADED]) {
+		} else if (event->data.l[x]
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_SHADED]) {
 			actionShade = 1;
 		} else if (event->data.l[x]
-				== (long) atoms[ATOM_NET_WM_STATE_FULLSCREEN]) {
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_FULLSCREEN]) {
 			actionFullScreen = 1;
-		} else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_HIDDEN]) {
+		} else if (event->data.l[x]
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_HIDDEN]) {
 			actionMinimize = 1;
 		} else if (event->data.l[x]
-				== (long) atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
 			actionNolist = 1;
 		} else if (event->data.l[x]
-				== (long) atoms[ATOM_NET_WM_STATE_SKIP_PAGER]) {
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_SKIP_PAGER]) {
 			actionNopager = 1;
-		} else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_BELOW]) {
+		} else if (event->data.l[x]
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_BELOW]) {
 			actionBelow = 1;
-		} else if (event->data.l[x] == (long) atoms[ATOM_NET_WM_STATE_ABOVE]) {
+		} else if (event->data.l[x]
+				== (long) Hints::atoms[ATOM_NET_WM_STATE_ABOVE]) {
 			actionAbove = 1;
 		}
 	}
@@ -1488,7 +1494,7 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
 	 * The state update is handled elsewhere for the other actions.
 	 */
 	if (actionNolist | actionNopager | actionAbove | actionBelow) {
-		WriteState(np);
+		Hints::WriteState(np);
 	}
 
 }
@@ -1496,8 +1502,8 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
 /** Handle a _NET_REQUEST_FRAME_EXTENTS request. */
 void _HandleFrameExtentsRequest(const XClientMessageEvent *event) {
 	ClientState state;
-	state = ReadWindowState(event->window, 0);
-	WriteFrameExtents(event->window, &state);
+	state = Hints::ReadWindowState(event->window, 0);
+	Hints::WriteFrameExtents(event->window, &state);
 }
 
 /** Handle a motion notify event. */
@@ -1580,7 +1586,7 @@ void _HandleMapRequest(const XMapEvent *event) {
 				np->FocusClient();
 				np->RaiseClient();
 			}
-			WriteState(np);
+			Hints::WriteState(np);
 			_RequireTaskUpdate();
 			_RequirePagerUpdate();
 		}
@@ -1629,7 +1635,7 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
 				np->GravitateClient(1);
 				JXReparentWindow(display, np->getWindow(), rootWindow,
 						np->getX(), np->getY());
-				WriteState(np);
+				Hints::WriteState(np);
 				JXRemoveFromSaveSet(display, np->getWindow());
 				np->RemoveClient();
 			}
