@@ -10,14 +10,19 @@
 #ifndef HELP_H
 #define HELP_H
 
-/** Display program name, version, and compiled options . */
-void DisplayAbout(void);
+class Help {
+public:
+	/** Display program name, version, and compiled options . */
+	static void DisplayAbout(void);
 
-/** Display compiled options. */
-void DisplayCompileOptions(void);
+	/** Display compiled options. */
+	static void DisplayCompileOptions(void);
 
-/** Display all help. */
-void DisplayHelp(void);
+	/** Display all help. */
+	static void DisplayHelp(void);
+
+	static void DisplayUsage(void);
+};
 
 #endif /* HELP_H */
 

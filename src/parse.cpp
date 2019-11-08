@@ -195,7 +195,7 @@ static void InvalidTag(const TokenNode *tp, TokenType parent);
 static void ParseError(const TokenNode *tp, const char *str, ...);
 
 /** Parse the JWM configuration. */
-void ParseConfig(const char *fileName) {
+void Parser::ParseConfig(const char *fileName) {
 	if (fileName) {
 		if (!ParseFile(fileName, 0)) {
 			ParseError(NULL, _("could not open %s"), fileName);
@@ -242,7 +242,7 @@ char ParseFile(const char *fileName, int depth) {
 	return 1;
 }
 
-void ParseConfigString(const char *inMem) {
+void Parser::ParseConfigString(const char *inMem) {
 	TokenNode *tokens = Tokenize(inMem, "inMemFile");
 	Parse(tokens, 0);
 	ReleaseTokens(tokens);
@@ -769,7 +769,7 @@ MenuItem* ParseMenuInclude(const TokenNode *tp, Menu *menu, MenuItem *last) {
 }
 
 /** Parse a dynamic menu (called from menu code). */
-Menu* ParseDynamicMenu(unsigned timeout_ms, const char *command) {
+Menu* Parser::ParseDynamicMenu(unsigned timeout_ms, const char *command) {
 	Menu *menu = NULL;
 	TokenNode *start = ParseMenuIncludeHelper(NULL, timeout_ms, command);
 	if (JLIKELY(start)) {

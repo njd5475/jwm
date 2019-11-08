@@ -301,7 +301,7 @@ void Menus::PatchMenu(Menu *menu)
          break;
       case MA_DYNAMIC:
          if(!item->submenu) {
-            submenu = ParseDynamicMenu(
+            submenu = Parser::ParseDynamicMenu(
                item->action.timeout_ms,
                item->action.str);
             if(JLIKELY(submenu)) {

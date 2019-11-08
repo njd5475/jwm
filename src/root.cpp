@@ -181,7 +181,7 @@ char Roots::ShowRootMenu(int index, int x, int y, char keyboard) {
 	}
 	if (rootMenu[index]->dynamic) {
 		Menu *menu = rootMenu[index];
-		menu = ParseDynamicMenu(menu->timeout_ms, menu->dynamic);
+		menu = Parser::ParseDynamicMenu(menu->timeout_ms, menu->dynamic);
 		if (menu) {
 			Menus::InitializeMenu(menu);
 			Menus::ShowMenu(menu, RunRootCommand, x, y, keyboard);
@@ -223,7 +223,7 @@ void Roots::ReloadMenu(void) {
 		ShutdownRootMenu();
 		DestroyRootMenu();
 		InitializeRootMenu();
-		ParseConfig(configPath);
+		Parser::ParseConfig(configPath);
 		StartupRootMenu();
 		shouldReload = 0;
 	}

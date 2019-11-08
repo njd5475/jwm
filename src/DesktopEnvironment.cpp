@@ -49,6 +49,7 @@ char haveRender;
 char *configPath = NULL;
 
 DesktopEnvironment* DesktopEnvironment::_instance = NULL;
+char *DesktopEnvironment::displayString = NULL;
 
 char DesktopEnvironment::HandleDockReparentNotify(const XReparentEvent* event) {
   return DockType::_HandleDockReparentNotify(event);

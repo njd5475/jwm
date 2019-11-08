@@ -12,19 +12,22 @@
 
 struct Menu;
 
-/** Parse a configuration file.
- * @param fileName The user-specified config file to parse.
- */
-void ParseConfig(const char *fileName);
+class Parser {
+public:
+	/** Parse a configuration file.
+	 * @param fileName The user-specified config file to parse.
+	 */
+	static void ParseConfig(const char *fileName);
 
-/** Parse a dynamic menu.
- * @param timeout_ms The timeout in milliseconds.
- * @param command The command to generate the menu.
- * @return The menu.
- */
-struct Menu *ParseDynamicMenu(unsigned timeout_ms, const char *command);
+	/** Parse a dynamic menu.
+	 * @param timeout_ms The timeout in milliseconds.
+	 * @param command The command to generate the menu.
+	 * @return The menu.
+	 */
+	static struct Menu *ParseDynamicMenu(unsigned timeout_ms, const char *command);
 
-void ParseConfigString(const char* inMem);
+	static void ParseConfigString(const char* inMem);
+};
 
 #endif /* PARSE_H */
 

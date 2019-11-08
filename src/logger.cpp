@@ -11,40 +11,45 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-std::vector<int> Logger::files;
+std::vector<FILE*> Logger::files;
 
 Logger::Logger() {
-  // TODO Auto-generated constructor stub
+	// TODO Auto-generated constructor stub
 
 }
 
 Logger::~Logger() {
-  // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 void Logger::AddFile(const char *name) {
-  int fd = open(name, O_CREAT | O_WRONLY | O_APPEND);
-  Logger::files.push_back(fd);
+	FILE *fd = fopen(name, "a");
+	if(fd == NULL) {
+		printf("Error: Could not open %s\n", name);
+	}else{
+		Logger::files.push_back(fd);
+	}
 }
 
-void Logger::Log(const char* message) {
-  if(!message) return;
-  const char* saved = strdup(message);
-  int len = strlen(saved) + 1;
-  std::vector<int>::iterator it;
-  int written = 0;
-  for(it = files.begin(); it != files.end(); ++it) {
-	do {
-		written += write((*it), saved, len);
-	}while(written < len);
-  }
-  delete saved;
+#undef Log
+void Logger::Log(const char *message) {
+	if (!message)
+		return;
+	std::vector<FILE*>::iterator it;
+	for (it = files.begin(); it != files.end(); ++it) {
+		fprintf((*it), message);
+		fflush((*it));
+	}
 }
 
 void Logger::Close() {
-  std::vector<int>::iterator it;
-  for(it = files.begin(); it != files.end(); ++it) {
-    close((*it));
-  }
+	std::vector<FILE*>::iterator it;
+	for (it = files.begin(); it != files.end(); ++it) {
+		fclose((*it));
+	}
+}
+
+void Logger::EnableStandardOut() {
+	files.push_back(stdout);
 }
 

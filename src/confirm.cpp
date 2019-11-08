@@ -95,6 +95,7 @@ void Dialogs::ShutdownDialogs(void) {
 
 /** Run the action associated with the current dialog. */
 void RunDialogAction(void) {
+	Log("Running Dialog Action");
   if (dialog->client == None) {
     (dialog->action)(NULL);
   } else {

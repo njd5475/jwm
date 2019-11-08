@@ -15,11 +15,6 @@
 struct Menu;
 struct TrayComponentType;
 
-#ifndef DISPLAY_STRING_
-#define DISPLAY_STRING_
-static char *displayString = NULL;
-#endif
-
 class DesktopEnvironment {
 public:
   DesktopEnvironment();
@@ -68,7 +63,11 @@ public:
     }
     return _instance;
   }
+  static void setDisplayString(char* str) {
+	  displayString = str;
+  }
 private:
+  static char *displayString;
   static DesktopEnvironment *_instance;
 };
 

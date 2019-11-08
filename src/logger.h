@@ -19,9 +19,18 @@ public:
   static void AddFile(const char* name);
   static void Log(const char* message);
   static void Close();
+  static void EnableStandardOut();
 
 private:
-  static std::vector<int> files;
+  static std::vector<FILE*> files;
 };
+
+/** Initialize data structures.
+ * This is called before the X connection is opened.
+ */
+#define Log(x) Logger::Log(x);
+#define ILog(fn) \
+  Logger::Log(#fn "\n");\
+  fn();
 
 #endif /* SRC_LOGGER_H_ */
