@@ -473,7 +473,7 @@ void TaskBarType::RunTaskBarCommand(MenuAction *action, unsigned button) {
   ClientEntry *cp;
 
   if (action->type & MA_GROUP_MASK) {
-    TaskEntry *tp = action->context;
+    TaskEntry *tp = (TaskEntry*)action->context;
     for (cp = tp->clients; cp; cp = cp->next) {
       if (!ShouldFocus(cp->client, 0)) {
         continue;
@@ -500,9 +500,9 @@ void TaskBarType::RunTaskBarCommand(MenuAction *action, unsigned button) {
       Window w;
       int x, y;
       Cursors::GetMousePosition(&x, &y, &w);
-      ShowWindowMenu(action->context, x, y, 0);
+      ShowWindowMenu((ClientNode*)action->context, x, y, 0);
     } else {
-      ClientNode *np = action->context;
+      ClientNode *np = (ClientNode*)action->context;
       np->RestoreClient(1);
       np->FocusClient();
       Cursors::MoveMouse(np->getWindow(), np->getWidth() / 2, np->getHeight() / 2);
