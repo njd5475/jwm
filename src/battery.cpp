@@ -39,10 +39,6 @@ void Battery::InitializeBattery(void) {
   Warning(_("Battery tray has been initialized"));
 }
 
-void Battery::StartupBattery() {
-
-}
-
 /** Destroy Battery(s). */
 void Battery::DestroyBattery(void) {
   close(chargeFullFile);
@@ -51,7 +47,7 @@ void Battery::DestroyBattery(void) {
 }
 
 /** Start Battery(s). */
-void StartupBattery(void) {
+void Battery::StartupBattery(void) {
   if((chargeNowFile = open("/sys/class/power_supply/BAT1/charge_now", O_RDONLY, FILEMODE)) < 0) {
     perror("Error in file opening");
     return;
@@ -139,6 +135,7 @@ void Battery::Draw() {
 int readAsInt(int fd) {
   char *str = quickFileRead(fd);
   return (int)strtol(str, &str, 10);
+  //return 0;
 }
 
 
