@@ -171,10 +171,10 @@ void _ChangeDesktop(unsigned int desktop)
     */
    for(x = 0; x < LAYER_COUNT; x++) {
       for(np = nodes[x]; np; np = np->getNext()) {
-         if(np->getState()->status & STAT_STICKY) {
+         if(np->getState()->getStatus() & STAT_STICKY) {
             continue;
          }
-         if(np->getState()->desktop == currentDesktop) {
+         if(np->getState()->getDesktop() == currentDesktop) {
             np->HideClient();
          }
       }
@@ -183,10 +183,10 @@ void _ChangeDesktop(unsigned int desktop)
    /* Show clients on the new desktop. */
    for(x = 0; x < LAYER_COUNT; x++) {
       for(np = nodes[x]; np; np = np->getNext()) {
-         if(np->getState()->status & STAT_STICKY) {
+         if(np->getState()->getStatus() & STAT_STICKY) {
             continue;
          }
-         if(np->getState()->desktop == desktop) {
+         if(np->getState()->getDesktop() == desktop) {
             np->ShowClient();
          }
       }
@@ -272,21 +272,21 @@ void _ShowDesktop(void)
    Grabs::GrabServer();
    for(layer = 0; layer < LAYER_COUNT; layer++) {
       for(np = nodes[layer]; np; np = np->getNext()) {
-         if(np->getState()->status & STAT_NOLIST) {
+         if(np->getState()->getStatus() & STAT_NOLIST) {
             continue;
          }
-         if((np->getState()->desktop == currentDesktop) ||
-            (np->getState()->status & STAT_STICKY)) {
+         if((np->getState()->getDesktop() == currentDesktop) ||
+            (np->getState()->getStatus() & STAT_STICKY)) {
             if(showingDesktop[currentDesktop]) {
-               if(np->getState()->status & STAT_SDESKTOP) {
+               if(np->getState()->getStatus() & STAT_SDESKTOP) {
                   np->RestoreClient(0);
                }
             } else {
-               if(np->getState()->status & STAT_ACTIVE) {
+               if(np->getState()->getStatus() & STAT_ACTIVE) {
                   JXSetInputFocus(display, rootWindow, RevertToParent,
                                   CurrentTime);
                }
-               if(np->getState()->status & (STAT_MAPPED | STAT_SHADED)) {
+               if(np->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED)) {
                   np->MinimizeClient(0);
                   np->setSDesktopStatus();
                }
@@ -303,11 +303,11 @@ void _ShowDesktop(void)
       JXSync(display, False);
       for(layer = 0; layer < LAYER_COUNT; layer++) {
          for(np = nodes[layer]; np; np = np->getNext()) {
-            if(np->getState()->status & STAT_NOLIST) {
+            if(np->getState()->getStatus() & STAT_NOLIST) {
                continue;
             }
-            if((np->getState()->desktop == currentDesktop) ||
-               (np->getState()->status & STAT_STICKY)) {
+            if((np->getState()->getDesktop() == currentDesktop) ||
+               (np->getState()->getStatus() & STAT_STICKY)) {
                if(first) {
                   np->FocusClient();
                   first = 0;

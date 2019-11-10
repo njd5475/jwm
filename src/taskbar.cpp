@@ -177,7 +177,7 @@ void TaskBarType::ProcessTaskButtonEvent(int x, int y, int mask) {
       if (allTop) {
         for (cp = entry->clients; cp; cp = cp->next) {
           int layer;
-          if (cp->client->getState()->status & STAT_MINIMIZED) {
+          if (cp->client->getState()->getStatus() & STAT_MINIMIZED) {
             continue;
           } else if (!ShouldFocus(cp->client, 0)) {
             continue;
@@ -185,17 +185,17 @@ void TaskBarType::ProcessTaskButtonEvent(int x, int y, int mask) {
           for (layer = LAST_LAYER; layer >= FIRST_LAYER; layer--) {
             ClientNode *np;
             for (np = nodes[layer]; np; np = np->getNext()) {
-              if (np->getState()->status & STAT_MINIMIZED) {
+              if (np->getState()->getStatus() & STAT_MINIMIZED) {
                 continue;
               } else if (!ShouldFocus(np, 0)) {
                 continue;
               }
               if (np == cp->client) {
-                const char isActive = (np->getState()->status & STAT_ACTIVE) && IsClientOnCurrentDesktop(np);
+                const char isActive = (np->getState()->getStatus() & STAT_ACTIVE) && IsClientOnCurrentDesktop(np);
                 if (isActive) {
                   focused = np;
                 }
-                if (!(cp->client->getState()->status & (STAT_CANFOCUS | STAT_TAKEFOCUS)) || isActive) {
+                if (!(cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) || isActive) {
                   hasActive = 1;
                 }
               }
@@ -221,10 +221,10 @@ void TaskBarType::ProcessTaskButtonEvent(int x, int y, int mask) {
             ClientNode *np = cp->client;
             if (!ShouldFocus(np, 0)) {
               continue;
-            } else if (np->getState()->status & STAT_STICKY) {
+            } else if (np->getState()->getStatus() & STAT_STICKY) {
               continue;
-            } else if (np->getState()->desktop == target) {
-              if (!nextClient || np->getState()->status & STAT_ACTIVE) {
+            } else if (np->getState()->getDesktop() == target) {
+              if (!nextClient || np->getState()->getStatus() & STAT_ACTIVE) {
                 nextClient = np;
               }
             }
@@ -235,7 +235,7 @@ void TaskBarType::ProcessTaskButtonEvent(int x, int y, int mask) {
         }
         /* Focus the next client or minimize the current group. */
         if (nextClient) {
-          DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(nextClient->getState()->desktop);
+          DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(nextClient->getState()->getDesktop());
           nextClient->RestoreClient(1);
         } else {
           MinimizeGroup(entry);
@@ -288,8 +288,8 @@ void TaskBarType::FocusGroup(const TaskEntry *tp) {
 
   /* If there is no class name, then there will only be one client. */
   if (!className || !settings.groupTasks) {
-    if (!(tp->clients->client->getState()->status & STAT_STICKY)) {
-      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(tp->clients->client->getState()->desktop);
+    if (!(tp->clients->client->getState()->getStatus() & STAT_STICKY)) {
+      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(tp->clients->client->getState()->getDesktop());
     }
     tp->clients->client->RestoreClient(1);
     tp->clients->client->FocusClient();
@@ -313,8 +313,8 @@ void TaskBarType::FocusGroup(const TaskEntry *tp) {
       for (np = nodes[i]; np; np = np->getNext()) {
         if (np->getClassName() && !strcmp(np->getClassName(), className)) {
           if (ShouldFocus(np, 0)) {
-            if (!(np->getState()->status & STAT_STICKY)) {
-              DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(np->getState()->desktop);
+            if (!(np->getState()->getStatus() & STAT_STICKY)) {
+              DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(np->getState()->getDesktop());
             }
             break;
           }
@@ -343,7 +343,7 @@ void TaskBarType::FocusGroup(const TaskEntry *tp) {
     toRestore[i]->RestoreClient(1);
   }
   for (i = 0; i < restoreCount; i++) {
-    if (toRestore[i]->getState()->status & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+    if (toRestore[i]->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
       toRestore[i]->FocusClient();
       break;
     }
@@ -412,7 +412,7 @@ void TaskBarType::ShowClientList(TaskBarType *bar, TaskEntry *tp) {
         continue;
       }
       item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-      if (cp->client->getState()->status & STAT_MINIMIZED) {
+      if (cp->client->getState()->getStatus() & STAT_MINIMIZED) {
         size_t len = 0;
         if (cp->client->getName()) {
           len = strlen(cp->client->getName());
@@ -684,8 +684,8 @@ void TaskBarType::Render() {
     button.type = BUTTON_TASK;
     for (cp = tp->clients; cp; cp = cp->next) {
       if (ShouldFocus(cp->client, 0)) {
-        const char flash = (cp->client->getState()->status & STAT_FLASH) != 0;
-        const char active = (cp->client->getState()->status & STAT_ACTIVE) && IsClientOnCurrentDesktop(cp->client);
+        const char flash = (cp->client->getState()->getStatus() & STAT_FLASH) != 0;
+        const char active = (cp->client->getState()->getStatus() & STAT_ACTIVE) && IsClientOnCurrentDesktop(cp->client);
         if (flash || active) {
           if (button.type == BUTTON_TASK) {
             button.type = BUTTON_TASK_ACTIVE;
@@ -742,9 +742,9 @@ void TaskBarType::FocusNext(void) {
   for (tp = taskEntries; tp; tp = tp->next) {
     ClientEntry *cp;
     for (cp = tp->clients; cp; cp = cp->next) {
-      if (cp->client->getState()->status & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+      if (cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
         if (ShouldFocus(cp->client, 1)) {
-          if (cp->client->getState()->status & STAT_ACTIVE) {
+          if (cp->client->getState()->getStatus() & STAT_ACTIVE) {
             cp = cp->next;
             goto ClientFound;
           }
@@ -783,9 +783,9 @@ void TaskBarType::FocusPrevious(void) {
   for (tp = taskEntries; tp; tp = tp->next) {
     ClientEntry *cp;
     for (cp = tp->clients; cp; cp = cp->next) {
-      if (cp->client->getState()->status & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+      if (cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
         if (ShouldFocus(cp->client, 1)) {
-          if (cp->client->getState()->status & STAT_ACTIVE) {
+          if (cp->client->getState()->getStatus() & STAT_ACTIVE) {
             cp = cp->next;
             goto ClientFound;
           }
@@ -832,7 +832,7 @@ char TaskBarType::ShouldShowEntry(const TaskEntry *tp) {
 char TaskBarType::ShouldFocusEntry(const TaskEntry *tp) {
   const ClientEntry *cp;
   for (cp = tp->clients; cp; cp = cp->next) {
-    if (cp->client->getState()->status & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+    if (cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
       if (ShouldFocus(cp->client, 1)) {
         return 1;
       }

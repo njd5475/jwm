@@ -133,28 +133,9 @@ extern const char managerProperty[];
 #define FIRST_MWM_ATOM ATOM_MOTIF_WM_HINTS
 #define LAST_MWM_ATOM  ATOM_MOTIF_WM_HINTS
 
-/** Enumeration of window layers. */
 typedef unsigned char WinLayerType;
-#define LAYER_DESKTOP   0
-#define LAYER_BELOW     1
-#define LAYER_NORMAL    2
-#define LAYER_ABOVE     3
-#define LAYER_COUNT     4
 
-#define FIRST_LAYER        LAYER_DESKTOP
-#define LAST_LAYER         LAYER_ABOVE
-#define DEFAULT_TRAY_LAYER LAYER_ABOVE
-
-/** Client state information. */
-typedef struct ClientState {
-	unsigned int status; /**< Status bit mask. */
-	unsigned int opacity; /**< Opacity (0 - 0xFFFFFFFF). */
-	unsigned short border; /**< Border bit mask. */
-	unsigned short desktop; /**< Desktop. */
-	unsigned char maxFlags; /**< Maximization status. */
-	unsigned char layer; /**< Current window layer. */
-	unsigned char defaultLayer; /**< Default window layer. */
-} ClientState;
+class ClientState;
 
 class Hints {
 public:
@@ -254,7 +235,7 @@ public:
 	 * @param win The window.
 	 * @param state The client state.
 	 */
-	static void WriteFrameExtents(Window win, ClientState *state);
+	static void WriteFrameExtents(Window win, const ClientState *state);
 
 	/** Read a cardinal atom.
 	 * @param window The window.

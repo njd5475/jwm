@@ -113,14 +113,14 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
 
   Assert(this);
 
-  if (!(this->state.border & BORDER_RESIZE)) {
+  if (!(this->state.getBorder() & BORDER_RESIZE)) {
     return;
   }
-  if (this->state.status & STAT_FULLSCREEN) {
+  if (this->state.getStatus() & STAT_FULLSCREEN) {
     return;
   }
-  if (this->state.maxFlags) {
-    this->state.maxFlags = MAX_NONE;
+  if (this->state.getMaxFlags()) {
+    this->state.resetMaxFlags();
     Hints::WriteState(this);
     Border::ResetBorder(this);
   }
@@ -187,7 +187,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
 
         if (settings.resizeMode == RESIZE_OUTLINE) {
           Outline::ClearOutline();
-          if (this->state.status & STAT_SHADED) {
+          if (this->state.getStatus() & STAT_SHADED) {
             Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
           } else {
             Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
@@ -222,14 +222,14 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
 
   Assert(this);
 
-  if (!(this->state.border & BORDER_RESIZE)) {
+  if (!(this->state.getBorder() & BORDER_RESIZE)) {
     return;
   }
-  if (this->state.status & STAT_FULLSCREEN) {
+  if (this->state.getStatus() & STAT_FULLSCREEN) {
     return;
   }
-  if (this->state.maxFlags) {
-    this->state.maxFlags = MAX_NONE;
+  if (this->state.getMaxFlags()) {
+    this->state.resetMaxFlags();
     Hints::WriteState(this);
     Border::ResetBorder(this);
   }
@@ -261,7 +261,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
   if (context & MC_BORDER_N) {
     starty = this->y - north;
   } else if (context & MC_BORDER_S) {
-    if (this->state.status & STAT_SHADED) {
+    if (this->state.getStatus() & STAT_SHADED) {
       starty = this->y;
     } else {
       starty = this->y + this->height;
@@ -361,7 +361,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
 
       if (settings.resizeMode == RESIZE_OUTLINE) {
         Outline::ClearOutline();
-        if (this->state.status & STAT_SHADED) {
+        if (this->state.getStatus() & STAT_SHADED) {
           Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
         } else {
           Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
@@ -385,11 +385,11 @@ void ClientNode::StopResize() {
 
   /* Set the old width/height if maximized so the window
    * is restored to the new size. */
-  if (this->state.maxFlags & MAX_VERT) {
+  if (this->state.getMaxFlags() & MAX_VERT) {
     this->oldWidth = this->width;
     this->oldx = this->x;
   }
-  if (this->state.maxFlags & MAX_HORIZ) {
+  if (this->state.getMaxFlags() & MAX_HORIZ) {
     this->oldHeight = this->height;
     this->oldy = this->y;
   }

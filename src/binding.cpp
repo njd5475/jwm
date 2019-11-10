@@ -231,6 +231,7 @@ void Binding::RunKeyCommand(MouseContextType context, unsigned state,
 
 /** Show a root menu caused by a key binding. */
 void Binding::ShowKeyMenu(MouseContextType context, unsigned state, int code) {
+	Log("Show key menu\n");
 	KeyNode *np;
 
 	/* Remove the lock key modifiers. */

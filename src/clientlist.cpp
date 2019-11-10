@@ -35,7 +35,7 @@ char ShouldFocus(const ClientNode *np, char current)
    }
 
    /* Don't display a client if it doesn't want to be displayed. */
-   if(np->getState()->status & STAT_NOLIST) {
+   if(np->getState()->getStatus() & STAT_NOLIST) {
       return 0;
    }
 
@@ -44,7 +44,7 @@ char ShouldFocus(const ClientNode *np, char current)
       return 0;
    }
 
-   if(!(np->getState()->status & (STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
+   if(!(np->getState()->getStatus() & (STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
       return 0;
    }
 
@@ -157,14 +157,14 @@ void WalkWindowStack(char forward)
           * a state that doesn't allow focus.
           */
          if(np == NULL || !ShouldFocus(np, 1)
-            || (np->getState()->status & STAT_ACTIVE)) {
+            || (np->getState()->getStatus() & STAT_ACTIVE)) {
             continue;
          }
 
          /* Show the window.
           * Only when the walk completes do we update the stacking order. */
          ClientNode::RestackClients();
-         if(np->getState()->status & STAT_MINIMIZED) {
+         if(np->getState()->getStatus() & STAT_MINIMIZED) {
             np->RestoreClient(1);
             wasMinimized = 1;
          } else {
@@ -192,7 +192,7 @@ void StopWindowWalk(void)
       /* Look up the current window. */
       np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
       if(np) {
-         if(np->getState()->status & STAT_MINIMIZED) {
+         if(np->getState()->getStatus() & STAT_MINIMIZED) {
             np->RestoreClient(1);
          } else {
             np->RaiseClient();
@@ -225,16 +225,16 @@ void FocusNextStacked(ClientNode *np)
    Assert(np);
 
    for(tp = np->getNext(); tp; tp = tp->getNext()) {
-      if((tp->getState()->status & (STAT_MAPPED | STAT_SHADED))
-         && !(tp->getState()->status & STAT_HIDDEN)) {
+      if((tp->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED))
+         && !(tp->getState()->getStatus() & STAT_HIDDEN)) {
          tp->FocusClient();
          return;
       }
    }
-   for(x = np->getState()->layer - 1; x >= FIRST_LAYER; x--) {
+   for(x = np->getState()->getLayer() - 1; x >= FIRST_LAYER; x--) {
       for(tp = nodes[x]; tp; tp = tp->getNext()) {
-         if((tp->getState()->status & (STAT_MAPPED | STAT_SHADED))
-            && !(tp->getState()->status & STAT_HIDDEN)) {
+         if((tp->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED))
+            && !(tp->getState()->getStatus() & STAT_HIDDEN)) {
             tp->FocusClient();
             return;
          }

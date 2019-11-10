@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "event.h"
 #include "hint.h"
+#include "logger.h"
 
 typedef struct PopupType {
 	int x, y; /* The coordinates of the upper-left corner of the popup. */
@@ -92,6 +93,7 @@ void MeasurePopupText() {
 /** Show a popup window. */
 void Popups::ShowPopup(int x, int y, const char *text,
 		const PopupMaskType context) {
+	Log("Should show popup\n");
 	const ScreenType *sp;
 	char *ptr;
 	int textHeight;

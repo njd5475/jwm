@@ -11,6 +11,7 @@
 #define CLIENTLIST_H
 
 #include "hint.h"
+#include "ClientState.h"
 
 struct ClientNode;
 
@@ -25,7 +26,7 @@ extern struct ClientNode *nodeTail[LAYER_COUNT];
  * @return 1 if on the current desktop, 0 otherwise.
  */
 #define IsClientOnCurrentDesktop( np ) \
-   ((np->getState()->desktop == currentDesktop) \
+   ((np->getState()->getDesktop() == currentDesktop) \
       || (np->getStatus() & STAT_STICKY))
 
 /** Determine if a client is allowed focus.

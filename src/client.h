@@ -16,86 +16,8 @@
 
 struct TimeType;
 
-/** Window border flags.
- * We use an unsigned short for storing these, so we get at least 16
- * on reasonable architectures.
- */
-typedef unsigned short BorderFlags;
-#define BORDER_NONE        0
-#define BORDER_OUTLINE     (1 << 0)    /**< Window has a border. */
-#define BORDER_TITLE       (1 << 1)    /**< Window has a title bar. */
-#define BORDER_MIN         (1 << 2)    /**< Window supports minimize. */
-#define BORDER_MAX         (1 << 3)    /**< Window supports maximize. */
-#define BORDER_CLOSE       (1 << 4)    /**< Window supports close. */
-#define BORDER_RESIZE      (1 << 5)    /**< Window supports resizing. */
-#define BORDER_MOVE        (1 << 6)    /**< Window supports moving. */
-#define BORDER_MAX_V       (1 << 7)    /**< Maximize vertically. */
-#define BORDER_MAX_H       (1 << 8)    /**< Maximize horizontally. */
-#define BORDER_SHADE       (1 << 9)    /**< Allow shading. */
-#define BORDER_CONSTRAIN   (1 << 10)   /**< Constrain to the screen. */
-#define BORDER_FULLSCREEN  (1 << 11)   /**< Allow fullscreen. */
 
-/** The default border flags. */
-#define BORDER_DEFAULT (   \
-        BORDER_OUTLINE     \
-      | BORDER_TITLE       \
-      | BORDER_MIN         \
-      | BORDER_MAX         \
-      | BORDER_CLOSE       \
-      | BORDER_RESIZE      \
-      | BORDER_MOVE        \
-      | BORDER_MAX_V       \
-      | BORDER_MAX_H       \
-      | BORDER_SHADE       \
-      | BORDER_FULLSCREEN  )
-
-/** Window status flags.
- * We use an unsigned int for storing these, so we get 32 on
- * reasonable architectures.
- */
-typedef unsigned int StatusFlags;
-#define STAT_NONE       0
-#define STAT_ACTIVE     (1 << 0)    /**< Has focus. */
-#define STAT_MAPPED     (1 << 1)    /**< Shown (on some desktop). */
-#define STAT_HIDDEN     (1 << 2)    /**< Not on the current desktop. */
-#define STAT_STICKY     (1 << 3)    /**< This client is on all desktops. */
-#define STAT_NOLIST     (1 << 4)    /**< Skip this client in the task list. */
-#define STAT_MINIMIZED  (1 << 5)    /**< Minimized. */
-#define STAT_SHADED     (1 << 6)    /**< Shaded. */
-#define STAT_WMDIALOG   (1 << 7)    /**< This is a JWM dialog window. */
-#define STAT_PIGNORE    (1 << 8)    /**< Ignore the program-position. */
-#define STAT_SDESKTOP   (1 << 9)    /**< Minimized to show desktop. */
-#define STAT_FULLSCREEN (1 << 10)   /**< Full screen. */
-#define STAT_OPACITY    (1 << 11)   /**< Fixed opacity. */
-#define STAT_NOFOCUS    (1 << 12)   /**< Don't focus on map. */
-#define STAT_CANFOCUS   (1 << 13)   /**< Client accepts input focus. */
-#define STAT_DELETE     (1 << 14)   /**< Client accepts WM_DELETE. */
-#define STAT_TAKEFOCUS  (1 << 15)   /**< Client uses WM_TAKE_FOCUS. */
-#define STAT_URGENT     (1 << 16)   /**< Urgency hint is set. */
-#define STAT_NOTURGENT  (1 << 17)   /**< Ignore the urgency hint. */
-#define STAT_CENTERED   (1 << 18)   /**< Use centered window placement. */
-#define STAT_TILED      (1 << 19)   /**< Use tiled window placement. */
-#define STAT_IIGNORE    (1 << 20)   /**< Ignore increment when maximized. */
-#define STAT_NOPAGER    (1 << 21)   /**< Don't show in pager. */
-#define STAT_SHAPED     (1 << 22)   /**< This window is shaped. */
-#define STAT_FLASH      (1 << 23)   /**< Flashing for urgency. */
-#define STAT_DRAG       (1 << 24)   /**< Pass mouse events to JWM. */
-#define STAT_ILIST      (1 << 25)   /**< Ignore program-specified list. */
-#define STAT_IPAGER     (1 << 26)   /**< Ignore program-specified pager. */
-#define STAT_FIXED      (1 << 27)   /**< Keep on the specified desktop. */
-#define STAT_AEROSNAP   (1 << 28)   /**< Enable Aero Snap. */
-#define STAT_NODRAG     (1 << 29)   /**< Disable mod1+drag/resize. */
-#define STAT_POSITION   (1 << 30)   /**< Config-specified position. */
-
-/** Maximization flags. */
-typedef unsigned char MaxFlags;
-#define MAX_NONE     0           /**< Don't maximize. */
-#define MAX_HORIZ    (1 << 0)    /**< Horizontal maximization. */
-#define MAX_VERT     (1 << 1)    /**< Vertical maximization. */
-#define MAX_LEFT     (1 << 2)    /**< Maximize on left. */
-#define MAX_RIGHT    (1 << 3)    /**< Maximize on right. */
-#define MAX_TOP      (1 << 4)    /**< Maximize on top. */
-#define MAX_BOTTOM   (1 << 5)    /**< Maximize on bottom. */
+#include "ClientState.h"
 
 /** Colormap window linked list. */
 typedef struct ColormapNode {
@@ -177,9 +99,6 @@ private:
 
 protected:
 	void saveBounds();
-	void setStateMaxFlags(MaxFlags flags) {
-		this->state.maxFlags = flags;
-	}
 public:
 
 	static char DoRemoveClientStrut(ClientNode *np);
@@ -208,10 +127,153 @@ public:
 	Window getOwner() const {
 		return this->owner;
 	}
+	void setOpacity(unsigned int opacity) {
+		this->state.setOpacity(opacity);
+	}
+	void setNoPager() {
+		this->state.setNoPager();
+	}
+	void setHasNoList() {
+		this->state.setHasNoList();
+	}
+	void setNoList() {
+		this->state.setNoList();
+	}
+	void clearToNoList() {
+		this->state.clearToNoList();
+	}
+	void clearToNoPager() {
+		this->state.clearToNoPager();
+	}
+	void clearToSticky() {
+		this->state.clearToSticky();
+	}
 	void setOwner(Window owner) {
 		this->owner = owner;
 	}
-
+	void setNoBorderTitle() {
+		this->state.setNoBorderTitle();
+	}
+	void ignoreProgramSpecificPosition() {
+		this->state.ignoreProgramSpecificPosition();
+	}
+	void ignoreIncrementWhenMaximized() {
+		this->state.ignoreIncrementWhenMaximized();
+	}
+	void setNoBorderShade() {
+		this->state.setNoBorderShade();
+	}
+	void setBorderTitle() {
+		this->state.setBorderTitle();
+	}
+	void setNoBorderOutline() {
+		this->state.setNoBorderOutline();
+	}
+	void setBorderOutline() {
+		this->state.setBorderOutline();
+	}
+	void unsetNoPager() {
+		this->state.unsetNoPager();
+	}
+	void setSticky() {
+		this->state.setSticky();
+	}
+	void ignoreProgramList() {
+		this->state.ignoreProgramList();
+	}
+	void unsetSkippingInTaskList() {
+		this->state.unsetSkippingInTaskList();
+	}
+	void ignoreProgramSpecificPager() {
+		this->state.ignoreProgramSpecificPager();
+	}
+	void setMaximized() {
+		this->state.setMaximized();
+	}
+	void setMinimized() {
+		this->state.setMinimized();
+	}
+	void setOpacityFixed() {
+		this->state.setOpacityFixed();
+	}
+	void setNoBorderMaxHoriz() {
+		this->state.setNoBorderMaxHoriz();
+	}
+	void setNoBorderMaxVert() {
+		this->state.setNoBorderMaxVert();
+	}
+	void setNoFocus() {
+		this->state.setNoFocus();
+	}
+	void setNotHidden() {
+		this->state.setNotHidden();
+	}
+	void setHidden() {
+		this->state.setHidden();
+	}
+	void setNoBorderMin() {
+		this->state.setNoBorderMin();
+	}
+	void setNoBorderMax() {
+		this->state.setNoBorderMax();
+	}
+	void setNoBorderClose() {
+		this->state.setNoBorderClose();
+	}
+	void setNoBorderMove() {
+		this->state.setNoBorderMove();
+	}
+	void setNoBorderResize() {
+		this->state.setNoBorderResize();
+	}
+	void setCentered() {
+		this->state.setCentered();
+	}
+	void setTiled() {
+		this->state.setTiled();
+	}
+	void setNotUrgent() {
+		this->state.setNotUrgent();
+	}
+	void setNoFlash() {
+		this->state.setNoFlash();
+	}
+	void setNoCanFocus() {
+		this->state.setNoCanFocus();
+	}
+	void setCanFocus() {
+		this->state.setCanFocus();
+	}
+	void changeState(ClientState state) {
+		this->state = state;
+	}
+	void setUrgent() {
+		this->state.setUrgent();
+	}
+	void setBorderConstrain() {
+		this->state.setBorderConstrain();
+	}
+	void setFullscreen() {
+		this->state.setFullscreen();
+	}
+	void setNoBorderFullscreen() {
+		this->state.setNoBorderFullscreen();
+	}
+	void setDrag() {
+		this->state.setDrag();
+	}
+	void setFixed() {
+		this->state.setFixed();
+	}
+	void setEdgeSnap() {
+		this->state.setEdgeSnap();
+	}
+	void setNoDrag() {
+		this->state.setNoDrag();
+	}
+	void setPositionFromConfig() {
+		this->state.setPositionFromConfig();
+	}
 	int getX() const {
 		return this->x;
 	}
@@ -232,6 +294,29 @@ public:
 		this->width = width;
 	}
 
+	//TODO: Rename these methods to be better understood
+	void setWMDialogStatus() {
+		this->state.setWMDialogStatus();
+	}
+	//TODO: Rename these methods to be better understood
+	void setSDesktopStatus() {
+		this->state.setSDesktopStatus();
+	}
+	void resetLayerToDefault() {
+		this->SetClientLayer(this->state.getDefaultLayer());
+	}
+	void clearStatus() {
+		this->state.clearStatus();
+	}
+	void setCurrentDesktop(unsigned char desktop) {
+		this->state.setCurrentDesktop(desktop);
+	}
+	void setMapped() {
+		this->state.setMapped();
+	}
+	void setShaded() {
+		this->state.setShaded();
+	}
 	int getBaseWidth() {return this->baseWidth;}
 	int getBaseHeight() {return this->baseHeight;}
 	int getMaxWidth() {return this->maxWidth;}
@@ -242,7 +327,7 @@ public:
 	int getXInc() {return this->xinc;}
 
 	unsigned int getStatus() const {
-		return this->state.status;
+		return this->state.getStatus();
 	}
 	AspectRatio getAspect() {return this->aspect;}
 
@@ -269,222 +354,7 @@ public:
 	const ClientState* getState() const {
 		return &this->state;
 	}
-	void setOpacity(unsigned int opacity) {
-		this->state.opacity = opacity;
-	}
-	void clearStatus() {
-		this->state.status = 0;
-	}
-	void setWMDialogStatus() {
-		this->state.status |= STAT_WMDIALOG;
-	}
-	void setSDesktopStatus() {
-		this->state.status |= STAT_SDESKTOP;
-	}
-	void setMapped() {
-		this->state.status |= STAT_MAPPED;
-	}
-	void setShaded() {
-		this->state.status |= STAT_SHADED;
-	}
-	void setMinimized() {
-		this->state.status |= STAT_MINIMIZED;
-	}
-	void setNoPager() {
-		this->state.status |= STAT_NOPAGER;
-	}
-	void setPositionFromConfig() {
-		this->state.status |= STAT_POSITION;
-	}
-	void setHasNoList() {
-		this->state.status ^= STAT_NOLIST;
-	}
-	void setNoList() {
-		this->state.status |= STAT_NOLIST;
-	}
-	void setSticky() {
-		this->state.status |= STAT_STICKY;
-	}
-	void setNoDrag() {
-		this->state.status |= STAT_NODRAG;
-	}
-	void clearToNoList() {
-		this->state.status &= ~STAT_NOLIST;
-	}
-	void clearToNoPager() {
-		this->state.status &= ~STAT_NOPAGER;
-	}
-	void resetMappedState() {
-		this->state.status &= ~STAT_MAPPED;
-	}
-	void clearToSticky() {
-		this->state.status &= ~STAT_STICKY;
-	}
-	void setEdgeSnap() {
-		this->state.status |= STAT_AEROSNAP;
-	}
-	void setDrag() {
-		this->state.status |= STAT_DRAG;
-	}
-	void setFixed() {
-		this->state.status |= STAT_FIXED;
-	}
-	void setCurrentDesktop(unsigned int desktop) {
-		this->state.desktop = desktop;
-	}
-	void setState(ClientState *state) {
-		this->state = *state;
-	}
-	void ignoreProgramList() {
-		this->state.status |= STAT_PIGNORE;
-	}
-	void ignoreProgramSpecificPager() {
-		this->state.status |= STAT_IPAGER;
-	}
-	void setFullscreen() {
-		this->state.status |= STAT_FULLSCREEN;
-	}
-	void setMaximized() {
-		this->state.status |= MAX_HORIZ | MAX_VERT;
-	}
-	void setCentered() {
-		this->state.status |= STAT_CENTERED;
-	}
-	void setTiled() {
-		this->state.status |= STAT_TILED;
-	}
-	void setNotUrgent() {
-		this->state.status |= STAT_NOTURGENT;
-	}
-	void setTaskListSkipped() {
-		this->state.status |= STAT_NOLIST;
-	}
-	void setNoFocus() {
-		this->state.status |= STAT_NOFOCUS;
-	}
-	void setOpacityFixed() {
-		this->state.status |= STAT_OPACITY;
-	}
-	void ignoreProgramSpecificPosition() {
-		this->state.status |= STAT_PIGNORE;
-	}
-	void ignoreIncrementWhenMaximized() {
-		this->state.status |= STAT_IIGNORE;
-	}
 
-	void setBorderOutline() {
-		/**< Window has a border. */
-		this->state.border |= BORDER_OUTLINE;
-	}
-	void setBorderTitle() {
-		/**< Window has a title bar. */
-		this->state.border |= BORDER_TITLE;
-	}
-	void setBorderMin() {
-		/**< Window supports minimize. */
-		this->state.border |= BORDER_MIN;
-	}
-	void setBorderMax() {
-		/**< Window supports maximize. */
-		this->state.border |= BORDER_MAX;
-	}
-	void setBorderClose() {
-		/**< Window supports close. */
-		this->state.border |= BORDER_CLOSE;
-	}
-	void setBorderResize() {
-		/**< Window supports resizing. */
-		this->state.border |= BORDER_RESIZE;
-	}
-	void setBorderMove() {
-		/**< Window supports moving. */
-		this->state.border |= BORDER_MOVE;
-	}
-	void setBorderMaxVert() {
-		/**< Maximize vertically. */
-		this->state.border |= BORDER_MAX_V;
-	}
-	void setBorderMaxHoriz() {
-		/**< Maximize horizontally. */
-		this->state.border |= BORDER_MAX_H;
-	}
-	void setBorderShade() {
-		/**< Allow shading. */
-		this->state.border |= BORDER_SHADE;
-	}
-	void setBorderConstrain() {
-		/**< Constrain to the screen. */
-		this->state.border |= BORDER_CONSTRAIN;
-	}
-	void setBorderFullscreen() {
-		/**< Allow fullscreen. */
-		this->state.border |= BORDER_FULLSCREEN;
-	}
-
-	void setNoBorderOutline() {
-		/**< Window has a border. */
-		this->state.border &= ~BORDER_OUTLINE;
-	}
-	void setNoBorderTitle() {
-		/**< Window has a title bar. */
-		this->state.border &= ~BORDER_TITLE;
-	}
-	void setNoBorderMin() {
-		/**< Window supports minimize. */
-		this->state.border &= ~BORDER_MIN;
-	}
-	void setNoBorderMax() {
-		/**< Window supports maximize. */
-		this->state.border &= ~BORDER_MAX;
-	}
-	void setNoBorderClose() {
-		/**< Window supports close. */
-		this->state.border &= ~BORDER_CLOSE;
-	}
-	void setNoBorderResize() {
-		/**< Window supports resizing. */
-		this->state.border &= ~BORDER_RESIZE;
-	}
-	void setNoBorderMove() {
-		/**< Window supports moving. */
-		this->state.border &= ~BORDER_MOVE;
-	}
-	void setNoBorderMaxVert() {
-		/**< Maximize vertically. */
-		this->state.border &= ~BORDER_MAX_V;
-	}
-	void setNoBorderMaxHoriz() {
-		/**< Maximize horizontally. */
-		this->state.border &= ~BORDER_MAX_H;
-	}
-	void setNoBorderShade() {
-		/**< Allow shading. */
-		this->state.border &= ~BORDER_SHADE;
-	}
-	void setNoBorderConstrain() {
-		/**< Constrain to the screen. */
-		this->state.border &= ~BORDER_CONSTRAIN;
-	}
-	void setNoBorderFullscreen() {
-		/**< Allow fullscreen. */
-		this->state.border &= ~BORDER_FULLSCREEN;
-	}
-
-	void unsetNoPager() {
-		this->state.status &= ~STAT_NOPAGER;
-	}
-
-	void unsetSkippingInTaskList() {
-		this->state.status &= ~STAT_NOLIST;
-	}
-
-	void setNotHidden() {
-		this->state.status &= ~STAT_HIDDEN;
-	}
-
-	void setHidden() {
-		this->state.status |= STAT_HIDDEN;
-	}
 
 	ClientNode *getNext() const {
 		return this->next;
@@ -528,7 +398,7 @@ public:
 	}
 
 	void setLayer(unsigned int layer) {
-		this->state.layer = layer;
+		this->state.setLayer(layer);
 	}
 	void SetOpacity(unsigned int opacity, char force);
 	void _UpdateState();

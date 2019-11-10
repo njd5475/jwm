@@ -234,6 +234,7 @@ void TrayComponentType::handleReleaseActions(int x, int y, int button) {
 }
 
 void TrayComponentType::handlePressActions(int x, int y, int button) {
+  Log("Tray component handling press action\n");
   std::vector<ActionNode*>::iterator it;
   for (it = this->actions.begin(); it != this->actions.end(); ++it) {
     (*it)->ProcessActionPress(this, x, y, button);

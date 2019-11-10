@@ -202,20 +202,20 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 		for (np = nodes[layer]; np; np = np->getNext()) {
 
 			/* Skip this client if it isn't mapped. */
-			if (!(np->getState()->status & STAT_MAPPED)) {
+			if (!(np->getState()->getStatus() & STAT_MAPPED)) {
 				continue;
 			}
-			if (np->getState()->status & STAT_NOPAGER) {
+			if (np->getState()->getStatus() & STAT_NOPAGER) {
 				continue;
 			}
 
 			/* Skip this client if it isn't on the selected desktop. */
-			if (np->getState()->status & STAT_STICKY) {
+			if (np->getState()->getStatus() & STAT_STICKY) {
 				if (currentDesktop != desktop) {
 					continue;
 				}
 			} else {
-				if (np->getState()->desktop != desktop) {
+				if (np->getState()->getDesktop() != desktop) {
 					continue;
 				}
 			}
@@ -271,7 +271,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 	Assert(np);
 
 	/* The selected client was found. Now make sure we can move it. */
-	if (!(np->getState()->border & BORDER_MOVE)) {
+	if (!(np->getState()->getBorder() & BORDER_MOVE)) {
 		return;
 	}
 
@@ -281,8 +281,8 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 	}
 
 	/* If the client is maximized, unmaximize it. */
-	maxFlags = np->getState()->maxFlags;
-	if (np->getState()->maxFlags) {
+	maxFlags = np->getState()->getMaxFlags();
+	if (np->getState()->getMaxFlags()) {
 		np->MaximizeClient(MAX_NONE);
 	}
 
@@ -293,7 +293,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 
 	oldx = np->getX();
 	oldy = np->getY();
-	oldDesk = np->getState()->desktop;
+	oldDesk = np->getState()->getDesktop();
 
 	startx = x;
 	starty = y;
@@ -345,7 +345,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 
 			/* If this client isn't sticky and now on a different desktop
 			 * change the client's desktop. */
-			if (!(np->getState()->status & STAT_STICKY)) {
+			if (!(np->getState()->getStatus() & STAT_STICKY)) {
 				if (desktop != oldDesk) {
 					np->SetClientDesktop((unsigned int) desktop);
 					oldDesk = desktop;
@@ -538,20 +538,20 @@ void PagerType::DrawPagerClient(ClientNode *np) {
 	int offx, offy;
 
 	/* Don't draw the client if it isn't mapped. */
-	if (!(np->getState()->status & STAT_MAPPED)) {
+	if (!(np->getState()->getStatus() & STAT_MAPPED)) {
 		return;
 	}
-	if (np->getState()->status & STAT_NOPAGER) {
+	if (np->getState()->getStatus() & STAT_NOPAGER) {
 		return;
 	}
 
 	/* Determine the desktop for the client. */
-	if (np->getState()->status & STAT_STICKY) {
+	if (np->getState()->getStatus() & STAT_STICKY) {
 		offx = currentDesktop % settings.desktopWidth;
 		offy = currentDesktop / settings.desktopWidth;
 	} else {
-		offx = np->getState()->desktop % settings.desktopWidth;
-		offy = np->getState()->desktop / settings.desktopWidth;
+		offx = np->getState()->getDesktop() % settings.desktopWidth;
+		offy = np->getState()->getDesktop() / settings.desktopWidth;
 	}
 	offx *= this->deskWidth + 1;
 	offy *= this->deskHeight + 1;
@@ -594,11 +594,11 @@ void PagerType::DrawPagerClient(ClientNode *np) {
 	/* Fill the client if there's room. */
 	if (width > 1 && height > 1) {
 		ColorType fillColor;
-		if ((np->getState()->status & STAT_ACTIVE)
-				&& (np->getState()->desktop == currentDesktop
-						|| (np->getState()->status & STAT_STICKY))) {
+		if ((np->getState()->getStatus() & STAT_ACTIVE)
+				&& (np->getState()->getDesktop() == currentDesktop
+						|| (np->getState()->getStatus() & STAT_STICKY))) {
 			fillColor = COLOR_PAGER_ACTIVE_FG;
-		} else if (np->getState()->status & STAT_FLASH) {
+		} else if (np->getState()->getStatus() & STAT_FLASH) {
 			fillColor = COLOR_PAGER_ACTIVE_FG;
 		} else {
 			fillColor = COLOR_PAGER_FG;

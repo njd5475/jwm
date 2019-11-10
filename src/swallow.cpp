@@ -148,7 +148,7 @@ void SwallowNode::Destroy() {
 		ClientState state;
 		memset(&state, 0, sizeof(state));
 		Hints::ReadWMProtocols(this->window, &state);
-		if (state.status & STAT_DELETE) {
+		if (state.getStatus() & STAT_DELETE) {
 			ClientNode::SendClientMessage(this->window, ATOM_WM_PROTOCOLS,
 					ATOM_WM_DELETE_WINDOW);
 		} else {

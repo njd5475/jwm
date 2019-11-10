@@ -230,14 +230,14 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
   }
 
   /* Loop over each client. */
-  for (layer = this->getState()->layer; layer < LAYER_COUNT; layer++) {
+  for (layer = this->getState()->getLayer(); layer < LAYER_COUNT; layer++) {
     for (tp = nodes[layer]; tp; tp = tp->next) {
 
       /* Skip clients that aren't visible. */
       if (!IsClientOnCurrentDesktop(tp)) {
         continue;
       }
-      if (!(tp->state.status & STAT_MAPPED)) {
+      if (!(tp->state.getStatus() & STAT_MAPPED)) {
         continue;
       }
       if (tp == this) {

@@ -29,6 +29,7 @@ ActionNode::~ActionNode() {
 /** Process a button press. */
 void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
 		int button) {
+	Log("Processing action press\n")
 	const ScreenType *sp;
 	const int mask = 1 << button;
 	int mwidth, mheight;
