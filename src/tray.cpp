@@ -246,7 +246,6 @@ TrayComponentType::TrayComponentType() :
 		screenx(0), screeny(0) {
 
 	this->tray = NULL;
-	this->object = NULL;
 
 	this->x = 0;
 	this->y = 0;

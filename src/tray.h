@@ -265,7 +265,7 @@ private:
 
 protected:
   /** Additional information needed for the component. */
-  void *object;
+  //void *object;
   int requestedWidth; /**< Requested width. */
   int requestedHeight; /**< Requested height. */
   Pixmap pixmap; /**< Content (if a pixmap, otherwise None). */
@@ -279,8 +279,6 @@ private:
 
   char grabbed; /**< 1 if the mouse was grabbed by this component. */
 
-  /** Callback to create the component. */
-  //void (*Create)(struct TrayComponentType *cp);
   /** The next component in the tray. */
   struct TrayComponentType *next;
 
@@ -310,7 +308,6 @@ public:
 
   void SetLocation(int x, int y) {this->x=x;this->y=y;}
   void SetScreenLocation(int x, int y) {this->screenx=x;this->screeny=y;}
-  void* getObject() const {return this->object;}
   TrayType *getTray() const {return this->tray;}
   Pixmap getPixmap() const {return this->pixmap;}
   void setPixmap(Pixmap pixmap) {

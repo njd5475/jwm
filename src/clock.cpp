@@ -112,7 +112,7 @@ void ClockType::Resize(TrayComponentType *cp) {
 
 	Assert(cp);
 
-	clk = (ClockType*) cp->getObject();
+	clk = (ClockType*) cp;
 
 	Assert(clk);
 

@@ -134,7 +134,7 @@ void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y,
 	case Button2:
 
 		/* Change to the selected desktop. */
-		pp = (PagerType*) cp->getObject();
+		pp = (PagerType*) cp;
 		DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
 				pp->GetPagerDesktop(x, y));
 		break;
@@ -166,7 +166,7 @@ void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y,
 void PagerType::ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y,
 		int mask) {
 
-	PagerType *pp = (PagerType*) cp->getObject();
+	PagerType *pp = (PagerType*) cp;
 
 	pp->mousex = cp->getScreenX() + x;
 	pp->mousey = cp->getScreenY() + y;
@@ -190,7 +190,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 	int startx, starty;
 	MaxFlags maxFlags;
 
-	pp = (PagerType*) cp->getObject();
+	pp = (PagerType*) cp;
 
 	/* Determine the selected desktop. */
 	desktop = pp->GetPagerDesktop(x, y);

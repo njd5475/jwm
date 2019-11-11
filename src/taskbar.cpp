@@ -353,10 +353,9 @@ void TaskBarType::FocusGroup(const TaskEntry *tp) {
 
 /** Process a task list motion event. */
 void TaskBarType::ProcessTaskMotionEvent(int x, int y, int mask) {
-  TaskBarType *bp = (TaskBarType*) this->getObject();
-  bp->mousex = this->getScreenX() + x;
-  bp->mousey = this->getScreenY() + y;
-  GetCurrentTime(&bp->mouseTime);
+  this->mousex = this->getScreenX() + x;
+  this->mousey = this->getScreenY() + y;
+  GetCurrentTime(&this->mouseTime);
 }
 
 /** Show the menu associated with a task list item. */
@@ -888,7 +887,7 @@ void TaskBarType::SetMaxTaskBarItemWidth(const char *value) {
 
 /** Set the preferred height of the specified task bar. */
 void TaskBarType::SetTaskBarHeight(TrayComponentType *cp, const char *value) {
-  TaskBarType *bp = (TaskBarType*) cp->getObject();
+  TaskBarType *bp = (TaskBarType*) cp;
   int temp;
 
   temp = atoi(value);
@@ -901,7 +900,7 @@ void TaskBarType::SetTaskBarHeight(TrayComponentType *cp, const char *value) {
 
 /** Set whether the label should be displayed. */
 void TaskBarType::SetTaskBarLabeled(TrayComponentType *cp, char labeled) {
-  TaskBarType *bp = (TaskBarType*) cp->getObject();
+  TaskBarType *bp = (TaskBarType*) cp;
   bp->labeled = labeled;
 }
 

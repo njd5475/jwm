@@ -32,8 +32,7 @@ void TrayButton::StartupTrayButtons(void) {
 	TrayButton *bp;
 	for (bp = buttons; bp; bp = bp->next) {
 		if (bp->label) {
-			bp->requestNewSize(Fonts::GetStringWidth(FONT_TRAY, bp->label) + 4,
-					Fonts::GetStringHeight(FONT_TRAY));
+			bp->requestNewSize(Fonts::GetStringWidth(FONT_TRAY, bp->label) + 4, Fonts::GetStringHeight(FONT_TRAY));
 		} else {
 			bp->requestNewSize(0, 0);
 		}
@@ -77,11 +76,10 @@ void TrayButton::DestroyTrayButtons(void) {
 }
 
 /** Create a button tray component. */
-TrayButton::TrayButton(const char *iconName, const char *label,
-		const char *popup, unsigned int width, unsigned int height) {
+TrayButton::TrayButton(const char *iconName, const char *label, const char *popup, unsigned int width,
+		unsigned int height) {
 
-	if (JUNLIKELY(
-			(label == NULL || strlen(label) == 0) && (iconName == NULL || strlen(iconName) == 0))) {
+	if (JUNLIKELY((label == NULL || strlen(label) == 0) && (iconName == NULL || strlen(iconName) == 0))) {
 		Warning(_("no icon or label for TrayButton"));
 		return;
 	}
@@ -171,9 +169,7 @@ void TrayButton::SetSize(TrayComponentType *cp, int width, int height) {
 
 /** Initialize a button tray component. */
 void TrayButton::Create(TrayComponentType *cp) {
-	cp->setPixmap(
-			JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(),
-					rootDepth));
+	cp->setPixmap(JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(), rootDepth));
 
 	Draw(cp);
 }
@@ -197,7 +193,7 @@ void TrayButton::Draw(TrayComponentType *cp) {
 	ButtonNode button;
 	TrayButton *bp;
 
-	bp = (TrayButton*) cp->getObject();
+	bp = (TrayButton*) cp;
 
 	TrayType::ClearTrayDrawable(cp);
 	ResetButton(&button, cp->getPixmap());
@@ -219,17 +215,15 @@ void TrayButton::Draw(TrayComponentType *cp) {
 }
 
 /** Process a motion event. */
-void TrayButton::ProcessMotionEvent(TrayComponentType *cp, int x, int y,
-		int mask) {
-	TrayButton *bp = (TrayButton*) cp->getObject();
-	bp->mousex = cp->getScreenX() + x;
-	bp->mousey = cp->getScreenY() + y;
-	GetCurrentTime(&bp->mouseTime);
+void TrayButton::ProcessMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
+	TrayButton *tb = (TrayButton*) cp;
+	tb->mousex = cp->getScreenX() + x;
+	tb->mousey = cp->getScreenY() + y;
+	GetCurrentTime(&tb->mouseTime);
 }
 
 /** Signal (needed for popups). */
-void TrayButton::SignalTrayButton(const TimeType *now, int x, int y, Window w,
-		void *data) {
+void TrayButton::SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data) {
 	TrayButton *bp = (TrayButton*) data;
 	const char *popup;
 
@@ -240,8 +234,7 @@ void TrayButton::SignalTrayButton(const TimeType *now, int x, int y, Window w,
 	} else {
 		return;
 	}
-	if (bp->getTray()->getWindow() == w
-			&& abs(bp->mousex - x) < settings.doubleClickDelta
+	if (bp->getTray()->getWindow() == w && abs(bp->mousex - x) < settings.doubleClickDelta
 			&& abs(bp->mousey - y) < settings.doubleClickDelta) {
 		if (GetTimeDifference(now, &bp->mouseTime) >= settings.popupDelay) {
 			Popups::ShowPopup(x, y, popup, POPUP_BUTTON);
