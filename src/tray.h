@@ -112,16 +112,6 @@ public:
   static void ShutdownTray(void);
   static void DestroyTray(void);
 
-  /** Create a new tray.
-   * @return A new, empty tray.
-   */
-  TrayType *CreateTray(void);
-
-  /** Create a tray component.
-   * @return A new tray component structure.
-   */
-  TrayComponentType *CreateTrayComponent(void);
-
   /** Add a tray component to a tray.
    * @param tp The tray to update.
    * @param cp The tray component to add.
@@ -352,6 +342,7 @@ public:
   /** Callback to resize the component. */
   virtual void Resize() {}
 
+  virtual void Draw() {}
   /** Callback for mouse presses. */
   virtual void ProcessButtonPress(int x, int y, int mask) {}
 

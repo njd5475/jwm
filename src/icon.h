@@ -83,7 +83,7 @@ public:
 	/** Load an icon for a client.
 	 * @param np The client.
 	 */
-	static void LoadIcon(struct ClientNode *np);
+	static void LoadIcon(ClientNode *np);
 
 	/** Load an icon.
 	 * @param name The name of the icon to load.

@@ -63,7 +63,7 @@ void Battery::StartupBattery(void) {
 /** Create a Battery tray component. */
 Battery::Battery(int width, int height) : TrayComponentType() {
   Warning(_("Creating Battery Component"));
-  this->SetSize(20, 20);
+  this->SetSize(width, height);
 
   _RegisterCallback(900, PollBattery, this);
 }
@@ -135,7 +135,6 @@ void Battery::Draw() {
 int readAsInt(int fd) {
   char *str = quickFileRead(fd);
   return (int)strtol(str, &str, 10);
-  //return 0;
 }
 
 

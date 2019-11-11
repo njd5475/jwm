@@ -110,7 +110,7 @@ void TrayButton::SetSize(TrayComponentType *cp, int width, int height) {
 	int labelWidth, labelHeight;
 	int iconWidth, iconHeight;
 
-	bp = (TrayButton*) cp->getObject();
+	bp = (TrayButton*) cp;
 
 	if (bp->label) {
 		labelWidth = Fonts::GetStringWidth(FONT_TRAY, bp->label) + 6;

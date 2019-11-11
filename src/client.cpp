@@ -269,7 +269,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 
 	Groups::ApplyGroups(this);
 	if (this->icon == NULL) {
-		this->LoadIcon();
+		Icons::LoadIcon(this);
 	}
 
 	/* We now know the layer, so insert */

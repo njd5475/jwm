@@ -236,39 +236,45 @@ void Icons::PutIcon(IconNode *icon, Drawable d, long fg, int x, int y,
 }
 
 /** Load the icon for a client. */
-void ClientNode::LoadIcon() {
+void Icons::LoadIcon(ClientNode *np) {
+	IconNode *ico = np->getIcon();
 	/* If client already has an icon, destroy it first. */
-	Icons::DestroyIcon(this->icon);
-	this->icon = NULL;
+	Icons::DestroyIcon(ico);
+	ico = NULL;
 
 	/* Attempt to read _NET_WM_ICON for an icon. */
-	this->icon = ReadNetWMIcon(this->window);
-	if (this->icon) {
+	ico = ReadNetWMIcon(np->getWindow());
+	if (ico) {
+		np->setIcon(ico);
 		return;
 	}
-	if (this->owner != None) {
-		this->icon = ReadNetWMIcon(this->owner);
-		if (this->icon) {
+	if (np->getOwner() != None) {
+		ico = ReadNetWMIcon(np->getOwner());
+		if (ico) {
+			np->setIcon(ico);
 			return;
 		}
 	}
 
 	/* Attempt to read an icon from XWMHints. */
-	this->icon = ReadWMHintIcon(this->window);
-	if (this->icon) {
+	ico = ReadWMHintIcon(np->getWindow());
+	if (ico) {
+		np->setIcon(ico);
 		return;
 	}
-	if (this->owner != None) {
-		this->icon = ReadNetWMIcon(this->owner);
-		if (this->icon) {
+	if (np->getOwner() != None) {
+		ico = ReadNetWMIcon(np->getOwner());
+		if (ico) {
+			np->setIcon(ico);
 			return;
 		}
 	}
 
 	/* Attempt to read an icon based on the window name. */
-	if (this->instanceName) {
-		this->icon = Icons::LoadNamedIcon(this->instanceName, 1, 1);
-		if (this->icon) {
+	if (np->getInstanceName()) {
+		ico = Icons::LoadNamedIcon(np->getInstanceName(), 1, 1);
+		if (ico) {
+			np->setIcon(ico);
 			return;
 		}
 	}
