@@ -51,17 +51,15 @@ public:
 
 	struct TrayButton *next;
 
-	static TrayButton *buttons = NULL;
+	static TrayButton *buttons;
 
-	static void Create(TrayComponentType *cp);
-	static void Destroy(TrayComponentType *cp);
-	static void SetSize(TrayComponentType *cp, int width, int height);
-	static void Resize(TrayComponentType *cp);
-	static void Draw(TrayComponentType *cp);
+	virtual void Create();
+	virtual void Destroy();
+	virtual void SetSize(int width, int height);
+	virtual void Resize();
+	virtual void Draw();
 
-	static void ProcessButtonPress(TrayComponentType *cp, int x, int y, int button);
-	static void ProcessButtonRelease(TrayComponentType *cp, int x, int y, int button);
-	static void ProcessMotionEvent(TrayComponentType *cp, int x, int y, int mask);
+	virtual void ProcessMotionEvent(int x, int y, int mask);
 	static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);
 };
 

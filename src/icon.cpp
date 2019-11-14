@@ -19,7 +19,7 @@
 #include "settings.h"
 #include "border.h"
 
-static IconNode Icons::emptyIcon;
+IconNode Icons::emptyIcon;
 
 #ifdef USE_ICONS
 

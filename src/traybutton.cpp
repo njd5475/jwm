@@ -27,6 +27,8 @@
 #include "event.h"
 #include "action.h"
 
+TrayButton *TrayButton::buttons = NULL;
+
 /** Startup tray buttons. */
 void TrayButton::StartupTrayButtons(void) {
 	TrayButton *bp;
@@ -52,8 +54,6 @@ void TrayButton::StartupTrayButtons(void) {
 		}
 	}
 }
-
-TrayButton *TrayButton::buttons;
 
 /** Release tray button data. */
 void TrayButton::DestroyTrayButtons(void) {
@@ -99,16 +99,15 @@ TrayButton::TrayButton(const char *iconName, const char *label, const char *popu
 	this->mousey = -settings.doubleClickDelta;
 
 	_RegisterCallback(settings.popupDelay / 2, SignalTrayButton, this);
-
 }
 
 /** Set the size of a button tray component. */
-void TrayButton::SetSize(TrayComponentType *cp, int width, int height) {
+void TrayButton::SetSize(int width, int height) {
 	TrayButton *bp;
 	int labelWidth, labelHeight;
 	int iconWidth, iconHeight;
 
-	bp = (TrayButton*) cp;
+	bp = (TrayButton*) this;
 
 	if (bp->label) {
 		labelWidth = Fonts::GetStringWidth(FONT_TRAY, bp->label) + 6;
@@ -163,33 +162,35 @@ void TrayButton::SetSize(TrayComponentType *cp, int width, int height) {
 		}
 	}
 
-	cp->SetSize(width, height);
+	this->width = width;
+	this->height = height;
 
 }
 
 /** Initialize a button tray component. */
-void TrayButton::Create(TrayComponentType *cp) {
-	cp->setPixmap(JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(), rootDepth));
+void TrayButton::Create() {
+	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
 
-	Draw(cp);
+	Draw();
 }
 
 /** Resize a button tray component. */
-void TrayButton::Resize(TrayComponentType *cp) {
-	Destroy(cp);
-	Create(cp);
+void TrayButton::Resize() {
+	Destroy();
+	Create();
 }
 
 /** Destroy a button tray component. */
-void TrayButton::Destroy(TrayComponentType *cp) {
-	if (cp->getPixmap() != None) {
-		JXFreePixmap(display, cp->getPixmap());
+void TrayButton::Destroy() {
+	if (this->getPixmap() != None) {
+		JXFreePixmap(display, this->getPixmap());
 	}
 }
 
 /** Draw a tray button. */
-void TrayButton::Draw(TrayComponentType *cp) {
-
+void TrayButton::Draw() {
+	return;
+	TrayComponentType *cp = this;
 	ButtonNode button;
 	TrayButton *bp;
 
@@ -215,11 +216,10 @@ void TrayButton::Draw(TrayComponentType *cp) {
 }
 
 /** Process a motion event. */
-void TrayButton::ProcessMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
-	TrayButton *tb = (TrayButton*) cp;
-	tb->mousex = cp->getScreenX() + x;
-	tb->mousey = cp->getScreenY() + y;
-	GetCurrentTime(&tb->mouseTime);
+void TrayButton::ProcessMotionEvent(int x, int y, int mask) {
+	this->mousex = this->getScreenX() + x;
+	this->mousey = this->getScreenY() + y;
+	GetCurrentTime(&this->mouseTime);
 }
 
 /** Signal (needed for popups). */

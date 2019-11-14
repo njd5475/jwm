@@ -290,10 +290,8 @@ int TrayType::ComputeMaxWidth() {
 	result = 0;
 	for (cp = this->components; cp; cp = cp->getNext()) {
 		temp = cp->getWidth();
-		if (temp > 0) {
-			if (temp > result) {
-				result = temp;
-			}
+		if (temp > 0 && temp > result) {
+			result = temp;
 		}
 	}
 
@@ -322,10 +320,8 @@ int TrayType::ComputeMaxHeight() {
 	result = 0;
 	for (cp = this->components; cp; cp = cp->getNext()) {
 		temp = cp->getHeight();
-		if (temp > 0) {
-			if (temp > result) {
-				result = temp;
-			}
+		if (temp > 0 && temp > result) {
+			result = temp;
 		}
 	}
 
@@ -702,7 +698,7 @@ void TrayType::HandleTrayButtonPress(TrayType *tp, const XButtonEvent *event) {
 		const int mask = event->button;
 		_DiscardButtonEvents();
 		cp->ProcessButtonPress(x, y, mask);
-	}else{
+	} else {
 		Log("Could not find a component at location\n");
 	}
 }
