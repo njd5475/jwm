@@ -99,6 +99,8 @@ TrayButton::TrayButton(const char *iconName, const char *label, const char *popu
 	this->mousey = -settings.doubleClickDelta;
 
 	_RegisterCallback(settings.popupDelay / 2, SignalTrayButton, this);
+
+	this->Create();
 }
 
 /** Set the size of a button tray component. */
@@ -170,8 +172,6 @@ void TrayButton::SetSize(int width, int height) {
 /** Initialize a button tray component. */
 void TrayButton::Create() {
 	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
-
-	Draw();
 }
 
 /** Resize a button tray component. */
@@ -189,7 +189,6 @@ void TrayButton::Destroy() {
 
 /** Draw a tray button. */
 void TrayButton::Draw() {
-	return;
 	TrayComponentType *cp = this;
 	ButtonNode button;
 	TrayButton *bp;

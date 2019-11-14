@@ -80,32 +80,32 @@ typedef unsigned char ColorType;
 
 class Colors {
 public:
-static unsigned long colors[COLOR_COUNT];
+	static unsigned long colors[COLOR_COUNT];
 
-/*@{*/
-static void InitializeColors();
-static void StartupColors();
-static void ShutdownColors();
-static void DestroyColors();
-/*@}*/
+	/*@{*/
+	static void InitializeColors();
+	static void StartupColors();
+	static void ShutdownColors();
+	static void DestroyColors();
+	/*@}*/
 
-/** Set the color to use for a component.
- * @param c The component whose color to set.
- * @param value The color to use.
- */
-static void SetColor(ColorType c, const char *value);
+	/** Set the color to use for a component.
+	 * @param c The component whose color to set.
+	 * @param value The color to use.
+	 */
+	static void SetColor(ColorType c, const char *value);
 
-/** Parse a color.
- * @param value The color name or hex value.
- * @param c The color return value (with pixel and components filled).
- * @return 1 on success, 0 on failure.
- */
-static char ParseColor(const char *value, XColor *c);
+	/** Parse a color.
+	 * @param value The color name or hex value.
+	 * @param c The color return value (with pixel and components filled).
+	 * @return 1 on success, 0 on failure.
+	 */
+	static char ParseColor(const char *value, XColor *c);
 
-/** Get the color pixel from red, green, and blue values.
- * @param c The structure containing the rgb values and the pixel value.
- */
-static void GetColor(XColor *c);
+	/** Get the color pixel from red, green, and blue values.
+	 * @param c The structure containing the rgb values and the pixel value.
+	 */
+	static void GetColor(XColor *c);
 
 #ifdef USE_XFT
 /** Get an XFT color.
