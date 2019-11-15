@@ -74,7 +74,7 @@ void CreateMoveResizeWindow(const ClientNode *np, StatusWindowType type)
    attrMask = 0;
 
    attrMask |= CWBackPixel;
-   attrs.background_pixel = Colors::colors[COLOR_MENU_BG];
+   attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
 
    attrMask |= CWSaveUnder;
    attrs.save_under = True;
@@ -113,18 +113,18 @@ void DrawMoveResizeWindow(const ClientNode *np, StatusWindowType type)
 
    /* Draw the border. */
    if(settings.menuDecorations == DECO_MOTIF) {
-      JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_UP]);
+      JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_UP));
       JXDrawLine(display, statusWindow, rootGC,
                  0, 0, statusWindowWidth, 0);
       JXDrawLine(display, statusWindow, rootGC,
                  0, 0, 0, statusWindowHeight);
-      JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_DOWN]);
+      JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_DOWN));
       JXDrawLine(display, statusWindow, rootGC, 0, statusWindowHeight - 1,
                  statusWindowWidth, statusWindowHeight - 1);
       JXDrawLine(display, statusWindow, rootGC, statusWindowWidth - 1, 0,
                  statusWindowWidth - 1, statusWindowHeight);
    } else {
-      JXSetForeground(display, rootGC, Colors::colors[COLOR_MENU_DOWN]);
+      JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_DOWN));
       JXDrawRectangle(display, statusWindow, rootGC, 0, 0,
                       statusWindowWidth - 1, statusWindowHeight - 1);
    }

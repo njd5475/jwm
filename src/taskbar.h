@@ -61,7 +61,7 @@ public:
 	static void RunTaskBarCommand(MenuAction *action, unsigned button);
 
 	void SetSize(int width, int height);
-	static void Create();
+	virtual void Create();
 	void Resize();
 	void ProcessTaskButtonEvent(int x, int y, int mask);
 	static void MinimizeGroup(const TaskEntry *tp);

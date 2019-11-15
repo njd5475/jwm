@@ -47,59 +47,59 @@ void DrawButton(ButtonNode *bp)
    switch(bp->type) {
    case BUTTON_LABEL:
       fg = COLOR_MENU_FG;
-      bg1 = Colors::colors[COLOR_MENU_BG];
-      bg2 = Colors::colors[COLOR_MENU_BG];
-      up = Colors::colors[COLOR_MENU_UP];
-      down = Colors::colors[COLOR_MENU_DOWN];
+      bg1 = Colors::lookupColor(COLOR_MENU_BG);
+      bg2 = Colors::lookupColor(COLOR_MENU_BG);
+      up = Colors::lookupColor(COLOR_MENU_UP);
+      down = Colors::lookupColor(COLOR_MENU_DOWN);
       decorations = settings.menuDecorations;
       break;
    case BUTTON_MENU_ACTIVE:
       fg = COLOR_MENU_ACTIVE_FG;
-      bg1 = Colors::colors[COLOR_MENU_ACTIVE_BG1];
-      bg2 = Colors::colors[COLOR_MENU_ACTIVE_BG2];
-      down = Colors::colors[COLOR_MENU_ACTIVE_UP];
-      up = Colors::colors[COLOR_MENU_ACTIVE_DOWN];
+      bg1 = Colors::lookupColor(COLOR_MENU_ACTIVE_BG1);
+      bg2 = Colors::lookupColor(COLOR_MENU_ACTIVE_BG2);
+      down = Colors::lookupColor(COLOR_MENU_ACTIVE_UP);
+      up = Colors::lookupColor(COLOR_MENU_ACTIVE_DOWN);
       decorations = settings.menuDecorations;
       break;
    case BUTTON_TRAY:
       fg = COLOR_TRAYBUTTON_FG;
-      bg1 = Colors::colors[COLOR_TRAYBUTTON_BG1];
-      bg2 = Colors::colors[COLOR_TRAYBUTTON_BG2];
-      up = Colors::colors[COLOR_TRAYBUTTON_UP];
-      down = Colors::colors[COLOR_TRAYBUTTON_DOWN];
+      bg1 = Colors::lookupColor(COLOR_TRAYBUTTON_BG1);
+      bg2 = Colors::lookupColor(COLOR_TRAYBUTTON_BG2);
+      up = Colors::lookupColor(COLOR_TRAYBUTTON_UP);
+      down = Colors::lookupColor(COLOR_TRAYBUTTON_DOWN);
       decorations = settings.trayDecorations;
       break;
    case BUTTON_TRAY_ACTIVE:
       fg = COLOR_TRAYBUTTON_ACTIVE_FG;
-      bg1 = Colors::colors[COLOR_TRAYBUTTON_ACTIVE_BG1];
-      bg2 = Colors::colors[COLOR_TRAYBUTTON_ACTIVE_BG2];
-      down = Colors::colors[COLOR_TRAYBUTTON_ACTIVE_UP];
-      up = Colors::colors[COLOR_TRAYBUTTON_ACTIVE_DOWN];
+      bg1 = Colors::lookupColor(COLOR_TRAYBUTTON_ACTIVE_BG1);
+      bg2 = Colors::lookupColor(COLOR_TRAYBUTTON_ACTIVE_BG2);
+      down = Colors::lookupColor(COLOR_TRAYBUTTON_ACTIVE_UP);
+      up = Colors::lookupColor(COLOR_TRAYBUTTON_ACTIVE_DOWN);
       decorations = settings.trayDecorations;
       break;
    case BUTTON_TASK:
       fg = COLOR_TASKLIST_FG;
-      bg1 = Colors::colors[COLOR_TASKLIST_BG1];
-      bg2 = Colors::colors[COLOR_TASKLIST_BG2];
-      up = Colors::colors[COLOR_TASKLIST_UP];
-      down = Colors::colors[COLOR_TASKLIST_DOWN];
+      bg1 = Colors::lookupColor(COLOR_TASKLIST_BG1);
+      bg2 = Colors::lookupColor(COLOR_TASKLIST_BG2);
+      up = Colors::lookupColor(COLOR_TASKLIST_UP);
+      down = Colors::lookupColor(COLOR_TASKLIST_DOWN);
       decorations = settings.taskListDecorations;
       break;
    case BUTTON_TASK_ACTIVE:
       fg = COLOR_TASKLIST_ACTIVE_FG;
-      bg1 = Colors::colors[COLOR_TASKLIST_ACTIVE_BG1];
-      bg2 = Colors::colors[COLOR_TASKLIST_ACTIVE_BG2];
-      down = Colors::colors[COLOR_TASKLIST_ACTIVE_UP];
-      up = Colors::colors[COLOR_TASKLIST_ACTIVE_DOWN];
+      bg1 = Colors::lookupColor(COLOR_TASKLIST_ACTIVE_BG1);
+      bg2 = Colors::lookupColor(COLOR_TASKLIST_ACTIVE_BG2);
+      down = Colors::lookupColor(COLOR_TASKLIST_ACTIVE_UP);
+      up = Colors::lookupColor(COLOR_TASKLIST_ACTIVE_DOWN);
       decorations = settings.taskListDecorations;
       break;
    case BUTTON_MENU:
    default:
       fg = COLOR_MENU_FG;
-      bg1 = Colors::colors[COLOR_MENU_BG];
-      bg2 = Colors::colors[COLOR_MENU_BG];
-      up = Colors::colors[COLOR_MENU_UP];
-      down = Colors::colors[COLOR_MENU_DOWN];
+      bg1 = Colors::lookupColor(COLOR_MENU_BG);
+      bg2 = Colors::lookupColor(COLOR_MENU_BG);
+      up = Colors::lookupColor(COLOR_MENU_UP);
+      down = Colors::lookupColor(COLOR_MENU_DOWN);
       decorations = settings.menuDecorations;
       break;
    }
@@ -187,7 +187,7 @@ void DrawButton(ButtonNode *bp)
    /* Display the icon. */
    if(bp->icon) {
       yoffset = (height - iconHeight + 1) / 2;
-      Icons::PutIcon(bp->icon, drawable, Colors::colors[fg],
+      Icons::PutIcon(bp->icon, drawable, Colors::lookupColor(fg),
               x + xoffset, y + yoffset,
               iconWidth, iconHeight);
       xoffset += iconWidth + 2;

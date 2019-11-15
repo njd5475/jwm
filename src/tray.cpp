@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "hint.h"
 #include "action.h"
+#include "button.h"
 
 #define DEFAULT_TRAY_WIDTH 32
 #define DEFAULT_TRAY_HEIGHT 32
@@ -64,7 +65,7 @@ void TrayType::StartupTray(void) {
 				| KeyReleaseMask | EnterWindowMask | PointerMotionMask;
 
 		attrMask |= CWBackPixel;
-		attr.background_pixel = Colors::colors[COLOR_TRAY_BG2];
+		attr.background_pixel = Colors::lookupColor(COLOR_TRAY_BG2);
 
 		Assert(tp->getWidth() > 0);
 		Assert(tp->getHeight() > 0);
@@ -751,6 +752,7 @@ void TrayType::DrawTray(void) {
 	for (tp = trays; tp; tp = tp->next) {
 		tp->DrawSpecificTray();
 	}
+
 }
 
 /** Draw a specific tray. */
@@ -764,15 +766,15 @@ void TrayType::DrawSpecificTray() {
 	}
 
 	if (settings.trayDecorations == DECO_MOTIF) {
-		JXSetForeground(display, rootGC, Colors::colors[COLOR_TRAY_UP]);
+		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_UP));
 		JXDrawLine(display, this->window, rootGC, 0, 0, this->width - 1, 0);
 		JXDrawLine(display, this->window, rootGC, 0, this->height - 1, 0, 0);
 
-		JXSetForeground(display, rootGC, Colors::colors[COLOR_TRAY_DOWN]);
+		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_DOWN));
 		JXDrawLine(display, this->window, rootGC, 0, this->height - 1, this->width - 1, this->height - 1);
 		JXDrawLine(display, this->window, rootGC, this->width - 1, 0, this->width - 1, this->height - 1);
 	} else {
-		JXSetForeground(display, rootGC, Colors::colors[COLOR_TRAY_DOWN]);
+		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_DOWN));
 		JXDrawRectangle(display, this->window, rootGC, 0, 0, this->width - 1, this->height - 1);
 	}
 }
@@ -968,11 +970,11 @@ void TrayType::ResizeTray() {
 /** Draw the tray background on a drawable. */
 void TrayType::ClearTrayDrawable(const TrayComponentType *cp) {
 	const Drawable d = cp->getPixmap() != None ? cp->getPixmap() : cp->getWindow();
-	if (Colors::colors[COLOR_TRAY_BG1] == Colors::colors[COLOR_TRAY_BG2]) {
-		JXSetForeground(display, rootGC, Colors::colors[COLOR_TRAY_BG1]);
+	if (Colors::lookupColor(COLOR_TRAY_BG1) == Colors::lookupColor(COLOR_TRAY_BG2)) {
+		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_BG1));
 		JXFillRectangle(display, d, rootGC, 0, 0, cp->getWidth(), cp->getHeight());
 	} else {
-		DrawHorizontalGradient(d, rootGC, Colors::colors[COLOR_TRAY_BG1], Colors::colors[COLOR_TRAY_BG2], 0, 0,
+		DrawHorizontalGradient(d, rootGC, Colors::lookupColor(COLOR_TRAY_BG1), Colors::lookupColor(COLOR_TRAY_BG2), 0, 0,
 				cp->getWidth(), cp->getHeight());
 	}
 }

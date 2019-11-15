@@ -38,6 +38,7 @@ private:
 	static SwallowNode *swallowNodes = NULL;
 
 	static void ReleaseNodes(SwallowNode *nodes);
+	void Create();
 	void Destroy();
 	void Resize();
 

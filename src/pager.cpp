@@ -58,13 +58,12 @@ PagerType::PagerType(char labeled) {
 }
 
 /** Initialize a pager tray component. */
-void PagerType::Create(TrayComponentType *cp) {
+void PagerType::Create() {
 
 	Assert(this->getWidth() > 0);
 	Assert(this->getHeight() > 0);
 
-	this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(),
-			this->getHeight(), rootDepth);
+	this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
 	this->buffer = this->pixmap;
 
 }
@@ -80,8 +79,7 @@ void PagerType::SetSize(int width, int height) {
 		this->deskWidth = width / settings.desktopWidth;
 		this->deskHeight = (this->deskWidth * rootHeight) / rootWidth;
 
-		this->height = this->deskHeight * settings.desktopHeight
-				+ settings.desktopHeight - 1;
+		this->height = this->deskHeight * settings.desktopHeight + settings.desktopHeight - 1;
 
 	} else if (height) {
 
@@ -91,8 +89,7 @@ void PagerType::SetSize(int width, int height) {
 		this->deskHeight = height / settings.desktopHeight;
 		this->deskWidth = (this->deskHeight * rootWidth) / rootHeight;
 
-		this->width = this->deskWidth * settings.desktopWidth
-				+ settings.desktopWidth - 1;
+		this->width = this->deskWidth * settings.desktopWidth + settings.desktopWidth - 1;
 
 	} else {
 		Assert(0);
@@ -100,8 +97,7 @@ void PagerType::SetSize(int width, int height) {
 
 	if (this->buffer != None) {
 		JXFreePixmap(display, this->buffer);
-		this->buffer = JXCreatePixmap(display, rootWindow, this->getWidth(),
-				this->getHeight(), rootDepth);
+		this->buffer = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
 		this->pixmap = this->buffer;
 		this->DrawPager();
 	}
@@ -124,8 +120,7 @@ int PagerType::GetPagerDesktop(int x, int y) {
 }
 
 /** Process a button event on a pager tray component. */
-void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y,
-		int mask) {
+void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
 
 	PagerType *pp;
 
@@ -135,8 +130,7 @@ void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y,
 
 		/* Change to the selected desktop. */
 		pp = (PagerType*) cp;
-		DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
-				pp->GetPagerDesktop(x, y));
+		DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(pp->GetPagerDesktop(x, y));
 		break;
 
 	case Button3:
@@ -163,8 +157,7 @@ void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y,
 }
 
 /** Process a motion event on a pager tray component. */
-void PagerType::ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y,
-		int mask) {
+void PagerType::ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
 
 	PagerType *pp = (PagerType*) cp;
 
@@ -323,8 +316,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 
 		case MotionNotify:
 
-			Cursors::SetMousePosition(event.xmotion.x_root,
-					event.xmotion.y_root, event.xmotion.window);
+			Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
 
 			/* Get the mouse position on the pager. */
 			x = event.xmotion.x_root - cp->getScreenX();
@@ -363,8 +355,7 @@ void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
 			/* Move the window. */
 			np->setX(oldx);
 			np->setY(oldy);
-			JXMoveWindow(display, np->getParent(), np->getX() - west,
-					np->getY() - north);
+			JXMoveWindow(display, np->getParent(), np->getX() - west, np->getY() - north);
 			np->SendConfigureEvent();
 			_RequirePagerUpdate();
 
@@ -392,8 +383,7 @@ void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
 	this->y = y;
 
 	Border::GetBorderSize(&this->state, &north, &south, &east, &west);
-	JXMoveWindow(display, this->parent, this->getX() - west,
-			this->getY() - north);
+	JXMoveWindow(display, this->parent, this->getX() - west, this->getY() - north);
 	this->SendConfigureEvent();
 
 	/* Restore the maximized state of the client. */
@@ -436,15 +426,14 @@ void PagerType::DrawPager() {
 	deskHeight = this->deskHeight;
 
 	/* Draw the background. */
-	JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_BG]);
+	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_PAGER_BG));
 	JXFillRectangle(display, buffer, rootGC, 0, 0, width, height);
 
 	/* Highlight the current desktop. */
-	JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_ACTIVE_BG]);
+	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_PAGER_ACTIVE_BG));
 	dx = currentDesktop % settings.desktopWidth;
 	dy = currentDesktop / settings.desktopWidth;
-	JXFillRectangle(display, buffer, rootGC, dx * (deskWidth + 1),
-			dy * (deskHeight + 1), deskWidth, deskHeight);
+	JXFillRectangle(display, buffer, rootGC, dx * (deskWidth + 1), dy * (deskHeight + 1), deskWidth, deskHeight);
 
 	/* Draw the labels. */
 	if (this->labeled) {
@@ -453,14 +442,12 @@ void PagerType::DrawPager() {
 			for (x = 0; x < settings.desktopCount; x++) {
 				dx = x % settings.desktopWidth;
 				dy = x / settings.desktopWidth;
-				name = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(
-						x);
+				name = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(x);
 				textWidth = Fonts::GetStringWidth(FONT_PAGER, name);
 				if (textWidth < deskWidth) {
 					xc = dx * (deskWidth + 1) + (deskWidth - textWidth) / 2;
 					yc = dy * (deskHeight + 1) + (deskHeight - textHeight) / 2;
-					Fonts::RenderString(buffer, FONT_PAGER, COLOR_PAGER_TEXT,
-							xc, yc, deskWidth, name);
+					Fonts::RenderString(buffer, FONT_PAGER, COLOR_PAGER_TEXT, xc, yc, deskWidth, name);
 				}
 			}
 		}
@@ -474,14 +461,12 @@ void PagerType::DrawPager() {
 	}
 
 	/* Draw the desktop dividers. */
-	JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_OUTLINE]);
+	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_PAGER_OUTLINE));
 	for (x = 1; x < settings.desktopHeight; x++) {
-		JXDrawLine(display, buffer, rootGC, 0, (deskHeight + 1) * x - 1, width,
-				(deskHeight + 1) * x - 1);
+		JXDrawLine(display, buffer, rootGC, 0, (deskHeight + 1) * x - 1, width, (deskHeight + 1) * x - 1);
 	}
 	for (x = 1; x < settings.desktopWidth; x++) {
-		JXDrawLine(display, buffer, rootGC, (deskWidth + 1) * x - 1, 0,
-				(deskWidth + 1) * x - 1, height);
+		JXDrawLine(display, buffer, rootGC, (deskWidth + 1) * x - 1, 0, (deskWidth + 1) * x - 1, height);
 	}
 
 }
@@ -508,19 +493,14 @@ void PagerType::UpdatePager(void) {
 }
 
 /** Signal pagers (for popups). */
-void PagerType::SignalPager(const TimeType *now, int x, int y, Window w,
-		void *data) {
+void PagerType::SignalPager(const TimeType *now, int x, int y, Window w, void *data) {
 	PagerType *pp = (PagerType*) data;
-	if (pp->getTray()->getWindow() == w
-			&& abs(pp->mousex - x) < settings.doubleClickDelta
+	if (pp->getTray()->getWindow() == w && abs(pp->mousex - x) < settings.doubleClickDelta
 			&& abs(pp->mousey - y) < settings.doubleClickDelta) {
 		if (GetTimeDifference(now, &pp->mouseTime) >= settings.popupDelay) {
-			const int desktop = pp->GetPagerDesktop(x - pp->getScreenX(),
-					y - pp->getScreenY());
+			const int desktop = pp->GetPagerDesktop(x - pp->getScreenX(), y - pp->getScreenY());
 			if (desktop >= 0 && desktop < settings.desktopCount) {
-				const char *desktopName =
-						DesktopEnvironment::DefaultEnvironment()->GetDesktopName(
-								desktop);
+				const char *desktopName = DesktopEnvironment::DefaultEnvironment()->GetDesktopName(desktop);
 				if (desktopName) {
 					Popups::ShowPopup(x, y, desktopName, POPUP_PAGER);
 				}
@@ -588,24 +568,22 @@ void PagerType::DrawPagerClient(ClientNode *np) {
 	y += offy;
 
 	/* Draw the client outline. */
-	JXSetForeground(display, rootGC, Colors::colors[COLOR_PAGER_OUTLINE]);
+	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_PAGER_OUTLINE));
 	JXDrawRectangle(display, this->getPixmap(), rootGC, x, y, width, height);
 
 	/* Fill the client if there's room. */
 	if (width > 1 && height > 1) {
 		ColorType fillColor;
 		if ((np->getState()->getStatus() & STAT_ACTIVE)
-				&& (np->getState()->getDesktop() == currentDesktop
-						|| (np->getState()->getStatus() & STAT_STICKY))) {
+				&& (np->getState()->getDesktop() == currentDesktop || (np->getState()->getStatus() & STAT_STICKY))) {
 			fillColor = COLOR_PAGER_ACTIVE_FG;
 		} else if (np->getState()->getStatus() & STAT_FLASH) {
 			fillColor = COLOR_PAGER_ACTIVE_FG;
 		} else {
 			fillColor = COLOR_PAGER_FG;
 		}
-		JXSetForeground(display, rootGC, Colors::colors[fillColor]);
-		JXFillRectangle(display, this->getPixmap(), rootGC, x + 1, y + 1,
-				width - 1, height - 1);
+		JXSetForeground(display, rootGC, Colors::lookupColor(fillColor));
+		JXFillRectangle(display, this->getPixmap(), rootGC, x + 1, y + 1, width - 1, height - 1);
 	}
 
 }

@@ -2010,7 +2010,7 @@ void ClientNode::ReparentClient() {
 		attr.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask;
 
 		attrMask |= CWBackPixel;
-		attr.background_pixel = Colors::colors[COLOR_TITLE_BG2];
+		attr.background_pixel = Colors::lookupColor(COLOR_TITLE_BG2);
 
 		attrMask |= CWBorderPixel;
 		attr.border_pixel = 0;

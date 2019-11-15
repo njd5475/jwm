@@ -79,9 +79,13 @@ typedef unsigned char ColorType;
 #define COLOR_COUNT                    61
 
 class Colors {
-public:
+private:
 	static unsigned long colors[COLOR_COUNT];
+public:
 
+	static unsigned long lookupColor(unsigned short index) {
+		return colors[index];
+	}
 	/*@{*/
 	static void InitializeColors();
 	static void StartupColors();
@@ -114,6 +118,35 @@ public:
  */
 static XftColor *GetXftColor(ColorType type);
 #endif
+
+private:
+	static const unsigned DERIVED_COUNT;
+
+	static char **names;
+
+	static unsigned redShift;
+	static unsigned greenShift;
+	static unsigned blueShift;
+	static unsigned redBits;
+	static unsigned greenBits;
+	static unsigned blueBits;
+	static unsigned long alphaMask;
+
+	static unsigned ComputeShift(unsigned long maskIn, unsigned *shiftOut);
+	static unsigned long GetRGBFromXColor(const XColor *c);
+
+	static unsigned long GetDirectPixel(const XColor *c);
+	static void GetMappedPixel(XColor *c);
+	static void AllocateColor(ColorType type, XColor *c);
+
+	static unsigned long ReadHex(const char *hex);
+	static char ParseColorToRGB(const char *value, XColor *c);
+
+	static void InitializeNames(void);
+
+	static XColor GetXColorFromRGB(unsigned long rgb);
+	static void LightenColor(ColorType oldColor, ColorType newColor);
+	static void DarkenColor(ColorType oldColor, ColorType newColor);
 
 };
 

@@ -39,12 +39,12 @@ private:
 
 public:
 
-  static void Create(TrayComponentType *cp);
-  static void Resize(TrayComponentType *cp);
-  static void Destroy(TrayComponentType *cp);
-  static void ProcessClockButtonPress(TrayComponentType *cp, int x, int y, int button);
-  static void ProcessClockButtonRelease(TrayComponentType *cp, int x, int y, int button);
-  static void ProcessClockMotionEvent(TrayComponentType *cp, int x, int y, int mask);
+  virtual void Create();
+  virtual void Resize();
+  virtual void Destroy();
+  virtual void ProcessClockButtonPress(int x, int y, int button);
+  virtual void ProcessClockButtonRelease(int x, int y, int button);
+  virtual void ProcessClockMotionEvent(int x, int y, int mask);
 
   void DrawClock(const TimeType *now);
 

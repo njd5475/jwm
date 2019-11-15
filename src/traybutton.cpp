@@ -176,6 +176,13 @@ void TrayButton::Create() {
 
 /** Resize a button tray component. */
 void TrayButton::Resize() {
+	if(this->width != this->requestedWidth && this->requestedWidth != 0) {
+		this->width = this->requestedWidth;
+	}
+
+	if(this->height != this->requestedHeight && this->requestedHeight != 0) {
+		this->height = this->requestedHeight;
+	}
 	Destroy();
 	Create();
 }
@@ -204,12 +211,13 @@ void TrayButton::Draw() {
 	}
 	button.width = cp->getWidth();
 	button.height = cp->getHeight();
-	button.border = settings.trayDecorations == DECO_MOTIF;
-	button.x = 0;
-	button.y = 0;
+	button.border = settings.trayDecorations == DECO_FLAT;
+	button.x = cp->getX();
+	button.y = cp->getY();
 	button.font = FONT_TRAY;
 	button.text = bp->label;
 	button.icon = bp->icon;
+
 	DrawButton(&button);
 
 }

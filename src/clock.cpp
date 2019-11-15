@@ -42,6 +42,7 @@ void ClockType::StartupClock(void) {
 			newHeight = Fonts::GetStringHeight(FONT_CLOCK) + 4;
 		}
 		clk->requestNewSize(newWidth, newHeight);
+		clk->Resize();
 	}
 }
 
@@ -63,11 +64,10 @@ void ClockType::DestroyClock(void) {
 	}
 }
 
-const char *ClockType::DEFAULT_FORMAT  = "%I:%M %p";
+const char *ClockType::DEFAULT_FORMAT = "%I:%M %p";
 
 /** Create a clock tray component. */
-ClockType::ClockType(const char *format, const char *zone, int width,
-		int height) :
+ClockType::ClockType(const char *format, const char *zone, int width, int height) :
 		TrayComponentType() {
 	this->next = clocks;
 	clocks = this;
@@ -77,6 +77,7 @@ ClockType::ClockType(const char *format, const char *zone, int width,
 	this->mouseTime.seconds = 0;
 	this->mouseTime.ms = 0;
 	this->userWidth = 0;
+	this->SetScreenLocation(10, 10);
 
 	if (!format) {
 		format = DEFAULT_FORMAT;
@@ -98,31 +99,27 @@ ClockType::ClockType(const char *format, const char *zone, int width,
 }
 
 /** Initialize a clock tray component. */
-void ClockType::Create(TrayComponentType *cp) {
-	cp->setPixmap(
-			JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(),
-					rootDepth));
+void ClockType::Create() {
+	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
 }
 
 /** Resize a clock tray component. */
-void ClockType::Resize(TrayComponentType *cp) {
+void ClockType::Resize() {
 
 	ClockType *clk;
 	TimeType now;
 
 	Assert(cp);
 
-	clk = (ClockType*) cp;
+	clk = (ClockType*) this;
 
 	Assert(clk);
 
-	if (cp->getPixmap() != None) {
-		JXFreePixmap(display, cp->getPixmap());
+	if (this->getPixmap() != None) {
+		JXFreePixmap(display, this->getPixmap());
 	}
 
-	cp->setPixmap(
-			JXCreatePixmap(display, rootWindow, cp->getWidth(), cp->getHeight(),
-					rootDepth));
+	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
 
 	memset(&clk->lastTime, 0, sizeof(clk->lastTime));
 
@@ -132,42 +129,39 @@ void ClockType::Resize(TrayComponentType *cp) {
 }
 
 /** Destroy a clock tray component. */
-void ClockType::Destroy(TrayComponentType *cp) {
+void ClockType::Destroy() {
 	Assert(cp);
-	if (cp->getPixmap() != None) {
-		JXFreePixmap(display, cp->getPixmap());
+	if (this->getPixmap() != None) {
+		JXFreePixmap(display, this->getPixmap());
 	}
 }
 
 /** Process a press event on a clock tray component. */
-void ClockType::ProcessClockButtonPress(TrayComponentType *cp, int x, int y,
-		int button) {
-	cp->handlePressActions(x, y, button);
+void ClockType::ProcessClockButtonPress(int x, int y, int button) {
+	this->handlePressActions(x, y, button);
 }
 
-void ClockType::ProcessClockButtonRelease(TrayComponentType *cp, int x, int y,
-		int button) {
-	cp->handleReleaseActions(x, y, button);
+void ClockType::ProcessClockButtonRelease(int x, int y, int button) {
+	this->handleReleaseActions(x, y, button);
 }
 
 /** Process a motion event on a clock tray component. */
-void ClockType::ProcessClockMotionEvent(TrayComponentType *cp, int x, int y,
-		int mask) {
-	ClockType *clk = (ClockType*) cp;
-	clk->mousex = cp->getScreenX() + x;
-	clk->mousey = cp->getScreenY() + y;
+void ClockType::ProcessClockMotionEvent(int x, int y, int mask) {
+	ClockType *clk = (ClockType*) this;
+	clk->mousex = this->getScreenX() + x;
+	clk->mousey = this->getScreenY() + y;
 	GetCurrentTime(&clk->mouseTime);
 }
 
 /** Update a clock tray component. */
-void ClockType::SignalClock(const TimeType *now, int x, int y, Window w,
-		void *data) {
+void ClockType::SignalClock(const TimeType *now, int x, int y, Window w, void *data) {
 	const char *longTime;
 	ClockType *clk = (ClockType*) data;
 
+	clk->SetLocation(10, 10);
+	clk->SetScreenLocation(10, 10);
 	clk->DrawClock(now);
-	if (clk->getTray()->getWindow() == w
-			&& abs(clk->mousex - x) < settings.doubleClickDelta
+	if (clk->getTray()->getWindow() == w && abs(clk->mousex - x) < settings.doubleClickDelta
 			&& abs(clk->mousey - y) < settings.doubleClickDelta) {
 		if (GetTimeDifference(now, &clk->mouseTime) >= settings.popupDelay) {
 			longTime = GetTimeString("%c", clk->zone);
@@ -189,15 +183,12 @@ void ClockType::DrawClock(const TimeType *now) {
 	}
 
 	/* Clear the area. */
-	if (Colors::colors[COLOR_CLOCK_BG1] == Colors::colors[COLOR_CLOCK_BG2]) {
-		JXSetForeground(display, rootGC, Colors::colors[COLOR_CLOCK_BG1]);
-		JXFillRectangle(display, this->getPixmap(), rootGC, 0, 0,
-				this->getWidth(), this->getHeight());
+	if (Colors::lookupColor(COLOR_CLOCK_BG1) == Colors::lookupColor(COLOR_CLOCK_BG2)) {
+		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_CLOCK_BG1));
+		JXFillRectangle(display, this->getPixmap(), rootGC, 0, 0, this->getWidth(), this->getHeight());
 	} else {
-		DrawHorizontalGradient(this->getPixmap(), rootGC,
-				Colors::colors[COLOR_CLOCK_BG1],
-				Colors::colors[COLOR_CLOCK_BG2], 0, 0, this->getWidth(),
-				this->getHeight());
+		DrawHorizontalGradient(this->getPixmap(), rootGC, Colors::lookupColor(COLOR_CLOCK_BG1),
+				Colors::lookupColor(COLOR_CLOCK_BG2), 0, 0, this->getWidth(), this->getHeight());
 	}
 
 	/* Determine if the clock is the right size. */
@@ -207,10 +198,8 @@ void ClockType::DrawClock(const TimeType *now) {
 	if (rwidth == this->getRequestedWidth() || this->userWidth) {
 
 		/* Draw the clock. */
-		Fonts::RenderString(this->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG,
-				(this->getWidth() - width) / 2,
-				(this->getHeight() - Fonts::GetStringHeight(FONT_CLOCK)) / 2,
-				this->getWidth(), timeString);
+		Fonts::RenderString(this->getPixmap(), FONT_CLOCK, COLOR_CLOCK_FG, (this->getWidth() - width) / 2,
+				(this->getHeight() - Fonts::GetStringHeight(FONT_CLOCK)) / 2, this->getWidth(), timeString);
 
 		this->UpdateSpecificTray(this->getTray());
 

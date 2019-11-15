@@ -337,9 +337,21 @@ public:
   }
 
   /** Callback to resize the component. */
-  virtual void Resize() {}
+  virtual void Resize() {
+	  if(this->width != this->requestedWidth && this->requestedWidth != 0) {
+		  this->width = this->requestedWidth;
+	  }
+	  if(this->height != this->requestedHeight && this->requestedHeight != 0) {
+		  this->height = this->requestedHeight;
+	  }
+	  this->Destroy();
+	  this->Create();
+  }
 
   virtual void Draw() {}
+
+  virtual void Create() = 0;
+
   /** Callback for mouse presses. */
   virtual void ProcessButtonPress(int x, int y, int mask) {}
 

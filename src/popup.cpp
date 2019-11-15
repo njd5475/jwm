@@ -180,10 +180,10 @@ void Popups::ShowPopup(int x, int y, const char *text,
 	popup.pmap = JXCreatePixmap(display, popup.window, popup.width,
 			popup.height, rootDepth);
 
-	JXSetForeground(display, rootGC, Colors::colors[COLOR_POPUP_BG]);
+	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_POPUP_BG));
 	JXFillRectangle(display, popup.pmap, rootGC, 0, 0, popup.width - 1,
 			popup.height - 1);
-	JXSetForeground(display, rootGC, Colors::colors[COLOR_POPUP_OUTLINE]);
+	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_POPUP_OUTLINE));
 	JXDrawRectangle(display, popup.pmap, rootGC, 0, 0, popup.width - 1,
 			popup.height - 1);
 	ptr = popup.lines;

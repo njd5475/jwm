@@ -21,6 +21,7 @@ class Spacer : public TrayComponentType {
 public:
   Spacer(int width, int height);
 
+  void Create();
   void Destroy();
   void SetSize(int width, int height);
   void Resize();

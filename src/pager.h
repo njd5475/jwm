@@ -35,7 +35,7 @@ private:
 
   static char shouldStopMove;
 
-  void Create(TrayComponentType *cp);
+  void Create();
 
   void SetSize(int width, int height);
 

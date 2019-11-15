@@ -73,6 +73,10 @@ TaskBarType::TaskBarType() {
   _RegisterCallback(settings.popupDelay / 2, SignalTaskbar, this);
 }
 
+void TaskBarType::Create() {
+
+}
+
 /** Set the size of a task bar tray component. */
 void TaskBarType::SetSize(int width, int height) {
   if (width == 0) {

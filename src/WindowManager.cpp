@@ -4,46 +4,53 @@
  *  Created on: Nov 7, 2019
  *      Author: nick
  */
-#include <errno.h>
 
 #include "WindowManager.h"
 
-#include "parse.h"
-#include "help.h"
-#include "error.h"
-#include "event.h"
+#include <errno.h>
+#include <sys/wait.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
-#include "border.h"
-#include "client.h"
-#include "color.h"
-#include "command.h"
-#include "cursor.h"
-#include "confirm.h"
-#include "font.h"
-#include "group.h"
-#include "icon.h"
-#include "taskbar.h"
-#include "tray.h"
-#include "traybutton.h"
-#include "popup.h"
-#include "pager.h"
-#include "swallow.h"
-#include "screen.h"
-#include "root.h"
-#include "place.h"
-#include "clock.h"
-#include "misc.h"
-#include "settings.h"
-#include "timing.h"
-#include "grab.h"
 #include "battery.h"
 #include "binding.h"
-#include "AbstractAction.h"
-#include "DockComponent.h"
-#include "DesktopComponent.h"
+#include "border.h"
 #include "BackgroundComponent.h"
+#include "clock.h"
+#include "color.h"
+#include "command.h"
+#include "confirm.h"
+#include "cursor.h"
+#include "debug.h"
+#include "DesktopComponent.h"
 #include "DesktopEnvironment.h"
+#include "DockComponent.h"
+#include "error.h"
+#include "event.h"
+#include "font.h"
+#include "grab.h"
+#include "group.h"
+#include "hint.h"
+#include "icon.h"
+#include "jxlib.h"
 #include "logger.h"
+#include "main.h"
+#include "pager.h"
+#include "place.h"
+#include "popup.h"
+#include "root.h"
+#include "screen.h"
+#include "settings.h"
+#include "swallow.h"
+#include "taskbar.h"
+#include "timing.h"
+#include "tray.h"
+#include "traybutton.h"
 
 WindowManager::WindowManager() {
 	// TODO Auto-generated constructor stub
@@ -170,7 +177,7 @@ void WindowManager::Shutdown(void) {
 	TrayButton::ShutdownTrayButtons();
 	TaskBarType::ShutdownTaskBar();
 	ClockType::ShutdownClock();
-	ShutdownBattery();
+	Battery::ShutdownBattery();
 	Icons::ShutdownIcons();
 	Cursors::ShutdownCursors();
 	Fonts::ShutdownFonts();

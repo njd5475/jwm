@@ -376,16 +376,16 @@ void Border::DrawBorderHelper(const ClientNode *np) {
 	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
 
 		borderTextColor = COLOR_TITLE_ACTIVE_FG;
-		titleColor1 = Colors::colors[COLOR_TITLE_ACTIVE_BG1];
-		titleColor2 = Colors::colors[COLOR_TITLE_ACTIVE_BG2];
-		outlineColor = Colors::colors[COLOR_TITLE_ACTIVE_DOWN];
+		titleColor1 = Colors::lookupColor(COLOR_TITLE_ACTIVE_BG1);
+		titleColor2 = Colors::lookupColor(COLOR_TITLE_ACTIVE_BG2);
+		outlineColor = Colors::lookupColor(COLOR_TITLE_ACTIVE_DOWN);
 
 	} else {
 
 		borderTextColor = COLOR_TITLE_FG;
-		titleColor1 = Colors::colors[COLOR_TITLE_BG1];
-		titleColor2 = Colors::colors[COLOR_TITLE_BG2];
-		outlineColor = Colors::colors[COLOR_TITLE_DOWN];
+		titleColor1 = Colors::lookupColor(COLOR_TITLE_BG1);
+		titleColor2 = Colors::lookupColor(COLOR_TITLE_BG2);
+		outlineColor = Colors::lookupColor(COLOR_TITLE_DOWN);
 
 	}
 
@@ -508,11 +508,11 @@ void Border::DrawBorderHandles(const ClientNode *np, Pixmap canvas, GC gc) {
 
 	/* Determine the colors to use. */
 	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
-		pixelUp = Colors::colors[COLOR_TITLE_ACTIVE_UP];
-		pixelDown = Colors::colors[COLOR_TITLE_ACTIVE_DOWN];
+		pixelUp = Colors::lookupColor(COLOR_TITLE_ACTIVE_UP);
+		pixelDown = Colors::lookupColor(COLOR_TITLE_ACTIVE_DOWN);
 	} else {
-		pixelUp = Colors::colors[COLOR_TITLE_UP];
-		pixelDown = Colors::colors[COLOR_TITLE_DOWN];
+		pixelUp = Colors::lookupColor(COLOR_TITLE_UP);
+		pixelDown = Colors::lookupColor(COLOR_TITLE_DOWN);
 	}
 
 	/* Top title border. */
@@ -772,11 +772,11 @@ void Border::DrawButtonBorder(const ClientNode *np, int x, Pixmap canvas,
 
 	/* Determine the colors to use. */
 	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
-		pixelUp = Colors::colors[COLOR_TITLE_ACTIVE_UP];
-		pixelDown = Colors::colors[COLOR_TITLE_ACTIVE_DOWN];
+		pixelUp = Colors::lookupColor(COLOR_TITLE_ACTIVE_UP);
+		pixelDown = Colors::lookupColor(COLOR_TITLE_ACTIVE_DOWN);
 	} else {
-		pixelUp = Colors::colors[COLOR_TITLE_UP];
-		pixelDown = Colors::colors[COLOR_TITLE_DOWN];
+		pixelUp = Colors::lookupColor(COLOR_TITLE_UP);
+		pixelDown = Colors::lookupColor(COLOR_TITLE_DOWN);
 	}
 
 	GetBorderSize(np->getState(), &north, &south, &east, &west);
@@ -815,9 +815,9 @@ XPoint Border::DrawBorderButtons(const ClientNode *np, Pixmap canvas, GC gc) {
 
 	/* Determine the foreground color to use. */
 	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
-		fg = Colors::colors[COLOR_TITLE_ACTIVE_FG];
+		fg = Colors::lookupColor(COLOR_TITLE_ACTIVE_FG);
 	} else {
-		fg = Colors::colors[COLOR_TITLE_FG];
+		fg = Colors::lookupColor(COLOR_TITLE_FG);
 	}
 
 	GetBorderSize(np->getState(), &north, &south, &east, &west);

@@ -126,6 +126,10 @@ char SwallowNode::ProcessSwallowEvent(const XEvent *event) {
 
 }
 
+void SwallowNode::Create() {
+
+}
+
 /** Handle a tray resize. */
 void SwallowNode::Resize() {
 	if (this->window != None) {
@@ -194,7 +198,7 @@ char SwallowNode::CheckSwallowMap(Window win) {
 			JXSelectInput(display, win,
 					StructureNotifyMask | ResizeRedirectMask);
 			JXAddToSaveSet(display, win);
-			JXSetWindowBorder(display, win, Colors::colors[COLOR_TRAY_BG2]);
+			JXSetWindowBorder(display, win, Colors::lookupColor(COLOR_TRAY_BG2));
 			JXReparentWindow(display, win, np->getTray()->getWindow(), 0, 0);
 			JXMapRaised(display, win);
 			np->window = win;
