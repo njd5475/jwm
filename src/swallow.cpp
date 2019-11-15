@@ -132,6 +132,7 @@ void SwallowNode::Create() {
 
 /** Handle a tray resize. */
 void SwallowNode::Resize() {
+	TrayComponentType::Resize();
 	if (this->window != None) {
 		const unsigned int width = this->getWidth() - this->border * 2;
 		const unsigned int height = this->getHeight() - this->border * 2;

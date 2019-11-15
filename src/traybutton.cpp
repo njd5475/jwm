@@ -176,15 +176,7 @@ void TrayButton::Create() {
 
 /** Resize a button tray component. */
 void TrayButton::Resize() {
-	if(this->width != this->requestedWidth && this->requestedWidth != 0) {
-		this->width = this->requestedWidth;
-	}
-
-	if(this->height != this->requestedHeight && this->requestedHeight != 0) {
-		this->height = this->requestedHeight;
-	}
-	Destroy();
-	Create();
+	TrayComponentType::Resize();
 }
 
 /** Destroy a button tray component. */

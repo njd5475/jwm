@@ -105,7 +105,7 @@ void ClockType::Create() {
 
 /** Resize a clock tray component. */
 void ClockType::Resize() {
-
+	TrayComponentType::Resize();
 	ClockType *clk;
 	TimeType now;
 
