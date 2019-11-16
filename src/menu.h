@@ -10,7 +10,14 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include <X11/X.h>
+#include <X11/Xlib.h>
+
 #include "timing.h"
+
+#include "Graphics.h"
+//class Graphics;
+struct IconNode;
 
 struct ScreenType;
 
@@ -93,7 +100,8 @@ typedef struct Menu {
 
 	/* These fields are handled by menu.c */
 	Window window; /**< The menu window. */
-	Pixmap pixmap; /**< Pixmap where the menu is rendered. */
+	//Pixmap pixmap; /**< Pixmap where the menu is rendered. */
+	Graphics *graphics;
 	int x; /**< The x-coordinate of the menu. */
 	int y; /**< The y-coordinate of the menu. */
 	int width; /**< The width of the menu. */

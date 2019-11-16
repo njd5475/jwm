@@ -149,8 +149,7 @@ void Menus::InitializeMenu(Menu *menu) {
 }
 
 /** Show a menu. */
-char Menus::ShowMenu(Menu *menu, RunMenuCommandType runner, int x, int y,
-		char keyboard) {
+char Menus::ShowMenu(Menu *menu, RunMenuCommandType runner, int x, int y, char keyboard) {
 	Log("Should show the menu\n");
 	/* Don't show the menu if there isn't anything to show. */
 	if (JUNLIKELY(!IsMenuValid(menu))) {
@@ -250,8 +249,7 @@ void Menus::DestroyMenu(Menu *menu) {
 }
 
 /** Show a submenu. */
-char Menus::ShowSubmenu(Menu *menu, Menu *parent, RunMenuCommandType runner,
-		int x, int y, char keyboard) {
+char Menus::ShowSubmenu(Menu *menu, Menu *parent, RunMenuCommandType runner, int x, int y, char keyboard) {
 
 	char status;
 
@@ -264,7 +262,8 @@ char Menus::ShowSubmenu(Menu *menu, Menu *parent, RunMenuCommandType runner,
 	menuShown -= 1;
 
 	JXDestroyWindow(display, menu->window);
-	JXFreePixmap(display, menu->pixmap);
+	menu->graphics->free();
+	//JXFreePixmap(display, menu->pixmap);
 
 	return status;
 
@@ -278,23 +277,19 @@ void Menus::PatchMenu(Menu *menu) {
 		Menu *submenu = NULL;
 		switch (item->action.type & MA_ACTION_MASK) {
 		case MA_DESKTOP_MENU:
-			submenu =
-					DesktopEnvironment::DefaultEnvironment()->CreateDesktopMenu(
-							1 << currentDesktop, item->action.context);
+			submenu = DesktopEnvironment::DefaultEnvironment()->CreateDesktopMenu(1 << currentDesktop,
+					item->action.context);
 			break;
 		case MA_SENDTO_MENU:
-			submenu =
-					DesktopEnvironment::DefaultEnvironment()->CreateSendtoMenu(
-							item->action.type & ~MA_ACTION_MASK,
-							item->action.context);
+			submenu = DesktopEnvironment::DefaultEnvironment()->CreateSendtoMenu(item->action.type & ~MA_ACTION_MASK,
+					item->action.context);
 			break;
 		case MA_WINDOW_MENU:
-			submenu = CreateWindowMenu( (ClientNode*)item->action.context);
+			submenu = CreateWindowMenu((ClientNode*) item->action.context);
 			break;
 		case MA_DYNAMIC:
 			if (!item->submenu) {
-				submenu = Parser::ParseDynamicMenu(item->action.timeout_ms,
-						item->action.str);
+				submenu = Parser::ParseDynamicMenu(item->action.timeout_ms, item->action.str);
 				if (JLIKELY(submenu)) {
 					submenu->itemHeight = item->action.value;
 				}
@@ -394,10 +389,8 @@ char Menus::MenuLoop(Menu *menu, RunMenuCommandType runner) {
 			if (!hadMotion) {
 				break;
 			}
-			if (abs(event.xbutton.x_root - pressx)
-					< settings.doubleClickDelta) {
-				if (abs(event.xbutton.y_root - pressy)
-						< settings.doubleClickDelta) {
+			if (abs(event.xbutton.x_root - pressx) < settings.doubleClickDelta) {
+				if (abs(event.xbutton.y_root - pressy) < settings.doubleClickDelta) {
 					break;
 				}
 			}
@@ -413,15 +406,11 @@ char Menus::MenuLoop(Menu *menu, RunMenuCommandType runner) {
 					(runner)(&ip->action, event.xbutton.button);
 				} else if (ip->type == MENU_ITEM_SUBMENU) {
 					const Menu *parent = menu->parent;
-					if (event.xbutton.x >= menu->x
-							&& event.xbutton.x < menu->x + menu->width
-							&& event.xbutton.y >= menu->y
-							&& event.xbutton.y < menu->y + menu->height) {
+					if (event.xbutton.x >= menu->x && event.xbutton.x < menu->x + menu->width
+							&& event.xbutton.y >= menu->y && event.xbutton.y < menu->y + menu->height) {
 						break;
-					} else if (parent && event.xbutton.x >= parent->x
-							&& event.xbutton.x < parent->x + parent->width
-							&& event.xbutton.y >= parent->y
-							&& event.xbutton.y < parent->y + parent->height) {
+					} else if (parent && event.xbutton.x >= parent->x && event.xbutton.x < parent->x + parent->width
+							&& event.xbutton.y >= parent->y && event.xbutton.y < parent->y + parent->height) {
 						break;
 					}
 				}
@@ -435,15 +424,13 @@ char Menus::MenuLoop(Menu *menu, RunMenuCommandType runner) {
 }
 
 /** Signal for showing popups. */
-void Menus::MenuCallback(const TimeType *now, int x, int y, Window w,
-		void *data) {
-	Menu *menu = (Menu*)data;
+void Menus::MenuCallback(const TimeType *now, int x, int y, Window w, void *data) {
+	Menu *menu = (Menu*) data;
 	MenuItem *item;
 	int i;
 
 	/* Check if the mouse moved (and reset if it did). */
-	if (abs(menu->mousex - x) > settings.doubleClickDelta
-			|| abs(menu->mousey - y) > settings.doubleClickDelta) {
+	if (abs(menu->mousex - x) > settings.doubleClickDelta || abs(menu->mousey - y) > settings.doubleClickDelta) {
 		menu->mousex = x;
 		menu->mousey = y;
 		menu->lastTime = *now;
@@ -529,17 +516,13 @@ void Menus::MapMenu(Menu *menu, int x, int y, char keyboard) {
 	attrMask |= CWSaveUnder;
 	attr.save_under = True;
 
-	menu->window = JXCreateWindow(display, rootWindow, x, y, menu->width,
-			menu->height, 0, CopyFromParent, InputOutput, CopyFromParent,
-			attrMask, &attr);
-	Hints::SetAtomAtom(menu->window, ATOM_NET_WM_WINDOW_TYPE,
-			ATOM_NET_WM_WINDOW_TYPE_MENU);
-	menu->pixmap = JXCreatePixmap(display, menu->window, menu->width,
-			menu->height, rootDepth);
+	menu->window = JXCreateWindow(display, rootWindow, x, y, menu->width, menu->height, 0, CopyFromParent, InputOutput,
+			CopyFromParent, attrMask, &attr);
+	Hints::SetAtomAtom(menu->window, ATOM_NET_WM_WINDOW_TYPE, ATOM_NET_WM_WINDOW_TYPE_MENU);
+	menu->graphics = Graphics::create(display, rootGC, menu->window, menu->width, menu->height, rootDepth);
 
 	if (settings.menuOpacity < UINT_MAX) {
-		Hints::SetCardinalAtom(menu->window, ATOM_NET_WM_WINDOW_OPACITY,
-				settings.menuOpacity);
+		Hints::SetCardinalAtom(menu->window, ATOM_NET_WM_WINDOW_OPACITY, settings.menuOpacity);
 	}
 
 	JXMapRaised(display, menu->window);
@@ -563,23 +546,19 @@ void Menus::DrawMenu(Menu *menu) {
 	int x;
 
 	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_BG));
-	JXFillRectangle(display, menu->pixmap, rootGC, 0, 0, menu->width,
-			menu->height);
+	menu->graphics->fillRectangle(0, 0, menu->width, menu->height);
 
 	if (settings.menuDecorations == DECO_MOTIF) {
 		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_UP));
-		JXDrawLine(display, menu->pixmap, rootGC, 0, 0, menu->width, 0);
-		JXDrawLine(display, menu->pixmap, rootGC, 0, 0, 0, menu->height);
+		menu->graphics->line(0, 0, menu->width, 0);
+		menu->graphics->line(0, 0, 0, menu->height);
 
 		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_DOWN));
-		JXDrawLine(display, menu->pixmap, rootGC, 0, menu->height - 1,
-				menu->width, menu->height - 1);
-		JXDrawLine(display, menu->pixmap, rootGC, menu->width - 1, 0,
-				menu->width - 1, menu->height);
+		menu->graphics->line(0, menu->height - 1, menu->width, menu->height - 1);
+		menu->graphics->line(menu->width - 1, 0, menu->width - 1, menu->height);
 	} else {
 		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_DOWN));
-		JXDrawRectangle(display, menu->pixmap, rootGC, 0, 0, menu->width - 1,
-				menu->height - 1);
+		menu->graphics->drawRectangle(0, 0, menu->width - 1, menu->height - 1);
 	}
 
 	if (menu->label) {
@@ -591,14 +570,11 @@ void Menus::DrawMenu(Menu *menu) {
 		DrawMenuItem(menu, np, x);
 		++x;
 	}
-	JXCopyArea(display, menu->pixmap, menu->window, rootGC, 0, 0, menu->width,
-			menu->height, 0, 0);
-
+	menu->graphics->copy(menu->window, 0, 0, menu->width, menu->height, 0, 0);
 }
 
 /** Determine the action to take given an event. */
-MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner,
-		XEvent *event) {
+MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner, XEvent *event) {
 	MenuItem *ip;
 	Menu *tp;
 	Window subwindow;
@@ -606,8 +582,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner,
 
 	if (event->type == MotionNotify) {
 
-		Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
-				event->xmotion.window);
+		Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root, event->xmotion.window);
 		_DiscardMotionEvents(event, menu->window);
 
 		x = event->xmotion.x_root - menu->x;
@@ -645,8 +620,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner,
 		}
 
 		y = -1;
-		action = Binding::GetKey(MC_NONE, event->xkey.state,
-				event->xkey.keycode);
+		action = Binding::GetKey(MC_NONE, event->xkey.state, event->xkey.keycode);
 		switch (action.action) {
 		case UP:
 			y = GetPreviousMenuIndex(tp);
@@ -710,8 +684,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner,
 		/* Leave if over the parent, but not on this selection. */
 		tp = menu->parent;
 		if (tp && subwindow == tp->window) {
-			if (y < menu->parentOffset
-					|| y > tp->itemHeight + menu->parentOffset) {
+			if (y < menu->parentOffset || y > tp->itemHeight + menu->parentOffset) {
 				return MENU_LEAVE;
 			}
 		}
@@ -732,8 +705,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner,
 		}
 
 		/* If near the bottom, shift up. */
-		if (y + menu->y + menu->itemHeight / 2
-				>= menu->screen->y + menu->screen->height) {
+		if (y + menu->y + menu->itemHeight / 2 >= menu->screen->y + menu->screen->height) {
 			if (menu->currentIndex + 1 < menu->itemCount) {
 				menu->currentIndex += 1;
 				SetPosition(menu, menu->currentIndex);
@@ -750,8 +722,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner,
 	/* If the selected item is a submenu, show it. */
 	ip = GetMenuItem(menu, menu->currentIndex);
 	if (ip && IsMenuValid(ip->submenu)) {
-		const int x = menu->x + menu->width
-				- (settings.menuDecorations == DECO_MOTIF ? 0 : 1);
+		const int x = menu->x + menu->width - (settings.menuDecorations == DECO_MOTIF ? 0 : 1);
 		const int y = menu->y + menu->offsets[menu->currentIndex] - 1;
 		if (ShowSubmenu(ip->submenu, menu, runner, x, y, 0)) {
 
@@ -785,9 +756,7 @@ void Menus::UpdateMenu(Menu *menu) {
 		DrawMenuItem(menu, ip, menu->currentIndex);
 	}
 
-	JXCopyArea(display, menu->pixmap, menu->window, rootGC, 0, 0, menu->width,
-			menu->height, 0, 0);
-
+	menu->graphics->copy(menu->window, 0, 0, menu->width, menu->height, 0, 0);
 }
 
 /** Draw a menu item. */
@@ -799,7 +768,7 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
 
 	if (!item) {
 		if (index == -1 && menu->label) {
-			ResetButton(&button, menu->pixmap);
+			menu->graphics->resetButton(&button);
 			button.x = MENU_BORDER_SIZE;
 			button.y = MENU_BORDER_SIZE;
 			button.width = menu->width - MENU_BORDER_SIZE * 2;
@@ -816,7 +785,7 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
 	if (item->type != MENU_ITEM_SEPARATOR) {
 		ColorType fg;
 
-		ResetButton(&button, menu->pixmap);
+		menu->graphics->resetButton(&button);
 		if (menu->currentIndex == index) {
 			button.type = BUTTON_MENU_ACTIVE;
 			fg = COLOR_MENU_ACTIVE_FG;
@@ -845,28 +814,22 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
 			for (i = 0; i < asize; i++) {
 				const int y1 = y - asize + i;
 				const int y2 = y + asize - i;
-				JXDrawLine(display, menu->pixmap, rootGC, x, y1, x, y2);
+				menu->graphics->line(x, y1, x, y2);
 				x += 1;
 			}
-			JXDrawPoint(display, menu->pixmap, rootGC, x, y);
+			menu->graphics->point(x, y);
 
 		}
 
 	} else {
 		if (settings.menuDecorations == DECO_MOTIF) {
-			JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_DOWN));
-			JXDrawLine(display, menu->pixmap, rootGC, 4,
-					menu->offsets[index] + 2, menu->width - 6,
-					menu->offsets[index] + 2);
-			JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_UP));
-			JXDrawLine(display, menu->pixmap, rootGC, 4,
-					menu->offsets[index] + 3, menu->width - 6,
-					menu->offsets[index] + 3);
+			menu->graphics->setForeground(COLOR_MENU_DOWN);
+			menu->graphics->line(4, menu->offsets[index] + 2, menu->width - 6, menu->offsets[index] + 2);
+			menu->graphics->setForeground(COLOR_MENU_UP);
+			menu->graphics->line(4, menu->offsets[index] + 3, menu->width - 6, menu->offsets[index] + 3);
 		} else {
-			JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_FG));
-			JXDrawLine(display, menu->pixmap, rootGC, 4,
-					menu->offsets[index] + 2, menu->width - 6,
-					menu->offsets[index] + 2);
+			menu->graphics->setForeground(COLOR_MENU_FG);
+			menu->graphics->line(4, menu->offsets[index] + 2, menu->width - 6, menu->offsets[index] + 2);
 		}
 	}
 
