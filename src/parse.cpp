@@ -816,7 +816,7 @@ ActionType ParseAction(const char *str, const char **command) {
 		/* Look up the option in the key map using binary search. */
 		const int x = FindValue(MAP, MAP_COUNT, str);
 		if (x >= 0) {
-			action.action = (unsigned char) x;
+			action.action = (Actions) x;
 		}
 	}
 	return action;
@@ -1917,7 +1917,7 @@ TokenNode* TokenizeFile(const char *fileName) {
 		close(fd);
 		return NULL;
 	}
-	buffer = mmap(NULL, sbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	buffer = (char*)mmap(NULL, sbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
 	if (JUNLIKELY(buffer == MAP_FAILED)) {
 		close(fd);
 		return NULL;

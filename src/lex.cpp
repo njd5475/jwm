@@ -173,7 +173,7 @@ TokenNode *Tokenize(const char *line, const char *fileName) {
           unsigned value_len = 0;
           if (current->value) {
             value_len = strlen(current->value);
-            current->value = Reallocate(current->value, value_len + new_len + 1);
+            current->value = (char*)Reallocate(current->value, value_len + new_len + 1);
           } else {
             current->value = new char[new_len + 1];
           }
@@ -254,7 +254,7 @@ TokenNode *Tokenize(const char *line, const char *fileName) {
             if (current->value) {
               const unsigned value_len = strlen(current->value);
               const unsigned temp_len = strlen(temp);
-              current->value = Reallocate(current->value, value_len + temp_len + 1);
+              current->value = (char*)Reallocate(current->value, value_len + temp_len + 1);
               memcpy(&current->value[value_len], temp, temp_len + 1);
               Release(temp);
             } else {
@@ -390,7 +390,7 @@ char *ReadValue(const char *line, const char *file, bool (*IsEnd)(char), unsigne
     len += 1;
     if (len >= max) {
       max += BLOCK_SIZE;
-      buffer = Reallocate(buffer, max + 1);
+      buffer = (char*)Reallocate(buffer, max + 1);
       if (JUNLIKELY(buffer == NULL)) {
         FatalError(_("out of memory"));
       }
@@ -415,7 +415,7 @@ char *ReadAttributeValue(const char *line, const char *file, unsigned int *offse
 
 /** Get the token for a tag name. */
 TokenType LookupType(const char *name, TokenNode *np) {
-  const int x = FindValue(TOKEN_MAP, TOKEN_MAP_COUNT, name);
+  const TokenType x = (TokenType)FindValue(TOKEN_MAP, TOKEN_MAP_COUNT, name);
   if (x >= 0) {
     if (np) {
       np->type = x;

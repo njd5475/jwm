@@ -84,6 +84,51 @@ static void _DiscardEnterEvents();
 static void _HandleShapeEvent(const XShapeEvent *event);
 #endif
 
+//char *eventNames[] =
+//		"Unknown Event";
+//		case ConfigureRequest:
+//			eventName = "ConfigureRequest";
+//		case MapRequest:
+//			eventName = "MapRequest";
+//		case PropertyNotify:
+//			eventName = "PropertyNotify";
+//		case ClientMessage:
+//			eventName = "ClientMessage";
+//		case UnmapNotify:
+//			eventName = "UnmapNotify";
+//		case Expose:
+//			eventName = "Expose";
+//		case ColormapNotify:
+//			eventName = "ColormapNotify";
+//		case DestroyNotify:
+//			eventName = "DestroyNotify";
+//		case SelectionClear:
+//			eventName = "SelectionClear";
+//		case ResizeRequest:
+//			eventName = "ResizeRequest";
+//		case MotionNotify:
+//			eventName = "MotionNotify";
+//		case ButtonPress:
+//				eventName = "ButtonPress";
+//		case ButtonRelease:
+//				eventName = "ButtonRelease";
+//		case EnterNotify:
+//			eventName = "EnterNotify";
+//		case LeaveNotify:
+//			eventName = "LeaveNotify";
+//		case ReparentNotify:
+//			eventName = "ReparentNotify";
+//		case ConfigureNotify:
+//			eventName = "ConfigureNotify";
+//		case CreateNotify:
+//		case MapNotify:
+//		case GraphicsExpose:
+//		case NoExpose:
+//CreateNotify eventName = "CreateNotify";
+//MapNotify eventName = "MapNotify";
+//GraphicsExpose eventName = "GraphicsExpose";
+//NoExpose eventName = "NoExpose";
+
 /** Wait for an event and process it. */
 char _WaitForEvent(XEvent *event) {
 	struct timeval timeout;
@@ -128,7 +173,7 @@ char _WaitForEvent(XEvent *event) {
 		_UpdateTime(event);
 
 		char buf[80];
-		char *eventName = "Unknown Event";
+		const char *eventName = "Unknown Event";
 		switch (event->type) {
 		case ConfigureRequest:
 			eventName = "ConfigureRequest";
@@ -248,7 +293,7 @@ char _WaitForEvent(XEvent *event) {
 		if (!handled) {
 			handled = Dialogs::ProcessDialogEvent(event);
 		}
-		if(!handled) {
+		if (!handled) {
 			handled = Portal::ProcessEvents(event);
 		}
 		if (!handled) {
@@ -677,28 +722,32 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
 		break;
 	case SENDR:
 		if (np) {
-			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(np->getState()->getDesktop());
+			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(
+					np->getState()->getDesktop());
 			np->SetClientDesktop(desktop);
 			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
 		}
 		break;
 	case SENDL:
 		if (np) {
-			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(np->getState()->getDesktop());
+			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(
+					np->getState()->getDesktop());
 			np->SetClientDesktop(desktop);
 			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
 		}
 		break;
 	case SENDU:
 		if (np) {
-			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(np->getState()->getDesktop());
+			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(
+					np->getState()->getDesktop());
 			np->SetClientDesktop(desktop);
 			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
 		}
 		break;
 	case SENDD:
 		if (np) {
-			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(np->getState()->getDesktop());
+			const unsigned desktop = DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(
+					np->getState()->getDesktop());
 			np->SetClientDesktop(desktop);
 			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
 		}
@@ -733,7 +782,7 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
 		return;
 	}
 
-	np = ClientNode::FindClientByWindow(event->window);
+	np = (Places*) ClientNode::FindClientByWindow(event->window);
 	if (np) {
 
 		int deltax, deltay;
@@ -933,19 +982,17 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
 	ClientNode *np = ClientNode::FindClientByWindow(event->window);
 	if (np) {
 		char changed = 0;
-		switch (event->atom) {
-		case XA_WM_NAME:
+		Atom atom = event->atom;
+		if (atom == XA_WM_NAME) {
 			np->ReadWMName();
 			changed = 1;
-			break;
-		case XA_WM_NORMAL_HINTS:
+		} else if (atom == XA_WM_NORMAL_HINTS) {
 			np->ReadWMNormalHints();
 			if (np->ConstrainSize()) {
 				Border::ResetBorder(np);
 			}
 			changed = 1;
-			break;
-		case XA_WM_HINTS:
+		} else if (atom == XA_WM_HINTS) {
 			if (np->getState()->getStatus() & STAT_URGENT) {
 				_UnregisterCallback(ClientNode::SignalUrgent, np);
 			}
@@ -956,16 +1003,12 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
 				_RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, np);
 			}
 			Hints::WriteState(np);
-			break;
-		case XA_WM_TRANSIENT_FOR:
+		} else if (atom == XA_WM_TRANSIENT_FOR) {
 			unsigned long int owner = np->getOwner();
 			JXGetTransientForHint(display, np->getWindow(), &owner);
 			np->setOwner(owner);
-			break;
-		case XA_WM_ICON_NAME:
-		case XA_WM_CLIENT_MACHINE:
-			break;
-		default:
+		} else if (atom == XA_WM_ICON_NAME || XA_WM_CLIENT_MACHINE) {
+		} else {
 			if (event->atom == Hints::atoms[ATOM_WM_COLORMAP_WINDOWS]) {
 				np->ReadWMColormaps();
 				np->UpdateClientColormap(-1);
@@ -996,7 +1039,7 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
 				}
 				np->setOpacity(opacity);
 			}
-			break;
+
 		}
 
 		if (changed) {

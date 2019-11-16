@@ -437,7 +437,7 @@ char Menus::MenuLoop(Menu *menu, RunMenuCommandType runner) {
 /** Signal for showing popups. */
 void Menus::MenuCallback(const TimeType *now, int x, int y, Window w,
 		void *data) {
-	Menu *menu = data;
+	Menu *menu = (Menu*)data;
 	MenuItem *item;
 	int i;
 

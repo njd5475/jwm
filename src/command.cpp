@@ -129,7 +129,7 @@ void Commands::RunCommand(const char *command) {
 		close(ConnectionNumber(display));
 		if (displayString && displayString[0]) {
 			const size_t var_len = strlen(displayString) + 9;
-			char *str = malloc(var_len);
+			char *str = (char*)malloc(var_len);
 			snprintf(str, var_len, "DISPLAY=%s", displayString);
 			putenv(str);
 		}
@@ -186,7 +186,7 @@ char* Commands::ReadFromProcess(const char *command, unsigned timeout_ms) {
 			/* Make sure we have room to read. */
 			if (buffer_size + BLOCK_SIZE > max_size) {
 				max_size *= 2;
-				buffer = Reallocate(buffer, max_size);
+				buffer = (char*)Reallocate(buffer, max_size);
 			}
 
 			FD_ZERO(&fs);
@@ -218,7 +218,7 @@ char* Commands::ReadFromProcess(const char *command, unsigned timeout_ms) {
 				do {
 					if (buffer_size + BLOCK_SIZE > max_size) {
 						max_size *= 2;
-						buffer = Reallocate(buffer, max_size);
+						buffer = (char*)Reallocate(buffer, max_size);
 					}
 					rc = read(fds[0], &buffer[buffer_size], BLOCK_SIZE);
 					buffer_size += (rc > 0) ? rc : 0;

@@ -31,7 +31,7 @@ private:
 
   struct PagerType *next; /**< Next pager in the list. */
 
-  static PagerType *pagers = NULL;
+  static PagerType *pagers;
 
   static char shouldStopMove;
 

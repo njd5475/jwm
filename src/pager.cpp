@@ -30,7 +30,7 @@ void PagerType::ShutdownPager(void) {
 	}
 }
 
-PagerType *PagerType::pagers;
+PagerType *PagerType::pagers = NULL;
 
 /** Release pager data. */
 void PagerType::DestroyPager(void) {

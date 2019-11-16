@@ -164,8 +164,8 @@ void SwallowNode::Destroy() {
 
 }
 
-SwallowNode *SwallowNode::pendingNodes;
-SwallowNode *SwallowNode::swallowNodes;
+SwallowNode *SwallowNode::pendingNodes = NULL;
+SwallowNode *SwallowNode::swallowNodes = NULL;
 
 /** Determine if this is a window to be swallowed, if it is, swallow it. */
 char SwallowNode::CheckSwallowMap(Window win) {

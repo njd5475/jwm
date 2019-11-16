@@ -34,7 +34,7 @@ AC_MSG_RESULT([$use_xopen_source])
 
 if test $use_xopen_source = "yes"; then
 
-  AC_DEFINE(_XOPEN_SOURCE, 600L, [Define for single UNIX conformance])
+  #AC_DEFINE(_XOPEN_SOURCE, 600L, [Define for single UNIX conformance])
 
   # Needed for IRIX 6.2 so that struct timeval is declared.
   AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Define for timeval on IRIX 6.2])

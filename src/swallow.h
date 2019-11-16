@@ -34,8 +34,8 @@ private:
 
 	struct SwallowNode *next;
 
-	static SwallowNode *pendingNodes = NULL;
-	static SwallowNode *swallowNodes = NULL;
+	static SwallowNode *pendingNodes;
+	static SwallowNode *swallowNodes;
 
 	static void ReleaseNodes(SwallowNode *nodes);
 	void Create();
