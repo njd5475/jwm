@@ -111,7 +111,7 @@ public:
   static void StartupTray(void);
   static void ShutdownTray(void);
   static void DestroyTray(void);
-
+  static void handleConfirm(ClientNode *np);
   /** Add a tray component to a tray.
    * @param tp The tray to update.
    * @param cp The tray component to add.

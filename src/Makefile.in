@@ -14,7 +14,8 @@ OBJECTS = action.o background.o binding.o border.o button.o client.o \
    root.o screen.o settings.o spacer.o status.o swallow.o taskbar.o \
    timing.o tray.o traybutton.o winmenu.o battery.o AbstractAction.o \
    DesktopEnvironment.o DockComponent.o DesktopComponent.o \
-   BackgroundComponent.o Component.o logger.o WindowManager.o ClientState.o
+   BackgroundComponent.o Component.o logger.o WindowManager.o ClientState.o \
+   Portal.o
 
 EXE = jwm
 

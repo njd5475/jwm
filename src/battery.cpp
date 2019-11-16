@@ -111,6 +111,10 @@ void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
 
 /** Draw a Battery tray component. */
 void Battery::Draw() {
+
+	this->SetLocation(0, 0);
+	this->SetScreenLocation(0, 0);
+
 	float percentage = QueryBatteryPercentage();
 	if (percentage == this->lastLevel) {
 		return; //no change

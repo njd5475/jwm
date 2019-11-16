@@ -51,6 +51,7 @@
 #include "timing.h"
 #include "tray.h"
 #include "traybutton.h"
+#include "Portal.h"
 
 WindowManager::WindowManager() {
 	// TODO Auto-generated constructor stub
@@ -154,6 +155,9 @@ void WindowManager::Startup(void) {
 	/* Run any startup commands. */
 	Commands::StartupCommands();
 
+	Portal::Add(30, 30, 300, 200);
+	Portal::StartupPortals();
+	Portal::DrawAll();
 }
 
 /** Shutdown the various JWM components.
@@ -281,8 +285,7 @@ void WindowManager::StartupConnection(void) {
 #endif
 
 	/* Create the supporting window used to verify JWM is running. */
-	supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0,
-			0, 0);
+	supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0, 0);
 
 	/* Get the atom used for the window manager selection. */
 	snprintf(name, 32, "WM_S%d", rootScreen);
@@ -294,8 +297,7 @@ void WindowManager::StartupConnection(void) {
 	if (win != None) {
 		JXSelectInput(display, win, StructureNotifyMask);
 	}
-	JXSetSelectionOwner(display, managerSelection, supportingWindow,
-			CurrentTime);
+	JXSetSelectionOwner(display, managerSelection, supportingWindow, CurrentTime);
 	Grabs::UngrabServer();
 
 	/* Wait for the current selection owner to give up the selection. */
@@ -328,10 +330,8 @@ void WindowManager::StartupConnection(void) {
 	 * Note that asking for SubstructureRedirect will fail
 	 * if another window manager is already running.
 	 */
-	attr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask
-			| StructureNotifyMask | PropertyChangeMask | ColormapChangeMask
-			| ButtonPressMask | ButtonReleaseMask | PointerMotionMask
-			| PointerMotionHintMask;
+	attr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask | StructureNotifyMask | PropertyChangeMask
+			| ColormapChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | PointerMotionHintMask;
 	JXChangeWindowAttributes(display, rootWindow, CWEventMask, &attr);
 
 	memset(&sa, 0, sizeof(sa));
@@ -437,8 +437,7 @@ void WindowManager::EventLoop(void) {
 			} else {
 				TimeType now;
 				GetCurrentTime(&now);
-				if (GetTimeDifference(&start,
-						&now) > RESTART_DELAY) {
+				if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
 					break;
 				}
 			}

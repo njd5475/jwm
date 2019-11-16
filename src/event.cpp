@@ -32,6 +32,7 @@
 #include "binding.h"
 #include "pager.h"
 #include "DesktopEnvironment.h"
+#include "Portal.h"
 
 #define MIN_TIME_DELTA 50
 
@@ -246,6 +247,9 @@ char _WaitForEvent(XEvent *event) {
 		}
 		if (!handled) {
 			handled = Dialogs::ProcessDialogEvent(event);
+		}
+		if(!handled) {
+			handled = Portal::ProcessEvents(event);
 		}
 		if (!handled) {
 			handled = SwallowNode::ProcessSwallowEvent(event);

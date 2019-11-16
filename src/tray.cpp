@@ -24,6 +24,7 @@
 #include "hint.h"
 #include "action.h"
 #include "button.h"
+#include "confirm.h"
 
 #define DEFAULT_TRAY_WIDTH 32
 #define DEFAULT_TRAY_HEIGHT 32
@@ -129,6 +130,15 @@ void TrayType::StartupTray(void) {
 
 	_RequirePagerUpdate();
 	_RequireTaskUpdate();
+
+	Dialogs::ShowConfirmDialog(NULL, handleConfirm,
+	_("Smile"),
+	_("Are you ok?"),
+	NULL);
+}
+
+void TrayType::handleConfirm(ClientNode *np) {
+
 }
 
 /** Shutdown trays. */
@@ -974,8 +984,8 @@ void TrayType::ClearTrayDrawable(const TrayComponentType *cp) {
 		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_BG1));
 		JXFillRectangle(display, d, rootGC, 0, 0, cp->getWidth(), cp->getHeight());
 	} else {
-		DrawHorizontalGradient(d, rootGC, Colors::lookupColor(COLOR_TRAY_BG1), Colors::lookupColor(COLOR_TRAY_BG2), 0, 0,
-				cp->getWidth(), cp->getHeight());
+		DrawHorizontalGradient(d, rootGC, Colors::lookupColor(COLOR_TRAY_BG1), Colors::lookupColor(COLOR_TRAY_BG2), 0,
+				0, cp->getWidth(), cp->getHeight());
 	}
 }
 
