@@ -11,7 +11,7 @@
 
 #include "AbstractAction.h"
 
-struct TrayComponentType;
+class TrayComponent;
 
 /** Enumeration of actions.
  * Note that we use the high bits to store additional information
@@ -41,7 +41,7 @@ public:
    * @param y The mouse y-coordinate.
    * @param button The mouse button.
    */
-  void ProcessActionPress(struct TrayComponentType *cp, int x, int y, int button);
+  void ProcessActionPress(struct TrayComponent *cp, int x, int y, int button);
 
   /** Process a button release event.
    * @param actions The action list.
@@ -50,7 +50,7 @@ public:
    * @param y The mouse y-coordinate.
    * @param button The mouse button.
    */
-  void ProcessActionRelease(struct TrayComponentType *cp, int x, int y, int button);
+  void ProcessActionRelease(struct TrayComponent *cp, int x, int y, int button);
 
   /** Validate actions.
    * @param actions The action list to validate.

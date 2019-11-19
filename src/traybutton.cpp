@@ -176,7 +176,7 @@ void TrayButton::Create() {
 
 /** Resize a button tray component. */
 void TrayButton::Resize() {
-	TrayComponentType::Resize();
+	TrayComponent::Resize();
 }
 
 /** Destroy a button tray component. */
@@ -188,7 +188,7 @@ void TrayButton::Destroy() {
 
 /** Draw a tray button. */
 void TrayButton::Draw() {
-	TrayComponentType *cp = this;
+	TrayComponent *cp = this;
 	ButtonNode button;
 	TrayButton *bp;
 

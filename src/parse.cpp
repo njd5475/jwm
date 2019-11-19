@@ -138,7 +138,7 @@ static TokenNode* ParseMenuIncludeHelper(const TokenNode *tp,
 		unsigned timeout_ms, const char *command);
 
 /* Tray. */
-typedef void (*AddTrayActionFunc)(TrayComponentType*, const char*, int);
+typedef void (*AddTrayActionFunc)(TrayComponent*, const char*, int);
 static void ParseTray(const TokenNode *tp);
 static void ParsePager(const TokenNode *tp, TrayType *tray);
 static void ParseTaskList(const TokenNode *tp, TrayType *tray);
@@ -147,7 +147,7 @@ static void ParseTrayButton(const TokenNode *tp, TrayType *tray);
 static void ParseClock(const TokenNode *tp, TrayType *tray);
 static void ParseBattery(const TokenNode *tp, TrayType *tray);
 static void ParseTrayComponentActions(const TokenNode *tp,
-		TrayComponentType *cp);
+		TrayComponent *cp);
 static void ParseDock(const TokenNode *tp, TrayType *tray);
 static void ParseSpacer(const TokenNode *tp, TrayType *tray);
 
@@ -1273,7 +1273,7 @@ void ParseTray(const TokenNode *tp) {
 /** Parse a pager tray component. */
 void ParsePager(const TokenNode *tp, TrayType *tray) {
 
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	const char *temp;
 	int labeled;
 
@@ -1351,7 +1351,7 @@ void ParseTrayButtonStyle(const TokenNode *tp) {
 /** Parse a swallow tray component. */
 void ParseSwallow(const TokenNode *tp, TrayType *tray) {
 
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	const char *name;
 	const char *temp;
 	int width, height;
@@ -1388,7 +1388,7 @@ void ParseSwallow(const TokenNode *tp, TrayType *tray) {
 /** Parse a button tray component. */
 void ParseTrayButton(const TokenNode *tp, TrayType *tray) {
 
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	const char *icon;
 	const char *label;
 	const char *popup;
@@ -1426,7 +1426,7 @@ void ParseTrayButton(const TokenNode *tp, TrayType *tray) {
 
 /** Parse a battery tray component. */
 void ParseBattery(const TokenNode *tp, TrayType *tray) {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	const char *temp;
 	int width, height;
 
@@ -1489,7 +1489,7 @@ void ParseClock(const TokenNode *tp, TrayType *tray) {
 }
 
 /** Parse tray component actions. */
-void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp) {
+void ParseTrayComponentActions(const TokenNode *tp, TrayComponent *cp) {
 	const TokenNode *np;
 	const char *mask_str;
 	const int default_mask = (1 << 1) | (1 << 2) | (1 << 3);
@@ -1524,7 +1524,7 @@ void ParseTrayComponentActions(const TokenNode *tp, TrayComponentType *cp) {
 /** Parse a dock tray component. */
 void ParseDock(const TokenNode *tp, TrayType *tray) {
 
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int width;
 	char *str;
 
@@ -1553,7 +1553,7 @@ void ParseDock(const TokenNode *tp, TrayType *tray) {
 /** Parse a spacer tray component. */
 void ParseSpacer(const TokenNode *tp, TrayType *tray) {
 
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int width;
 	int height;
 	char *str;

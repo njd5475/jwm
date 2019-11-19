@@ -13,7 +13,7 @@
 #include "TrayComponent.h"
 
 /** Structure to respresent a clock tray component. */
-class ClockType : public TrayComponentType {
+class ClockType : public TrayComponent {
 public:
   ClockType(const char *format, const char *zone, int width, int height);
   virtual ~ClockType() {}
@@ -62,7 +62,7 @@ public:
    * @param action The action to take.
    * @param mask The mouse button mask.
    */
-  static void AddClockAction(struct TrayComponentType *cp, const char *action, int mask);
+  static void AddClockAction(struct TrayComponent *cp, const char *action, int mask);
 
 };
 

@@ -14,7 +14,7 @@
 
 struct ActionNode;
 
-class TrayComponentType {
+class TrayComponent {
 
 private:
   /** The tray containing the component.
@@ -46,14 +46,14 @@ private:
   char grabbed; /**< 1 if the mouse was grabbed by this component. */
 
   /** The next component in the tray. */
-  struct TrayComponentType *next;
+  struct TrayComponent *next;
 
 public:
-  TrayComponentType();
-  virtual ~TrayComponentType();
+  TrayComponent();
+  virtual ~TrayComponent();
 
   void SetParent(TrayType *parent) {this->tray = parent;}
-  void SetNext(TrayComponentType *next) { this->next = next;}
+  void SetNext(TrayComponent *next) { this->next = next;}
   void RefreshSize();
   int getX() const {return this->x;}
   int getY() const {return this->y;}
@@ -68,7 +68,7 @@ public:
     this->requestedWidth = width;
     this->requestedHeight = height;
   }
-  TrayComponentType* getNext() {
+  TrayComponent* getNext() {
     return this->next;
   }
 

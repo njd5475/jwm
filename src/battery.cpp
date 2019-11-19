@@ -63,7 +63,7 @@ void Battery::StartupBattery(void) {
 
 /** Create a Battery tray component. */
 Battery::Battery(int width, int height) :
-		TrayComponentType() {
+		TrayComponent() {
 	Warning(_("Creating Battery Component"));
 	this->SetSize(width, height);
 
@@ -83,7 +83,7 @@ void Battery::AddBatteryAction(const char *action, int mask) {
 
 /** Resize a Battery tray component. */
 void Battery::Resize() {
-	TrayComponentType::Resize();
+	TrayComponent::Resize();
 	Warning(_("Battery received a resize call, width: %d, height: %d"), this->getWidth(), this->getHeight());
 	TimeType now;
 

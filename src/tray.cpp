@@ -44,7 +44,7 @@ void TrayType::StartupTray(void) {
 	XSetWindowAttributes attr;
 	unsigned long attrMask;
 	TrayType *tp;
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int variableSize;
 	int variableRemainder;
 	int width, height;
@@ -144,7 +144,7 @@ void TrayType::handleConfirm(ClientNode *np) {
 /** Shutdown trays. */
 void TrayType::ShutdownTray(void) {
 	TrayType *tp;
-	TrayComponentType *cp;
+	TrayComponent *cp;
 
 	for (tp = trays; tp; tp = tp->next) {
 		for (cp = tp->components; cp; cp = cp->getNext()) {
@@ -157,7 +157,7 @@ void TrayType::ShutdownTray(void) {
 /** Destroy tray data. */
 void TrayType::DestroyTray(void) {
 	TrayType *tp;
-	TrayComponentType *cp;
+	TrayComponent *cp;
 
 	while (trays) {
 		tp = trays->next;
@@ -213,7 +213,7 @@ TrayType::~TrayType() {
 
 
 /** Add a tray component to a tray. */
-void TrayType::AddTrayComponent(TrayComponentType *cp) {
+void TrayType::AddTrayComponent(TrayComponent *cp) {
 	cp->SetParent(this);
 	if (this->componentsTail) {
 		this->componentsTail->SetNext(cp);
@@ -226,7 +226,7 @@ void TrayType::AddTrayComponent(TrayComponentType *cp) {
 
 /** Compute the max component width. */
 int TrayType::ComputeMaxWidth() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int result;
 	int temp;
 
@@ -243,7 +243,7 @@ int TrayType::ComputeMaxWidth() {
 
 /** Compute the total width of a tray. */
 int TrayType::ComputeTotalWidth() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int result;
 
 	result = 2 * TRAY_BORDER_SIZE;
@@ -256,7 +256,7 @@ int TrayType::ComputeTotalWidth() {
 
 /** Compute the max component height. */
 int TrayType::ComputeMaxHeight() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int result;
 	int temp;
 
@@ -273,7 +273,7 @@ int TrayType::ComputeMaxHeight() {
 
 /** Compute the total height of a tray. */
 int TrayType::ComputeTotalHeight() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	int result;
 
 	result = 2 * TRAY_BORDER_SIZE;
@@ -286,7 +286,7 @@ int TrayType::ComputeTotalHeight() {
 
 /** Check if the tray fills the screen horizontally. */
 char TrayType::CheckHorizontalFill() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 
 	for (cp = this->components; cp; cp = cp->getNext()) {
 		if (cp->getWidth() == 0) {
@@ -299,7 +299,7 @@ char TrayType::CheckHorizontalFill() {
 
 /** Check if the tray fills the screen vertically. */
 char TrayType::CheckVerticalFill() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 
 	for (cp = this->components; cp; cp = cp->getNext()) {
 		if (cp->getHeight() == 0) {
@@ -312,7 +312,7 @@ char TrayType::CheckVerticalFill() {
 
 /** Compute the size of a tray. */
 void TrayType::ComputeTraySize() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	const ScreenType *sp;
 	int x, y;
 
@@ -606,8 +606,8 @@ void TrayType::HandleTrayEnterNotify(TrayType *tp, const XCrossingEvent *event) 
 }
 
 /** Get the tray component under the given coordinates. */
-TrayComponentType* TrayType::GetTrayComponent(TrayType *tp, int x, int y) {
-	TrayComponentType *cp;
+TrayComponent* TrayType::GetTrayComponent(TrayType *tp, int x, int y) {
+	TrayComponent *cp;
 	int xoffset, yoffset;
 
 	xoffset = 0;
@@ -634,7 +634,7 @@ TrayComponentType* TrayType::GetTrayComponent(TrayType *tp, int x, int y) {
 
 /** Handle a button press on a tray. */
 void TrayType::HandleTrayButtonPress(TrayType *tp, const XButtonEvent *event) {
-	TrayComponentType *cp = GetTrayComponent(tp, event->x, event->y);
+	TrayComponent *cp = GetTrayComponent(tp, event->x, event->y);
 	if (cp) {
 		const int x = event->x - cp->getX();
 		const int y = event->y - cp->getY();
@@ -648,7 +648,7 @@ void TrayType::HandleTrayButtonPress(TrayType *tp, const XButtonEvent *event) {
 
 /** Handle a button release on a tray. */
 void TrayType::HandleTrayButtonRelease(TrayType *tp, const XButtonEvent *event) {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 
 	// First inform any components that have a grab.
 	for (cp = tp->components; cp; cp = cp->getNext()) {
@@ -674,7 +674,7 @@ void TrayType::HandleTrayButtonRelease(TrayType *tp, const XButtonEvent *event) 
 
 /** Handle a motion notify event. */
 void TrayType::HandleTrayMotionNotify(TrayType *tp, const XMotionEvent *event) {
-	TrayComponentType *cp = GetTrayComponent(tp, event->x, event->y);
+	TrayComponent *cp = GetTrayComponent(tp, event->x, event->y);
 	if (cp) {
 		const int x = event->x - cp->getX();
 		const int y = event->y - cp->getY();
@@ -699,7 +699,7 @@ void TrayType::DrawTray(void) {
 
 /** Draw a specific tray. */
 void TrayType::DrawSpecificTray() {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 
 	for (cp = this->components; cp; cp = cp->getNext()) {
 		cp->Resize();
@@ -744,7 +744,7 @@ void TrayType::LowerTrays(void) {
 
 /** Layout tray components on a tray. */
 void TrayType::LayoutTray(int *variableSize, int *variableRemainder) {
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	unsigned int variableCount;
 	int width, height;
 	int temp;
@@ -833,7 +833,7 @@ void TrayType::ResizeTray() {
 	/* Reposition items on the tray. */
 	xoffset = TRAY_BORDER_SIZE;
 	yoffset = TRAY_BORDER_SIZE;
-	TrayComponentType *tc;
+	TrayComponent *tc;
 	for (tc = this->components; tc; tc = tc->getNext()) {
 		tc->SetLocation(xoffset, yoffset);
 		tc->SetScreenLocation(this->x + xoffset, this->y + yoffset);
@@ -884,7 +884,7 @@ void TrayType::ResizeTray() {
 }
 
 /** Draw the tray background on a drawable. */
-void TrayType::ClearTrayDrawable(const TrayComponentType *cp) {
+void TrayType::ClearTrayDrawable(const TrayComponent *cp) {
 	const Drawable d = cp->getPixmap() != None ? cp->getPixmap() : cp->getWindow();
 	if (Colors::lookupColor(COLOR_TRAY_BG1) == Colors::lookupColor(COLOR_TRAY_BG2)) {
 		JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_BG1));

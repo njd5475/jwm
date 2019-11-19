@@ -12,7 +12,7 @@
 
 #include "TrayComponent.h"
 
-class SwallowNode : public TrayComponentType {
+class SwallowNode : public TrayComponent {
 public:
 	/** Create a swallowed application tray component.
 	 * @param name The name of the application to swallow.

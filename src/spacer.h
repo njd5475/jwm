@@ -17,7 +17,7 @@
  * @return A new spacer tray component.
  */
 
-class Spacer : public TrayComponentType {
+class Spacer : public TrayComponent {
 public:
   Spacer(int width, int height);
 

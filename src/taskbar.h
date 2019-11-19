@@ -29,13 +29,13 @@ typedef struct TaskEntry {
 	struct TaskEntry *prev;
 } TaskEntry;
 
-class TaskBarType : public TrayComponentType {
+class TaskBarType : public TrayComponent {
 public:
 	TaskBarType();
 	virtual ~TaskBarType() {}
 
 private:
-	TrayComponentType *cp;
+	TrayComponent *cp;
 	struct TaskBarType *next;
 
 	int maxItemWidth;
@@ -80,7 +80,7 @@ public:
 	/*@}*/
 
 	/** Create a new task bar tray component. */
-	struct TrayComponentType *CreateTaskBar();
+	struct TrayComponent *CreateTaskBar();
 
 	/** Add a client to the task bar(s).
 	 * @param np The client to add.
@@ -111,13 +111,13 @@ public:
 	 * @param cp The task bar component.
 	 * @param value The height.
 	 */
-	static void SetTaskBarHeight(struct TrayComponentType *cp, const char *value);
+	static void SetTaskBarHeight(struct TrayComponent *cp, const char *value);
 
 	/** Set whether labels should be displayed (or icon only).
 	 * @param cp The task bar component.
 	 * @param value 1 if labeled, 0 if no label is to be shown.
 	 */
-	static void SetTaskBarLabeled(struct TrayComponentType *cp, char value);
+	static void SetTaskBarLabeled(struct TrayComponent *cp, char value);
 
 	/** Update the _NET_CLIENT_LIST property. */
 	static void UpdateNetClientList(void);

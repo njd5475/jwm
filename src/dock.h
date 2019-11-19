@@ -23,7 +23,7 @@ typedef struct DockNode {
 } DockNode;
 
 /** Structure to represent a dock tray component. */
-class DockType  : public TrayComponentType {
+class DockType  : public TrayComponent {
 public:
   DockType(int width);
   virtual ~DockType() {}
@@ -60,7 +60,7 @@ public:
    * Note that only one dock can be created.
    * @param width The width of an item in the dock.
    */
-  struct TrayComponentType *_CreateDock(int width);
+  struct TrayComponent *_CreateDock(int width);
 
   /** Handle a client message sent to the dock window.
    * @param event The event.

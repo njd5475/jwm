@@ -15,7 +15,7 @@
 #include "TrayComponent.h"
 
 /** Structure to represent a pager tray component. */
-class PagerType : public TrayComponentType {
+class PagerType : public TrayComponent {
 private:
 
   int deskWidth; /**< Width of a desktop. */
@@ -41,11 +41,11 @@ private:
 
   int GetPagerDesktop(int x, int y);
 
-  void ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask);
+  void ProcessPagerButtonEvent(TrayComponent *cp, int x, int y, int mask);
 
-  void ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int mask);
+  void ProcessPagerMotionEvent(TrayComponent *cp, int x, int y, int mask);
 
-  void StartPagerMove(TrayComponentType *cp, int x, int y);
+  void StartPagerMove(TrayComponent *cp, int x, int y);
 
   void StopPagerMove(ClientNode *np, int x, int y, int desktop, MaxFlags maxFlags);
 
@@ -64,7 +64,7 @@ public:
    * @param labeled Set to label the pager.
    * @return A new pager tray component.
    */
-  struct TrayComponentType *CreatePager(char labeled);
+  struct TrayComponent *CreatePager(char labeled);
   /*@{*/
   static void InitializePager() {}
   static void StartupPager() {}

@@ -13,7 +13,7 @@
 #include "DesktopEnvironment.h"
 #include "tray.h"
 
-void TrayComponentType::addAction(const char *action, int mask) {
+void TrayComponent::addAction(const char *action, int mask) {
 	ActionNode *ap = new ActionNode(action, mask);
 
 	/* Make sure we actually have an action. */
@@ -35,7 +35,7 @@ void TrayComponentType::addAction(const char *action, int mask) {
 	this->actions.push_back(ap);
 }
 
-void TrayComponentType::validateActions() {
+void TrayComponent::validateActions() {
 	std::vector<ActionNode*>::iterator it;
 	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
 		(*it)->ValidateAction();
@@ -43,14 +43,14 @@ void TrayComponentType::validateActions() {
 }
 
 
-void TrayComponentType::handleReleaseActions(int x, int y, int button) {
+void TrayComponent::handleReleaseActions(int x, int y, int button) {
 	std::vector<ActionNode*>::iterator it;
 	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
 		(*it)->ProcessActionRelease(this, x, y, button);
 	}
 }
 
-void TrayComponentType::handlePressActions(int x, int y, int button) {
+void TrayComponent::handlePressActions(int x, int y, int button) {
 	Log("Tray component handling press action\n");
 	std::vector<ActionNode*>::iterator it;
 	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
@@ -59,7 +59,7 @@ void TrayComponentType::handlePressActions(int x, int y, int button) {
 }
 
 /** Create an empty tray component. */
-TrayComponentType::TrayComponentType() :
+TrayComponent::TrayComponent() :
 		screenx(0), screeny(0) {
 
 	this->tray = NULL;
@@ -78,7 +78,7 @@ TrayComponentType::TrayComponentType() :
 	this->next = NULL;
 }
 
-TrayComponentType::~TrayComponentType() {
+TrayComponent::~TrayComponent() {
 	std::vector<ActionNode*>::iterator it;
 	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
 		delete *it;
@@ -87,7 +87,7 @@ TrayComponentType::~TrayComponentType() {
 }
 
 /** Update a specific component on a tray. */
-void TrayComponentType::UpdateSpecificTray(const TrayType *tp) {
+void TrayComponent::UpdateSpecificTray(const TrayType *tp) {
 	if (JUNLIKELY(shouldExit)) {
 		return;
 	}
@@ -98,7 +98,7 @@ void TrayComponentType::UpdateSpecificTray(const TrayType *tp) {
 	}
 }
 
-void TrayComponentType::RefreshSize() {
+void TrayComponent::RefreshSize() {
 	if (this->requestedWidth != 0) {
 		this->width = this->requestedWidth;
 	} else {

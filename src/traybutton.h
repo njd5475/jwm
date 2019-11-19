@@ -10,13 +10,12 @@
 #ifndef TRAY_BUTTON_H
 #define TRAY_BUTTON_H
 
-struct TrayComponentType;
-struct TimeType;
-struct IconNode;
+class TimeType;
+class IconNode;
 
 #include "TrayComponent.h"
 
-class TrayButton : public TrayComponentType {
+class TrayButton : public TrayComponent {
 
 public:
 	/*@{*/

@@ -105,7 +105,7 @@ void DockType::_DestroyDock(void) {
 
 /** Create a dock component. */
 DockType::DockType(int width) :
-		TrayComponentType() {
+		TrayComponent() {
 	this->nodes = NULL;
 	this->window = None;
 	this->requestedWidth = 1;
@@ -187,7 +187,7 @@ void DockType::Create() {
 
 /** Resize a dock component. */
 void DockType::Resize() {
-	TrayComponentType::Resize();
+	TrayComponent::Resize();
 	JXResizeWindow(display, this->getWindow(), this->getWidth(), this->getHeight());
 	_UpdateDock();
 }

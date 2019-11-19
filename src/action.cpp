@@ -28,7 +28,7 @@ ActionNode::~ActionNode() {
 }
 
 /** Process a button press. */
-void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
+void ActionNode::ProcessActionPress(struct TrayComponent *cp, int x, int y,
 		int button) {
 	Log("Processing action press\n")
 	const ScreenType *sp;
@@ -114,7 +114,7 @@ void ActionNode::ProcessActionPress(struct TrayComponentType *cp, int x, int y,
 }
 
 /** Process a button release. */
-void ActionNode::ProcessActionRelease(struct TrayComponentType *cp, int x,
+void ActionNode::ProcessActionRelease(struct TrayComponent *cp, int x,
 		int y, int button) {
 	const int mask = 1 << button;
 

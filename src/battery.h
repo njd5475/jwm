@@ -13,7 +13,7 @@
 #include "TrayComponent.h"
 
 class Graphics;
-class Battery : public TrayComponentType {
+class Battery : public TrayComponent {
 public:
 
 	/*@{*/

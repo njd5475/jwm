@@ -84,10 +84,10 @@ class TrayType {
   Window window; /**< The tray window. */
 
   /** Start of the tray components. */
-  struct TrayComponentType *components;
+  struct TrayComponent *components;
 
   /** End of the tray components. */
-  struct TrayComponentType *componentsTail;
+  struct TrayComponent *componentsTail;
 
   struct TrayType *next; /**< Next tray. */
 public:
@@ -113,7 +113,7 @@ public:
    * @param tp The tray to update.
    * @param cp The tray component to add.
    */
-  void AddTrayComponent(TrayComponentType *cp);
+  void AddTrayComponent(TrayComponent *cp);
 
   /** Show a tray.
    * @param tp The tray to show.
@@ -148,7 +148,7 @@ public:
   void ResizeTray();
 
   /** Draw the tray background on a drawable. */
-  static void ClearTrayDrawable(const TrayComponentType *cp);
+  static void ClearTrayDrawable(const TrayComponent *cp);
 
   /** Get a linked list of trays.
    * @return The trays.
@@ -226,7 +226,7 @@ public:
   static void HandleTrayExpose(TrayType *tp, const XExposeEvent *event);
   static void HandleTrayEnterNotify(TrayType *tp, const XCrossingEvent *event);
 
-  static TrayComponentType *GetTrayComponent(TrayType *tp, int x, int y);
+  static TrayComponent *GetTrayComponent(TrayType *tp, int x, int y);
   static void HandleTrayButtonPress(TrayType *tp, const XButtonEvent *event);
   static void HandleTrayButtonRelease(TrayType *tp, const XButtonEvent *event);
   static void HandleTrayMotionNotify(TrayType *tp, const XMotionEvent *event);

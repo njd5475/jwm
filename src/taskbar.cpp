@@ -92,7 +92,7 @@ void TaskBarType::SetSize(int width, int height) {
 
 /** Resize a task bar tray component. */
 void TaskBarType::Resize() {
-	TrayComponentType::Resize();
+	TrayComponent::Resize();
 	if (this->buffer != None) {
 		JXFreePixmap(display, this->buffer);
 	}
@@ -893,7 +893,7 @@ void TaskBarType::SetMaxTaskBarItemWidth(const char *value) {
 }
 
 /** Set the preferred height of the specified task bar. */
-void TaskBarType::SetTaskBarHeight(TrayComponentType *cp, const char *value) {
+void TaskBarType::SetTaskBarHeight(TrayComponent *cp, const char *value) {
 	TaskBarType *bp = (TaskBarType*) cp;
 	int temp;
 
@@ -906,7 +906,7 @@ void TaskBarType::SetTaskBarHeight(TrayComponentType *cp, const char *value) {
 }
 
 /** Set whether the label should be displayed. */
-void TaskBarType::SetTaskBarLabeled(TrayComponentType *cp, char labeled) {
+void TaskBarType::SetTaskBarLabeled(TrayComponent *cp, char labeled) {
 	TaskBarType *bp = (TaskBarType*) cp;
 	bp->labeled = labeled;
 }

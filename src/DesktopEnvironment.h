@@ -13,7 +13,7 @@
 #include <vector>
 
 struct Menu;
-struct TrayComponentType;
+class TrayComponent;
 
 class DesktopEnvironment {
 public:
@@ -38,7 +38,7 @@ public:
   virtual bool BelowDesktop();
   virtual void SetDesktopName(int num, const char* name);
   virtual void SetBackground(int id, const char* file, char* const name);
-  virtual TrayComponentType* CreateDock(int dockId);
+  virtual TrayComponent* CreateDock(int dockId);
   virtual Menu* CreateDesktopMenu(int desktop, void* mem);
   virtual Menu* CreateSendtoMenu(int desktop, void* mem);
 

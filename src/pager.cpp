@@ -120,7 +120,7 @@ int PagerType::GetPagerDesktop(int x, int y) {
 }
 
 /** Process a button event on a pager tray component. */
-void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int mask) {
+void PagerType::ProcessPagerButtonEvent(TrayComponent *cp, int x, int y, int mask) {
 
 	PagerType *pp;
 
@@ -157,7 +157,7 @@ void PagerType::ProcessPagerButtonEvent(TrayComponentType *cp, int x, int y, int
 }
 
 /** Process a motion event on a pager tray component. */
-void PagerType::ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int mask) {
+void PagerType::ProcessPagerMotionEvent(TrayComponent *cp, int x, int y, int mask) {
 
 	PagerType *pp = (PagerType*) cp;
 
@@ -167,7 +167,7 @@ void PagerType::ProcessPagerMotionEvent(TrayComponentType *cp, int x, int y, int
 }
 
 /** Start a pager move operation. */
-void PagerType::StartPagerMove(TrayComponentType *cp, int x, int y) {
+void PagerType::StartPagerMove(TrayComponent *cp, int x, int y) {
 
 	XEvent event;
 	PagerType *pp;

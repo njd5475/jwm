@@ -39,7 +39,7 @@ void Spacer::SetSize(int width, int height) {
 
 /** Resize. */
 void Spacer::Resize() {
-	TrayComponentType::Resize();
+	TrayComponent::Resize();
 	if (this->getPixmap() != None) {
 		JXFreePixmap(display, this->getPixmap());
 	}

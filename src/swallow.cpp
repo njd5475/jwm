@@ -52,7 +52,7 @@ void SwallowNode::ReleaseNodes(SwallowNode *nodes) {
 /** Create a swallowed application tray component. */
 SwallowNode::SwallowNode(const char *name, const char *command, int width,
 		int height) :
-		TrayComponentType(), border(0) {
+		TrayComponent(), border(0) {
 	if (JUNLIKELY(!name)) {
 		Warning(_("cannot swallow a client with no name"));
 		return;
@@ -132,7 +132,7 @@ void SwallowNode::Create() {
 
 /** Handle a tray resize. */
 void SwallowNode::Resize() {
-	TrayComponentType::Resize();
+	TrayComponent::Resize();
 	if (this->window != None) {
 		const unsigned int width = this->getWidth() - this->border * 2;
 		const unsigned int height = this->getHeight() - this->border * 2;
