@@ -90,7 +90,7 @@ void WindowManager::Initialize(void) {
 	ILog(Screens::InitializeScreens);
 	ILog(Setting::InitializeSettings);
 	ILog(SwallowNode::InitializeSwallow);
-	ILog(TaskBarType::InitializeTaskBar);
+	ILog(TaskBar::InitializeTaskBar);
 	ILog(TrayType::InitializeTray);
 	ILog(TrayButton::InitializeTrayButtons);
 }
@@ -117,7 +117,7 @@ void WindowManager::Startup(void) {
 
 	PagerType::StartupPager();
 	Battery::StartupBattery();
-	TaskBarType::StartupTaskBar();
+	TaskBar::StartupTaskBar();
 	TrayButton::StartupTrayButtons();
 	Hints::StartupHints();
 	DesktopEnvironment::DefaultEnvironment()->StartupComponents();
@@ -179,7 +179,7 @@ void WindowManager::Shutdown(void) {
 	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
 	TrayType::ShutdownTray();
 	TrayButton::ShutdownTrayButtons();
-	TaskBarType::ShutdownTaskBar();
+	TaskBar::ShutdownTaskBar();
 	ClockType::ShutdownClock();
 	Battery::ShutdownBattery();
 	Icons::ShutdownIcons();
@@ -223,7 +223,7 @@ void WindowManager::Destroy(void) {
 	Screens::DestroyScreens();
 	Setting::DestroySettings();
 	SwallowNode::DestroySwallow();
-	TaskBarType::DestroyTaskBar();
+	TaskBar::DestroyTaskBar();
 	TrayType::DestroyTray();
 	TrayButton::DestroyTrayButtons();
 }

@@ -345,7 +345,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 	}
 
 	/* Update task bars. */
-	TaskBarType::AddClientToTaskBar(this);
+	TaskBar::AddClientToTaskBar(this);
 
 	/* Make sure we're still in sync */
 	Hints::WriteState(this);
@@ -1815,7 +1815,7 @@ void ClientNode::RestackClients(void) {
 	JXRestackWindows(display, stack, index);
 
 	ReleaseStack(stack);
-	TaskBarType::UpdateNetClientList();
+	TaskBar::UpdateNetClientList();
 	_RequirePagerUpdate();
 
 }
@@ -1919,7 +1919,7 @@ void ClientNode::RemoveClient() {
 		JXFree(this->className);
 	}
 
-	TaskBarType::RemoveClientFromTaskBar(this);
+	TaskBar::RemoveClientFromTaskBar(this);
 	Places::RemoveClientStrut(this);
 
 	while (this->colormaps) {

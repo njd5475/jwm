@@ -29,14 +29,14 @@ typedef struct TaskEntry {
 	struct TaskEntry *prev;
 } TaskEntry;
 
-class TaskBarType : public TrayComponent {
+class TaskBar : public TrayComponent {
 public:
-	TaskBarType();
-	virtual ~TaskBarType() {}
+	TaskBar();
+	virtual ~TaskBar() {}
 
 private:
 	TrayComponent *cp;
-	struct TaskBarType *next;
+	struct TaskBar *next;
 
 	int maxItemWidth;
 	int userHeight;
@@ -50,7 +50,7 @@ private:
 	TimeType mouseTime;
 	int mousex, mousey;
 
-	static TaskBarType *bars;
+	static TaskBar *bars;
 	static TaskEntry *taskEntries;
 	static TaskEntry *taskEntriesTail;
 public:
@@ -60,7 +60,7 @@ public:
 	TaskEntry *GetEntry(int x, int y);
 	void Render();
 	void Draw(Graphics *g);
-	void ShowClientList(TaskBarType *bar, TaskEntry *tp);
+	void ShowClientList(TaskBar *bar, TaskEntry *tp);
 	static void RunTaskBarCommand(MenuAction *action, unsigned button);
 
 	void SetSize(int width, int height);

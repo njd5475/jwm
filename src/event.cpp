@@ -328,7 +328,7 @@ void _Signal(void) {
 	if (task_update_pending) {
 		Logger::Log("Updating task bars\n")
 		;
-		TaskBarType::UpdateTaskBar();
+		TaskBar::UpdateTaskBar();
 		task_update_pending = 0;
 	}
 	if (pager_update_pending) {
@@ -571,7 +571,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
 		break;
 	case NEXT:
 		StartWindowWalk();
-		TaskBarType::FocusNext();
+		TaskBar::FocusNext();
 		break;
 	case NEXTSTACK:
 		StartWindowStackWalk();
@@ -579,7 +579,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
 		break;
 	case PREV:
 		StartWindowWalk();
-		TaskBarType::FocusPrevious();
+		TaskBar::FocusPrevious();
 		break;
 	case PREVSTACK:
 		StartWindowStackWalk();
