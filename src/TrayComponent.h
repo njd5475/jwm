@@ -13,7 +13,7 @@
 class Graphics;
 
 class ActionNode;
-class TrayType;
+class Tray;
 
 class TrayComponent {
 
@@ -22,7 +22,7 @@ private:
 	 * UpdateSpecificTray(TrayType*, TrayComponentType*) should be called
 	 * when content changes.
 	 */
-	struct TrayType *tray;
+	Tray *tray;
 
 	int x; /**< x-coordinate on the tray (valid only after Create). */
 	int y; /**< y-coordinate on the tray (valid only after Create). */
@@ -53,7 +53,7 @@ public:
 	TrayComponent();
 	virtual ~TrayComponent();
 
-	void SetParent(TrayType *parent) {this->tray = parent;}
+	void SetParent(Tray *parent) {this->tray = parent;}
 	void SetNext(TrayComponent *next) {this->next = next;}
 	void RefreshSize();
 	int getX() const {return this->x;}
@@ -75,7 +75,7 @@ public:
 
 	void SetLocation(int x, int y) {this->x=x;this->y=y;}
 	void SetScreenLocation(int x, int y) {this->screenx=x;this->screeny=y;}
-	TrayType *getTray() const {return this->tray;}
+	Tray *getTray() const {return this->tray;}
 	Pixmap getPixmap() const {return this->pixmap;}
 	void setPixmap(Pixmap pixmap) {
 		this->pixmap = pixmap;
@@ -96,7 +96,7 @@ public:
 	 * @param tp The tray containing the component.
 	 * @param cp The component that needs updating.
 	 */
-	void UpdateSpecificTray(const TrayType *tp);
+	void UpdateSpecificTray(const Tray *tp);
 
 	virtual void SetSize(int width, int height) {
 		this->width = width;

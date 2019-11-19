@@ -198,7 +198,7 @@ void TrayButton::Draw() {
 
 	bp = (TrayButton*) cp;
 
-	TrayType::ClearTrayDrawable(cp);
+	Tray::ClearTrayDrawable(cp);
 	ResetButton(&button, cp->getPixmap());
 	if (cp->wasGrabbed()) {
 		button.type = BUTTON_TRAY_ACTIVE;

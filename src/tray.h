@@ -57,7 +57,7 @@ typedef unsigned char TrayAutoHideType;
  */
 
 /** Structure to represent a tray. */
-class TrayType {
+class Tray {
 
   int requestedX; /**< The user-requested x-coordinate of the tray. */
   int requestedY; /**< The user-requested y-coordinate of the tray. */
@@ -89,13 +89,13 @@ class TrayType {
   /** End of the tray components. */
   struct TrayComponent *componentsTail;
 
-  struct TrayType *next; /**< Next tray. */
+  struct Tray *next; /**< Next tray. */
 public:
-  TrayType();
-  virtual ~TrayType();
+  Tray();
+  virtual ~Tray();
   LayoutType getLayout() const {return this->layout;}
   Window getWindow() const {return this->window;}
-  TrayType *getNext() const {return this->next;}
+  Tray *getNext() const {return this->next;}
   WinLayerType getLayer() const {return this->layer;}
   int getHeight() const {return this->height;}
   int getWidth() const {return this->width;}
@@ -153,7 +153,7 @@ public:
   /** Get a linked list of trays.
    * @return The trays.
    */
-  static TrayType *GetTrays(void);
+  static Tray *GetTrays(void);
 
   /** Get the number of trays.
    * @return The number of trays.
@@ -223,13 +223,13 @@ public:
 
   void LayoutTray(int *variableSize, int *variableRemainder);
 
-  static void HandleTrayExpose(TrayType *tp, const XExposeEvent *event);
-  static void HandleTrayEnterNotify(TrayType *tp, const XCrossingEvent *event);
+  static void HandleTrayExpose(Tray *tp, const XExposeEvent *event);
+  static void HandleTrayEnterNotify(Tray *tp, const XCrossingEvent *event);
 
-  static TrayComponent *GetTrayComponent(TrayType *tp, int x, int y);
-  static void HandleTrayButtonPress(TrayType *tp, const XButtonEvent *event);
-  static void HandleTrayButtonRelease(TrayType *tp, const XButtonEvent *event);
-  static void HandleTrayMotionNotify(TrayType *tp, const XMotionEvent *event);
+  static TrayComponent *GetTrayComponent(Tray *tp, int x, int y);
+  static void HandleTrayButtonPress(Tray *tp, const XButtonEvent *event);
+  static void HandleTrayButtonRelease(Tray *tp, const XButtonEvent *event);
+  static void HandleTrayMotionNotify(Tray *tp, const XMotionEvent *event);
 
   void ComputeTraySize();
   int ComputeMaxWidth();
@@ -241,7 +241,7 @@ public:
 
   static void SignalTray(const TimeType *now, int x, int y, Window w, void *data);
 
-  static TrayType *trays;
+  static Tray *trays;
   static unsigned int trayCount;
 };
 

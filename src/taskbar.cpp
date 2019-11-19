@@ -73,7 +73,7 @@ TaskBar::TaskBar() {
 	this->mouseTime.ms = 0;
 	this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
 	this->buffer = this->pixmap;
-	TrayType::ClearTrayDrawable(this);
+	Tray::ClearTrayDrawable(this);
 	_RegisterCallback(settings.popupDelay / 2, SignalTaskbar, this);
 }
 
@@ -102,7 +102,7 @@ void TaskBar::Resize() {
 	}
 	this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth);
 	this->buffer = this->pixmap;
-	TrayType::ClearTrayDrawable(this);
+	Tray::ClearTrayDrawable(this);
 }
 
 /** Determine the size of items in the task bar. */
@@ -667,7 +667,7 @@ void TaskBar::Render() {
 		return;
 	}
 
-	TrayType::ClearTrayDrawable(this);
+	Tray::ClearTrayDrawable(this);
 	if (!taskEntries) {
 		this->UpdateSpecificTray(this->getTray());
 		return;

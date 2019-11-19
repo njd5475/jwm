@@ -57,7 +57,7 @@ void StartWindowWalk(void)
 {
    JXGrabKeyboard(display, rootWindow, False, GrabModeAsync,
                   GrabModeAsync, CurrentTime);
-   TrayType::RaiseTrays();
+   Tray::RaiseTrays();
    walkingWindows = 1;
 }
 
@@ -114,7 +114,7 @@ void StartWindowStackWalk(void)
    JXGrabKeyboard(display, rootWindow, False, GrabModeAsync,
                   GrabModeAsync, CurrentTime);
 
-   TrayType::RaiseTrays();
+   Tray::RaiseTrays();
 
    walkingWindows = 1;
    wasMinimized = 0;
@@ -209,7 +209,7 @@ void StopWindowWalk(void)
 
    if(walkingWindows) {
       JXUngrabKeyboard(display, CurrentTime);
-      TrayType::LowerTrays();
+      Tray::LowerTrays();
       walkingWindows = 0;
    }
 

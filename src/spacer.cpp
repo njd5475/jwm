@@ -23,7 +23,7 @@ Spacer::Spacer(int width, int height) {
 
 	this->requestNewSize(width, height);
 	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
-	TrayType::ClearTrayDrawable(this);
+	Tray::ClearTrayDrawable(this);
 }
 
 /** Set the size. */
@@ -44,7 +44,7 @@ void Spacer::Resize() {
 		JXFreePixmap(display, this->getPixmap());
 	}
 	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
-	TrayType::ClearTrayDrawable(this);
+	Tray::ClearTrayDrawable(this);
 }
 
 void Spacer::Create() {

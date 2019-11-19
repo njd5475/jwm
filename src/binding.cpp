@@ -81,7 +81,7 @@ void Binding::StartupBindings(void) {
 
 	XModifierKeymap *modmap;
 	KeyNode *np;
-	TrayType *tp;
+	Tray *tp;
 	int x;
 
 	/* Get the keys that we don't care about (num lock, etc). */
@@ -109,7 +109,7 @@ void Binding::StartupBindings(void) {
 			GrabKey(np, rootWindow);
 
 			/* Grab on the trays. */
-			for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+			for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
 				GrabKey(np, tp->getWindow());
 			}
 
@@ -121,7 +121,7 @@ void Binding::StartupBindings(void) {
 /** Shutdown bindings. */
 void Binding::ShutdownBindings(void) {
 	ClientNode *np;
-	TrayType *tp;
+	Tray *tp;
 	unsigned int layer;
 
 	/* Ungrab keys on client windows. */
@@ -132,7 +132,7 @@ void Binding::ShutdownBindings(void) {
 	}
 
 	/* Ungrab keys on trays, only really needed if we are restarting. */
-	for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+	for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
 		JXUngrabKey(display, AnyKey, AnyModifier, tp->getWindow());
 	}
 

@@ -501,7 +501,7 @@ void ClientNode::DoSnapScreen() {
 void ClientNode::DoSnapBorder() {
 
   ClientNode *tp;
-  const TrayType *tray;
+  const Tray *tray;
   RectangleType client, other;
   RectangleType left = { 0 };
   RectangleType right = { 0 };
@@ -520,7 +520,7 @@ void ClientNode::DoSnapBorder() {
   for (layer = 0; layer < LAYER_COUNT; layer++) {
 
     /* Check tray windows. */
-    for (tray = TrayType::GetTrays(); tray; tray = tray->getNext()) {
+    for (tray = Tray::GetTrays(); tray; tray = tray->getNext()) {
 
       if (tray->isHidden()) {
         continue;

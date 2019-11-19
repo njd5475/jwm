@@ -140,16 +140,16 @@ static TokenNode* ParseMenuIncludeHelper(const TokenNode *tp,
 /* Tray. */
 typedef void (*AddTrayActionFunc)(TrayComponent*, const char*, int);
 static void ParseTray(const TokenNode *tp);
-static void ParsePager(const TokenNode *tp, TrayType *tray);
-static void ParseTaskList(const TokenNode *tp, TrayType *tray);
-static void ParseSwallow(const TokenNode *tp, TrayType *tray);
-static void ParseTrayButton(const TokenNode *tp, TrayType *tray);
-static void ParseClock(const TokenNode *tp, TrayType *tray);
-static void ParseBattery(const TokenNode *tp, TrayType *tray);
+static void ParsePager(const TokenNode *tp, Tray *tray);
+static void ParseTaskList(const TokenNode *tp, Tray *tray);
+static void ParseSwallow(const TokenNode *tp, Tray *tray);
+static void ParseTrayButton(const TokenNode *tp, Tray *tray);
+static void ParseClock(const TokenNode *tp, Tray *tray);
+static void ParseBattery(const TokenNode *tp, Tray *tray);
 static void ParseTrayComponentActions(const TokenNode *tp,
 		TrayComponent *cp);
-static void ParseDock(const TokenNode *tp, TrayType *tray);
-static void ParseSpacer(const TokenNode *tp, TrayType *tray);
+static void ParseDock(const TokenNode *tp, Tray *tray);
+static void ParseSpacer(const TokenNode *tp, Tray *tray);
 
 /* Groups. */
 static void ParseGroup(const TokenNode *tp);
@@ -1185,12 +1185,12 @@ void ParseTray(const TokenNode *tp) {
 	const TokenNode *np;
 	const char *attr;
 	unsigned delay = 0;
-	TrayType *tray;
+	Tray *tray;
 	TrayAutoHideType autohide;
 
 	Assert(tp);
 
-	tray = new TrayType();
+	tray = new Tray();
 
 	autohide = ParseAttribute(mapping, ARRAY_LENGTH(mapping), tp, "autohide",
 			THIDE_OFF);
@@ -1271,7 +1271,7 @@ void ParseTray(const TokenNode *tp) {
 }
 
 /** Parse a pager tray component. */
-void ParsePager(const TokenNode *tp, TrayType *tray) {
+void ParsePager(const TokenNode *tp, Tray *tray) {
 
 	TrayComponent *cp;
 	const char *temp;
@@ -1291,7 +1291,7 @@ void ParsePager(const TokenNode *tp, TrayType *tray) {
 }
 
 /** Parse a task list tray component. */
-void ParseTaskList(const TokenNode *tp, TrayType *tray) {
+void ParseTaskList(const TokenNode *tp, Tray *tray) {
 	TaskBar *cp;
 	const char *temp;
 
@@ -1349,7 +1349,7 @@ void ParseTrayButtonStyle(const TokenNode *tp) {
 }
 
 /** Parse a swallow tray component. */
-void ParseSwallow(const TokenNode *tp, TrayType *tray) {
+void ParseSwallow(const TokenNode *tp, Tray *tray) {
 
 	TrayComponent *cp;
 	const char *name;
@@ -1386,7 +1386,7 @@ void ParseSwallow(const TokenNode *tp, TrayType *tray) {
 }
 
 /** Parse a button tray component. */
-void ParseTrayButton(const TokenNode *tp, TrayType *tray) {
+void ParseTrayButton(const TokenNode *tp, Tray *tray) {
 
 	TrayComponent *cp;
 	const char *icon;
@@ -1425,7 +1425,7 @@ void ParseTrayButton(const TokenNode *tp, TrayType *tray) {
 }
 
 /** Parse a battery tray component. */
-void ParseBattery(const TokenNode *tp, TrayType *tray) {
+void ParseBattery(const TokenNode *tp, Tray *tray) {
 	TrayComponent *cp;
 	const char *temp;
 	int width, height;
@@ -1454,7 +1454,7 @@ void ParseBattery(const TokenNode *tp, TrayType *tray) {
 }
 
 /** Parse a clock tray component. */
-void ParseClock(const TokenNode *tp, TrayType *tray) {
+void ParseClock(const TokenNode *tp, Tray *tray) {
 	const char *format;
 	const char *zone;
 	const char *temp;
@@ -1522,7 +1522,7 @@ void ParseTrayComponentActions(const TokenNode *tp, TrayComponent *cp) {
 }
 
 /** Parse a dock tray component. */
-void ParseDock(const TokenNode *tp, TrayType *tray) {
+void ParseDock(const TokenNode *tp, Tray *tray) {
 
 	TrayComponent *cp;
 	int width;
@@ -1551,7 +1551,7 @@ void ParseDock(const TokenNode *tp, TrayType *tray) {
 }
 
 /** Parse a spacer tray component. */
-void ParseSpacer(const TokenNode *tp, TrayType *tray) {
+void ParseSpacer(const TokenNode *tp, Tray *tray) {
 
 	TrayComponent *cp;
 	int width;

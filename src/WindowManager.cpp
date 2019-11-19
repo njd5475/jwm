@@ -91,7 +91,7 @@ void WindowManager::Initialize(void) {
 	ILog(Setting::InitializeSettings);
 	ILog(SwallowNode::InitializeSwallow);
 	ILog(TaskBar::InitializeTaskBar);
-	ILog(TrayType::InitializeTray);
+	ILog(Tray::InitializeTray);
 	ILog(TrayButton::InitializeTrayButtons);
 }
 
@@ -121,7 +121,7 @@ void WindowManager::Startup(void) {
 	TrayButton::StartupTrayButtons();
 	Hints::StartupHints();
 	DesktopEnvironment::DefaultEnvironment()->StartupComponents();
-	TrayType::StartupTray();
+	Tray::StartupTray();
 	Binding::StartupBindings();
 	Places::StartupPlacement();
 
@@ -144,7 +144,7 @@ void WindowManager::Startup(void) {
 
 	SwallowNode::StartupSwallow();
 
-	TrayType::DrawTray();
+	Tray::DrawTray();
 
 	/* Send expose events. */
 	Border::ExposeCurrentDesktop();
@@ -177,7 +177,7 @@ void WindowManager::Shutdown(void) {
 	PagerType::ShutdownPager();
 	Roots::ShutdownRootMenu();
 	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
-	TrayType::ShutdownTray();
+	Tray::ShutdownTray();
 	TrayButton::ShutdownTrayButtons();
 	TaskBar::ShutdownTaskBar();
 	ClockType::ShutdownClock();
@@ -224,7 +224,7 @@ void WindowManager::Destroy(void) {
 	Setting::DestroySettings();
 	SwallowNode::DestroySwallow();
 	TaskBar::DestroyTaskBar();
-	TrayType::DestroyTray();
+	Tray::DestroyTray();
 	TrayButton::DestroyTrayButtons();
 }
 

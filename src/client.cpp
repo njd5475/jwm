@@ -1423,10 +1423,10 @@ void ClientNode::SubtractStrutBounds(BoundingBox *box, const ClientNode *np) {
 
 /** Subtract tray area from the bounding box. */
 void ClientNode::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
-	const TrayType *tp;
+	const Tray *tp;
 	BoundingBox src;
 	BoundingBox last;
-	for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+	for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
 
 		if (tp->getLayer() > layer && tp->getAutoHide() == THIDE_OFF) {
 
@@ -1743,7 +1743,7 @@ void ClientNode::RestackClient(Window above, int detail) {
 /** Restack the clients according the way we want them. */
 void ClientNode::RestackClients(void) {
 
-	TrayType *tp;
+	Tray *tp;
 	ClientNode *np;
 	unsigned int layer, index;
 	int trayCount;
@@ -1755,7 +1755,7 @@ void ClientNode::RestackClients(void) {
 	}
 
 	/* Allocate memory for restacking. */
-	trayCount = TrayType::GetTrayCount();
+	trayCount = Tray::GetTrayCount();
 	stack = AllocateStack((clientCount + trayCount) * sizeof(Window));
 
 	/* Prepare the stacking array. */
@@ -1798,7 +1798,7 @@ void ClientNode::RestackClients(void) {
 			}
 		}
 
-		for (tp = TrayType::GetTrays(); tp; tp = tp->getNext()) {
+		for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
 			if (layer == tp->getLayer()) {
 				stack[index] = tp->getWindow();
 				index += 1;

@@ -288,7 +288,7 @@ char _WaitForEvent(XEvent *event) {
 		;
 
 		if (!handled) {
-			handled = TrayType::ProcessTrayEvent(event);
+			handled = Tray::ProcessTrayEvent(event);
 		}
 		if (!handled) {
 			handled = Dialogs::ProcessDialogEvent(event);
@@ -567,7 +567,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
 		DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
 		break;
 	case SHOWTRAY:
-		TrayType::ShowAllTrays();
+		Tray::ShowAllTrays();
 		break;
 	case NEXT:
 		StartWindowWalk();

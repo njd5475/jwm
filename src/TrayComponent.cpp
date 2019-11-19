@@ -87,7 +87,7 @@ TrayComponent::~TrayComponent() {
 }
 
 /** Update a specific component on a tray. */
-void TrayComponent::UpdateSpecificTray(const TrayType *tp) {
+void TrayComponent::UpdateSpecificTray(const Tray *tp) {
 	if (JUNLIKELY(shouldExit)) {
 		return;
 	}
