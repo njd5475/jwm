@@ -8,6 +8,7 @@
 #include "jwm.h"
 #include "action.h"
 #include "tray.h"
+#include "TrayComponent.h"
 #include "root.h"
 #include "screen.h"
 #include "misc.h"

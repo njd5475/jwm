@@ -33,6 +33,7 @@ public:
 
 public:
 	static Graphics *create(Display *display, GC gc, Drawable d, int width, int height, int rootDepth);
+	static void destroy(Graphics* g);
 	static Graphics *wrap(const Pixmap p, GC gc, Display *display);
 
 	static Graphics *getRootGraphics(const Pixmap p);

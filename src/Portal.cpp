@@ -12,6 +12,7 @@
 #include "font.h"
 #include "button.h"
 #include "hint.h"
+#include "Graphics.h"
 
 #define BUT_STATE_OK 	 1
 #define BUT_STATE_CANCEL 2
@@ -19,7 +20,7 @@
 std::vector<Portal> Portal::portals;
 
 Portal::Portal(int x, int y, int width, int height) :
-		x(x), y(y), width(width), height(height), buttonState(0), window(0), pixmap(0), node(0) {
+		x(x), y(y), width(width), height(height), buttonState(0), window(0), pixmap(0), node(0), graphics(0) {
 
 	XSetWindowAttributes attrs;
 	attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
@@ -27,6 +28,7 @@ Portal::Portal(int x, int y, int width, int height) :
 	pixmap = JXCreatePixmap(display, rootWindow, width, height, rootDepth);
 	window = JXCreateWindow(display, rootWindow, x, y, width, height, 0, CopyFromParent, InputOutput, CopyFromParent,
 			CWBackPixel | CWEventMask, &attrs);
+	graphics = Graphics::getRootGraphics(pixmap);
 
 	XSizeHints shints;
 	shints.x = x;
@@ -53,6 +55,7 @@ Portal::Portal(const Portal &p) {
 	this->window = p.window;
 	this->buttonState = p.buttonState;
 	this->node = p.node;
+	this->graphics = p.graphics;
 }
 
 Portal::~Portal() {
@@ -72,12 +75,13 @@ void Portal::Draw() {
 	int yoffset;
 
 	/* Clear the dialog. */
-	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_MENU_BG));
-	JXFillRectangle(display, pixmap, rootGC, 0, 0, width, height);
+	graphics->setForeground(COLOR_MENU_BG);
+	graphics->fillRectangle(0, 0, width, height);
 
 	/* Draw the message. */
 	yoffset = 40;
-	Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset, width, _("Something"));
+	Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset, width, _("\uF160ASomething"));
+	Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset*2, width, "Something else");
 
 	ButtonNode button;
 	int temp;
@@ -152,7 +156,7 @@ char Portal::ProcessEvents(const XEvent *event) {
 	for (it = portals.begin(); it != portals.end(); ++it) {
 
 		if (it->node && it->node->getWindow() == window) {
-			JXCopyArea(display, it->pixmap, it->node->getWindow(), rootGC, 0, 0, it->width, it->height, 0, 0);
+			it->graphics->copy(it->node->getWindow(), 0, 0, it->width, it->height, 0, 0);
 			it->Draw();
 			return 1;
 		}

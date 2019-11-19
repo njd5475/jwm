@@ -11,6 +11,8 @@
 #define TASKBAR_H
 
 #include "tray.h"
+#include "TrayComponent.h"
+
 struct MenuAction;
 struct ClientNode;
 struct TimeType;

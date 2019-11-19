@@ -9,7 +9,7 @@
 #ifndef SPACER_H
 #define SPACER_H
 
-#include "tray.h"
+#include "TrayComponent.h"
 
 /** Create a spacer tray component.
  * @param width Minimum width.

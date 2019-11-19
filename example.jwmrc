@@ -50,7 +50,7 @@
     </Group>
 
     <!-- Tray at the bottom. -->
-    <Tray x="0" y="-1" autohide="off">
+    <Tray x="0" y="0" autohide="off">
 
         <TrayButton icon="jwm-blue">root:1</TrayButton>
         <Spacer width="2"/>
@@ -71,7 +71,7 @@
 
     <!-- Visual Styles -->
     <WindowStyle>
-        <Font>Sans-9:bold</Font>
+        <Font>DejaVu Sans Mono:bold</Font>
         <Width>4</Width>
         <Height>21</Height>
         <Corner>3</Corner>
@@ -87,14 +87,14 @@
         </Active>
     </WindowStyle>
     <TrayStyle group="true" list="all">
-        <Font>Sans-9</Font>
+        <Font>DejaVu Sans Mono</Font>
         <Background>#333333</Background>
         <Foreground>#FFFFFF</Foreground>
         <Outline>#000000</Outline>
         <Opacity>0.75</Opacity>
     </TrayStyle>
     <TaskListStyle>
-      <Font>Sans-9</Font>
+      <Font>DejaVu Sans Mono</Font>
       <Active>
         <Foreground>#FFFFFF</Foreground>
         <Background>#555555</Background>
@@ -113,7 +113,7 @@
         </Active>
     </PagerStyle>
     <MenuStyle>
-        <Font>Sans-9</Font>
+        <Font>DejaVu Sans Mono</Font>
         <Foreground>#FFFFFF</Foreground>
         <Background>#333333</Background>
         <Outline>#000000</Outline>
@@ -121,10 +121,10 @@
             <Foreground>#FFFFFF</Foreground>
             <Background>#0077CC</Background>
         </Active>
-        <Opacity>0.85</Opacity>
+        <Opacity>0.65</Opacity>
     </MenuStyle>
     <PopupStyle>
-        <Font>Sans-9</Font>
+        <Font>DejaVu Sans Mono</Font>
         <Foreground>#000000</Foreground>
         <Background>#999999</Background>
     </PopupStyle>

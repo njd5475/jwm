@@ -222,6 +222,7 @@ void Parser::ParseConfig(const char *fileName) {
  * @return 1 on success and 0 on failure.
  */
 char ParseFile(const char *fileName, int depth) {
+
 	TokenNode *tokens;
 
 	depth += 1;
@@ -233,8 +234,15 @@ char ParseFile(const char *fileName, int depth) {
 
 	tokens = TokenizeFile(fileName);
 	if (!tokens) {
+		Log("Looked for config file '");
+		Log(fileName);
+		Log("' but did not find it\n");
 		return 0;
 	}
+
+	Log("Parsing config file loaded from: ");
+	Log(fileName);
+	Log("\n");
 
 	Parse(tokens, depth);
 	ReleaseTokens(tokens);

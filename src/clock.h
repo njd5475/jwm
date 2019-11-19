@@ -10,7 +10,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "tray.h"
+#include "TrayComponent.h"
 
 /** Structure to respresent a clock tray component. */
 class ClockType : public TrayComponentType {

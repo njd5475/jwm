@@ -14,7 +14,7 @@ struct TrayComponentType;
 struct TimeType;
 struct IconNode;
 
-#include "tray.h"
+#include "TrayComponent.h"
 
 class TrayButton : public TrayComponentType {
 

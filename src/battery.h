@@ -10,8 +10,9 @@
 #ifndef BATTERY_H
 #define BATTERY_H
 
-#include "tray.h"
+#include "TrayComponent.h"
 
+class Graphics;
 class Battery : public TrayComponentType {
 public:
 
@@ -40,6 +41,7 @@ public:
 	void Draw();
 
 private:
+	Graphics *graphics;
 	float lastLevel; /**< Currently displayed level */
 
 };

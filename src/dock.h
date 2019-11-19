@@ -10,7 +10,7 @@
 #ifndef DOCK_H
 #define DOCK_H
 
-#include "tray.h"
+#include "TrayComponent.h"
 
 /** Structure to represent a docked window. */
 typedef struct DockNode {

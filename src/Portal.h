@@ -8,9 +8,12 @@
 #ifndef SRC_PORTAL_H_
 #define SRC_PORTAL_H_
 
-#include "main.h"
-#include "client.h"
-#include <vector>
+#include <c++/6/bits/stl_vector.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+
+class ClientNode;
+class Graphics;
 
 class Portal {
 public:
@@ -27,6 +30,7 @@ private:
 	Pixmap pixmap;
 	int buttonState;
 	ClientNode *node;
+	Graphics *graphics;
 public:
 	int getX() {return x;}
 	int getY() {return y;}

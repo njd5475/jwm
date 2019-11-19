@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "event.h"
 #include "action.h"
+#include "Graphics.h"
 
 static void PollBattery(const struct TimeType *now, int x, int y, Window w, void *data);
 static char* quickFileRead(int fd);
@@ -66,6 +67,9 @@ Battery::Battery(int width, int height) :
 	Warning(_("Creating Battery Component"));
 	this->SetSize(width, height);
 
+	this->setPixmap(JXCreatePixmap(display, rootWindow, width, height, rootDepth));
+	this->graphics = Graphics::wrap(this->getPixmap(), rootGC, display);
+
 	_RegisterCallback(900, PollBattery, this);
 }
 
@@ -85,10 +89,12 @@ void Battery::Resize() {
 
 	if (this->getPixmap() != None) {
 		Warning(_("Battery pixmap released!"));
-		JXFreePixmap(display, this->getPixmap());
+		this->graphics->free();
+		Graphics::destroy(this->graphics);
 	}
 
 	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
+	this->graphics = Graphics::wrap(this->pixmap, rootGC, display);
 
 	Draw();
 }
@@ -112,16 +118,13 @@ void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
 /** Draw a Battery tray component. */
 void Battery::Draw() {
 
-	this->SetLocation(0, 0);
-	this->SetScreenLocation(0, 0);
-
 	float percentage = QueryBatteryPercentage();
 	if (percentage == this->lastLevel) {
 		return; //no change
 	}
 
-	JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_CLOCK_BG1));
-	JXFillRectangle(display, this->getPixmap(), rootGC, 0, 0, this->getWidth(), this->getHeight());
+	this->graphics->setForeground(COLOR_MENU_FG);
+	this->graphics->fillRectangle(0, 0, this->getWidth(), this->getHeight());
 
 	static char buf[80];
 	sprintf(buf, "%d%%", (int) percentage);
@@ -140,6 +143,9 @@ void Battery::Draw() {
 
 	//update battery level
 	this->lastLevel = percentage;
+
+
+	JXCopyArea(display, this->getPixmap(), window, rootGC,  0, 0, this->getWidth(), this->getHeight(), this->getX(), this->getY());
 }
 
 int readAsInt(int fd) {

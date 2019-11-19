@@ -59,6 +59,24 @@ Graphics *Graphics::create(Display *display, GC gc, Drawable d, int width, int h
 	return wrap(map, gc, display);
 }
 
+void Graphics::destroy(Graphics *g) {
+	std::vector<Graphics*>::iterator it;
+	char found = 0;
+	for(it = graphics.begin(); it != graphics.end(); ++it) {
+		if(*it == g) {
+			found = 1;
+			break;
+		}
+	}
+
+	if(found) {
+		graphics.erase(it);
+	}
+
+	g->free();
+	delete g;
+}
+
 Graphics* Graphics::wrap(const Pixmap p, GC gc, Display *display) {
 	Graphics *g = new Graphics(p, gc, display);
 	graphics.push_back(g);

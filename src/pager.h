@@ -12,7 +12,7 @@
 
 #include "timing.h"
 #include "client.h"
-#include "tray.h"
+#include "TrayComponent.h"
 
 /** Structure to represent a pager tray component. */
 class PagerType : public TrayComponentType {

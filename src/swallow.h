@@ -10,7 +10,7 @@
 #ifndef SWALLOW_H
 #define SWALLOW_H
 
-#include "tray.h"
+#include "TrayComponent.h"
 
 class SwallowNode : public TrayComponentType {
 public:

@@ -263,7 +263,6 @@ char Menus::ShowSubmenu(Menu *menu, Menu *parent, RunMenuCommandType runner, int
 
 	JXDestroyWindow(display, menu->window);
 	menu->graphics->free();
-	//JXFreePixmap(display, menu->pixmap);
 
 	return status;
 
