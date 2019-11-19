@@ -1190,7 +1190,7 @@ void ParseTray(const TokenNode *tp) {
 
 	Assert(tp);
 
-	tray = new Tray();
+	tray = Tray::Create();
 
 	autohide = ParseAttribute(mapping, ARRAY_LENGTH(mapping), tp, "autohide",
 			THIDE_OFF);

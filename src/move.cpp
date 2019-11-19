@@ -520,16 +520,15 @@ void ClientNode::DoSnapBorder() {
   for (layer = 0; layer < LAYER_COUNT; layer++) {
 
     /* Check tray windows. */
-    for (tray = Tray::GetTrays(); tray; tray = tray->getNext()) {
+	std::vector<BoundingBox> boxes = Tray::GetVisibleBounds();
+	std::vector<BoundingBox>::iterator it;
+	for(it = boxes.begin(); it != boxes.end(); ++it) {
+	  BoundingBox box = *it;
 
-      if (tray->isHidden()) {
-        continue;
-      }
-
-      other.left = tray->getX();
-      other.right = tray->getX() + tray->getWidth();
-      other.top = tray->getY();
-      other.bottom = tray->getY() + tray->getHeight();
+      other.left = box.x;
+      other.right = box.x + box.width;
+      other.top = box.y;
+      other.bottom = box.y + box.height;
 
       left.valid = CheckLeftValid(&client, &other, &left);
       right.valid = CheckRightValid(&client, &other, &right);

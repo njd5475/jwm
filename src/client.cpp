@@ -1423,33 +1423,31 @@ void ClientNode::SubtractStrutBounds(BoundingBox *box, const ClientNode *np) {
 
 /** Subtract tray area from the bounding box. */
 void ClientNode::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
-	const Tray *tp;
 	BoundingBox src;
 	BoundingBox last;
-	for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
 
-		if (tp->getLayer() > layer && tp->getAutoHide() == THIDE_OFF) {
+	std::vector<BoundingBox> boxes = Tray::GetBoundsAbove(layer);
+	std::vector<BoundingBox>::iterator it;
+	for (it = boxes.begin(); it != boxes.end(); ++it) {
+		BoundingBox bb = *it;
+		src.x = bb.x;
+		src.y = bb.y;
+		src.width = bb.width;
+		src.height = bb.height;
+		if (src.x < 0) {
+			src.width += src.x;
+			src.x = 0;
+		}
+		if (src.y < 0) {
+			src.height += src.y;
+			src.y = 0;
+		}
 
-			src.x = tp->getX();
-			src.y = tp->getY();
-			src.width = tp->getWidth();
-			src.height = tp->getHeight();
-			if (src.x < 0) {
-				src.width += src.x;
-				src.x = 0;
-			}
-			if (src.y < 0) {
-				src.height += src.y;
-				src.y = 0;
-			}
-
-			last = *box;
-			SubtractBounds(&src, box);
-			if (box->width * box->height <= 0) {
-				*box = last;
-				break;
-			}
-
+		last = *box;
+		SubtractBounds(&src, box);
+		if (box->width * box->height <= 0) {
+			*box = last;
+			break;
 		}
 
 	}
@@ -1743,7 +1741,6 @@ void ClientNode::RestackClient(Window above, int detail) {
 /** Restack the clients according the way we want them. */
 void ClientNode::RestackClients(void) {
 
-	Tray *tp;
 	ClientNode *np;
 	unsigned int layer, index;
 	int trayCount;
@@ -1798,11 +1795,11 @@ void ClientNode::RestackClients(void) {
 			}
 		}
 
-		for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
-			if (layer == tp->getLayer()) {
-				stack[index] = tp->getWindow();
-				index += 1;
-			}
+		std::vector<Window> windows = Tray::getTrayWindowsAt(layer);
+		std::vector<Window>::iterator it;
+		for (it = windows.begin(); it != windows.end(); ++it) {
+			stack[index] = (*it);
+			index += 1;
 		}
 
 		if (layer == FIRST_LAYER) {

@@ -13,6 +13,8 @@
 #include "action.h"
 #include "settings.h"
 
+struct KeyNode;
+
 class Binding {
 
 public:
@@ -71,6 +73,9 @@ public:
    * This is called after parsing the configuration file.
    */
   static void ValidateKeys(void);
+
+  static void GrabKey(KeyNode *np, Window win);
+
 };
 
 #endif /* KEY_H */

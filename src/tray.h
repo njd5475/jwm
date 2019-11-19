@@ -15,6 +15,8 @@
 #include "timing.h"
 
 class TrayComponent;
+struct KeyNode;
+struct BoundingBox;
 
 /** Enumeration of tray layouts. */
 typedef unsigned char LayoutType;
@@ -89,14 +91,16 @@ private:
 
   /** Start of the tray components. */
   std::vector<TrayComponent*> components;
+  static std::vector<Tray*> trays;
 
-  struct Tray *next; /**< Next tray. */
-public:
   Tray();
+
+  void ReleaseComponents();
+
+public:
   virtual ~Tray();
   LayoutType getLayout() const {return this->layout;}
   Window getWindow() const {return this->window;}
-  Tray *getNext() const {return this->next;}
   WinLayerType getLayer() const {return this->layer;}
   int getHeight() const {return this->height;}
   int getWidth() const {return this->width;}
@@ -104,133 +108,24 @@ public:
   int getY() const {return this->y;}
   char isHidden() const {return this->hidden;}
   TrayAutoHideType getAutoHide() const {return this->autoHide;}
-public:
-  static void InitializeTray(void);
-  static void StartupTray(void);
-  static void ShutdownTray(void);
-  static void DestroyTray(void);
-  static void handleConfirm(ClientNode *np);
-  /** Add a tray component to a tray.
-   * @param tp The tray to update.
-   * @param cp The tray component to add.
-   */
+
   void AddTrayComponent(TrayComponent *cp);
-
-  /** Show a tray.
-   * @param tp The tray to show.
-   */
   void ShowTray();
-
-  /** Show all trays. */
-  static void ShowAllTrays(void);
-
-  /** Hide a tray.
-   * @param tp The tray to hide.
-   */
   void HideTray();
-
-  /** Draw all trays. */
-  static void DrawTray(void);
-
-  /** Draw a specific tray.
-   * @param tp The tray to draw.
-   */
   void DrawSpecificTray();
-
-  /** Raise tray windows. */
-  static void RaiseTrays(void);
-
-  /** Lower tray windows. */
-  static void LowerTrays(void);
-
-  /** Resize a tray.
-   * @param tp The tray to resize containing the new requested size information.
-   */
   void ResizeTray();
-
-  /** Draw the tray background on a drawable. */
-  static void ClearTrayDrawable(const TrayComponent *cp);
-
-  /** Get a linked list of trays.
-   * @return The trays.
-   */
-  static Tray *GetTrays(void);
-
-  /** Get the number of trays.
-   * @return The number of trays.
-   */
-  static unsigned int GetTrayCount(void);
-
-  /** Process an event that may be for a tray.
-   * @param event The event to process.
-   * @return 1 if this event was for a tray, 0 otherwise.
-   */
-  static char ProcessTrayEvent(const XEvent *event);
-
-  /** Set whether auto-hide is enabled for a tray.
-   * @param tp The tray.
-   * @param autohide The auto-hide setting.
-   * @param delay_ms The auto-hide timeout in milliseconds.
-   */
   void SetAutoHideTray(TrayAutoHideType autohide, unsigned delay_ms);
 
-  /** Set the tray x-coordinate.
-   * @param tp The tray.
-   * @param str The x-coordinate (ASCII, pixels, negative ok).
-   */
   void SetTrayX(const char *str);
-
-  /** Set the tray y-coordinate.
-   * @param tp The tray.
-   * @param str The y-coordinate (ASCII, pixels, negative ok).
-   */
   void SetTrayY(const char *str);
-
-  /** Set the tray width.
-   * @param tp The tray.
-   * @param str The width (ASCII, pixels).
-   */
   void SetTrayWidth(const char *str);
-
-  /** Set the tray height.
-   * @param tp The tray.
-   * @param str The height (ASCII, pixels).
-   */
   void SetTrayHeight( const char *str);
-
-  /** Set the tray layout.
-   * @param tp The tray.
-   * @param str A string representation of the layout to use.
-   */
   void SetTrayLayout( const char *str);
-
-  /** Set the tray layer.
-   * @param tp The tray.
-   * @param layer The layer.
-   */
   void SetTrayLayer( WinLayerType layer);
-
-  /** Set the tray horizontal alignment.
-   * @param tp The tray.
-   * @param str The alignment (ASCII).
-   */
   void SetTrayHorizontalAlignment(const char *str);
-
-  /** Set the tray vertical alignment.
-   * @param tp The tray.
-   * @param str The alignment (ASCII).
-   */
   void SetTrayVerticalAlignment(const char *str);
 
   void LayoutTray(int *variableSize, int *variableRemainder);
-
-  static void HandleTrayExpose(Tray *tp, const XExposeEvent *event);
-  static void HandleTrayEnterNotify(Tray *tp, const XCrossingEvent *event);
-
-  static TrayComponent *GetTrayComponent(Tray *tp, int x, int y);
-  static void HandleTrayButtonPress(Tray *tp, const XButtonEvent *event);
-  static void HandleTrayButtonRelease(Tray *tp, const XButtonEvent *event);
-  static void HandleTrayMotionNotify(Tray *tp, const XMotionEvent *event);
 
   void ComputeTraySize();
   int ComputeMaxWidth();
@@ -240,10 +135,39 @@ public:
   char CheckHorizontalFill();
   char CheckVerticalFill();
 
-  static void SignalTray(const TimeType *now, int x, int y, Window w, void *data);
+public:
 
-  static Tray *trays;
-  static unsigned int trayCount;
+  static void InitializeTray(void);
+  static void StartupTray(void);
+  static void ShutdownTray(void);
+  static void DestroyTray(void);
+  static void handleConfirm(ClientNode *np);
+
+  static void ShowAllTrays(void);
+  static void DrawTray(void);
+  static void RaiseTrays(void);
+  static void LowerTrays(void);
+
+  static void ClearTrayDrawable(const TrayComponent *cp);
+
+  static char ProcessTrayEvent(const XEvent *event);
+
+  static void HandleTrayExpose(Tray *tp, const XExposeEvent *event);
+  static void HandleTrayEnterNotify(Tray *tp, const XCrossingEvent *event);
+
+  static TrayComponent *GetTrayComponent(Tray *tp, int x, int y);
+  static void HandleTrayButtonPress(Tray *tp, const XButtonEvent *event);
+  static void HandleTrayButtonRelease(Tray *tp, const XButtonEvent *event);
+  static void HandleTrayMotionNotify(Tray *tp, const XMotionEvent *event);
+
+  static void SignalTray(const TimeType *now, int x, int y, Window w, void *data);
+  static void UngrabKeys(Display *d, unsigned int keyCode, unsigned int modifiers);
+  static void GrabKey(KeyNode *kn);
+  static std::vector<BoundingBox> GetBoundsAbove(int layer);
+  static std::vector<BoundingBox> GetVisibleBounds();
+  static std::vector<Window> getTrayWindowsAt(int layer);
+  static unsigned int GetTrayCount() {return trays.size();}
+  static Tray* Create();
 };
 
 #endif /* TRAY_H */

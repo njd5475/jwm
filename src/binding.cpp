@@ -68,8 +68,6 @@ unsigned Binding::lockMask;
 static unsigned int GetModifierMask(XModifierKeymap *modmap, KeySym key);
 static KeySym ParseKeyString(const char *str);
 static char ShouldGrab(ActionType key);
-static void GrabKey(KeyNode *np, Window win);
-
 /** Initialize binding data. */
 void Binding::InitializeBindings(void) {
 	memset(bindings, 0, sizeof(bindings));
@@ -109,9 +107,8 @@ void Binding::StartupBindings(void) {
 			GrabKey(np, rootWindow);
 
 			/* Grab on the trays. */
-			for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
-				GrabKey(np, tp->getWindow());
-			}
+			std::vector<Tray*>::iterator it;
+			Tray::GrabKey(np);
 
 		}
 
@@ -121,7 +118,6 @@ void Binding::StartupBindings(void) {
 /** Shutdown bindings. */
 void Binding::ShutdownBindings(void) {
 	ClientNode *np;
-	Tray *tp;
 	unsigned int layer;
 
 	/* Ungrab keys on client windows. */
@@ -132,9 +128,7 @@ void Binding::ShutdownBindings(void) {
 	}
 
 	/* Ungrab keys on trays, only really needed if we are restarting. */
-	for (tp = Tray::GetTrays(); tp; tp = tp->getNext()) {
-		JXUngrabKey(display, AnyKey, AnyModifier, tp->getWindow());
-	}
+	Tray::UngrabKeys(display, AnyKey, AnyModifier);
 
 	/* Ungrab keys on the root. */
 	JXUngrabKey(display, AnyKey, AnyModifier, rootWindow);
@@ -156,7 +150,7 @@ void Binding::DestroyBindings(void) {
 }
 
 /** Grab a key. */
-void GrabKey(KeyNode *np, Window win) {
+void Binding::GrabKey(KeyNode *np, Window win) {
 	unsigned int x;
 	unsigned int index, maxIndex;
 	unsigned int mask;

@@ -25,32 +25,32 @@
 #include "action.h"
 #include "button.h"
 #include "confirm.h"
+#include "binding.h"
 
 #define DEFAULT_TRAY_WIDTH 32
 #define DEFAULT_TRAY_HEIGHT 32
 
 #define TRAY_BORDER_SIZE   1
 
-unsigned int Tray::trayCount = 0;
+std::vector<Tray*> Tray::trays;
 
 /** Initialize tray data. */
 void Tray::InitializeTray(void) {
-	trays = NULL;
-	trayCount = 0;
 }
 
 /** Startup trays. */
 void Tray::StartupTray(void) {
 	XSetWindowAttributes attr;
 	unsigned long attrMask;
-	Tray *tp;
+
 	int variableSize;
 	int variableRemainder;
 	int width, height;
 	int xoffset, yoffset;
 
-	for (tp = trays; tp; tp = tp->next) {
-
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		Tray *tp = (*it);
 		tp->LayoutTray(&variableSize, &variableRemainder);
 
 		/* Create the tray window. */
@@ -123,9 +123,6 @@ void Tray::StartupTray(void) {
 
 		/* Show the tray. */
 		JXMapWindow(display, tp->window);
-
-		trayCount += 1;
-
 	}
 
 	_RequirePagerUpdate();
@@ -141,35 +138,31 @@ void Tray::handleConfirm(ClientNode *np) {
 
 }
 
+Tray* Tray::Create() {
+	Tray *t = new Tray();
+	trays.push_back(t);
+	return t;
+}
+
 /** Shutdown trays. */
 void Tray::ShutdownTray(void) {
-	Tray *tp;
-	for (tp = trays; tp; tp = tp->next) {
+	std::vector<Tray*>::iterator tray;
+	for (tray = trays.begin(); tray != trays.end(); ++tray) {
 		std::vector<TrayComponent*>::iterator it;
-		for (it = tp->components.begin(); it != tp->components.end(); ++it) {
+		for (it = (*tray)->components.begin(); it != (*tray)->components.end(); ++it) {
 			(*it)->Destroy();
 		}
-		JXDestroyWindow(display, tp->window);
+		JXDestroyWindow(display, (*tray)->window);
 	}
 }
 
 /** Destroy tray data. */
 void Tray::DestroyTray(void) {
-	Tray *tp;
 	TrayComponent *cp;
 
-	while (trays) {
-		tp = trays->next;
-		if (trays->autoHide != THIDE_OFF) {
-			_UnregisterCallback(SignalTray, trays);
-		}
-		std::vector<TrayComponent*>::iterator it;
-		for (it = tp->components.begin(); it != tp->components.end(); ++it) {
-			Release(*it);
-		}
-		Release(trays);
-
-		trays = tp;
+	std::vector<Tray*>::iterator tray;
+	for (tray = trays.begin(); tray != trays.end(); ++tray) {
+		Release((*tray));
 	}
 }
 
@@ -194,12 +187,20 @@ Tray::Tray() {
 	this->hidden = 0;
 
 	this->window = None;
-	this->next = trays;
-	trays = this;
 }
 
 Tray::~Tray() {
+	if (autoHide != THIDE_OFF) {
+		_UnregisterCallback(SignalTray, this);
+	}
+	ReleaseComponents();
+}
 
+void Tray::ReleaseComponents() {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = components.begin(); it != components.end(); ++it) {
+		Release(*it);
+	}
 }
 
 /** Add a tray component to a tray. */
@@ -462,14 +463,13 @@ void Tray::ShowTray() {
 
 /** Show all trays. */
 void Tray::ShowAllTrays(void) {
-	Tray *tp;
-
 	if (shouldExit) {
 		return;
 	}
 
-	for (tp = trays; tp; tp = tp->next) {
-		tp->ShowTray();
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		(*it)->ShowTray();
 	}
 }
 
@@ -540,25 +540,25 @@ void Tray::HideTray() {
 
 /** Process a tray event. */
 char Tray::ProcessTrayEvent(const XEvent *event) {
-	Tray *tp;
 
-	for (tp = trays; tp; tp = tp->next) {
-		if (event->xany.window == tp->window) {
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		if (event->xany.window == (*it)->window) {
 			switch (event->type) {
 			case Expose:
-				HandleTrayExpose(tp, &event->xexpose);
+				HandleTrayExpose((*it), &event->xexpose);
 				return 1;
 			case EnterNotify:
-				HandleTrayEnterNotify(tp, &event->xcrossing);
+				HandleTrayEnterNotify((*it), &event->xcrossing);
 				return 1;
 			case ButtonPress:
-				HandleTrayButtonPress(tp, &event->xbutton);
+				HandleTrayButtonPress((*it), &event->xbutton);
 				return 1;
 			case ButtonRelease:
-				HandleTrayButtonRelease(tp, &event->xbutton);
+				HandleTrayButtonRelease((*it), &event->xbutton);
 				return 1;
 			case MotionNotify:
-				HandleTrayMotionNotify(tp, &event->xmotion);
+				HandleTrayMotionNotify((*it), &event->xmotion);
 				return 1;
 			default:
 				return 0;
@@ -583,6 +583,13 @@ void Tray::SignalTray(const TimeType *now, int x, int y, Window w, void *data) {
 		}
 	} else {
 		tp->showTime = *now;
+	}
+}
+
+void Tray::UngrabKeys(Display *d, unsigned int keyCode, unsigned int modifiers) {
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		JXUngrabKey(display, AnyKey, AnyModifier, (*it)->getWindow());
 	}
 }
 
@@ -686,8 +693,9 @@ void Tray::DrawTray(void) {
 		return;
 	}
 
-	for (tp = trays; tp; tp = tp->next) {
-		tp->DrawSpecificTray();
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		(*it)->DrawSpecificTray();
 	}
 
 }
@@ -720,21 +728,22 @@ void Tray::DrawSpecificTray() {
 
 /** Raise tray windows. */
 void Tray::RaiseTrays(void) {
-	Tray *tp;
-	for (tp = trays; tp; tp = tp->getNext()) {
-		tp->autoHide |= THIDE_RAISED;
-		tp->ShowTray();
-		JXRaiseWindow(display, tp->window);
+
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		(*it)->autoHide |= THIDE_RAISED;
+		(*it)->ShowTray();
+		JXRaiseWindow(display, (*it)->window);
 	}
 }
-
-Tray *Tray::trays = NULL;
 
 /** Lower tray windows. */
 void Tray::LowerTrays(void) {
 	Tray *tp;
-	for (tp = Tray::trays; tp; tp = tp->getNext()) {
-		tp->autoHide &= ~THIDE_RAISED;
+
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		(*it)->autoHide &= ~THIDE_RAISED;
 	}
 	_RequireRestack();
 }
@@ -894,16 +903,6 @@ void Tray::ClearTrayDrawable(const TrayComponent *cp) {
 	}
 }
 
-/** Get a linked list of trays. */
-Tray* Tray::GetTrays(void) {
-	return Tray::trays;
-}
-
-/** Get the number of trays. */
-unsigned int Tray::GetTrayCount(void) {
-	return Tray::trayCount;
-}
-
 /** Determine if a tray should autohide. */
 void Tray::SetAutoHideTray(TrayAutoHideType autohide, unsigned timeout_ms) {
 	if (JUNLIKELY(this->autoHide != THIDE_OFF)) {
@@ -1011,4 +1010,48 @@ void Tray::SetTrayVerticalAlignment(const char *str) {
 			this->valign = TALIGN_FIXED;
 		}
 	}
+}
+
+std::vector<BoundingBox> Tray::GetBoundsAbove(int layer) {
+	std::vector<BoundingBox> boxes;
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		Tray *tp = *it;
+		if (tp->getLayer() > layer && tp->getAutoHide() == THIDE_OFF) {
+			boxes.push_back( { tp->getX(), tp->getY(), tp->getWidth(), tp->getHeight() });
+		}
+	}
+
+	return boxes;
+}
+
+std::vector<BoundingBox> Tray::GetVisibleBounds() {
+	std::vector<BoundingBox> boxes;
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		Tray *tp = *it;
+		if (!tp->isHidden()) {
+			boxes.push_back( { tp->getX(), tp->getY(), tp->getWidth(), tp->getHeight() });
+		}
+	}
+
+	return boxes;
+}
+
+void Tray::GrabKey(KeyNode *kn) {
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		Binding::GrabKey(kn, (*it)->getWindow());
+	}
+}
+
+std::vector<Window> Tray::getTrayWindowsAt(int layer) {
+	std::vector<Window> windows;
+	std::vector<Tray*>::iterator it;
+	for (it = trays.begin(); it != trays.end(); ++it) {
+		if ((*it)->getLayer() == layer) {
+			windows.push_back((*it)->getWindow());
+		}
+	}
+	return windows;
 }
