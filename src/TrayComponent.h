@@ -46,15 +46,11 @@ private:
 
 	char grabbed; /**< 1 if the mouse was grabbed by this component. */
 
-	/** The next component in the tray. */
-	struct TrayComponent *next;
-
 public:
 	TrayComponent();
 	virtual ~TrayComponent();
 
 	void SetParent(Tray *parent) {this->tray = parent;}
-	void SetNext(TrayComponent *next) {this->next = next;}
 	void RefreshSize();
 	int getX() const {return this->x;}
 	int getY() const {return this->y;}
@@ -68,9 +64,6 @@ public:
 	void requestNewSize(int width, int height) {
 		this->requestedWidth = width;
 		this->requestedHeight = height;
-	}
-	TrayComponent* getNext() {
-		return this->next;
 	}
 
 	void SetLocation(int x, int y) {this->x=x;this->y=y;}

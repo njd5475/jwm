@@ -44,7 +44,6 @@ void Tray::StartupTray(void) {
 	XSetWindowAttributes attr;
 	unsigned long attrMask;
 	Tray *tp;
-	TrayComponent *cp;
 	int variableSize;
 	int variableRemainder;
 	int width, height;
@@ -83,8 +82,9 @@ void Tray::StartupTray(void) {
 		/* Create and layout items on the tray. */
 		xoffset = TRAY_BORDER_SIZE;
 		yoffset = TRAY_BORDER_SIZE;
-		for (cp = tp->components; cp; cp = cp->getNext()) {
-
+		std::vector<TrayComponent*>::iterator it;
+		for (it = tp->components.begin(); it != tp->components.end(); ++it) {
+			TrayComponent *cp = *it;
 			if (tp->layout == LAYOUT_HORIZONTAL) {
 				height = tp->height - TRAY_BORDER_SIZE * 2;
 				width = cp->getWidth();
@@ -144,11 +144,10 @@ void Tray::handleConfirm(ClientNode *np) {
 /** Shutdown trays. */
 void Tray::ShutdownTray(void) {
 	Tray *tp;
-	TrayComponent *cp;
-
 	for (tp = trays; tp; tp = tp->next) {
-		for (cp = tp->components; cp; cp = cp->getNext()) {
-			cp->Destroy();
+		std::vector<TrayComponent*>::iterator it;
+		for (it = tp->components.begin(); it != tp->components.end(); ++it) {
+			(*it)->Destroy();
 		}
 		JXDestroyWindow(display, tp->window);
 	}
@@ -164,10 +163,9 @@ void Tray::DestroyTray(void) {
 		if (trays->autoHide != THIDE_OFF) {
 			_UnregisterCallback(SignalTray, trays);
 		}
-		while (trays->components) {
-			cp = trays->components->getNext();
-			Release(trays->components);
-			trays->components = cp;
+		std::vector<TrayComponent*>::iterator it;
+		for (it = tp->components.begin(); it != tp->components.end(); ++it) {
+			Release(*it);
 		}
 		Release(trays);
 
@@ -196,10 +194,6 @@ Tray::Tray() {
 	this->hidden = 0;
 
 	this->window = None;
-
-	this->components = NULL;
-	this->componentsTail = NULL;
-
 	this->next = trays;
 	trays = this;
 }
@@ -208,20 +202,10 @@ Tray::~Tray() {
 
 }
 
-
-
-
-
 /** Add a tray component to a tray. */
 void Tray::AddTrayComponent(TrayComponent *cp) {
 	cp->SetParent(this);
-	if (this->componentsTail) {
-		this->componentsTail->SetNext(cp);
-	} else {
-		this->components = cp;
-	}
-	this->componentsTail = cp;
-	cp->SetNext(NULL);
+	this->components.push_back(cp);
 }
 
 /** Compute the max component width. */
@@ -231,8 +215,9 @@ int Tray::ComputeMaxWidth() {
 	int temp;
 
 	result = 0;
-	for (cp = this->components; cp; cp = cp->getNext()) {
-		temp = cp->getWidth();
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		temp = (*it)->getWidth();
 		if (temp > 0 && temp > result) {
 			result = temp;
 		}
@@ -243,12 +228,12 @@ int Tray::ComputeMaxWidth() {
 
 /** Compute the total width of a tray. */
 int Tray::ComputeTotalWidth() {
-	TrayComponent *cp;
 	int result;
 
 	result = 2 * TRAY_BORDER_SIZE;
-	for (cp = this->components; cp; cp = cp->getNext()) {
-		result += cp->getWidth();
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		result += (*it)->getWidth();
 	}
 
 	return result;
@@ -261,8 +246,9 @@ int Tray::ComputeMaxHeight() {
 	int temp;
 
 	result = 0;
-	for (cp = this->components; cp; cp = cp->getNext()) {
-		temp = cp->getHeight();
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		temp = (*it)->getHeight();
 		if (temp > 0 && temp > result) {
 			result = temp;
 		}
@@ -277,8 +263,9 @@ int Tray::ComputeTotalHeight() {
 	int result;
 
 	result = 2 * TRAY_BORDER_SIZE;
-	for (cp = this->components; cp; cp = cp->getNext()) {
-		result += cp->getHeight();
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		result += (*it)->getHeight();
 	}
 
 	return result;
@@ -287,8 +274,9 @@ int Tray::ComputeTotalHeight() {
 /** Check if the tray fills the screen horizontally. */
 char Tray::CheckHorizontalFill() {
 	TrayComponent *cp;
-
-	for (cp = this->components; cp; cp = cp->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		cp = *it;
 		if (cp->getWidth() == 0) {
 			return 1;
 		}
@@ -300,8 +288,9 @@ char Tray::CheckHorizontalFill() {
 /** Check if the tray fills the screen vertically. */
 char Tray::CheckVerticalFill() {
 	TrayComponent *cp;
-
-	for (cp = this->components; cp; cp = cp->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		cp = *it;
 		if (cp->getHeight() == 0) {
 			return 1;
 		}
@@ -338,7 +327,9 @@ void Tray::ComputeTraySize() {
 	}
 
 	/* Now at least one size is known. Inform the components. */
-	for (cp = this->components; cp; cp = cp->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		cp = *it;
 		if (this->layout == LAYOUT_HORIZONTAL) {
 			cp->SetSize(0, this->height - TRAY_BORDER_SIZE * 2);
 		} else {
@@ -612,7 +603,9 @@ TrayComponent* Tray::GetTrayComponent(Tray *tp, int x, int y) {
 
 	xoffset = 0;
 	yoffset = 0;
-	for (cp = tp->components; cp; cp = cp->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = tp->components.begin(); it != tp->components.end(); ++it) {
+		cp = *it;
 		const int startx = xoffset;
 		const int starty = yoffset;
 		const int width = cp->getWidth();
@@ -651,7 +644,9 @@ void Tray::HandleTrayButtonRelease(Tray *tp, const XButtonEvent *event) {
 	TrayComponent *cp;
 
 	// First inform any components that have a grab.
-	for (cp = tp->components; cp; cp = cp->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = tp->components.begin(); it != tp->components.end(); ++it) {
+		cp = *it;
 		if (cp->wasGrabbed()) {
 			const int x = event->x - cp->getX();
 			const int y = event->y - cp->getY();
@@ -701,7 +696,9 @@ void Tray::DrawTray(void) {
 void Tray::DrawSpecificTray() {
 	TrayComponent *cp;
 
-	for (cp = this->components; cp; cp = cp->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		cp = *it;
 		cp->Resize();
 		cp->Draw();
 		cp->UpdateSpecificTray(this);
@@ -744,7 +741,6 @@ void Tray::LowerTrays(void) {
 
 /** Layout tray components on a tray. */
 void Tray::LayoutTray(int *variableSize, int *variableRemainder) {
-	TrayComponent *cp;
 	unsigned int variableCount;
 	int width, height;
 	int temp;
@@ -760,8 +756,9 @@ void Tray::LayoutTray(int *variableSize, int *variableRemainder) {
 		this->height = rootHeight + this->requestedHeight - this->y;
 	}
 
-	for (cp = this->components; cp; cp = cp->getNext()) {
-		cp->RefreshSize();
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		(*it)->RefreshSize();
 	}
 
 	this->ComputeTraySize();
@@ -771,7 +768,8 @@ void Tray::LayoutTray(int *variableSize, int *variableRemainder) {
 	width = this->width - TRAY_BORDER_SIZE * 2;
 	height = this->height - TRAY_BORDER_SIZE * 2;
 	variableCount = 0;
-	for (cp = this->components; cp; cp = cp->getNext()) {
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		TrayComponent *cp = *it;
 		if (this->layout == LAYOUT_HORIZONTAL) {
 			temp = cp->getWidth();
 			if (temp > 0) {
@@ -833,8 +831,9 @@ void Tray::ResizeTray() {
 	/* Reposition items on the tray. */
 	xoffset = TRAY_BORDER_SIZE;
 	yoffset = TRAY_BORDER_SIZE;
-	TrayComponent *tc;
-	for (tc = this->components; tc; tc = tc->getNext()) {
+	std::vector<TrayComponent*>::iterator it;
+	for (it = this->components.begin(); it != this->components.end(); ++it) {
+		TrayComponent *tc;
 		tc->SetLocation(xoffset, yoffset);
 		tc->SetScreenLocation(this->x + xoffset, this->y + yoffset);
 

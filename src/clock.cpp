@@ -31,19 +31,7 @@ void ClockType::InitializeClock(void) {
 
 /** Start clock(s). */
 void ClockType::StartupClock(void) {
-	TrayComponent *clk;
-	for (clk = clocks; clk; clk = clk->getNext()) {
-		int newWidth = clk->getWidth();
-		int newHeight = clk->getHeight();
-		if (clk->getRequestedWidth() == 0) {
-			newWidth = 1;
-		}
-		if (clk->getRequestedHeight() == 0) {
-			newHeight = Fonts::GetStringHeight(FONT_CLOCK) + 4;
-		}
-		clk->requestNewSize(newWidth, newHeight);
-		clk->Resize();
-	}
+
 }
 
 /** Destroy clock(s). */

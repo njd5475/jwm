@@ -74,8 +74,6 @@ TrayComponent::TrayComponent() :
 
 	this->window = None;
 	this->pixmap = None;
-
-	this->next = NULL;
 }
 
 TrayComponent::~TrayComponent() {

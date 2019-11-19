@@ -10,8 +10,11 @@
 #ifndef TRAY_H
 #define TRAY_H
 
+#include <vector>
 #include "hint.h"
 #include "timing.h"
+
+class TrayComponent;
 
 /** Enumeration of tray layouts. */
 typedef unsigned char LayoutType;
@@ -59,6 +62,7 @@ typedef unsigned char TrayAutoHideType;
 /** Structure to represent a tray. */
 class Tray {
 
+private:
   int requestedX; /**< The user-requested x-coordinate of the tray. */
   int requestedY; /**< The user-requested y-coordinate of the tray. */
 
@@ -84,10 +88,7 @@ class Tray {
   Window window; /**< The tray window. */
 
   /** Start of the tray components. */
-  struct TrayComponent *components;
-
-  /** End of the tray components. */
-  struct TrayComponent *componentsTail;
+  std::vector<TrayComponent*> components;
 
   struct Tray *next; /**< Next tray. */
 public:
