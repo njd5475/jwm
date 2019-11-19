@@ -94,11 +94,9 @@ private:
   static std::vector<Tray*> trays;
 
   Tray();
-
-  void ReleaseComponents();
+  virtual ~Tray();
 
 public:
-  virtual ~Tray();
   LayoutType getLayout() const {return this->layout;}
   Window getWindow() const {return this->window;}
   WinLayerType getLayer() const {return this->layer;}

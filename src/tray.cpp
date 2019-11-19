@@ -193,10 +193,6 @@ Tray::~Tray() {
 	if (autoHide != THIDE_OFF) {
 		_UnregisterCallback(SignalTray, this);
 	}
-	ReleaseComponents();
-}
-
-void Tray::ReleaseComponents() {
 	std::vector<TrayComponent*>::iterator it;
 	for (it = components.begin(); it != components.end(); ++it) {
 		Release(*it);
@@ -206,6 +202,17 @@ void Tray::ReleaseComponents() {
 /** Add a tray component to a tray. */
 void Tray::AddTrayComponent(TrayComponent *cp) {
 	cp->SetParent(this);
+	bool found = false;
+	std::vector<TrayComponent*>::iterator it;
+	for (it = components.begin(); it != components.end(); ++it) {
+		if ((*it) == cp) {
+			found = true;
+			break;
+		}
+	}
+	if (found) {
+		this->components.erase(it);
+	}
 	this->components.push_back(cp);
 }
 
