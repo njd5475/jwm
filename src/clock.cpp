@@ -158,8 +158,6 @@ void ClockType::SignalClock(const TimeType *now, int x, int y, Window w, void *d
 	const char *longTime;
 	ClockType *clk = (ClockType*) data;
 
-	clk->SetLocation(10, 10);
-	clk->SetScreenLocation(10, 10);
 	clk->DrawClock(now);
 	if (clk->getTray()->getWindow() == w && abs(clk->mousex - x) < settings.doubleClickDelta
 			&& abs(clk->mousey - y) < settings.doubleClickDelta) {
@@ -168,6 +166,10 @@ void ClockType::SignalClock(const TimeType *now, int x, int y, Window w, void *d
 			Popups::ShowPopup(x, y, longTime, POPUP_CLOCK);
 		}
 	}
+
+}
+
+void ClockType::Draw(Graphics *g) {
 
 }
 

@@ -53,6 +53,10 @@ void TaskBarType::DestroyTaskBar(void) {
 	}
 }
 
+void TaskBarType::Draw(Graphics *g) {
+
+}
+
 /** Create a new task bar tray component. */
 TaskBarType::TaskBarType() {
 	this->next = bars;

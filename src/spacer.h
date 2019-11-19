@@ -25,6 +25,7 @@ public:
   void Destroy();
   void SetSize(int width, int height);
   void Resize();
+  void Draw(Graphics *) {}
 };
 
 #endif /* SPACER_H */

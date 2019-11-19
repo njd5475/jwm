@@ -59,6 +59,7 @@ public:
 	static char ShouldFocusEntry(const TaskEntry *tp);
 	TaskEntry *GetEntry(int x, int y);
 	void Render();
+	void Draw(Graphics *g);
 	void ShowClientList(TaskBarType *bar, TaskEntry *tp);
 	static void RunTaskBarCommand(MenuAction *action, unsigned button);
 

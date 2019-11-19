@@ -37,6 +37,8 @@ private:
 
   void Create();
 
+  void Draw(Graphics *g);
+
   void SetSize(int width, int height);
 
   int GetPagerDesktop(int x, int y);

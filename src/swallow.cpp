@@ -130,6 +130,10 @@ void SwallowNode::Create() {
 
 }
 
+void SwallowNode::Draw(Graphics *g) {
+
+}
+
 /** Handle a tray resize. */
 void SwallowNode::Resize() {
 	TrayComponent::Resize();

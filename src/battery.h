@@ -39,6 +39,7 @@ public:
 	void Create();
 	void Resize();
 	void Draw();
+	void Draw(Graphics *g);
 
 private:
 	Graphics *graphics;

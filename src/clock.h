@@ -10,6 +10,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
+#include "timing.h"
 #include "TrayComponent.h"
 
 /** Structure to respresent a clock tray component. */
@@ -45,6 +46,7 @@ public:
   virtual void ProcessClockButtonPress(int x, int y, int button);
   virtual void ProcessClockButtonRelease(int x, int y, int button);
   virtual void ProcessClockMotionEvent(int x, int y, int mask);
+  virtual void Draw(Graphics *g);
 
   void DrawClock(const TimeType *now);
 

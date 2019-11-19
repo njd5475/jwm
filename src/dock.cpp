@@ -113,6 +113,10 @@ DockType::DockType(int width) :
 	this->itemSize = width;
 }
 
+void DockType::Draw(Graphics *g) {
+
+}
+
 /** Set the size of a dock component. */
 void DockType::SetSize(int width, int height) {
 

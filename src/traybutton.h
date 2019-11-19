@@ -10,7 +10,7 @@
 #ifndef TRAY_BUTTON_H
 #define TRAY_BUTTON_H
 
-class TimeType;
+#include "timing.h"
 class IconNode;
 
 #include "TrayComponent.h"
@@ -57,6 +57,7 @@ public:
 	virtual void SetSize(int width, int height);
 	virtual void Resize();
 	virtual void Draw();
+	virtual void Draw(Graphics *g);
 
 	virtual void ProcessMotionEvent(int x, int y, int mask);
 	static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);

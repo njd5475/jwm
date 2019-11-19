@@ -471,6 +471,10 @@ void PagerType::DrawPager() {
 
 }
 
+void PagerType::Draw(Graphics *g) {
+
+}
+
 /** Update the pager. */
 void PagerType::UpdatePager(void) {
 

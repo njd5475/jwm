@@ -186,6 +186,10 @@ void TrayButton::Destroy() {
 	}
 }
 
+void TrayButton::Draw(Graphics *g) {
+
+}
+
 /** Draw a tray button. */
 void TrayButton::Draw() {
 	TrayComponent *cp = this;

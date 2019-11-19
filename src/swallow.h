@@ -41,6 +41,7 @@ private:
 	void Create();
 	void Destroy();
 	void Resize();
+	void Draw(Graphics *g);
 
 public:
 	/*@{*/

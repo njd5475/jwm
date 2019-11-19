@@ -43,6 +43,7 @@ public:
   void SetSize(int width, int height);
   void Create();
   void Resize();
+  void Draw(Graphics *g);
 
   static void _DockWindow(Window win);
   static void _UpdateDock(void);

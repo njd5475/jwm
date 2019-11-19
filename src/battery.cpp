@@ -103,6 +103,10 @@ void Battery::Create() {
 
 }
 
+void Battery::Draw(Graphics *g) {
+
+}
+
 float QueryBatteryPercentage() {
 	int chargeNow = (int) readAsInt(chargeNowFile);
 	int chargeFull = (int) readAsInt(chargeFullFile);
