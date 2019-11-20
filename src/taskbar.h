@@ -31,7 +31,7 @@ typedef struct TaskEntry {
 
 class TaskBar : public TrayComponent {
 public:
-	TaskBar();
+	TaskBar(Tray *tray, TrayComponent *parent);
 	virtual ~TaskBar() {}
 
 private:

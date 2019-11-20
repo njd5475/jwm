@@ -170,8 +170,8 @@ void DesktopEnvironment::SetBackground(int id, const char* file, char* const nam
   Backgrounds::_SetBackground(id, file, name);
 }
 
-TrayComponent* DesktopEnvironment::CreateDock(int width) {
-  return DockType::dock = new DockType(width);
+TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayComponent *parent) {
+  return DockType::dock = new DockType(width, tray, parent);
 }
 
 Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {

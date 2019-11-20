@@ -16,7 +16,7 @@
 /** Structure to respresent a clock tray component. */
 class ClockType : public TrayComponent {
 public:
-  ClockType(const char *format, const char *zone, int width, int height);
+  ClockType(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
   virtual ~ClockType() {}
 private:
   char *format; /**< The time format to use. */

@@ -77,7 +77,7 @@ void TrayButton::DestroyTrayButtons(void) {
 
 /** Create a button tray component. */
 TrayButton::TrayButton(const char *iconName, const char *label, const char *popup, unsigned int width,
-		unsigned int height) {
+		unsigned int height, Tray *tray, TrayComponent *parent) : TrayComponent(tray, parent) {
 
 	if (JUNLIKELY((label == NULL || strlen(label) == 0) && (iconName == NULL || strlen(iconName) == 0))) {
 		Warning(_("no icon or label for TrayButton"));

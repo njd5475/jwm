@@ -60,7 +60,7 @@ private:
   static void SignalPager(const TimeType *now, int x, int y, Window w, void *data);
 
 public:
-  PagerType(char labelled);
+  PagerType(char labelled, Tray *tray, TrayComponent *parent);
   virtual ~PagerType() {};
   /** Create a pager tray component.
    * @param labeled Set to label the pager.

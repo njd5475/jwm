@@ -51,8 +51,8 @@ void SwallowNode::ReleaseNodes(SwallowNode *nodes) {
 
 /** Create a swallowed application tray component. */
 SwallowNode::SwallowNode(const char *name, const char *command, int width,
-		int height) :
-		TrayComponent(), border(0) {
+		int height, Tray *tray, TrayComponent *parent) :
+		TrayComponent(tray, parent), border(0) {
 	if (JUNLIKELY(!name)) {
 		Warning(_("cannot swallow a client with no name"));
 		return;

@@ -25,7 +25,7 @@ typedef struct DockNode {
 /** Structure to represent a dock tray component. */
 class DockType  : public TrayComponent {
 public:
-  DockType(int width);
+  DockType(int width, Tray *tray, TrayComponent *parent);
   virtual ~DockType() {}
 
   Window window;

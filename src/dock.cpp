@@ -104,8 +104,8 @@ void DockType::_DestroyDock(void) {
 }
 
 /** Create a dock component. */
-DockType::DockType(int width) :
-		TrayComponent() {
+DockType::DockType(int width, Tray *tray, TrayComponent *parent) :
+		TrayComponent(tray, parent) {
 	this->nodes = NULL;
 	this->window = None;
 	this->requestedWidth = 1;

@@ -55,8 +55,8 @@ void ClockType::DestroyClock(void) {
 const char *ClockType::DEFAULT_FORMAT = "%I:%M %p";
 
 /** Create a clock tray component. */
-ClockType::ClockType(const char *format, const char *zone, int width, int height) :
-		TrayComponent() {
+ClockType::ClockType(const char *format, const char *zone, int width, int height, Tray *tray, TrayComponent *parent) :
+		TrayComponent(tray, parent) {
 	this->next = clocks;
 	clocks = this;
 

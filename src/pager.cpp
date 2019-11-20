@@ -44,7 +44,8 @@ void PagerType::DestroyPager(void) {
 }
 
 /** Create a new pager tray component. */
-PagerType::PagerType(char labeled) {
+PagerType::PagerType(char labeled, Tray *tray, TrayComponent *parent) :
+		TrayComponent(tray, parent) {
 	this->next = pagers;
 	pagers = this;
 	this->labeled = labeled;

@@ -19,7 +19,7 @@
 
 class Spacer : public TrayComponent {
 public:
-  Spacer(int width, int height);
+  Spacer(int width, int height, Tray *tray, TrayComponent *parent);
 
   void Create();
   void Destroy();

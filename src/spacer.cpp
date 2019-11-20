@@ -13,7 +13,7 @@
 #include "tray.h"
 
 /** Create a spacer tray component. */
-Spacer::Spacer(int width, int height) {
+Spacer::Spacer(int width, int height, Tray *tray, TrayComponent *parent) : TrayComponent(tray, parent) {
 	if (JUNLIKELY(width < 0)) {
 		width = 0;
 	}

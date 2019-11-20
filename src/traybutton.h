@@ -37,7 +37,7 @@ public:
 			const char *label,
 			const char *popup,
 			unsigned int width,
-			unsigned int height);
+			unsigned int height, Tray *tray, TrayComponent *parent);
 
 	char *label;
 	char *popup;

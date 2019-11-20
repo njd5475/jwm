@@ -30,6 +30,7 @@ private:
 	int screenx; /**< x-coordinate on the screen (valid only after Create). */
 	int screeny; /**< y-coordinate on the screen (valid only after Create). */
 
+	TrayComponent *parent;
 protected:
 	/** Additional information needed for the component. */
 	//void *object;
@@ -47,13 +48,13 @@ private:
 	char grabbed; /**< 1 if the mouse was grabbed by this component. */
 
 public:
-	TrayComponent();
+	TrayComponent(Tray *tray, TrayComponent *parent);
 	virtual ~TrayComponent();
 
 	void SetParent(Tray *parent) {this->tray = parent;}
 	void RefreshSize();
-	int getX() const {return this->x;}
-	int getY() const {return this->y;}
+	int getX() const;
+	int getY() const;
 	int getHeight() const {return this->height;}
 	int getWidth() const {return this->width;}
 	int getScreenX() const {return this->screenx;}

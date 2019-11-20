@@ -62,8 +62,8 @@ void Battery::StartupBattery(void) {
 }
 
 /** Create a Battery tray component. */
-Battery::Battery(int width, int height) :
-		TrayComponent() {
+Battery::Battery(int width, int height, Tray *tray, TrayComponent *parent) :
+		TrayComponent(tray, parent) {
 	Warning(_("Creating Battery Component"));
 	this->SetSize(width, height);
 
@@ -148,8 +148,8 @@ void Battery::Draw() {
 	//update battery level
 	this->lastLevel = percentage;
 
-
-	JXCopyArea(display, this->getPixmap(), window, rootGC,  0, 0, this->getWidth(), this->getHeight(), this->getX(), this->getY());
+	JXCopyArea(display, this->getPixmap(), window, rootGC, 0, 0, this->getWidth(), this->getHeight(), this->getX(),
+			this->getY());
 }
 
 int readAsInt(int fd) {

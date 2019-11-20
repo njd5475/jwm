@@ -42,7 +42,6 @@ void TrayComponent::validateActions() {
 	}
 }
 
-
 void TrayComponent::handleReleaseActions(int x, int y, int button) {
 	std::vector<ActionNode*>::iterator it;
 	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
@@ -59,10 +58,8 @@ void TrayComponent::handlePressActions(int x, int y, int button) {
 }
 
 /** Create an empty tray component. */
-TrayComponent::TrayComponent() :
-		screenx(0), screeny(0) {
-
-	this->tray = NULL;
+TrayComponent::TrayComponent(Tray *tray, TrayComponent *parent) :
+		screenx(0), screeny(0), tray(tray), parent(parent) {
 
 	this->x = 0;
 	this->y = 0;
@@ -84,6 +81,21 @@ TrayComponent::~TrayComponent() {
 	this->actions.clear();
 }
 
+int TrayComponent::getX() const {
+	if (this->parent) {
+		return this->x + this->parent->getX();
+	}
+
+	return this->x;
+}
+
+int TrayComponent::getY() const {
+	if (this->parent) {
+		return this->y + this->parent->getY();
+	}
+
+	return this->y;
+}
 /** Update a specific component on a tray. */
 void TrayComponent::UpdateSpecificTray(const Tray *tp) {
 	if (JUNLIKELY(shouldExit)) {
@@ -92,7 +104,8 @@ void TrayComponent::UpdateSpecificTray(const Tray *tp) {
 
 	/* If the tray is hidden, draw only the background. */
 	if (this->getPixmap() != None) {
-		JXCopyArea(display, this->getPixmap(), tp->getWindow(), rootGC, 0, 0, this->getWidth(), this->getHeight(), 10, 10);
+		JXCopyArea(display, this->getPixmap(), tp->getWindow(), rootGC, 0, 0, this->getWidth(), this->getHeight(), 10,
+				10);
 	}
 }
 

@@ -58,7 +58,7 @@ void TaskBar::Draw(Graphics *g) {
 }
 
 /** Create a new task bar tray component. */
-TaskBar::TaskBar() {
+TaskBar::TaskBar(Tray *tray, TrayComponent *parent) : TrayComponent(tray, parent) {
 	this->next = bars;
 	bars = this;
 	this->itemHeight = 0;

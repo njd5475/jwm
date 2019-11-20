@@ -20,9 +20,7 @@ public:
 	 * @param width The width to use (0 for default).
 	 * @param height the height to use (0 for default).
 	 */
-	SwallowNode(const char *name,
-			const char *command,
-			int width, int height);
+	SwallowNode(const char *name, const char *command, int width, int height, Tray *tray, TrayComponent *parent);
 	virtual ~SwallowNode() {}
 
 private:
