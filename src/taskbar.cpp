@@ -883,30 +883,13 @@ TaskEntry* TaskBar::GetEntry(int x, int y) {
 }
 
 /** Set the maximum width of an item in the task bar. */
-void TaskBar::SetMaxTaskBarItemWidth(const char *value) {
-	int temp;
-
-	Assert(value);
-
-	temp = atoi(value);
-	if (JUNLIKELY(temp < 0)) {
-		Warning(_("invalid maxwidth for TaskList: %s"), value);
-		return;
-	}
-	this->maxItemWidth = temp;
+void TaskBar::SetMaxTaskBarItemWidth(unsigned int itemWidth) {
+	this->maxItemWidth = itemWidth;
 }
 
 /** Set the preferred height of the specified task bar. */
-void TaskBar::SetTaskBarHeight(TrayComponent *cp, const char *value) {
-	TaskBar *bp = (TaskBar*) cp;
-	int temp;
-
-	temp = atoi(value);
-	if (JUNLIKELY(temp < 0)) {
-		Warning(_("invalid height for TaskList: %s"), value);
-		return;
-	}
-	bp->userHeight = temp;
+void TaskBar::SetTaskBarHeight(unsigned int itemHeight) {
+	this->userHeight = itemHeight;
 }
 
 /** Set whether the label should be displayed. */

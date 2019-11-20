@@ -170,6 +170,9 @@ static StatusWindowType ParseStatusWindowType(const TokenNode *tp);
 static void InvalidTag(const TokenNode *tp, TokenType parent);
 static void ParseError(const TokenNode *tp, const char *str, ...);
 
+template<class T>
+static T findOrDefault(const TokenNode *tok, const char *attrName, T defaultVal);
+
 /** Parse the JWM configuration. */
 void Parser::ParseConfig(const char *fileName) {
 	if (fileName) {
@@ -416,21 +419,11 @@ Menu* ParseMenu(const TokenNode *start) {
 
 	menu = Menus::CreateMenu();
 
-	value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);
-	if (value) {
-		menu->itemHeight = ParseUnsigned(start, value);
-	} else {
-		menu->itemHeight = 0;
-	}
+	menu->itemHeight = findOrDefault(start, HEIGHT_ATTRIBUTE, 0);
 
-	value = FindAttribute(start->attributes, LABELED_ATTRIBUTE);
-	if (value && !strcmp(value, TRUE_VALUE)) {
-		value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-		if (!value) {
-			value = DEFAULT_TITLE;
-		}
-		menu->label = CopyString(value);
-	} else {
+	value = findOrDefault(start, LABELED_ATTRIBUTE, DEFAULT_TITLE);
+
+	if (strcmp(value, TRUE_VALUE)) {
 		menu->label = NULL;
 	}
 
@@ -449,10 +442,7 @@ void ParseRootMenu(const TokenNode *start) {
 
 	menu = ParseMenu(start);
 
-	onroot = FindAttribute(start->attributes, ONROOT_ATTRIBUTE);
-	if (!onroot) {
-		onroot = (char*) "123";
-	}
+	onroot = findOrDefault(start, ONROOT_ATTRIBUTE, (char*)"123");
 
 	value = FindAttribute(start->attributes, DYNAMIC_ATTRIBUTE);
 	menu->dynamic = CopyString(value);
@@ -658,10 +648,7 @@ MenuItem* ParseMenuItem(const TokenNode *start, Menu *menu, MenuItem *last) {
 				menu->items = last;
 			}
 
-			value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-			if (!value) {
-				value = GetTokenName(start);
-			}
+			value = findOrDefault(start, LABEL_ATTRIBUTE, GetTokenName(start));
 			last->name = CopyString(value);
 
 			value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
@@ -989,14 +976,8 @@ void ParseDesktops(const TokenNode *tp) {
 
 	Assert(tp);
 
-	width = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-	if (width != NULL) {
-		settings.desktopWidth = ParseUnsigned(tp, width);
-	}
-	height = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
-	if (height != NULL) {
-		settings.desktopHeight = ParseUnsigned(tp, height);
-	}
+	settings.desktopWidth = findOrDefault(tp, WIDTH_ATTRIBUTE, 4);
+	settings.desktopHeight = findOrDefault(tp, HEIGHT_ATTRIBUTE, 1);
 	settings.desktopCount = settings.desktopWidth * settings.desktopHeight;
 
 	desktop = 0;
@@ -1102,6 +1083,7 @@ void ParseTrayStyle(const TokenNode *tp, FontType font, ColorType fg) {
 				settings.trayOpacity = ParseOpacity(np, np->value);
 				break;
 			}
+			break;
 			/* fall through */
 		default:
 			InvalidTag(np, tp->type);
@@ -1132,6 +1114,8 @@ void ParseActive(const TokenNode *tp, ColorType fg, ColorType bg1, ColorType bg2
 				ParseGradient(np->value, down, up);
 				break;
 			}
+			InvalidTag(np, TOK_ACTIVE);
+			break;
 			/* fall through */
 		default:
 			InvalidTag(np, TOK_ACTIVE);
@@ -1261,15 +1245,8 @@ void ParseTaskList(const TokenNode *tp, Tray *tray) {
 	cp = new TaskBar(tray, NULL);
 	tray->AddTrayComponent(cp);
 
-	temp = FindAttribute(tp->attributes, "maxwidth");
-	if (temp) {
-		cp->SetMaxTaskBarItemWidth(temp);
-	}
-
-	temp = FindAttribute(tp->attributes, "height");
-	if (temp) {
-		TaskBar::SetTaskBarHeight(cp, temp);
-	}
+	cp->SetMaxTaskBarItemWidth(findOrDefault(tp, "maxwidth", 0));
+	cp->SetTaskBarHeight(findOrDefault(tp, "height", 0));
 
 	temp = FindAttribute(tp->attributes, "labeled");
 	if (temp && !strcmp(temp, FALSE_VALUE)) {
@@ -1324,19 +1301,8 @@ void ParseSwallow(const TokenNode *tp, Tray *tray) {
 		name = tp->value;
 	}
 
-	temp = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-	if (temp) {
-		width = ParseUnsigned(tp, temp);
-	} else {
-		width = 0;
-	}
-
-	temp = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
-	if (temp) {
-		height = ParseUnsigned(tp, temp);
-	} else {
-		height = 0;
-	}
+	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
+	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
 	cp = new SwallowNode(name, tp->value, width, height, tray, NULL);
 	tray->AddTrayComponent(cp);
@@ -1360,19 +1326,8 @@ void ParseTrayButton(const TokenNode *tp, Tray *tray) {
 	label = FindAttribute(tp->attributes, LABEL_ATTRIBUTE);
 	popup = FindAttribute(tp->attributes, POPUP_ATTRIBUTE);
 
-	temp = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-	if (temp) {
-		width = ParseUnsigned(tp, temp);
-	} else {
-		width = 0;
-	}
-
-	temp = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
-	if (temp) {
-		height = ParseUnsigned(tp, temp);
-	} else {
-		height = 0;
-	}
+	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
+	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
 	cp = new TrayButton(icon, label, popup, width, height, tray, NULL);
 	if (JLIKELY(cp)) {
@@ -1385,25 +1340,13 @@ void ParseTrayButton(const TokenNode *tp, Tray *tray) {
 /** Parse a battery tray component. */
 void ParseBattery(const TokenNode *tp, Tray *tray) {
 
-	const char *temp;
 	int width, height;
 
 	Assert(tp);
 	Assert(tray);
 
-	temp = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-	if (temp) {
-		width = ParseUnsigned(tp, temp);
-	} else {
-		width = 0;
-	}
-
-	temp = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
-	if (temp) {
-		height = ParseUnsigned(tp, temp);
-	} else {
-		height = 0;
-	}
+	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
+	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
 	TrayComponent *cp = new Battery(width, height, tray, NULL);
 	tray->AddTrayComponent(cp);
@@ -1413,7 +1356,6 @@ void ParseBattery(const TokenNode *tp, Tray *tray) {
 void ParseClock(const TokenNode *tp, Tray *tray) {
 	const char *format;
 	const char *zone;
-	const char *temp;
 	int width, height;
 
 	Assert(tp);
@@ -1422,19 +1364,8 @@ void ParseClock(const TokenNode *tp, Tray *tray) {
 	format = FindAttribute(tp->attributes, "format");
 	zone = FindAttribute(tp->attributes, "zone");
 
-	temp = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-	if (temp) {
-		width = ParseUnsigned(tp, temp);
-	} else {
-		width = 0;
-	}
-
-	temp = FindAttribute(tp->attributes, HEIGHT_ATTRIBUTE);
-	if (temp) {
-		height = ParseUnsigned(tp, temp);
-	} else {
-		height = 0;
-	}
+	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
+	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
 	ClockType *clock = new ClockType(format, zone, width, height, tray, NULL);
 	ParseTrayComponentActions(tp, clock);
@@ -1483,12 +1414,7 @@ void ParseDock(const TokenNode *tp, Tray *tray) {
 	Assert(tp);
 	Assert(tray);
 
-	str = FindAttribute(tp->attributes, WIDTH_ATTRIBUTE);
-	if (str) {
-		width = ParseUnsigned(tp, str);
-	} else {
-		width = 0;
-	}
+	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 
 	str = FindAttribute(tp->attributes, SPACING_ATTRIBUTE);
 	if (str) {
@@ -1930,13 +1856,7 @@ unsigned ParseUnsigned(const TokenNode *tp, const char *str) {
 
 /** Parse a timeout attribute. */
 unsigned ParseTimeout(const TokenNode *tp) {
-	unsigned timeout_ms = DEFAULT_TIMEOUT_MS;
-	char *temp = FindAttribute(tp->attributes, TIMEOUT_ATTRIBUTE);
-	if (temp) {
-		timeout_ms = ParseUnsigned(tp, temp);
-		timeout_ms = timeout_ms == 0 ? DEFAULT_TIMEOUT_MS : timeout_ms;
-	}
-	return timeout_ms;
+	return findOrDefault(tp, TIMEOUT_ATTRIBUTE, DEFAULT_TIMEOUT_MS);
 }
 
 /** Parse opacity (a float between 0.0 and 1.0). */
@@ -2009,3 +1929,37 @@ void ParseError(const TokenNode *tp, const char *str, ...) {
 	va_end(ap);
 
 }
+
+template<class T>
+T InterpretValue(const TokenNode *tok, char *value);
+
+template<class T>
+static T findOrDefault(const TokenNode *tok, const char *attrName, T defaultVal) {
+	char *value = FindAttribute(tok->attributes, attrName);
+	if (value) {
+		return InterpretValue<T>(tok, value);
+	}
+
+	return defaultVal;
+}
+
+template<>
+int InterpretValue(const TokenNode *tok, char *value) {
+	return ParseSigned(tok, value);
+}
+
+template<>
+unsigned InterpretValue(const TokenNode *tok, char *value) {
+	return ParseUnsigned(tok, value);
+}
+
+template<>
+char *InterpretValue(const TokenNode *tok, char *value) {
+	return value;
+}
+
+template<>
+const char*InterpretValue(const TokenNode *tok, char *value) {
+	return value;
+}
+
