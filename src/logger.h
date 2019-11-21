@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 
+class LoggerListener;
 class Logger {
 public:
   Logger();
@@ -20,9 +21,12 @@ public:
   static void Log(const char* message);
   static void Close();
   static void EnableStandardOut();
+  static void AddListener(LoggerListener *listener);
 
 private:
+  static void NotifyListeners(const char* message);
   static std::vector<FILE*> files;
+  static std::vector<LoggerListener*> listeners;
 };
 
 /** Initialize data structures.

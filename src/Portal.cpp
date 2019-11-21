@@ -17,9 +17,9 @@
 #define BUT_STATE_OK 	 1
 #define BUT_STATE_CANCEL 2
 
-std::vector<Portal> Portal::portals;
+std::vector<Portal*> Portal::portals;
 
-Portal::Portal(int x, int y, int width, int height) :
+Portal::Portal(int x, int y, int width, int height) : LoggerListener(),
 		x(x), y(y), width(width), height(height), buttonState(0), window(0), pixmap(0), node(0), graphics(0) {
 
 	XSetWindowAttributes attrs;
@@ -67,22 +67,25 @@ void Portal::StartupPortals() {
 }
 
 void Portal::Add(int x, int y, int width, int height) {
-	Portal p(x, y, width, height);
+	Portal *p = new Portal(x, y, width, height);
+	Logger::AddListener(p);
 	portals.push_back(p);
+
 }
 
 void Portal::Draw() {
-	int yoffset;
-
 	/* Clear the dialog. */
 	graphics->setForeground(COLOR_MENU_BG);
 	graphics->fillRectangle(0, 0, width, height);
 
 	/* Draw the message. */
-	yoffset = 40;
-	Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset, width, _("\uF160ASomething"));
-	Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, yoffset*2, width, "Something else");
-
+	int lineHeight = 20;
+	int lns = 0;
+	std::vector<const char*>::reverse_iterator it;
+	for(it = lines.rbegin(); it != lines.rend(); ++it) {
+		Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, lineHeight*lns, width, (*it));
+		++lns;
+	}
 	ButtonNode button;
 	int temp;
 
@@ -92,7 +95,6 @@ void Portal::Draw() {
 		buttonWidth = temp;
 	}
 	buttonWidth += 16;
-	int lineHeight = 20;
 	int buttonHeight = lineHeight + 4;
 
 	ResetButton(&button, pixmap);
@@ -128,9 +130,9 @@ void Portal::Draw() {
 }
 
 void Portal::DrawAll() {
-	std::vector<Portal>::iterator it;
+	std::vector<Portal*>::iterator it;
 	for (it = portals.begin(); it != portals.end(); ++it) {
-		it->Draw();
+		(*it)->Draw();
 	}
 }
 
@@ -152,15 +154,21 @@ char Portal::ProcessEvents(const XEvent *event) {
 		break;
 	}
 
-	std::vector<Portal>::iterator it;
+	std::vector<Portal*>::iterator it;
 	for (it = portals.begin(); it != portals.end(); ++it) {
-
-		if (it->node && it->node->getWindow() == window) {
-			it->graphics->copy(it->node->getWindow(), 0, 0, it->width, it->height, 0, 0);
-			it->Draw();
+		Portal *p = (*it);
+		if (p->node && p->node->getWindow() == window) {
+			p->graphics->copy(p->node->getWindow(), 0, 0, p->width, p->height, 0, 0);
+			p->Draw();
 			return 1;
 		}
 	}
 
 	return 0;
+}
+
+void Portal::log(const char* message) {
+	lines.push_back(strdup(message));
+	this->Draw();
+	this->graphics->copy(this->node->getWindow(), 0, 0, this->width, this->height, 0, 0);
 }

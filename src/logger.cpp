@@ -6,12 +6,14 @@
  */
 
 #include "logger.h"
+#include "LoggerListener.h"
 
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 std::vector<FILE*> Logger::files;
+std::vector<LoggerListener*> Logger::listeners;
 
 Logger::Logger() {
 	// TODO Auto-generated constructor stub
@@ -40,6 +42,7 @@ void Logger::Log(const char *message) {
 		fprintf((*it), message);
 		fflush((*it));
 	}
+	NotifyListeners(message);
 }
 
 void Logger::Close() {
@@ -51,5 +54,16 @@ void Logger::Close() {
 
 void Logger::EnableStandardOut() {
 	files.push_back(stdout);
+}
+
+void Logger::AddListener(LoggerListener *listener) {
+	listeners.push_back(listener);
+}
+
+void Logger::NotifyListeners(const char* message) {
+	std::vector<LoggerListener*>::iterator it;
+	for(it = listeners.begin(); it != listeners.end(); ++it) {
+		(*it)->log(message);
+	}
 }
 

@@ -12,10 +12,11 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "LoggerListener.h"
 class ClientNode;
 class Graphics;
 
-class Portal {
+class Portal : public LoggerListener {
 public:
 	Portal(const Portal &p);
 	virtual ~Portal();
@@ -44,7 +45,9 @@ public:
 	static char ProcessEvents(const XEvent *event);
 
 private:
-	static std::vector<Portal> portals;
+	virtual void log(const char* message);
+	std::vector<const char *> lines;
+	static std::vector<Portal*> portals;
 };
 
 #endif /* SRC_PORTAL_H_ */
