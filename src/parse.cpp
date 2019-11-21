@@ -1230,7 +1230,7 @@ void ParsePager(const TokenNode *tp, Tray *tray) {
 	if (temp && !strcmp(temp, TRUE_VALUE)) {
 		labeled = 1;
 	}
-	tray->AddTrayComponent(new PagerType(labeled, tray, NULL));
+	tray->AddTrayComponent(new PagerType(labeled, tray, tray->getLastComponent()));
 
 }
 
@@ -1242,7 +1242,7 @@ void ParseTaskList(const TokenNode *tp, Tray *tray) {
 	Assert(tp);
 	Assert(tray);
 
-	cp = new TaskBar(tray, NULL);
+	cp = new TaskBar(tray, tray->getLastComponent());
 	tray->AddTrayComponent(cp);
 
 	cp->SetMaxTaskBarItemWidth(findOrDefault(tp, "maxwidth", 0));
@@ -1304,7 +1304,7 @@ void ParseSwallow(const TokenNode *tp, Tray *tray) {
 	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
-	cp = new SwallowNode(name, tp->value, width, height, tray, NULL);
+	cp = new SwallowNode(name, tp->value, width, height, tray, tray->getLastComponent());
 	tray->AddTrayComponent(cp);
 
 }
@@ -1329,7 +1329,7 @@ void ParseTrayButton(const TokenNode *tp, Tray *tray) {
 	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
-	cp = new TrayButton(icon, label, popup, width, height, tray, NULL);
+	cp = new TrayButton(icon, label, popup, width, height, tray, tray->getLastComponent());
 	if (JLIKELY(cp)) {
 		tray->AddTrayComponent(cp);
 		ParseTrayComponentActions(tp, cp);
@@ -1348,7 +1348,7 @@ void ParseBattery(const TokenNode *tp, Tray *tray) {
 	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
-	TrayComponent *cp = new Battery(width, height, tray, NULL);
+	TrayComponent *cp = new Battery(width, height, tray, tray->getLastComponent());
 	tray->AddTrayComponent(cp);
 }
 
@@ -1367,7 +1367,7 @@ void ParseClock(const TokenNode *tp, Tray *tray) {
 	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
-	ClockType *clock = new ClockType(format, zone, width, height, tray, NULL);
+	ClockType *clock = new ClockType(format, zone, width, height, tray, tray->getLastComponent());
 	ParseTrayComponentActions(tp, clock);
 	tray->AddTrayComponent(clock);
 
@@ -1421,7 +1421,7 @@ void ParseDock(const TokenNode *tp, Tray *tray) {
 		settings.dockSpacing = ParseUnsigned(tp, str);
 	}
 
-	TrayComponent *cp = DesktopEnvironment::DefaultEnvironment()->CreateDock(width, tray, NULL);
+	TrayComponent *cp = DesktopEnvironment::DefaultEnvironment()->CreateDock(width, tray, tray->getLastComponent());
 	tray->AddTrayComponent(cp);
 
 }
@@ -1453,7 +1453,7 @@ void ParseSpacer(const TokenNode *tp, Tray *tray) {
 	}
 
 	/* Create the spacer. */
-	Spacer *cp = new Spacer(width, height, tray, NULL);
+	Spacer *cp = new Spacer(width, height, tray, tray->getLastComponent());
 	tray->AddTrayComponent(cp);
 }
 

@@ -26,6 +26,9 @@ public:
   void SetSize(int width, int height);
   void Resize();
   void Draw(Graphics *) {}
+  void ProcessButtonPress(int x, int y, int mask) {}
+  void ProcessButtonRelease(int x, int y, int mask) {}
+  void ProcessMotionEvent(int x, int y, int mask) {}
 };
 
 #endif /* SPACER_H */

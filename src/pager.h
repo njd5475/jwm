@@ -43,11 +43,13 @@ private:
 
   int GetPagerDesktop(int x, int y);
 
-  void ProcessPagerButtonEvent(TrayComponent *cp, int x, int y, int mask);
+  void ProcessButtonPress(int x, int y, int mask);
 
-  void ProcessPagerMotionEvent(TrayComponent *cp, int x, int y, int mask);
+  void ProcessButtonRelease(int x, int y, int mask) {}
 
-  void StartPagerMove(TrayComponent *cp, int x, int y);
+  void ProcessMotionEvent(int x, int y, int mask);
+
+  void StartPagerMove(int x, int y);
 
   void StopPagerMove(ClientNode *np, int x, int y, int desktop, MaxFlags maxFlags);
 

@@ -116,14 +116,13 @@ public:
 	virtual void Draw(Graphics *g) = 0;
 
 	/** Callback for mouse presses. */
-	virtual void ProcessButtonPress(int x, int y, int mask) {}
+	virtual void ProcessButtonPress(int x, int y, int mask) = 0;
 
 	/** Callback for mouse releases. */
-	virtual void ProcessButtonRelease(int x, int y, int mask) {}
+	virtual void ProcessButtonRelease(int x, int y, int mask) = 0;
 
 	/** Callback for mouse motion. */
-	virtual void ProcessMotionEvent(int x, int y, int mask) {}
-
+	virtual void ProcessMotionEvent(int x, int y, int mask) = 0;
 	/** Callback to redraw the component contents.
 	 * This is only needed for components that use actions.
 	 */
@@ -135,8 +134,8 @@ public:
 
 	void addAction(const char *action, int mask);
 	void validateActions();
-	void handleReleaseActions(int x, int y, int button);
-	void handlePressActions(int x, int y, int button);
+	virtual void handleReleaseActions(int x, int y, int button);
+	virtual void handlePressActions(int x, int y, int button);
 private:
 	std::vector<ActionNode*> actions;
 };

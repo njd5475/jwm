@@ -60,6 +60,8 @@ public:
 	virtual void Draw(Graphics *g);
 
 	virtual void ProcessMotionEvent(int x, int y, int mask);
+	virtual void ProcessButtonPress(int x, int y, int mask) {}
+	virtual void ProcessButtonRelease(int x, int y, int mask) {}
 	static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);
 };
 

@@ -125,16 +125,16 @@ void ClockType::Destroy() {
 }
 
 /** Process a press event on a clock tray component. */
-void ClockType::ProcessClockButtonPress(int x, int y, int button) {
+void ClockType::ProcessButtonPress(int x, int y, int button) {
 	this->handlePressActions(x, y, button);
 }
 
-void ClockType::ProcessClockButtonRelease(int x, int y, int button) {
+void ClockType::ProcessButtonRelease(int x, int y, int button) {
 	this->handleReleaseActions(x, y, button);
 }
 
 /** Process a motion event on a clock tray component. */
-void ClockType::ProcessClockMotionEvent(int x, int y, int mask) {
+void ClockType::ProcessMotionEvent(int x, int y, int mask) {
 	ClockType *clk = (ClockType*) this;
 	clk->mousex = this->getScreenX() + x;
 	clk->mousey = this->getScreenY() + y;

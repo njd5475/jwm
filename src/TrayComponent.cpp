@@ -13,6 +13,30 @@
 #include "DesktopEnvironment.h"
 #include "tray.h"
 
+/** Create an empty tray component. */
+TrayComponent::TrayComponent(Tray *tray, TrayComponent *parent) :
+		screenx(0), screeny(0), tray(tray), parent(parent) {
+
+	this->x = 0;
+	this->y = 0;
+	this->requestedWidth = 0;
+	this->requestedHeight = 0;
+	this->width = 0;
+	this->height = 0;
+	this->grabbed = 0;
+
+	this->window = None;
+	this->pixmap = None;
+}
+
+TrayComponent::~TrayComponent() {
+	std::vector<ActionNode*>::iterator it;
+	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
+		delete *it;
+	}
+	this->actions.clear();
+}
+
 void TrayComponent::addAction(const char *action, int mask) {
 	ActionNode *ap = new ActionNode(action, mask);
 
@@ -57,30 +81,6 @@ void TrayComponent::handlePressActions(int x, int y, int button) {
 	}
 }
 
-/** Create an empty tray component. */
-TrayComponent::TrayComponent(Tray *tray, TrayComponent *parent) :
-		screenx(0), screeny(0), tray(tray), parent(parent) {
-
-	this->x = 0;
-	this->y = 0;
-	this->requestedWidth = 0;
-	this->requestedHeight = 0;
-	this->width = 0;
-	this->height = 0;
-	this->grabbed = 0;
-
-	this->window = None;
-	this->pixmap = None;
-}
-
-TrayComponent::~TrayComponent() {
-	std::vector<ActionNode*>::iterator it;
-	for (it = this->actions.begin(); it != this->actions.end(); ++it) {
-		delete *it;
-	}
-	this->actions.clear();
-}
-
 int TrayComponent::getX() const {
 	if (this->parent) {
 		return this->x + this->parent->getX();
@@ -104,8 +104,8 @@ void TrayComponent::UpdateSpecificTray(const Tray *tp) {
 
 	/* If the tray is hidden, draw only the background. */
 	if (this->getPixmap() != None) {
-		JXCopyArea(display, this->getPixmap(), tp->getWindow(), rootGC, 0, 0, this->getWidth(), this->getHeight(), 10,
-				10);
+		JXCopyArea(display, this->getPixmap(), tp->getWindow(), rootGC, 0, 0, this->getWidth(), this->getHeight(), this->getX(),
+				this->getY());
 	}
 }
 

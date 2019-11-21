@@ -66,11 +66,13 @@ public:
 	void SetSize(int width, int height);
 	virtual void Create();
 	void Resize();
-	void ProcessTaskButtonEvent(int x, int y, int mask);
+	void ProcessButtonPress(int x, int y, int mask);
+	void ProcessButtonRelease(int x, int y, int mask) {}
+	void ProcessMotionEvent(int x, int y, int mask);
+
 	static void MinimizeGroup(const TaskEntry *tp);
 	static void FocusGroup(const TaskEntry *tp);
 	static char IsGroupOnTop(const TaskEntry *entry);
-	void ProcessTaskMotionEvent(int x, int y, int mask);
 	static void SignalTaskbar(const TimeType *now, int x, int y, Window w, void *data);
 
 	/*@{*/

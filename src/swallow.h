@@ -41,6 +41,10 @@ private:
 	void Resize();
 	void Draw(Graphics *g);
 
+
+	  virtual void ProcessButtonPress(int x, int y, int mask) {}
+	  virtual void ProcessButtonRelease(int x, int y, int mask) {}
+	  virtual void ProcessMotionEvent(int x, int y, int mask) {}
 public:
 	/*@{*/
 	static void InitializeSwallow() {}

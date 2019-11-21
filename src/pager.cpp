@@ -121,23 +121,20 @@ int PagerType::GetPagerDesktop(int x, int y) {
 }
 
 /** Process a button event on a pager tray component. */
-void PagerType::ProcessPagerButtonEvent(TrayComponent *cp, int x, int y, int mask) {
-
-	PagerType *pp;
+void PagerType::ProcessButtonPress(int x, int y, int mask) {
 
 	switch (mask) {
 	case Button1:
 	case Button2:
 
 		/* Change to the selected desktop. */
-		pp = (PagerType*) cp;
-		DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(pp->GetPagerDesktop(x, y));
+		DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(this->GetPagerDesktop(x, y));
 		break;
 
 	case Button3:
 
 		/* Move a client and possibly change its desktop. */
-		StartPagerMove(cp, x, y);
+		this->StartPagerMove(x, y);
 		break;
 
 	case Button4:
@@ -158,17 +155,14 @@ void PagerType::ProcessPagerButtonEvent(TrayComponent *cp, int x, int y, int mas
 }
 
 /** Process a motion event on a pager tray component. */
-void PagerType::ProcessPagerMotionEvent(TrayComponent *cp, int x, int y, int mask) {
-
-	PagerType *pp = (PagerType*) cp;
-
-	pp->mousex = cp->getScreenX() + x;
-	pp->mousey = cp->getScreenY() + y;
-	GetCurrentTime(&pp->mouseTime);
+void PagerType::ProcessMotionEvent(int x, int y, int mask) {
+	this->mousex = this->getScreenX() + x;
+	this->mousey = this->getScreenY() + y;
+	GetCurrentTime(&this->mouseTime);
 }
 
 /** Start a pager move operation. */
-void PagerType::StartPagerMove(TrayComponent *cp, int x, int y) {
+void PagerType::StartPagerMove(int x, int y) {
 
 	XEvent event;
 	PagerType *pp;
@@ -184,7 +178,7 @@ void PagerType::StartPagerMove(TrayComponent *cp, int x, int y) {
 	int startx, starty;
 	MaxFlags maxFlags;
 
-	pp = (PagerType*) cp;
+	pp = (PagerType*) this;
 
 	/* Determine the selected desktop. */
 	desktop = pp->GetPagerDesktop(x, y);
@@ -320,14 +314,14 @@ void PagerType::StartPagerMove(TrayComponent *cp, int x, int y) {
 			Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
 
 			/* Get the mouse position on the pager. */
-			x = event.xmotion.x_root - cp->getScreenX();
-			y = event.xmotion.y_root - cp->getScreenY();
+			x = event.xmotion.x_root - this->getScreenX();
+			y = event.xmotion.y_root - this->getScreenY();
 
 			/* Don't move if we are off of the pager. */
-			if (x < 0 || x > cp->getWidth()) {
+			if (x < 0 || x > this->getWidth()) {
 				break;
 			}
-			if (y < 0 || y > cp->getHeight()) {
+			if (y < 0 || y > this->getHeight()) {
 				break;
 			}
 

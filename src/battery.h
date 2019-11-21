@@ -40,7 +40,9 @@ public:
 	void Resize();
 	void Draw();
 	void Draw(Graphics *g);
-
+	void ProcessButtonPress(int x, int y, int mask) {}
+	void ProcessButtonRelease(int x, int y, int mask) {}
+	void ProcessMotionEvent(int x, int y, int mask) {}
 private:
 	Graphics *graphics;
 	float lastLevel; /**< Currently displayed level */

@@ -132,6 +132,7 @@ public:
   int ComputeTotalHeight();
   char CheckHorizontalFill();
   char CheckVerticalFill();
+  TrayComponent *getLastComponent();
 
 public:
 

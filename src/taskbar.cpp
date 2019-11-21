@@ -170,7 +170,7 @@ char TaskBar::IsGroupOnTop(const TaskEntry *entry) {
 }
 
 /** Process a task list button event. */
-void TaskBar::ProcessTaskButtonEvent(int x, int y, int mask) {
+void TaskBar::ProcessButtonPress(int x, int y, int mask) {
 	TaskEntry *entry = this->GetEntry(x, y);
 
 	if (entry) {
@@ -363,7 +363,7 @@ void TaskBar::FocusGroup(const TaskEntry *tp) {
 }
 
 /** Process a task list motion event. */
-void TaskBar::ProcessTaskMotionEvent(int x, int y, int mask) {
+void TaskBar::ProcessMotionEvent(int x, int y, int mask) {
 	this->mousex = this->getScreenX() + x;
 	this->mousey = this->getScreenY() + y;
 	GetCurrentTime(&this->mouseTime);
