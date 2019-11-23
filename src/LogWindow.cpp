@@ -5,9 +5,10 @@
  *      Author: nick
  */
 
+#include "LogWindow.h"
+
 #include "jwm.h"
 #include "client.h"
-#include "Portal.h"
 #include "color.h"
 #include "font.h"
 #include "button.h"
@@ -17,9 +18,9 @@
 #define BUT_STATE_OK 	 1
 #define BUT_STATE_CANCEL 2
 
-std::vector<Portal*> Portal::portals;
+std::vector<LogWindow*> LogWindow::portals;
 
-Portal::Portal(int x, int y, int width, int height) : LoggerListener(),
+LogWindow::LogWindow(int x, int y, int width, int height) : LoggerListener(),
 		x(x), y(y), width(width), height(height), buttonState(0), window(0), pixmap(0), node(0), graphics(0) {
 
 	XSetWindowAttributes attrs;
@@ -46,7 +47,7 @@ Portal::Portal(int x, int y, int width, int height) : LoggerListener(),
 			None);
 }
 
-Portal::Portal(const Portal &p) {
+LogWindow::LogWindow(const LogWindow &p) {
 	this->x = p.x;
 	this->y = p.y;
 	this->width = p.width;
@@ -58,22 +59,22 @@ Portal::Portal(const Portal &p) {
 	this->graphics = p.graphics;
 }
 
-Portal::~Portal() {
+LogWindow::~LogWindow() {
 	// TODO Auto-generated destructor stub
 }
 
-void Portal::StartupPortals() {
+void LogWindow::StartupPortals() {
 
 }
 
-void Portal::Add(int x, int y, int width, int height) {
-	Portal *p = new Portal(x, y, width, height);
+void LogWindow::Add(int x, int y, int width, int height) {
+	LogWindow *p = new LogWindow(x, y, width, height);
 	Logger::AddListener(p);
 	portals.push_back(p);
 
 }
 
-void Portal::Draw() {
+void LogWindow::Draw() {
 	/* Clear the dialog. */
 	graphics->setForeground(COLOR_MENU_BG);
 	graphics->fillRectangle(0, 0, width, height);
@@ -129,14 +130,14 @@ void Portal::Draw() {
 	DrawButton(&button);
 }
 
-void Portal::DrawAll() {
-	std::vector<Portal*>::iterator it;
+void LogWindow::DrawAll() {
+	std::vector<LogWindow*>::iterator it;
 	for (it = portals.begin(); it != portals.end(); ++it) {
 		(*it)->Draw();
 	}
 }
 
-char Portal::ProcessEvents(const XEvent *event) {
+char LogWindow::ProcessEvents(const XEvent *event) {
 
 	Window window;
 	switch (event->type) {
@@ -154,9 +155,9 @@ char Portal::ProcessEvents(const XEvent *event) {
 		break;
 	}
 
-	std::vector<Portal*>::iterator it;
+	std::vector<LogWindow*>::iterator it;
 	for (it = portals.begin(); it != portals.end(); ++it) {
-		Portal *p = (*it);
+		LogWindow *p = (*it);
 		if (p->node && p->node->getWindow() == window) {
 			p->graphics->copy(p->node->getWindow(), 0, 0, p->width, p->height, 0, 0);
 			p->Draw();
@@ -167,7 +168,7 @@ char Portal::ProcessEvents(const XEvent *event) {
 	return 0;
 }
 
-void Portal::log(const char* message) {
+void LogWindow::log(const char* message) {
 	lines.push_back(strdup(message));
 	this->Draw();
 	this->graphics->copy(this->node->getWindow(), 0, 0, this->width, this->height, 0, 0);

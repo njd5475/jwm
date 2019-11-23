@@ -39,6 +39,7 @@
 #include "icon.h"
 #include "jxlib.h"
 #include "logger.h"
+#include "LogWindow.h"
 #include "main.h"
 #include "pager.h"
 #include "place.h"
@@ -51,7 +52,6 @@
 #include "timing.h"
 #include "tray.h"
 #include "traybutton.h"
-#include "Portal.h"
 
 WindowManager::WindowManager() {
 	// TODO Auto-generated constructor stub
@@ -155,9 +155,9 @@ void WindowManager::Startup(void) {
 	/* Run any startup commands. */
 	Commands::StartupCommands();
 
-	Portal::Add(30, 30, 300, 200);
-	Portal::StartupPortals();
-	Portal::DrawAll();
+	LogWindow::Add(30, 30, 300, 200);
+	LogWindow::StartupPortals();
+	LogWindow::DrawAll();
 }
 
 /** Shutdown the various JWM components.

@@ -5,8 +5,8 @@
  *      Author: nick
  */
 
-#ifndef SRC_PORTAL_H_
-#define SRC_PORTAL_H_
+#ifndef SRC_LOGWINDOW_H_
+#define SRC_LOGWINDOW_H_
 
 #include <c++/6/bits/stl_vector.h>
 #include <X11/X.h>
@@ -16,12 +16,12 @@
 class ClientNode;
 class Graphics;
 
-class Portal : public LoggerListener {
+class LogWindow : public LoggerListener {
 public:
-	Portal(const Portal &p);
-	virtual ~Portal();
+	LogWindow(const LogWindow &p);
+	virtual ~LogWindow();
 private:
-	Portal(int x, int y, int width, int height);
+	LogWindow(int x, int y, int width, int height);
 
 	int x;
 	int y;
@@ -47,7 +47,7 @@ public:
 private:
 	virtual void log(const char* message);
 	std::vector<const char *> lines;
-	static std::vector<Portal*> portals;
+	static std::vector<LogWindow*> portals;
 };
 
-#endif /* SRC_PORTAL_H_ */
+#endif /* SRC_LOGWINDOW_H_ */
