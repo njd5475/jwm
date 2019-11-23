@@ -14,21 +14,13 @@
 #include "error.h"
 #include "timing.h"
 
+#include <vector>
 #include <fcntl.h>
 
-/** Structure to represent a list of commands. */
-typedef struct CommandNode {
-	char *command; /**< The command. */
-	struct CommandNode *next; /**< The next command in the list. */
-} CommandNode;
+std::vector<char*> Commands::startupCommands;
+std::vector<char*> Commands::shutdownCommands;
+std::vector<char*> Commands::restartCommands;
 
-static CommandNode *startupCommands = NULL;
-static CommandNode *shutdownCommands = NULL;
-static CommandNode *restartCommands = NULL;
-
-static void RunCommands(CommandNode *commands);
-static void ReleaseCommands(CommandNode **commands);
-static void AddCommand(CommandNode **commands, const char *command);
 
 /** Process startup/restart commands. */
 void Commands::StartupCommands(void) {
@@ -48,9 +40,9 @@ void Commands::ShutdownCommands(void) {
 
 /** Destroy the command lists. */
 void Commands::DestroyCommands(void) {
-	ReleaseCommands(&startupCommands);
-	ReleaseCommands(&shutdownCommands);
-	ReleaseCommands(&restartCommands);
+	ReleaseCommands(startupCommands);
+	ReleaseCommands(shutdownCommands);
+	ReleaseCommands(restartCommands);
 }
 
 void Commands::InitializeCommands() {
@@ -58,61 +50,43 @@ void Commands::InitializeCommands() {
 }
 
 /** Run the commands in a command list. */
-void RunCommands(CommandNode *commands) {
+void Commands::RunCommands(std::vector<char*> commands) {
 
-	CommandNode *cp;
-
-	for (cp = commands; cp; cp = cp->next) {
-		Commands::RunCommand(cp->command);
+	std::vector<char*>::iterator it;
+	for(it = commands.begin(); it != commands.end(); ++it) {
+		Commands::RunCommand((*it));
 	}
 
 }
 
 /** Release a command list. */
-void ReleaseCommands(CommandNode **commands) {
-
-	CommandNode *cp;
-
-	Assert(commands);
-	while (*commands) {
-		cp = (*commands)->next;
-		Release((*commands)->command);
-		Release(*commands);
-		*commands = cp;
+void Commands::ReleaseCommands(std::vector<char*> commands) {
+	std::vector<char*>::iterator it;
+	while (!commands.empty()) {
+		it = commands.begin();
+		Release((*it));
+		commands.erase(it);
 	}
-
 }
 
 /** Add a command to a command list. */
-void AddCommand(CommandNode **commands, const char *command) {
-
-	CommandNode *cp;
-
-	Assert(commands);
-	if (!command) {
-		return;
-	}
-
-	cp = new CommandNode;
-	cp->next = *commands;
-	*commands = cp;
-	cp->command = CopyString(command);
-
+void Commands::AddCommand(std::vector<char*> commands, const char *command) {
+	commands.push_back(strdup(command));
 }
 
 /** Add a startup command. */
 void Commands::AddStartupCommand(const char *command) {
-	AddCommand(&startupCommands, command);
+	AddCommand(startupCommands, command);
 }
 
 /** Add a shutdown command. */
 void Commands::AddShutdownCommand(const char *command) {
-	AddCommand(&shutdownCommands, command);
+	AddCommand(shutdownCommands, command);
 }
 
 /** Add a restart command. */
 void Commands::AddRestartCommand(const char *command) {
-	AddCommand(&restartCommands, command);
+	AddCommand(restartCommands, command);
 }
 
 /** Execute an external program. */
@@ -129,7 +103,7 @@ void Commands::RunCommand(const char *command) {
 		close(ConnectionNumber(display));
 		if (displayString && displayString[0]) {
 			const size_t var_len = strlen(displayString) + 9;
-			char *str = (char*)malloc(var_len);
+			char *str = (char*) malloc(var_len);
 			snprintf(str, var_len, "DISPLAY=%s", displayString);
 			putenv(str);
 		}
@@ -186,7 +160,7 @@ char* Commands::ReadFromProcess(const char *command, unsigned timeout_ms) {
 			/* Make sure we have room to read. */
 			if (buffer_size + BLOCK_SIZE > max_size) {
 				max_size *= 2;
-				buffer = (char*)Reallocate(buffer, max_size);
+				buffer = (char*) Reallocate(buffer, max_size);
 			}
 
 			FD_ZERO(&fs);
@@ -203,8 +177,7 @@ char* Commands::ReadFromProcess(const char *command, unsigned timeout_ms) {
 			rc = select(fds[0] + 1, &fs, NULL, &fs, &tv);
 			if (rc == 0) {
 				/* Timeout */
-				Warning(_("timeout: %s did not complete in %u milliseconds"),
-						command, timeout_ms);
+				Warning(_("timeout: %s did not complete in %u milliseconds"), command, timeout_ms);
 				kill(pid, SIGKILL);
 				waitpid(pid, NULL, 0);
 				break;
@@ -218,7 +191,7 @@ char* Commands::ReadFromProcess(const char *command, unsigned timeout_ms) {
 				do {
 					if (buffer_size + BLOCK_SIZE > max_size) {
 						max_size *= 2;
-						buffer = (char*)Reallocate(buffer, max_size);
+						buffer = (char*) Reallocate(buffer, max_size);
 					}
 					rc = read(fds[0], &buffer[buffer_size], BLOCK_SIZE);
 					buffer_size += (rc > 0) ? rc : 0;

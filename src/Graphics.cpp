@@ -8,6 +8,7 @@
 #include "jwm.h"
 #include "main.h"
 #include "Graphics.h"
+#include "button.h"
 
 Graphics::Graphics(const Pixmap p, GC gc, Display *display) :
 		surface(p), context(gc), _display(display) {
@@ -32,7 +33,7 @@ void Graphics::line(int x1, int y1, int x2, int y2) {
 }
 
 void Graphics::point(int x, int y) {
-	JXDrawPoint(_display, surface, context, x,y);
+	JXDrawPoint(_display, surface, context, x, y);
 }
 
 void Graphics::copy(Drawable dest, int srcX, int srcY, int width, int height, int destX, int destY) {
@@ -47,14 +48,14 @@ void Graphics::setForeground(unsigned short index) {
 	JXSetForeground(_display, context, Colors::lookupColor(index));
 }
 
-void Graphics::resetButton(ButtonNode *bn) {
-	ResetButton(bn, this->surface);
+void Graphics::drawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill,
+		bool border, struct IconNode *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
+	DrawButton(type, alignment, font, text, fill, border, this->surface, icon, x, y, width, height, xoffset, yoffset);
 }
 
 std::vector<Graphics*> Graphics::graphics;
 
-
-Graphics *Graphics::create(Display *display, GC gc, Drawable d, int width, int height, int rootDepth) {
+Graphics* Graphics::create(Display *display, GC gc, Drawable d, int width, int height, int rootDepth) {
 	Pixmap map = JXCreatePixmap(display, d, width, height, rootDepth);
 	return wrap(map, gc, display);
 }
@@ -62,14 +63,14 @@ Graphics *Graphics::create(Display *display, GC gc, Drawable d, int width, int h
 void Graphics::destroy(Graphics *g) {
 	std::vector<Graphics*>::iterator it;
 	char found = 0;
-	for(it = graphics.begin(); it != graphics.end(); ++it) {
-		if(*it == g) {
+	for (it = graphics.begin(); it != graphics.end(); ++it) {
+		if (*it == g) {
 			found = 1;
 			break;
 		}
 	}
 
-	if(found) {
+	if (found) {
 		graphics.erase(it);
 	}
 

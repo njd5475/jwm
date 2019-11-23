@@ -8,10 +8,10 @@
 #ifndef SRC_LOGWINDOW_H_
 #define SRC_LOGWINDOW_H_
 
-#include <c++/6/bits/stl_vector.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
+#include <vector>
 
+#include "jwm.h"
+#include "main.h"
 #include "LoggerListener.h"
 class ClientNode;
 class Graphics;
@@ -28,6 +28,7 @@ private:
 	int width;
 	int height;
 	int window;
+	float percentage;
 	Pixmap pixmap;
 	int buttonState;
 	ClientNode *node;
@@ -47,7 +48,7 @@ public:
 private:
 	virtual void log(const char* message);
 	std::vector<const char *> lines;
-	static std::vector<LogWindow*> portals;
+	static std::vector<LogWindow*> windows;
 };
 
 #endif /* SRC_LOGWINDOW_H_ */

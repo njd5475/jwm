@@ -235,7 +235,7 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
 						} else if (np->getState()->getStatus() & STAT_STICKY) {
 							continue;
 						} else if (np->getState()->getDesktop() == target) {
-							if (!nextClient || np->getState()->getStatus() & STAT_ACTIVE) {
+							if (!nextClient || (np->getState()->getStatus() & STAT_ACTIVE)) {
 								nextClient = np;
 							}
 						}
@@ -660,8 +660,14 @@ void TaskBar::SignalTaskbar(const TimeType *now, int x, int y, Window w, void *d
 void TaskBar::Render() {
 	TaskEntry *tp;
 	char *displayName;
-	ButtonNode button;
-	int x, y;
+	Drawable drawable = this->getPixmap();
+	bool border = false, fill = true;
+	int x, y, width, height, xoffset, yoffset;
+	IconNode *icon = NULL;
+	const char *text = NULL;
+	AlignmentType alignment = ALIGN_CENTER;
+	FontType font = FONT_TASKLIST;
+	ButtonType type;
 
 	if (JUNLIKELY(shouldExit)) {
 		return;
@@ -673,12 +679,11 @@ void TaskBar::Render() {
 		return;
 	}
 
-	ResetButton(&button, this->getPixmap());
-	button.border = settings.taskListDecorations == DECO_MOTIF;
-	button.font = FONT_TASKLIST;
-	button.height = this->itemHeight;
-	button.width = this->itemWidth;
-	button.text = NULL;
+	border = settings.taskListDecorations == DECO_MOTIF;
+	font = FONT_TASKLIST;
+	height = this->itemHeight;
+	width = this->itemWidth;
+	text = NULL;
 
 	x = 0;
 	y = 0;
@@ -691,28 +696,26 @@ void TaskBar::Render() {
 		/* Check for an active or urgent window and count clients. */
 		ClientEntry *cp;
 		unsigned clientCount = 0;
-		button.type = BUTTON_TASK;
+		type = BUTTON_TASK;
 		for (cp = tp->clients; cp; cp = cp->next) {
 			if (ShouldFocus(cp->client, 0)) {
 				const char flash = (cp->client->getState()->getStatus() & STAT_FLASH) != 0;
 				const char active = (cp->client->getState()->getStatus() & STAT_ACTIVE)
 						&& IsClientOnCurrentDesktop(cp->client);
 				if (flash || active) {
-					if (button.type == BUTTON_TASK) {
-						button.type = BUTTON_TASK_ACTIVE;
+					if (type == BUTTON_TASK) {
+						type = BUTTON_TASK_ACTIVE;
 					} else {
-						button.type = BUTTON_TASK;
+						type = BUTTON_TASK;
 					}
 				}
 				clientCount += 1;
 			}
 		}
-		button.x = x;
-		button.y = y;
 		if (!tp->clients->client->getIcon()) {
-			button.icon = Icons::GetDefaultIcon();
+			icon = Icons::GetDefaultIcon();
 		} else {
-			button.icon = tp->clients->client->getIcon();
+			icon = tp->clients->client->getIcon();
 		}
 		displayName = NULL;
 		if (this->labeled) {
@@ -721,15 +724,15 @@ void TaskBar::Render() {
 					const size_t len = strlen(tp->clients->client->getClassName()) + 16;
 					displayName = new char[len];
 					snprintf(displayName, len, "%s (%u)", tp->clients->client->getClassName(), clientCount);
-					button.text = displayName;
+					text = displayName;
 				} else {
-					button.text = tp->clients->client->getClassName();
+					text = tp->clients->client->getClassName();
 				}
 			} else {
-				button.text = tp->clients->client->getName();
+				text = tp->clients->client->getName();
 			}
 		}
-		DrawButton(&button);
+		DrawButton(type, alignment, font, text, fill, border, drawable, icon, x, y, width, height, xoffset, yoffset);
 		if (displayName) {
 			Release(displayName);
 		}

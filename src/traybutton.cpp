@@ -77,7 +77,8 @@ void TrayButton::DestroyTrayButtons(void) {
 
 /** Create a button tray component. */
 TrayButton::TrayButton(const char *iconName, const char *label, const char *popup, unsigned int width,
-		unsigned int height, Tray *tray, TrayComponent *parent) : TrayComponent(tray, parent) {
+		unsigned int height, Tray *tray, TrayComponent *parent) :
+		TrayComponent(tray, parent) {
 
 	if (JUNLIKELY((label == NULL || strlen(label) == 0) && (iconName == NULL || strlen(iconName) == 0))) {
 		Warning(_("no icon or label for TrayButton"));
@@ -193,28 +194,34 @@ void TrayButton::Draw(Graphics *g) {
 /** Draw a tray button. */
 void TrayButton::Draw() {
 	TrayComponent *cp = this;
-	ButtonNode button;
+	int x, y, width, height, xoffset, yoffset;
+	IconNode *icon = NULL;
+	const char *text = NULL;
+	AlignmentType alignment = ALIGN_CENTER;
+	FontType font = FONT_TASKLIST;
+	ButtonType type;
 	TrayButton *bp;
+	Drawable drawable = cp->getPixmap();
+	bool border = false, fill = true;
 
 	bp = (TrayButton*) cp;
 
 	Tray::ClearTrayDrawable(cp);
-	ResetButton(&button, cp->getPixmap());
 	if (cp->wasGrabbed()) {
-		button.type = BUTTON_TRAY_ACTIVE;
+		type = BUTTON_TRAY_ACTIVE;
 	} else {
-		button.type = BUTTON_TRAY;
+		type = BUTTON_TRAY;
 	}
-	button.width = cp->getWidth();
-	button.height = cp->getHeight();
-	button.border = settings.trayDecorations == DECO_FLAT;
-	button.x = cp->getX();
-	button.y = cp->getY();
-	button.font = FONT_TRAY;
-	button.text = bp->label;
-	button.icon = bp->icon;
+	width = cp->getWidth();
+	height = cp->getHeight();
+	border = settings.trayDecorations == DECO_FLAT;
+	x = cp->getX();
+	y = cp->getY();
+	font = FONT_TRAY;
+	text = bp->label;
+	icon = bp->icon;
 
-	DrawButton(&button);
+	DrawButton(type, alignment, font, text, fill, border, drawable, icon, x, y, width, height, xoffset, yoffset);
 
 }
 

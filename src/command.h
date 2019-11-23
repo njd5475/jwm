@@ -45,6 +45,15 @@ public:
 	 * @return The output (must be freed, NULL on timeout).
 	 */
 	static char *ReadFromProcess(const char *command, unsigned timeout_ms);
+
+private:
+	static std::vector<char*> startupCommands;
+	static std::vector<char*> shutdownCommands;
+	static std::vector<char*> restartCommands;
+
+	static void RunCommands(std::vector<char*> commands);
+	static void ReleaseCommands(std::vector<char*> commands);
+	static void AddCommand(std::vector<char*> commands, const char *command);
 };
 
 #endif /* COMMAND_H */

@@ -18,10 +18,11 @@
 #define BUT_STATE_OK 	 1
 #define BUT_STATE_CANCEL 2
 
-std::vector<LogWindow*> LogWindow::portals;
+std::vector<LogWindow*> LogWindow::windows;
 
-LogWindow::LogWindow(int x, int y, int width, int height) : LoggerListener(),
-		x(x), y(y), width(width), height(height), buttonState(0), window(0), pixmap(0), node(0), graphics(0) {
+LogWindow::LogWindow(int x, int y, int width, int height) :
+		LoggerListener(), x(x), y(y), width(width), height(height), buttonState(0), window(0), pixmap(0), node(0), graphics(
+				0), percentage(0.0f) {
 
 	XSetWindowAttributes attrs;
 	attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
@@ -57,6 +58,7 @@ LogWindow::LogWindow(const LogWindow &p) {
 	this->buttonState = p.buttonState;
 	this->node = p.node;
 	this->graphics = p.graphics;
+	this->percentage = p.percentage;
 }
 
 LogWindow::~LogWindow() {
@@ -70,7 +72,7 @@ void LogWindow::StartupPortals() {
 void LogWindow::Add(int x, int y, int width, int height) {
 	LogWindow *p = new LogWindow(x, y, width, height);
 	Logger::AddListener(p);
-	portals.push_back(p);
+	windows.push_back(p);
 
 }
 
@@ -81,13 +83,13 @@ void LogWindow::Draw() {
 
 	/* Draw the message. */
 	int lineHeight = 20;
-	int lns = 0;
-	std::vector<const char*>::reverse_iterator it;
-	for(it = lines.rbegin(); it != lines.rend(); ++it) {
-		Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, lineHeight*lns, width, (*it));
+	int lns = (int) (lines.size() * this->percentage);
+	std::vector<const char*>::reverse_iterator it = lines.rbegin();
+	it += lns;
+	for (it = lines.rbegin(); it != lines.rend(); ++it) {
+		Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, lineHeight * lns, width, (*it));
 		++lns;
 	}
-	ButtonNode button;
 	int temp;
 
 	int buttonWidth = Fonts::GetStringWidth(FONT_MENU, "Don't Press");
@@ -98,41 +100,20 @@ void LogWindow::Draw() {
 	buttonWidth += 16;
 	int buttonHeight = lineHeight + 4;
 
-	ResetButton(&button, pixmap);
-	button.border = 1;
-	button.font = FONT_MENU;
-	button.width = buttonWidth;
-	button.height = buttonHeight;
-	button.alignment = ALIGN_CENTER;
-
 	int okx = width / 3 - buttonWidth / 2;
 	int cancelx = 2 * width / 3 - buttonWidth / 2;
 	int buttony = height - lineHeight - lineHeight / 2;
 
-	if (buttonState == BUT_STATE_OK) {
-		button.type = BUTTON_MENU_ACTIVE;
-	} else {
-		button.type = BUTTON_MENU;
-	}
-	button.text = "Press Button";
-	button.x = okx;
-	button.y = buttony;
-	DrawButton(&button);
+	DrawButton(buttonState == BUT_STATE_OK ? BUTTON_MENU_ACTIVE : BUTTON_MENU, ALIGN_CENTER, FONT_MENU, "Press Button",
+			true, true, pixmap, NULL, okx, buttony, buttonWidth, buttonHeight, 0, 0);
 
-	if (buttonState == BUT_STATE_CANCEL) {
-		button.type = BUTTON_MENU_ACTIVE;
-	} else {
-		button.type = BUTTON_MENU;
-	}
-	button.text = "Don't Press";
-	button.x = cancelx;
-	button.y = buttony;
-	DrawButton(&button);
+	DrawButton(buttonState == BUT_STATE_OK ? BUTTON_MENU_ACTIVE : BUTTON_MENU, ALIGN_CENTER, FONT_MENU, "Don't Press",
+			true, true, pixmap, NULL, cancelx, buttony, buttonWidth, buttonHeight, 0, 0);
 }
 
 void LogWindow::DrawAll() {
 	std::vector<LogWindow*>::iterator it;
-	for (it = portals.begin(); it != portals.end(); ++it) {
+	for (it = windows.begin(); it != windows.end(); ++it) {
 		(*it)->Draw();
 	}
 }
@@ -146,9 +127,12 @@ char LogWindow::ProcessEvents(const XEvent *event) {
 		break;
 	case ButtonPress:
 		window = event->xbutton.window;
+		Log("Button Pressed")
+
 		break;
 	case ButtonRelease:
 		window = event->xbutton.window;
+		Log("Button Released")
 		break;
 	case KeyPress:
 		window = event->xkey.window;
@@ -156,7 +140,7 @@ char LogWindow::ProcessEvents(const XEvent *event) {
 	}
 
 	std::vector<LogWindow*>::iterator it;
-	for (it = portals.begin(); it != portals.end(); ++it) {
+	for (it = windows.begin(); it != windows.end(); ++it) {
 		LogWindow *p = (*it);
 		if (p->node && p->node->getWindow() == window) {
 			p->graphics->copy(p->node->getWindow(), 0, 0, p->width, p->height, 0, 0);
@@ -168,7 +152,7 @@ char LogWindow::ProcessEvents(const XEvent *event) {
 	return 0;
 }
 
-void LogWindow::log(const char* message) {
+void LogWindow::log(const char *message) {
 	lines.push_back(strdup(message));
 	this->Draw();
 	this->graphics->copy(this->node->getWindow(), 0, 0, this->width, this->height, 0, 0);

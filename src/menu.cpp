@@ -760,47 +760,26 @@ void Menus::UpdateMenu(Menu *menu) {
 
 /** Draw a menu item. */
 void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
-
-	ButtonNode button;
-
 	Assert(menu);
 
 	if (!item) {
 		if (index == -1 && menu->label) {
-			menu->graphics->resetButton(&button);
-			button.x = MENU_BORDER_SIZE;
-			button.y = MENU_BORDER_SIZE;
-			button.width = menu->width - MENU_BORDER_SIZE * 2;
-			button.height = menu->itemHeight - 1;
-			button.font = FONT_MENU;
-			button.type = BUTTON_LABEL;
-			button.text = menu->label;
-			button.alignment = ALIGN_CENTER;
-			DrawButton(&button);
+			menu->graphics->drawButton(BUTTON_LABEL, ALIGN_CENTER, FONT_MENU, menu->label, true, false, NULL,
+			MENU_BORDER_SIZE, MENU_BORDER_SIZE, menu->width - MENU_BORDER_SIZE * 2, menu->itemHeight - 1, 0, 0);
 		}
 		return;
 	}
 
 	if (item->type != MENU_ITEM_SEPARATOR) {
-		ColorType fg;
-
-		menu->graphics->resetButton(&button);
+		ButtonType type = BUTTON_LABEL;
+		ColorType fg = COLOR_MENU_FG;
 		if (menu->currentIndex == index) {
-			button.type = BUTTON_MENU_ACTIVE;
+			type = BUTTON_MENU_ACTIVE;
 			fg = COLOR_MENU_ACTIVE_FG;
-		} else {
-			button.type = BUTTON_LABEL;
-			fg = COLOR_MENU_FG;
 		}
 
-		button.x = MENU_BORDER_SIZE;
-		button.y = menu->offsets[index];
-		button.font = FONT_MENU;
-		button.width = menu->width - MENU_BORDER_SIZE * 2;
-		button.height = menu->itemHeight;
-		button.text = item->name;
-		button.icon = item->icon;
-		DrawButton(&button);
+		menu->graphics->drawButton(MENU_BORDER_SIZE, ALIGN_CENTER, FONT_MENU, item->name, true, false, item->icon,
+				MENU_BORDER_SIZE, menu->offsets[index], menu->width - MENU_BORDER_SIZE * 2, menu->itemHeight - 1, 0, 0);
 
 		if (item->submenu) {
 

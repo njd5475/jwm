@@ -32,9 +32,9 @@ private:
 /** Initialize data structures.
  * This is called before the X connection is opened.
  */
-#define Log(x) Logger::Log(x);
+#define Log(x) Logger::Log(x)
 #define ILog(fn) \
   Logger::Log(#fn "\n");\
-  fn();
+  fn()
 
 #endif /* SRC_LOGGER_H_ */
