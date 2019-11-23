@@ -27,12 +27,13 @@
 #include "event.h"
 #include "action.h"
 
-TrayButton *TrayButton::buttons = NULL;
+std::vector<TrayButton*> TrayButton::buttons;
 
 /** Startup tray buttons. */
 void TrayButton::StartupTrayButtons(void) {
-	TrayButton *bp;
-	for (bp = buttons; bp; bp = bp->next) {
+	std::vector<TrayButton*>::iterator it;
+	for (it = buttons.begin(); it != buttons.end(); ++it) {
+		TrayButton *bp = (*it);
 		if (bp->label) {
 			bp->requestNewSize(Fonts::GetStringWidth(FONT_TRAY, bp->label) + 4, Fonts::GetStringHeight(FONT_TRAY));
 		} else {
@@ -55,23 +56,32 @@ void TrayButton::StartupTrayButtons(void) {
 	}
 }
 
+TrayButton* TrayButton::Create(const char *iconName, const char *label, const char *popup, unsigned int width,
+		unsigned int height, Tray *tray, TrayComponent *parent) {
+	TrayButton *button = new TrayButton(iconName, label, popup, width, height, tray, parent);
+	buttons.push_back(button);
+	return button;
+}
+
 /** Release tray button data. */
 void TrayButton::DestroyTrayButtons(void) {
 	TrayButton *bp;
-	while (buttons) {
-		bp = buttons->next;
-		_UnregisterCallback(SignalTrayButton, buttons);
-		if (buttons->label) {
-			Release(buttons->label);
+	std::vector<TrayButton*>::iterator it = buttons.begin();
+	while (!buttons.empty()) {
+		it = buttons.begin();
+		bp = (*it);
+		_UnregisterCallback(SignalTrayButton, bp);
+		if (bp->label) {
+			Release(bp->label);
 		}
-		if (buttons->iconName) {
-			Release(buttons->iconName);
+		if (bp->iconName) {
+			Release(bp->iconName);
 		}
-		if (buttons->popup) {
-			Release(buttons->popup);
+		if (bp->popup) {
+			Release(bp->popup);
 		}
-		Release(buttons);
-		buttons = bp;
+		Release(bp);
+		buttons.erase(it);
 	}
 }
 
@@ -79,14 +89,6 @@ void TrayButton::DestroyTrayButtons(void) {
 TrayButton::TrayButton(const char *iconName, const char *label, const char *popup, unsigned int width,
 		unsigned int height, Tray *tray, TrayComponent *parent) :
 		TrayComponent(tray, parent) {
-
-	if (JUNLIKELY((label == NULL || strlen(label) == 0) && (iconName == NULL || strlen(iconName) == 0))) {
-		Warning(_("no icon or label for TrayButton"));
-		return;
-	}
-
-	this->next = buttons;
-	buttons = this;
 
 	this->icon = NULL;
 	this->iconName = CopyString(iconName);
@@ -101,7 +103,7 @@ TrayButton::TrayButton(const char *iconName, const char *label, const char *popu
 
 	_RegisterCallback(settings.popupDelay / 2, SignalTrayButton, this);
 
-	this->Create();
+	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
 }
 
 /** Set the size of a button tray component. */
@@ -170,11 +172,6 @@ void TrayButton::SetSize(int width, int height) {
 
 }
 
-/** Initialize a button tray component. */
-void TrayButton::Create() {
-	this->setPixmap(JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), rootDepth));
-}
-
 /** Resize a button tray component. */
 void TrayButton::Resize() {
 	TrayComponent::Resize();
@@ -193,36 +190,11 @@ void TrayButton::Draw(Graphics *g) {
 
 /** Draw a tray button. */
 void TrayButton::Draw() {
-	TrayComponent *cp = this;
-	int x, y, width, height, xoffset, yoffset;
-	IconNode *icon = NULL;
-	const char *text = NULL;
-	AlignmentType alignment = ALIGN_CENTER;
-	FontType font = FONT_TASKLIST;
-	ButtonType type;
-	TrayButton *bp;
-	Drawable drawable = cp->getPixmap();
-	bool border = false, fill = true;
+	Tray::ClearTrayDrawable(this);
 
-	bp = (TrayButton*) cp;
-
-	Tray::ClearTrayDrawable(cp);
-	if (cp->wasGrabbed()) {
-		type = BUTTON_TRAY_ACTIVE;
-	} else {
-		type = BUTTON_TRAY;
-	}
-	width = cp->getWidth();
-	height = cp->getHeight();
-	border = settings.trayDecorations == DECO_FLAT;
-	x = cp->getX();
-	y = cp->getY();
-	font = FONT_TRAY;
-	text = bp->label;
-	icon = bp->icon;
-
-	DrawButton(type, alignment, font, text, fill, border, drawable, icon, x, y, width, height, xoffset, yoffset);
-
+	DrawButton(this->wasGrabbed() ? BUTTON_TRAY_ACTIVE : BUTTON_TRAY, ALIGN_CENTER, FONT_TASKLIST, this->label, true,
+			settings.trayDecorations == DECO_FLAT, getPixmap(), this->icon, getX(), getY(), getWidth(), getHeight(), 0,
+			0);
 }
 
 /** Process a motion event. */

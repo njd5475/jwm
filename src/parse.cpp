@@ -1329,7 +1329,7 @@ void ParseTrayButton(const TokenNode *tp, Tray *tray) {
 	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
-	cp = new TrayButton(icon, label, popup, width, height, tray, tray->getLastComponent());
+	cp = TrayButton::Create(icon, label, popup, width, height, tray, tray->getLastComponent());
 	if (JLIKELY(cp)) {
 		tray->AddTrayComponent(cp);
 		ParseTrayComponentActions(tp, cp);

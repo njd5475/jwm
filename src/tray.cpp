@@ -1063,8 +1063,8 @@ std::vector<Window> Tray::getTrayWindowsAt(int layer) {
 	return windows;
 }
 
-TrayComponent *Tray::getLastComponent() {
-	if(this->components.empty()) {
+TrayComponent* Tray::getLastComponent() {
+	if (this->components.empty()) {
 		return NULL;
 	}
 	return *this->components.end();

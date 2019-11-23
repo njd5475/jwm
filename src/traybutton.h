@@ -10,6 +10,7 @@
 #ifndef TRAY_BUTTON_H
 #define TRAY_BUTTON_H
 
+#include <vector>
 #include "timing.h"
 class IconNode;
 
@@ -25,6 +26,12 @@ public:
 	static void DestroyTrayButtons(void);
 	/*@}*/
 
+	static TrayButton *Create(const char *iconName,
+			const char *label,
+			const char *popup,
+			unsigned int width,
+			unsigned int height, Tray *tray, TrayComponent *parent);
+private:
 	/** Create a tray button component.
 	 * @param iconName The name of the icon to use for the button.
 	 * @param label The label to use for the button.
@@ -39,6 +46,7 @@ public:
 			unsigned int width,
 			unsigned int height, Tray *tray, TrayComponent *parent);
 
+private:
 	char *label;
 	char *popup;
 	char *iconName;
@@ -48,11 +56,9 @@ public:
 	int mousey;
 	TimeType mouseTime;
 
-	struct TrayButton *next;
+public:
 
-	static TrayButton *buttons;
-
-	virtual void Create();
+	virtual void Create() {}
 	virtual void Destroy();
 	virtual void SetSize(int width, int height);
 	virtual void Resize();
@@ -63,6 +69,9 @@ public:
 	virtual void ProcessButtonPress(int x, int y, int mask) {}
 	virtual void ProcessButtonRelease(int x, int y, int mask) {}
 	static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);
+
+private:
+	static std::vector<TrayButton*> buttons;
 };
 
 #endif /* TRAY_BUTTON_H */

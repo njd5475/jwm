@@ -660,7 +660,7 @@ int AllocateColor(Display *d, Colormap cmap, char *name,
       }
    }
 
-   GetColor(c);
+   Colors::GetColor(c);
    return 1;
 }
 #endif /* USE_XPM */

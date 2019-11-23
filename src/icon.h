@@ -10,7 +10,7 @@
 #ifndef ICON_H
 #define ICON_H
 
-struct ClientNode;
+class ClientNode;
 
 /** Structure to hold a scaled icon. */
 typedef struct ScaledIconNode {
