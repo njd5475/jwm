@@ -251,81 +251,73 @@ char HandleDialogKeyPress(const XKeyEvent *event) {
 }
 
 /** Show a confirm dialog. */
-void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...) {
+void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*) ...) {
 
-va_list ap;
-XSetWindowAttributes attrs;
-XSizeHints shints;
-Window window;
-char *str;
-int x;
+	va_list ap;
+	XSetWindowAttributes attrs;
+	XSizeHints shints;
+	Window window;
+	char *str;
+	int x;
 
-Assert(action);
+	Assert(action);
 
-/* Only allow one dialog at a time. */
-if(dialog) {
-	DestroyConfirmDialog();
-}
+	/* Only allow one dialog at a time. */
+	if (dialog) {
+		DestroyConfirmDialog();
+	}
 
-dialog = new DialogType;
-dialog->client = np ? np->getWindow() : None;
-dialog->action = action;
-dialog->buttonState = DBS_NORMAL;
+	dialog = new DialogType;
+	dialog->client = np ? np->getWindow() : None;
+	dialog->action = action;
+	dialog->buttonState = DBS_NORMAL;
 
-/* Get the number of lines. */
-va_start(ap, action);
-for(dialog->lineCount = 0; va_arg(ap, char*); dialog->lineCount++);
-va_end(ap);
+	/* Get the number of lines. */
+	va_start(ap, action);
+	for (dialog->lineCount = 0; va_arg(ap, char*); dialog->lineCount++)
+		;
+	va_end(ap);
 
-dialog->message = new char*[dialog->lineCount];
-va_start(ap, action);
-for(x = 0; x < dialog->lineCount; x++) {
-	str = va_arg(ap, char*);
-	dialog->message[x] = CopyString(str);
-}
-va_end(ap);
+	dialog->message = new char*[dialog->lineCount];
+	va_start(ap, action);
+	for (x = 0; x < dialog->lineCount; x++) {
+		str = va_arg(ap, char*);
+		dialog->message[x] = CopyString(str);
+	}
+	va_end(ap);
 
-ComputeDimensions(np);
+	ComputeDimensions(np);
 
-/* Create the pixmap used for rendering. */
-dialog->pmap = JXCreatePixmap(display, rootWindow,
-		dialog->width, dialog->height,
-		rootDepth);
+	/* Create the pixmap used for rendering. */
+	dialog->pmap = JXCreatePixmap(display, rootWindow, dialog->width, dialog->height, rootDepth);
 
-/* Create the window. */
-attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
-attrs.event_mask = ButtonPressMask
-| ButtonReleaseMask
-| KeyPressMask
-| ExposureMask;
-window = JXCreateWindow(display, rootWindow,
-		dialog->x, dialog->y,
-		dialog->width, dialog->height, 0,
-		CopyFromParent, InputOutput, CopyFromParent,
-		CWBackPixel | CWEventMask, &attrs);
-shints.x = dialog->x;
-shints.y = dialog->y;
-shints.flags = PPosition;
-JXSetWMNormalHints(display, window, &shints);
-JXStoreName(display, window, _("Confirm"));
-Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE,
-		ATOM_NET_WM_WINDOW_TYPE_DIALOG);
+	/* Create the window. */
+	attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
+	attrs.event_mask = ButtonPressMask | ButtonReleaseMask | KeyPressMask | ExposureMask;
+	window = JXCreateWindow(display, rootWindow, dialog->x, dialog->y, dialog->width, dialog->height, 0, CopyFromParent,
+			InputOutput, CopyFromParent, CWBackPixel | CWEventMask, &attrs);
+	shints.x = dialog->x;
+	shints.y = dialog->y;
+	shints.flags = PPosition;
+	JXSetWMNormalHints(display, window, &shints);
+	JXStoreName(display, window, _("Confirm"));
+	Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE, ATOM_NET_WM_WINDOW_TYPE_DIALOG);
 
-/* Draw the dialog. */
-DrawDialog();
+	/* Draw the dialog. */
+	DrawDialog();
 
-/* Add the client and give it focus. */
-dialog->node = new ClientNode(window, 0, 0);
-Assert(dialog->node);
-if(np) {
-	dialog->node->setOwner(np->getWindow());
-}
-dialog->node->setWMDialogStatus();
-dialog->node->FocusClient();
+	/* Add the client and give it focus. */
+	dialog->node = new ClientNode(window, 0, 0);
+	Assert(dialog->node);
+	if (np) {
+		dialog->node->setOwner(np->getWindow());
+	}
+	dialog->node->setWMDialogStatus();
+	dialog->node->FocusClient();
 
-/* Grab the mouse. */
-JXGrabButton(display, AnyButton, AnyModifier, window, True,
-		ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+	/* Grab the mouse. */
+	JXGrabButton(display, AnyButton, AnyModifier, window, True, ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None,
+			None);
 
 }
 

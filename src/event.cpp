@@ -284,8 +284,7 @@ char _WaitForEvent(XEvent *event) {
 			break;
 		}
 		sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
-		Logger::Log(buf)
-		;
+		Logger::Log(buf);
 
 		if (!handled) {
 			handled = Tray::ProcessTrayEvent(event);
@@ -320,20 +319,17 @@ void _Signal(void) {
 	y;
 
 	if (restack_pending) {
-		Logger::Log("Restacking Clients\n")
-		;
+		Logger::Log("Restacking Clients\n");
 		ClientNode::RestackClients();
 		restack_pending = 0;
 	}
 	if (task_update_pending) {
-		Logger::Log("Updating task bars\n")
-		;
+		Logger::Log("Updating task bars\n");
 		TaskBar::UpdateTaskBar();
 		task_update_pending = 0;
 	}
 	if (pager_update_pending) {
-		Logger::Log("Updating pager\n")
-		;
+		Logger::Log("Updating pager\n");
 		PagerType::UpdatePager();
 		pager_update_pending = 0;
 	}
@@ -1700,8 +1696,7 @@ void _UpdateTime(const XEvent *event) {
 
 /** Register a callback. */
 void _RegisterCallback(int freq, SignalCallback callback, void *data) {
-	Logger::Log("Logging callback\n")
-	;
+	Logger::Log("Logging callback\n");
 	CallbackNode *cp = new CallbackNode;
 	cp->last.seconds = 0;
 	cp->last.ms = 0;

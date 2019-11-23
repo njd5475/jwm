@@ -127,12 +127,12 @@ char LogWindow::ProcessEvents(const XEvent *event) {
 		break;
 	case ButtonPress:
 		window = event->xbutton.window;
-		Log("Button Pressed")
+		Log("Button Pressed");
 
 		break;
 	case ButtonRelease:
 		window = event->xbutton.window;
-		Log("Button Released")
+		Log("Button Released");
 		break;
 	case KeyPress:
 		window = event->xkey.window;
