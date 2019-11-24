@@ -41,7 +41,6 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
 	Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE, ATOM_NET_WM_WINDOW_TYPE_DIALOG);
 	node = new ClientNode(window, 0, 0);
 	node->setWMDialogStatus();
-	node->setNoBorderMin();
 	node->FocusClient();
 
 	/* Grab the mouse. */

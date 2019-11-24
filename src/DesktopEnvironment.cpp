@@ -72,11 +72,11 @@ void DesktopEnvironment::LoadBackground(unsigned int num) {
 }
 
 void DesktopEnvironment::ChangeDesktop(unsigned short int num) {
-  _ChangeDesktop(num);
+  Desktops::_ChangeDesktop(num);
 }
 
 void DesktopEnvironment::ShowDesktop() {
-  _ShowDesktop();
+	Desktops::_ShowDesktop();
 }
 
 bool DesktopEnvironment::RegisterComponent(Component *component) {
@@ -99,23 +99,23 @@ DesktopEnvironment::~DesktopEnvironment() {
 }
 
 const char* DesktopEnvironment::GetDesktopName(unsigned short int num) {
-  return _GetDesktopName(num);
+  return Desktops::_GetDesktopName(num);
 }
 
 const unsigned DesktopEnvironment::GetRightDesktop(signed short int num) {
-  return _GetRightDesktop(num);
+  return Desktops::_GetRightDesktop(num);
 }
 
 const unsigned DesktopEnvironment::GetLeftDesktop(signed short int num) {
-  return _GetLeftDesktop(num);
+  return Desktops::_GetLeftDesktop(num);
 }
 
 const unsigned DesktopEnvironment::GetAboveDesktop(signed short int num) {
-  return _GetAboveDesktop(num);
+  return Desktops::_GetAboveDesktop(num);
 }
 
 const unsigned DesktopEnvironment::GetBelowDesktop(signed short int num) {
-  return _GetBelowDesktop(num);
+  return Desktops::_GetBelowDesktop(num);
 }
 
 char DesktopEnvironment::HandleDockResizeRequest(XResizeRequestEvent* event) {
@@ -147,23 +147,23 @@ void DesktopEnvironment::DestroyComponents() {
 }
 
 bool DesktopEnvironment::RightDesktop() {
-  return _RightDesktop();
+  return Desktops::_RightDesktop();
 }
 
 bool DesktopEnvironment::LeftDesktop() {
-  return _LeftDesktop();
+  return Desktops::_LeftDesktop();
 }
 
 bool DesktopEnvironment::AboveDesktop() {
-  return _AboveDesktop();
+  return Desktops::_AboveDesktop();
 }
 
 bool DesktopEnvironment::BelowDesktop() {
-  return _BelowDesktop();
+  return Desktops::_BelowDesktop();
 }
 
 void DesktopEnvironment::SetDesktopName(int num, const char* name) {
-  _SetDesktopName(num, name);
+	Desktops::_SetDesktopName(num, name);
 }
 
 void DesktopEnvironment::SetBackground(int id, const char* file, char* const name) {
@@ -175,11 +175,11 @@ TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayCompone
 }
 
 Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {
-  return _CreateDesktopMenu(desktop, mem);
+  return Desktops::_CreateDesktopMenu(desktop, mem);
 }
 
 Menu* DesktopEnvironment::CreateSendtoMenu(int desktop, void* mem) {
-  return _CreateSendtoMenu(desktop, mem);
+  return Desktops::_CreateSendtoMenu(desktop, mem);
 }
 
 char DesktopEnvironment::HandleDockSelectionClear(const XSelectionClearEvent* event) {

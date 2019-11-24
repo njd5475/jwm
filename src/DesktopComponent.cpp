@@ -12,27 +12,27 @@
 bool DesktopComponent::registered = environment->RegisterComponent(new DesktopComponent());
 
 void DesktopComponent::initialize() {
-  _InitializeDesktops();
+	Desktops::_InitializeDesktops();
 }
 
 void DesktopComponent::start() {
-  _StartupDesktops();
+	Desktops::_StartupDesktops();
 }
 
 void DesktopComponent::stop() {
-  _ShutdownDesktops();
+	Desktops::_ShutdownDesktops();
 }
 
 void DesktopComponent::destroy() {
-  _DestroyDesktops();
+	Desktops::_DestroyDesktops();
 }
 
 DesktopComponent::DesktopComponent() {
-  // TODO Auto-generated constructor stub
+	// TODO Auto-generated constructor stub
 
 }
 
 DesktopComponent::~DesktopComponent() {
-  // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 

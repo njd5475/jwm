@@ -10,62 +10,73 @@
 #ifndef DESKTOP_H
 #define DESKTOP_H
 
+#include <vector>
 struct MenuType;
 
-/*@{*/
-#define _InitializeDesktops()  (void)(0)
-void _StartupDesktops(void);
-#define _ShutdownDesktops()    (void)(0)
-void _DestroyDesktops(void);
-/*@}*/
+class Desktops {
+public:
+	Desktops();
+	virtual ~Desktops();
 
-/** Get a relative desktop. */
-unsigned int _GetRightDesktop(unsigned int desktop);
-unsigned int _GetLeftDesktop(unsigned int desktop);
-unsigned int _GetAboveDesktop(unsigned int desktop);
-unsigned int _GetBelowDesktop(unsigned int desktop);
+	/*@{*/
+	static void _InitializeDesktops() {}
+	static void _StartupDesktops(void);
+	static void _ShutdownDesktops() {}
+	static void _DestroyDesktops(void);
+	/*@}*/
 
-/** Switch to a relative desktop. */
-char _RightDesktop(void);
-char _LeftDesktop(void);
-char _AboveDesktop(void);
-char _BelowDesktop(void);
+	/** Get a relative desktop. */
+	static unsigned int _GetRightDesktop(unsigned int desktop);
+	static unsigned int _GetLeftDesktop(unsigned int desktop);
+	static unsigned int _GetAboveDesktop(unsigned int desktop);
+	static unsigned int _GetBelowDesktop(unsigned int desktop);
 
-/** Switch to a specific desktop.
- * @param desktop The desktop to show (0 based).
- */
-void _ChangeDesktop(unsigned int desktop);
+	/** Switch to a relative desktop. */
+	static char _RightDesktop(void);
+	static char _LeftDesktop(void);
+	static char _AboveDesktop(void);
+	static char _BelowDesktop(void);
 
-/** Toggle the "show desktop" state.
- * This will either minimize or restore all items on the current desktop.
- */
-void _ShowDesktop(void);
+	/** Switch to a specific desktop.
+	 * @param desktop The desktop to show (0 based).
+	 */
+	static void _ChangeDesktop(unsigned int desktop);
 
-/** Create a menu containing a list of desktops.
- * @param mask A bit mask of desktops to highlight.
- * @param context Context to pass the action handler.
- * @return A menu containing all the desktops.
- */
-struct Menu *_CreateDesktopMenu(unsigned int mask, void *context);
+	/** Toggle the "show desktop" state.
+	 * This will either minimize or restore all items on the current desktop.
+	 */
+	static void _ShowDesktop(void);
 
-/** Create a menu containing a list of desktops.
- * @param mask Mask to OR onto the action.
- * @param context Context to pass the action handler.
- * @return A menu containing all the desktops.
- */
-struct Menu *_CreateSendtoMenu(unsigned char mask, void *context);
+	/** Create a menu containing a list of desktops.
+	 * @param mask A bit mask of desktops to highlight.
+	 * @param context Context to pass the action handler.
+	 * @return A menu containing all the desktops.
+	 */
+	static struct Menu *_CreateDesktopMenu(unsigned int mask, void *context);
 
-/** Set the name of a desktop.
- * This is called before startup.
- * @param desktop The desktop to name (0 based).
- * @param str The name to assign.
- */
-void _SetDesktopName(unsigned int desktop, const char *str);
+	/** Create a menu containing a list of desktops.
+	 * @param mask Mask to OR onto the action.
+	 * @param context Context to pass the action handler.
+	 * @return A menu containing all the desktops.
+	 */
+	static struct Menu *_CreateSendtoMenu(unsigned char mask, void *context);
 
-/** Get the name of a desktop.
- * @param desktop The desktop (0 based).
- * @return The name of the desktop.
- */
-const char *_GetDesktopName(unsigned int desktop);
+	/** Set the name of a desktop.
+	 * This is called before startup.
+	 * @param desktop The desktop to name (0 based).
+	 * @param str The name to assign.
+	 */
+	static void _SetDesktopName(unsigned int desktop, const char *str);
+
+	/** Get the name of a desktop.
+	 * @param desktop The desktop (0 based).
+	 * @return The name of the desktop.
+	 */
+	static const char *_GetDesktopName(unsigned int desktop);
+
+private:
+	static std::vector<const char*> names;
+	static std::vector<bool> showing;
+};
 
 #endif

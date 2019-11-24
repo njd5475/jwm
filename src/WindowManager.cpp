@@ -119,8 +119,8 @@ void WindowManager::Startup(void) {
 	Battery::StartupBattery();
 	TaskBar::StartupTaskBar();
 	TrayButton::StartupTrayButtons();
-	Hints::StartupHints();
 	DesktopEnvironment::DefaultEnvironment()->StartupComponents();
+	Hints::StartupHints();
 	Tray::StartupTray();
 	Binding::StartupBindings();
 	Places::StartupPlacement();
