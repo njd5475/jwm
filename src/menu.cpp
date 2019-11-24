@@ -764,7 +764,7 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
 
 	if (!item) {
 		if (index == -1 && menu->label) {
-			menu->graphics->drawButton(BUTTON_LABEL, ALIGN_CENTER, FONT_MENU, menu->label, true, false, NULL,
+			menu->graphics->drawButton(BUTTON_LABEL, ALIGN_LEFT, FONT_MENU, menu->label, true, false, NULL,
 			MENU_BORDER_SIZE, MENU_BORDER_SIZE, menu->width - MENU_BORDER_SIZE * 2, menu->itemHeight - 1, 0, 0);
 		}
 		return;
@@ -778,7 +778,7 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
 			fg = COLOR_MENU_ACTIVE_FG;
 		}
 
-		menu->graphics->drawButton(MENU_BORDER_SIZE, ALIGN_CENTER, FONT_MENU, item->name, true, false, item->icon,
+		menu->graphics->drawButton(MENU_BORDER_SIZE, ALIGN_LEFT, FONT_MENU, item->name, true, false, item->icon,
 				MENU_BORDER_SIZE, menu->offsets[index], menu->width - MENU_BORDER_SIZE * 2, menu->itemHeight - 1, 0, 0);
 
 		if (item->submenu) {
