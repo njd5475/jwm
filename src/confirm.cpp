@@ -475,6 +475,7 @@ void DrawButtons(void) {
 	IconNode *icon = NULL;
 	DrawButton(type, alignment, font, text, true, border, drawable, icon, x, y, width, height, xoffset, yoffset);
 
+	type = BUTTON_MENU;
 	if (dialog->buttonState == DBS_CANCEL) {
 		type = BUTTON_MENU_ACTIVE;
 	}
