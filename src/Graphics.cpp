@@ -12,12 +12,11 @@
 
 Graphics::Graphics(const Pixmap p, GC gc, Display *display) :
 		surface(p), context(gc), _display(display) {
-	// TODO Auto-generated constructor stub
 
 }
 
 Graphics::~Graphics() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void Graphics::fillRectangle(int x, int y, int width, int height) {

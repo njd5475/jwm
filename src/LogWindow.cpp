@@ -62,7 +62,7 @@ LogWindow::LogWindow(const LogWindow &p) {
 }
 
 LogWindow::~LogWindow() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void LogWindow::StartupPortals() {

@@ -16,12 +16,11 @@ std::vector<FILE*> Logger::files;
 std::vector<LoggerListener*> Logger::listeners;
 
 Logger::Logger() {
-	// TODO Auto-generated constructor stub
 
 }
 
 Logger::~Logger() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void Logger::AddFile(const char *name) {

@@ -28,11 +28,10 @@ void DesktopComponent::destroy() {
 }
 
 DesktopComponent::DesktopComponent() {
-	// TODO Auto-generated constructor stub
 
 }
 
 DesktopComponent::~DesktopComponent() {
-	// TODO Auto-generated destructor stub
+
 }
 

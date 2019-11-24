@@ -31,10 +31,9 @@ void DockComponent::destroy() {
 }
 
 DockComponent::DockComponent() {
-  // TODO Auto-generated constructor stub
 
 }
 
 DockComponent::~DockComponent() {
-  // TODO Auto-generated destructor stub
+
 }

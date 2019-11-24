@@ -14,6 +14,7 @@
 #include "tray.h"
 #include "settings.h"
 
+//TODO: This really needs to be encapsulated.
 ClientNode *nodes[LAYER_COUNT];
 ClientNode *nodeTail[LAYER_COUNT];
 

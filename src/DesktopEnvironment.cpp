@@ -86,7 +86,6 @@ bool DesktopEnvironment::RegisterComponent(Component *component) {
 
 DesktopEnvironment::DesktopEnvironment() :
     _componentCount(0), _components(0) {
-  // TODO Auto-generated constructor stub
 
 }
 

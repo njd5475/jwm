@@ -20,12 +20,11 @@ void BackgroundComponent::loadBackground(int desktop) {
 }
 
 BackgroundComponent::BackgroundComponent() {
-  // TODO Auto-generated constructor stub
 
 }
 
 BackgroundComponent::~BackgroundComponent() {
-  // TODO Auto-generated destructor stub
+
 }
 
 void BackgroundComponent::initialize() {

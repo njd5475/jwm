@@ -54,12 +54,12 @@
 #include "traybutton.h"
 
 WindowManager::WindowManager() {
-	// TODO Auto-generated constructor stub
+
 
 }
 
 WindowManager::~WindowManager() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void WindowManager::Initialize(void) {
