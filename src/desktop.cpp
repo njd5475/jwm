@@ -132,9 +132,6 @@ char Desktops::_BelowDesktop(void) {
 /** Change to the specified desktop. */
 void Desktops::_ChangeDesktop(unsigned int desktop) {
 
-	ClientNode *np;
-	unsigned int x;
-
 	if (JUNLIKELY(desktop >= settings.desktopCount)) {
 		return;
 	}
@@ -147,8 +144,10 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 	 * Note that we show clients in a separate loop to prevent an issue
 	 * with clients losing focus.
 	 */
-	for (x = 0; x < LAYER_COUNT; x++) {
-		for (np = nodes[x]; np; np = np->getNext()) {
+	for (unsigned int x = 0; x < LAYER_COUNT; x++) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
+		for (int i = 0; i < clients.size(); ++i) {
+			ClientNode *np = clients[i];
 			if (np->getState()->getStatus() & STAT_STICKY) {
 				continue;
 			}
@@ -159,8 +158,10 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 	}
 
 	/* Show clients on the new desktop. */
-	for (x = 0; x < LAYER_COUNT; x++) {
-		for (np = nodes[x]; np; np = np->getNext()) {
+	for (unsigned int x = 0; x < LAYER_COUNT; x++) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
+		for (int i = 0; i < clients.size(); ++i) {
+			ClientNode *np = clients[i];
 			if (np->getState()->getStatus() & STAT_STICKY) {
 				continue;
 			}
@@ -245,7 +246,9 @@ void Desktops::_ShowDesktop(void) {
 
 	Grabs::GrabServer();
 	for (layer = 0; layer < LAYER_COUNT; layer++) {
-		for (np = nodes[layer]; np; np = np->getNext()) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+		for (int i = 0; i < clients.size(); ++i) {
+			np = clients[i];
 			if (np->getState()->getStatus() & STAT_NOLIST) {
 				continue;
 			}
@@ -274,7 +277,9 @@ void Desktops::_ShowDesktop(void) {
 		char first = 1;
 		JXSync(display, False);
 		for (layer = 0; layer < LAYER_COUNT; layer++) {
-			for (np = nodes[layer]; np; np = np->getNext()) {
+			std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+			for(int i = 0; i < clients.size(); ++i) {
+				np = clients[i];
 				if (np->getState()->getStatus() & STAT_NOLIST) {
 					continue;
 				}

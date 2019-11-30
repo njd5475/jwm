@@ -25,11 +25,6 @@
 #include "binding.h"
 #include "DesktopEnvironment.h"
 
-typedef struct {
-  int left, right;
-  int top, bottom;
-  char valid;
-} RectangleType;
 
 static char shouldStopMove;
 static char atLeft;
@@ -48,10 +43,6 @@ static void DoSnap(ClientNode *np);
 static void DoSnapScreen(ClientNode *np);
 static void DoSnapBorder(ClientNode *np);
 static char ShouldSnap(ClientNode *np);
-static void GetClientRectangle(ClientNode *np, RectangleType *r);
-
-static char CheckOverlapTopBottom(const RectangleType *a, const RectangleType *b);
-static char CheckOverlapLeftRight(const RectangleType *a, const RectangleType *b);
 
 static char CheckLeftValid(const RectangleType *client, const RectangleType *other, const RectangleType *left);
 static char CheckRightValid(const RectangleType *client, const RectangleType *other, const RectangleType *right);
@@ -497,117 +488,6 @@ void ClientNode::DoSnapScreen() {
 
 }
 
-/** Snap to window borders. */
-void ClientNode::DoSnapBorder() {
-
-  ClientNode *tp;
-  const Tray *tray;
-  RectangleType client, other;
-  RectangleType left = { 0 };
-  RectangleType right = { 0 };
-  RectangleType top = { 0 };
-  RectangleType bottom = { 0 };
-  int layer;
-  int north, south, east, west;
-
-  GetClientRectangle(this, &client);
-
-  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
-
-  other.valid = 1;
-
-  /* Work from the bottom of the window stack to the top. */
-  for (layer = 0; layer < LAYER_COUNT; layer++) {
-
-    /* Check tray windows. */
-	std::vector<BoundingBox> boxes = Tray::GetVisibleBounds();
-	std::vector<BoundingBox>::iterator it;
-	for(it = boxes.begin(); it != boxes.end(); ++it) {
-	  BoundingBox box = *it;
-
-      other.left = box.x;
-      other.right = box.x + box.width;
-      other.top = box.y;
-      other.bottom = box.y + box.height;
-
-      left.valid = CheckLeftValid(&client, &other, &left);
-      right.valid = CheckRightValid(&client, &other, &right);
-      top.valid = CheckTopValid(&client, &other, &top);
-      bottom.valid = CheckBottomValid(&client, &other, &bottom);
-
-      if (CheckOverlapTopBottom(&client, &other)) {
-        if (abs(client.left - other.right) <= settings.snapDistance) {
-          left = other;
-        }
-        if (abs(client.right - other.left) <= settings.snapDistance) {
-          right = other;
-        }
-      }
-      if (CheckOverlapLeftRight(&client, &other)) {
-        if (abs(client.top - other.bottom) <= settings.snapDistance) {
-          top = other;
-        }
-        if (abs(client.bottom - other.top) <= settings.snapDistance) {
-          bottom = other;
-        }
-      }
-
-    }
-
-    /* Check client windows. */
-    for (tp = nodeTail[layer]; tp; tp = tp->prev) {
-
-      if (tp == this || !ShouldSnap(tp)) {
-        continue;
-      }
-
-      GetClientRectangle(tp, &other);
-
-      /* Check if this border invalidates any previous value. */
-      left.valid = CheckLeftValid(&client, &other, &left);
-      right.valid = CheckRightValid(&client, &other, &right);
-      top.valid = CheckTopValid(&client, &other, &top);
-      bottom.valid = CheckBottomValid(&client, &other, &bottom);
-
-      /* Compute the new snap values. */
-      if (CheckOverlapTopBottom(&client, &other)) {
-        if (abs(client.left - other.right) <= settings.snapDistance) {
-          left = other;
-        }
-        if (abs(client.right - other.left) <= settings.snapDistance) {
-          right = other;
-        }
-      }
-      if (CheckOverlapLeftRight(&client, &other)) {
-        if (abs(client.top - other.bottom) <= settings.snapDistance) {
-          top = other;
-        }
-        if (abs(client.bottom - other.top) <= settings.snapDistance) {
-          bottom = other;
-        }
-      }
-
-    }
-
-  }
-
-  if (right.valid) {
-    this->x = right.left - this->getWidth() - west;
-  }
-  if (left.valid) {
-    this->x = left.right + east;
-  }
-  if (bottom.valid) {
-    this->y = bottom.top - south;
-    if (!(this->getState()->getStatus() & STAT_SHADED)) {
-      this->y -= this->getHeight();
-    }
-  }
-  if (top.valid) {
-    this->y = top.bottom + north;
-  }
-
-}
 
 /** Determine if we should snap to the specified client. */
 char ShouldSnap(ClientNode *np) {

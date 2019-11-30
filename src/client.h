@@ -16,7 +16,6 @@
 
 struct TimeType;
 
-
 #include "ClientState.h"
 
 /** Colormap window linked list. */
@@ -94,9 +93,6 @@ private:
 	/** Callback to stop move/resize. */
 	void (*controller)(int wasDestroyed);
 
-	struct ClientNode *prev; /**< The previous client in this layer. */
-	struct ClientNode *next; /**< The next client in this layer. */
-
 protected:
 	void saveBounds();
 public:
@@ -124,6 +120,11 @@ public:
 	/** The number of clients (maintained in client.c). */
 	static unsigned int clientCount;
 
+	void DrawBorder() {
+		if (!(getState()->getStatus() & (STAT_HIDDEN | STAT_MINIMIZED))) {
+			Border::DrawBorder(this);
+		}
+	}
 	Window getOwner() const {
 		return this->owner;
 	}
@@ -314,6 +315,9 @@ public:
 	void setMapped() {
 		this->state.setMapped();
 	}
+	bool isMapped() {
+		return this->state.getStatus() & STAT_MAPPED;
+	}
 	void setShaded() {
 		this->state.setShaded();
 	}
@@ -355,15 +359,6 @@ public:
 		return &this->state;
 	}
 
-
-	ClientNode *getNext() const {
-		return this->next;
-	}
-
-	ClientNode *getPrev() const {
-		return this->prev;
-	}
-
 	Window getWindow() const {
 		return this->window;
 	}
@@ -399,6 +394,9 @@ public:
 
 	void setLayer(unsigned int layer) {
 		this->state.setLayer(layer);
+	}
+	unsigned int getLayer() const {
+		return this->state.getLayer();
 	}
 	void SetOpacity(unsigned int opacity, char force);
 	void _UpdateState();
@@ -470,7 +468,7 @@ public:
 	static void InitializeClients();
 	static void StartupClients(void);
 	static void ShutdownClients(void);
-    static void DestroyClients();
+	static void DestroyClients();
 	/*@}*/
 
 	/** Add a window to management.
@@ -536,9 +534,6 @@ public:
 	 * @param np The client to focus.
 	 */
 	void FocusClient();
-
-	/** Set the keyboard focus back to the active client. */
-	static void RefocusClient(void);
 
 	/** Tell a client to exit.
 	 * @param np The client to delete.
@@ -617,6 +612,14 @@ public:
 	 */
 	void SendConfigureEvent();
 
+
+	void MinimizeTransients(char lower);
+
+	//TODO: move all public static methods below
+public:
+	/** Set the keyboard focus back to the active client. */
+	static void RefocusClient(void);
+
 	/** Place a client on the screen.
 	 * @param np The client to place.
 	 * @param alreadyMapped 1 if already mapped, 0 if unmapped.
@@ -642,7 +645,6 @@ private:
 
 	static void LoadFocus(void);
 	void RestackTransients();
-	void MinimizeTransients(char lower);
 	void RestoreTransients(char raise);
 	static void KillClientHandler(ClientNode *np);
 	void UnmapClient();

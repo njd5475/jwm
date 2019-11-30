@@ -14,6 +14,13 @@
 #include "icon.h"
 #include "Component.h"
 
+
+typedef struct {
+  int left, right;
+  int top, bottom;
+  char valid;
+} RectangleType;
+
 struct ClientNode;
 struct ClientState;
 

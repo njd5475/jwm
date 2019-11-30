@@ -117,15 +117,8 @@ void Binding::StartupBindings(void) {
 
 /** Shutdown bindings. */
 void Binding::ShutdownBindings(void) {
-	ClientNode *np;
-	unsigned int layer;
-
 	/* Ungrab keys on client windows. */
-	for (layer = 0; layer < LAYER_COUNT; layer++) {
-		for (np = nodes[layer]; np; np = np->getNext()) {
-			JXUngrabKey(display, AnyKey, AnyModifier, np->getWindow());
-		}
-	}
+	ClientList::UngrabKeys();
 
 	/* Ungrab keys on trays, only really needed if we are restarting. */
 	Tray::UngrabKeys(display, AnyKey, AnyModifier);

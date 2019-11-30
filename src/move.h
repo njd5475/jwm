@@ -10,7 +10,8 @@
 #ifndef MOVE_H
 #define MOVE_H
 
-struct ClientNode;
+#include "border.h"
+class ClientNode;
 
 /** Move a client window.
  * @param np The client to move.
@@ -25,6 +26,22 @@ char MoveClient(struct ClientNode *np, int startx, int starty);
  * @return 1 if the client moved, 0 otherwise.
  */
 char MoveClientKeyboard(struct ClientNode *np);
+
+void GetClientRectangle(ClientNode *np, RectangleType *r);
+
+char CheckLeftValid(const RectangleType *client, const RectangleType *other, const RectangleType *left);
+
+char CheckRightValid(const RectangleType *client, const RectangleType *other, const RectangleType *right);
+
+char CheckTopValid(const RectangleType *client, const RectangleType *other, const RectangleType *top);
+
+char CheckBottomValid(const RectangleType *client, const RectangleType *other, const RectangleType *bottom);
+
+char CheckOverlapTopBottom(const RectangleType *a, const RectangleType *b);
+
+char CheckOverlapLeftRight(const RectangleType *a, const RectangleType *b);
+
+char ShouldSnap(ClientNode *np);
 
 #endif /* MOVE_H */
 

@@ -1094,16 +1094,7 @@ void Border::DrawIconButton(const ClientNode *np, int x, int y, Pixmap canvas,
  * clients to their assigned desktops.
  */
 void Border::ExposeCurrentDesktop(void) {
-	ClientNode *np;
-	int layer;
-
-	for (layer = 0; layer < LAYER_COUNT; layer++) {
-		for (np = nodes[layer]; np; np = np->getNext()) {
-			if (!(np->getState()->getStatus() & (STAT_HIDDEN | STAT_MINIMIZED))) {
-				DrawBorder(np);
-			}
-		}
-	}
+	ClientList::DrawBorders();
 }
 
 /** Get the height of a window title bar. */

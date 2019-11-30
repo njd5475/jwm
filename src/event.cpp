@@ -566,20 +566,20 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state, i
 		Tray::ShowAllTrays();
 		break;
 	case NEXT:
-		StartWindowWalk();
+		ClientList::StartWindowWalk();
 		TaskBar::FocusNext();
 		break;
 	case NEXTSTACK:
-		StartWindowStackWalk();
-		WalkWindowStack(1);
+		ClientList::StartWindowStackWalk();
+		ClientList::WalkWindowStack(1);
 		break;
 	case PREV:
-		StartWindowWalk();
+		ClientList::StartWindowWalk();
 		TaskBar::FocusPrevious();
 		break;
 	case PREVSTACK:
-		StartWindowStackWalk();
-		WalkWindowStack(0);
+		ClientList::StartWindowStackWalk();
+		ClientList::WalkWindowStack(0);
 		break;
 	case CLOSE:
 		if (np) {
@@ -766,7 +766,7 @@ void _HandleKeyPress(const XKeyEvent *event) {
 void _HandleKeyRelease(const XKeyEvent *event) {
 	const ActionType key = Binding::GetKey(MC_NONE, event->state, event->keycode);
 	if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV && key.action != PREVSTACK) {
-		StopWindowWalk();
+		ClientList::StopWindowWalk();
 	}
 }
 

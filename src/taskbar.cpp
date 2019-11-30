@@ -149,7 +149,9 @@ char TaskBar::IsGroupOnTop(const TaskEntry *entry) {
 	for (layer = FIRST_LAYER; layer <= LAST_LAYER; layer++) {
 		ClientNode *np;
 		char foundOther = 0;
-		for (np = nodes[layer]; np; np = np->getNext()) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+		for(int i = 0; i < clients.size(); ++i) {
+		  np = clients[i];
 			char found = 0;
 			if (!IsClientOnCurrentDesktop(np)) {
 				continue;
@@ -188,15 +190,17 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
 					int layer;
 					if (cp->client->getState()->getStatus() & STAT_MINIMIZED) {
 						continue;
-					} else if (!ShouldFocus(cp->client, 0)) {
+          } else if (!ClientList::ShouldFocus(cp->client, 0)) {
 						continue;
 					}
 					for (layer = LAST_LAYER; layer >= FIRST_LAYER; layer--) {
 						ClientNode *np;
-						for (np = nodes[layer]; np; np = np->getNext()) {
+						std::vector<ClientNode*> inLayer = ClientList::GetLayerList(layer);
+						for(int i = 0; i < inLayer.size(); ++i) {
+						  np = inLayer[i];
 							if (np->getState()->getStatus() & STAT_MINIMIZED) {
 								continue;
-							} else if (!ShouldFocus(np, 0)) {
+							} else if (!ClientList::ShouldFocus(np, 0)) {
 								continue;
 							}
 							if (np == cp->client) {
@@ -230,7 +234,7 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
 					const int target = (currentDesktop + i + 1) % settings.desktopCount;
 					for (cp = entry->clients; cp; cp = cp->next) {
 						ClientNode *np = cp->client;
-						if (!ShouldFocus(np, 0)) {
+						if (!ClientList::ShouldFocus(np, 0)) {
 							continue;
 						} else if (np->getState()->getStatus() & STAT_STICKY) {
 							continue;
@@ -282,7 +286,7 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
 void TaskBar::MinimizeGroup(const TaskEntry *tp) {
 	ClientEntry *cp;
 	for (cp = tp->clients; cp; cp = cp->next) {
-		if (ShouldFocus(cp->client, 1)) {
+		if (ClientList::ShouldFocus(cp->client, 1)) {
 			cp->client->MinimizeClient(0);
 		}
 	}
@@ -321,9 +325,11 @@ void TaskBar::FocusGroup(const TaskEntry *tp) {
 	if (shouldSwitch) {
 		for (i = 0; i < LAYER_COUNT; i++) {
 			ClientNode *np;
-			for (np = nodes[i]; np; np = np->getNext()) {
+			std::vector<ClientNode*> inLayer = ClientList::GetLayerList(i);
+			for (int x = 0; x < inLayer.size(); ++x) {
+			  np = inLayer[x];
 				if (np->getClassName() && !strcmp(np->getClassName(), className)) {
-					if (ShouldFocus(np, 0)) {
+					if (ClientList::ShouldFocus(np, 0)) {
 						if (!(np->getState()->getStatus() & STAT_STICKY)) {
 							DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(np->getState()->getDesktop());
 						}
@@ -339,8 +345,10 @@ void TaskBar::FocusGroup(const TaskEntry *tp) {
 	restoreCount = 0;
 	for (i = 0; i < LAYER_COUNT; i++) {
 		ClientNode *np;
-		for (np = nodes[i]; np; np = np->getNext()) {
-			if (!ShouldFocus(np, 1)) {
+    std::vector<ClientNode*> inLayer = ClientList::GetLayerList(i);
+    for (int x = 0; x < inLayer.size(); ++x) {
+      np = inLayer[x];
+			if (!ClientList::ShouldFocus(np, 1)) {
 				continue;
 			}
 			if (np->getClassName() && !strcmp(np->getClassName(), className)) {
@@ -418,7 +426,7 @@ void TaskBar::ShowClientList(TaskBar *bar, TaskEntry *tp) {
 
 		/* Load the clients into the menu. */
 		for (cp = tp->clients; cp; cp = cp->next) {
-			if (!ShouldFocus(cp->client, 0)) {
+			if (!ClientList::ShouldFocus(cp->client, 0)) {
 				continue;
 			}
 			item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
@@ -485,7 +493,7 @@ void TaskBar::RunTaskBarCommand(MenuAction *action, unsigned button) {
 	if (action->type & MA_GROUP_MASK) {
 		TaskEntry *tp = (TaskEntry*) action->context;
 		for (cp = tp->clients; cp; cp = cp->next) {
-			if (!ShouldFocus(cp->client, 0)) {
+			if (!ClientList::ShouldFocus(cp->client, 0)) {
 				continue;
 			}
 			switch (action->type & ~MA_GROUP_MASK) {
@@ -698,7 +706,7 @@ void TaskBar::Render() {
 		unsigned clientCount = 0;
 		type = BUTTON_TASK;
 		for (cp = tp->clients; cp; cp = cp->next) {
-			if (ShouldFocus(cp->client, 0)) {
+			if (ClientList::ShouldFocus(cp->client, 0)) {
 				const char flash = (cp->client->getState()->getStatus() & STAT_FLASH) != 0;
 				const char active = (cp->client->getState()->getStatus() & STAT_ACTIVE)
 						&& IsClientOnCurrentDesktop(cp->client);
@@ -757,7 +765,7 @@ void TaskBar::FocusNext(void) {
 		ClientEntry *cp;
 		for (cp = tp->clients; cp; cp = cp->next) {
 			if (cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
-				if (ShouldFocus(cp->client, 1)) {
+				if (ClientList::ShouldFocus(cp->client, 1)) {
 					if (cp->client->getState()->getStatus() & STAT_ACTIVE) {
 						cp = cp->next;
 						goto ClientFound;
@@ -798,7 +806,7 @@ void TaskBar::FocusPrevious(void) {
 		ClientEntry *cp;
 		for (cp = tp->clients; cp; cp = cp->next) {
 			if (cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
-				if (ShouldFocus(cp->client, 1)) {
+				if (ClientList::ShouldFocus(cp->client, 1)) {
 					if (cp->client->getState()->getStatus() & STAT_ACTIVE) {
 						cp = cp->next;
 						goto ClientFound;
@@ -835,7 +843,7 @@ void TaskBar::FocusPrevious(void) {
 char TaskBar::ShouldShowEntry(const TaskEntry *tp) {
 	const ClientEntry *cp;
 	for (cp = tp->clients; cp; cp = cp->next) {
-		if (ShouldFocus(cp->client, 0)) {
+		if (ClientList::ShouldFocus(cp->client, 0)) {
 			return 1;
 		}
 	}
@@ -847,7 +855,7 @@ char TaskBar::ShouldFocusEntry(const TaskEntry *tp) {
 	const ClientEntry *cp;
 	for (cp = tp->clients; cp; cp = cp->next) {
 		if (cp->client->getState()->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
-			if (ShouldFocus(cp->client, 1)) {
+			if (ClientList::ShouldFocus(cp->client, 1)) {
 				return 1;
 			}
 		}
@@ -905,7 +913,7 @@ void TaskBar::SetTaskBarLabeled(TrayComponent *cp, char labeled) {
 void TaskBar::UpdateNetClientList(void) {
 	TaskEntry *tp;
 	ClientNode *client;
-	Window *windows;
+	__uint32_t *windows;
 	unsigned int count;
 	int layer;
 
@@ -913,7 +921,7 @@ void TaskBar::UpdateNetClientList(void) {
 	if (ClientNode::clientCount == 0) {
 		windows = NULL;
 	} else {
-		windows = new Window[ClientNode::clientCount];
+		windows = new __uint32_t[ClientNode::clientCount];
 	}
 
 	/* Set _NET_CLIENT_LIST */
@@ -921,7 +929,7 @@ void TaskBar::UpdateNetClientList(void) {
 	for (tp = taskEntries; tp; tp = tp->next) {
 		ClientEntry *cp;
 		for (cp = tp->clients; cp; cp = cp->next) {
-			windows[count] = cp->client->getWindow();
+			windows[count] = (__uint32_t)cp->client->getWindow(); // need to cast to 32 bits
 			count += 1;
 		}
 	}
@@ -932,7 +940,9 @@ void TaskBar::UpdateNetClientList(void) {
 	/* Set _NET_CLIENT_LIST_STACKING */
 	count = 0;
 	for (layer = FIRST_LAYER; layer <= LAST_LAYER; layer++) {
-		for (client = nodes[layer]; client; client = client->getNext()) {
+    std::vector<ClientNode*> inLayer = ClientList::GetLayerList(layer);
+    for (int x = 0; x < inLayer.size(); ++x) {
+      client = inLayer[x];
 			windows[count] = client->getWindow();
 			count += 1;
 		}

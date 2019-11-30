@@ -27,6 +27,7 @@
 #include "hint.h"
 #include "misc.h"
 #include "DesktopEnvironment.h"
+#include "move.h"
 
 #include <X11/Xlibint.h>
 
@@ -47,10 +48,7 @@ void ClientNode::StartupClients(void) {
 	currentDesktop = 0;
 
 	/* Clear out the client lists. */
-	for (x = 0; x < LAYER_COUNT; x++) {
-		nodes[x] = NULL;
-		nodeTail[x] = NULL;
-	}
+	ClientList::Initialize();
 
 	/* Query client windows. */
 	JXQueryTree(display, rootWindow, &rootReturn, &parentReturn, &childrenReturn, &childrenCount);
@@ -89,8 +87,6 @@ void ClientNode::PlaceClient(ClientNode *np, char alreadyMapped) {
 
 	BoundingBox box;
 	const ScreenType *sp;
-
-	Assert(np);
 
 	if (alreadyMapped || (np->getState()->getStatus() & STAT_POSITION)
 			|| (!(np->getState()->getStatus() & STAT_PIGNORE) && (np->getSizeFlags() & (PPosition | USPosition)))) {
@@ -174,13 +170,7 @@ void ClientNode::CascadeClient(const BoundingBox *box) {
 /** Release client windows. */
 void ClientNode::ShutdownClients(void) {
 
-	int x;
-
-	for (x = 0; x < LAYER_COUNT; x++) {
-		while (nodeTail[x]) {
-			nodeTail[x]->RemoveClient();
-		}
-	}
+	ClientList::Shutdown();
 
 	Strut *sp;
 
@@ -273,14 +263,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 	}
 
 	/* We now know the layer, so insert */
-	this->prev = NULL;
-	this->next = nodes[this->state.getLayer()];
-	if (this->next) {
-		this->next->prev = this;
-	} else {
-		nodeTail[this->state.getLayer()] = this;
-	}
-	nodes[this->state.getLayer()] = this;
+	ClientList::InsertAt(this);
 
 	Cursors::SetDefaultCursor(this->window);
 
@@ -375,7 +358,6 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 
 /** Minimize a client window and all of its transients. */
 void ClientNode::MinimizeClient(char lower) {
-	Assert(np);
 	this->MinimizeTransients(lower);
 	_RequireRestack();
 	_RequireTaskUpdate();
@@ -383,11 +365,6 @@ void ClientNode::MinimizeClient(char lower) {
 
 /** Minimize all transients as well as the specified client. */
 void ClientNode::MinimizeTransients(char lower) {
-
-	ClientNode *tp;
-	int x;
-
-	Assert(np);
 
 	/* Unmap the window and update its state. */
 	if (this->state.getStatus() & (STAT_MAPPED | STAT_SHADED)) {
@@ -399,39 +376,7 @@ void ClientNode::MinimizeTransients(char lower) {
 	this->state.setMinimized();
 
 	/* Minimize transient windows. */
-	for (x = 0; x < LAYER_COUNT; x++) {
-		tp = nodes[x];
-		while (tp) {
-			ClientNode *next = tp->next;
-			if (tp->owner == this->window && (tp->state.getStatus() & (STAT_MAPPED | STAT_SHADED))
-					&& !(tp->state.getStatus() & STAT_MINIMIZED)) {
-				tp->MinimizeTransients(lower);
-			}
-			tp = next;
-		}
-	}
-
-	/* Focus the next window. */
-	if (this->state.getStatus() & STAT_ACTIVE) {
-		FocusNextStacked(this);
-	}
-
-	if (lower) {
-		/* Move this client to the end of the layer list. */
-		if (nodeTail[this->state.getLayer()] != this) {
-			if (this->prev) {
-				this->prev->next = this->next;
-			} else {
-				nodes[this->state.getLayer()] = this->next;
-			}
-			this->next->prev = this->prev;
-			tp = nodeTail[this->state.getLayer()];
-			nodeTail[this->state.getLayer()] = this;
-			tp->next = this;
-			this->prev = tp;
-			this->next = NULL;
-		}
-	}
+	ClientList::MinimizeTransientWindows(this, lower);
 
 	Hints::WriteState(this);
 
@@ -494,9 +439,6 @@ void ClientNode::GetGravityDelta(int gravity, int *x, int *y) {
 
 /** Shade a client. */
 void ClientNode::ShadeClient() {
-
-	Assert(np);
-
 	if ((this->state.getStatus() & (STAT_SHADED | STAT_FULLSCREEN)) || !(this->state.getBorder() & BORDER_SHADE)) {
 		return;
 	}
@@ -512,9 +454,6 @@ void ClientNode::ShadeClient() {
 
 /** Unshade a client. */
 void ClientNode::UnshadeClient() {
-
-	Assert(np);
-
 	if (!(this->state.getStatus() & STAT_SHADED)) {
 		return;
 	}
@@ -534,13 +473,10 @@ void ClientNode::UnshadeClient() {
 
 /** Set a client's state to withdrawn. */
 void ClientNode::SetClientWithdrawn() {
-
-	Assert(np);
-
 	if (activeClient == this) {
 		activeClient = NULL;
 		this->state.setNotActive();
-		FocusNextStacked(this);
+		ClientList::FocusNextStacked(this);
 	}
 
 	if (this->state.getStatus() & STAT_MAPPED) {
@@ -594,12 +530,14 @@ void ClientNode::RestoreTransients(char raise) {
 	this->state.setNoSDesktop();
 
 	/* Restore transient windows. */
-	for (x = 0; x < LAYER_COUNT; x++) {
-		for (tp = nodes[x]; tp; tp = tp->next) {
-			if (tp->owner == this->window && (tp->state.getStatus() & STAT_MINIMIZED)) {
-				tp->RestoreTransients(raise);
-			}
+	//ClientList::RestoreTransientWindows(this->window, raise);
+	std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
+	for (int i = 0; i < children.size(); ++i) {
+		ClientNode *tp = children[i];
+		if (tp->state.getStatus() & STAT_MINIMIZED) {
+			tp->RestoreTransients(raise);
 		}
+
 	}
 
 	if (raise) {
@@ -626,18 +564,7 @@ void ClientNode::_UpdateState() {
 	const char active = (this->getState()->getStatus() & STAT_ACTIVE) ? 1 : 0;
 
 	/* Remove from the layer list. */
-	if (this->getPrev() != NULL) {
-		this->prev->next = this->getNext();
-	} else {
-		Assert(nodes[np->getState()->getLayer()] == np);
-		nodes[this->getState()->getLayer()] = this->getNext();
-	}
-	if (this->getNext() != NULL) {
-		this->getNext()->prev = this->getPrev();
-	} else {
-		Assert(nodeTail[np->getState()->getLayer()] == np);
-		nodeTail[this->getState()->getLayer()] = this->getPrev();
-	}
+	ClientList::RemoveFrom(this);
 
 	/* Read the state (and new layer). */
 	if (this->getState()->getStatus() & STAT_URGENT) {
@@ -654,14 +581,7 @@ void ClientNode::_UpdateState() {
 	}
 
 	/* Add to the layer list. */
-	this->prev = NULL;
-	this->next = nodes[this->getState()->getLayer()];
-	if (this->getNext() == NULL) {
-		nodeTail[this->getState()->getLayer()] = this;
-	} else {
-		this->getNext()->prev = this;
-	}
-	nodes[this->getState()->getLayer()] = this;
+	ClientList::InsertAt(this);
 
 	if (active) {
 		this->FocusClient();
@@ -693,99 +613,67 @@ void ClientNode::UpdateWindowState(char alreadyMapped) {
 
 /** Set the client layer. This will affect transients. */
 void ClientNode::SetClientLayer(unsigned int layer) {
-
-	ClientNode *tp, *next;
-
-	Assert(np);
 	Assert(layer <= LAST_LAYER);
 
 	if (this->state.getLayer() != layer) {
-		int x;
+		ClientNode *tp;
+		std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
 
-		/* Loop through all clients so we get transients. */
-		for (x = FIRST_LAYER; x <= LAST_LAYER; x++) {
-			tp = nodes[x];
-			while (tp) {
-				next = tp->next;
-				if (tp == this || tp->owner == this->window) {
-
-					/* Remove from the old node list */
-					if (next) {
-						next->prev = tp->prev;
-					} else {
-						nodeTail[tp->state.getLayer()] = tp->prev;
-					}
-					if (tp->prev) {
-						tp->prev->next = next;
-					} else {
-						nodes[tp->state.getLayer()] = next;
-					}
-
-					/* Insert into the new node list */
-					tp->prev = NULL;
-					tp->next = nodes[layer];
-					if (nodes[layer]) {
-						nodes[layer]->prev = tp;
-					} else {
-						nodeTail[layer] = tp;
-					}
-					nodes[layer] = tp;
-
-					/* Set the new layer */
-					tp->state.setLayer(layer);
-					Hints::WriteState(tp);
-
-				}
-				tp = next;
+		for (int i = 0; i < children.size(); ++i) {
+			tp = children[i];
+			if (tp == this || tp->owner == this->window) {
+				ClientList::ChangeLayer(tp, layer);
 			}
 		}
 
+		ClientList::ChangeLayer(this, layer);
 		_RequireRestack();
-
 	}
-
 }
 
 /** Set a client's sticky.getStatus(). This will update transients. */
 void ClientNode::SetClientSticky(char isSticky) {
 
-	ClientNode *tp;
-	int x;
-	char old;
+	bool old = false;
 
 	/* Get the old sticky.getStatus(). */
 	if (this->state.getStatus() & STAT_STICKY) {
-		old = 1;
-	} else {
-		old = 0;
+		old = true;
 	}
 
 	if (isSticky && !old) {
 
 		/* Change from non-sticky to sticky. */
+		std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
 
-		for (x = 0; x < LAYER_COUNT; x++) {
-			for (tp = nodes[x]; tp; tp = tp->next) {
-				if (tp == this || tp->owner == this->window) {
-					tp->state.setSticky();
-					Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, ~0UL);
-					Hints::WriteState(tp);
-				}
-			}
+		ClientNode *tp;
+		for (int i = 0; i < children.size(); ++i) {
+			tp = children[i];
+			tp->state.setSticky();
+			Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, ~0UL);
+			Hints::WriteState(tp);
 		}
+
+		this->state.setSticky();
+		Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, ~0UL);
+		Hints::WriteState(this);
 
 	} else if (!isSticky && old) {
 
 		/* Change from sticky to non-sticky. */
+		std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
 
-		for (x = 0; x < LAYER_COUNT; x++) {
-			for (tp = nodes[x]; tp; tp = tp->next) {
-				if (tp == this || tp->owner == this->window) {
-					tp->state.setNoSticky();
-					Hints::WriteState(tp);
-				}
+		ClientNode *tp;
+		for (int i = 0; i < children.size(); ++i) {
+			tp = children[i];
+			if (tp == this || tp->owner == this->window) {
+				tp->state.setNoSticky();
+				Hints::WriteState(tp);
 			}
 		}
+
+		this->state.setNoSticky();
+		Hints::WriteState(this);
 
 		/* Since this client is no longer sticky, we need to assign
 		 * a desktop. Here we use the current desktop.
@@ -800,31 +688,26 @@ void ClientNode::SetClientSticky(char isSticky) {
 /** Set a client's desktop. This will update transients. */
 void ClientNode::SetClientDesktop(unsigned int desktop) {
 
-	ClientNode *tp;
-
-	Assert(np);
-
 	if (JUNLIKELY(desktop >= settings.desktopCount)) {
 		return;
 	}
 
 	if (!(this->state.getStatus() & STAT_STICKY)) {
-		int x;
-		for (x = 0; x < LAYER_COUNT; x++) {
-			for (tp = nodes[x]; tp; tp = tp->next) {
-				if (tp == this || tp->owner == this->window) {
+		ClientNode *tp;
 
-					tp->state.setDesktop(desktop);
+		std::vector<ClientNode*> all = ClientList::GetSelfAndChildren(this);
+		for (int i = 0; i < all.size(); ++i) {
+			tp = all[i];
+			tp->state.setDesktop(desktop);
 
-					if (desktop == currentDesktop) {
-						tp->ShowClient();
-					} else {
-						tp->HideClient();
-					}
-
-					Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, tp->state.getDesktop());
-				}
+			if (desktop == currentDesktop) {
+				tp->ShowClient();
+			} else {
+				tp->HideClient();
 			}
+
+			Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, tp->state.getDesktop());
+
 		}
 		_RequirePagerUpdate();
 		_RequireTaskUpdate();
@@ -923,8 +806,6 @@ void ClientNode::MaximizeClientDefault() {
 
 	MaxFlags flags = MAX_NONE;
 
-	Assert(np);
-
 	if (this->state.getMaxFlags() == MAX_NONE) {
 		if (this->state.getBorder() & BORDER_MAX_H) {
 			flags |= MAX_HORIZ;
@@ -939,7 +820,6 @@ void ClientNode::MaximizeClientDefault() {
 }
 char ClientNode::TileClient(const BoundingBox *box) {
 
-	const ClientNode *tp;
 	int layer;
 	int north, south, east, west;
 	int i, j;
@@ -951,19 +831,13 @@ char ClientNode::TileClient(const BoundingBox *box) {
 
 	/* Count insertion points, including bounding box edges. */
 	count = 2;
-	for (layer = this->getState()->getLayer(); layer < LAYER_COUNT; layer++) {
-		for (tp = nodes[layer]; tp; tp = tp->getNext()) {
-			if (!IsClientOnCurrentDesktop(tp)) {
-				continue;
-			}
-			if (!(tp->getStatus() & STAT_MAPPED)) {
-				continue;
-			}
-			if (tp == this) {
-				continue;
-			}
-			count += 2;
+	std::vector<ClientNode*> insertionPoints = ClientList::GetMappedDesktopClients();
+	for (int i = 0; i < insertionPoints.size(); ++i) {
+		ClientNode *ip = insertionPoints[i];
+		if (ip == this) {
+			continue;
 		}
+		count += 2;
 	}
 
 	/* Allocate space for the points. */
@@ -974,24 +848,19 @@ char ClientNode::TileClient(const BoundingBox *box) {
 	xs[0] = box->x;
 	ys[0] = box->y;
 	count = 1;
-	for (layer = this->getState()->getLayer(); layer < LAYER_COUNT; layer++) {
-		for (tp = nodes[layer]; tp; tp = tp->getNext()) {
-			if (!IsClientOnCurrentDesktop(tp)) {
-				continue;
-			}
-			if (!(tp->getStatus() & STAT_MAPPED)) {
-				continue;
-			}
-			if (tp == this) {
-				continue;
-			}
-			Border::GetBorderSize(tp->getState(), &north, &south, &east, &west);
-			xs[count + 0] = tp->getX() - west;
-			xs[count + 1] = tp->getX() + tp->getWidth() + east;
-			ys[count + 0] = tp->getY() - north;
-			ys[count + 1] = tp->getY() + tp->getHeight() + south;
-			count += 2;
+
+  const ClientNode *tp = NULL;
+	for (int i = 0; i < insertionPoints.size(); ++i) {
+		ClientNode *tp = insertionPoints[i];
+		if (tp == this) {
+			continue;
 		}
+		Border::GetBorderSize(tp->getState(), &north, &south, &east, &west);
+		xs[count + 0] = tp->getX() - west;
+		xs[count + 1] = tp->getX() + tp->getWidth() + east;
+		ys[count + 0] = tp->getY() - north;
+		ys[count + 1] = tp->getY() + tp->getHeight() + south;
+		count += 2;
 	}
 
 	/* Try placing at lower right edge of box, too. */
@@ -1146,8 +1015,6 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
 	int north, south, east, west;
 	BoundingBox box;
 	const ScreenType *sp;
-
-	Assert(np);
 
 	/* Make sure there's something to do. */
 	if (!fullScreen == !(this->state.getStatus() & STAT_FULLSCREEN)) {
@@ -1546,7 +1413,6 @@ void ClientNode::RefocusClient(void) {
 
 /** Send a delete message to a client. */
 void ClientNode::DeleteClient() {
-	Assert(np);
 	Hints::ReadWMProtocols(this->window, &this->state);
 	if (this->state.getStatus() & STAT_DELETE) {
 		SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
@@ -1558,7 +1424,7 @@ void ClientNode::DeleteClient() {
 /** Callback to kill a client after a confirm dialog. */
 void ClientNode::KillClientHandler(ClientNode *np) {
 	if (np == activeClient) {
-		FocusNextStacked(np);
+		ClientList::FocusNextStacked(np);
 	}
 
 	JXKillClient(display, np->window);
@@ -1577,55 +1443,41 @@ void ClientNode::RestackTransients() {
 	ClientNode *tp;
 	unsigned int layer;
 
-	/* Place any transient windows on top of the owner */
-	for (layer = 0; layer < LAYER_COUNT; layer++) {
-		for (tp = nodes[layer]; tp; tp = tp->next) {
-			if (tp->owner == this->window && tp->prev) {
-
-				ClientNode *next = tp->next;
-
-				tp->prev->next = tp->next;
-				if (tp->next) {
-					tp->next->prev = tp->prev;
-				} else {
-					nodeTail[tp->state.getLayer()] = tp->prev;
-				}
-				tp->next = nodes[tp->state.getLayer()];
-				nodes[tp->state.getLayer()]->prev = tp;
-				tp->prev = NULL;
-				nodes[tp->state.getLayer()] = tp;
-
-				tp = next;
-
-			}
-
-			/* tp will be tp->next if the above code is executed. */
-			/* Thus, if it is NULL, we are done with this layer. */
-			if (!tp) {
-				break;
-			}
-		}
-	}
+	/* TODO: Place any transient windows on top of the owner */
+//	for (layer = 0; layer < LAYER_COUNT; layer++) {
+//		for (tp = nodes[layer]; tp; tp = tp->next) {
+//			if (tp->owner == this->window && tp->prev) {
+//
+//				ClientNode *next = tp->next;
+//
+//				tp->prev->next = tp->next;
+//				if (tp->next) {
+//					tp->next->prev = tp->prev;
+//				} else {
+//					nodeTail[tp->state.getLayer()] = tp->prev;
+//				}
+//				tp->next = nodes[tp->state.getLayer()];
+//				nodes[tp->state.getLayer()]->prev = tp;
+//				tp->prev = NULL;
+//				nodes[tp->state.getLayer()] = tp;
+//
+//				tp = next;
+//
+//			}
+//
+//			/* tp will be tp->next if the above code is executed. */
+//			/* Thus, if it is NULL, we are done with this layer. */
+//			if (!tp) {
+//				break;
+//			}
+//		}
+//	}
 }
 
 /** Raise the client. This will affect transients. */
 void ClientNode::RaiseClient() {
-	if (nodes[this->state.getLayer()] != this) {
 
-		/* Raise the window */
-		Assert(this->prev);
-		this->prev->next = this->next;
-		if (this->next) {
-			this->next->prev = this->prev;
-		} else {
-			nodeTail[this->state.getLayer()] = this->prev;
-		}
-		this->next = nodes[this->state.getLayer()];
-		nodes[this->state.getLayer()]->prev = this;
-		this->prev = NULL;
-		nodes[this->state.getLayer()] = this;
-
-	}
+	ClientList::BringToTopOfLayer(this);
 
 	this->RestackTransients();
 	_RequireRestack();
@@ -1639,69 +1491,12 @@ void ClientNode::RestackClient(Window above, int detail) {
 	char inserted = 0;
 
 	/* Remove from the window list. */
-	if (this->prev) {
-		this->prev->next = this->next;
-	} else {
-		nodes[this->state.getLayer()] = this->next;
-	}
-	if (this->next) {
-		this->next->prev = this->prev;
-	} else {
-		nodeTail[this->state.getLayer()] = this->prev;
-	}
+	ClientList::RemoveFrom(this);
 
 	/* Insert back into the window list. */
 	if (above != None && above != this->window) {
 
-		/* Insert relative to some other window. */
-		char found = 0;
-		for (tp = nodes[this->state.getLayer()]; tp; tp = tp->next) {
-			if (tp == this) {
-				found = 1;
-			} else if (tp->window == above) {
-				char insert_before = 0;
-				inserted = 1;
-				switch (detail) {
-				case Above:
-				case TopIf:
-					insert_before = 1;
-					break;
-				case Below:
-				case BottomIf:
-					insert_before = 0;
-					break;
-				case Opposite:
-					insert_before = !found;
-					break;
-				}
-				if (insert_before) {
-
-					/* Insert before this window. */
-					this->prev = tp->prev;
-					this->next = tp;
-					if (tp->prev) {
-						tp->prev->next = this;
-					} else {
-						nodes[this->state.getLayer()] = this;
-					}
-					tp->prev = this;
-
-				} else {
-
-					/* Insert after this window. */
-					this->prev = tp;
-					this->next = tp->next;
-					if (tp->next) {
-						tp->next->prev = this;
-					} else {
-						nodeTail[this->state.getLayer()] = this;
-					}
-					tp->next = this;
-
-				}
-				break;
-			}
-		}
+		ClientList::InsertRelative(this, above, detail);
 	}
 	if (!inserted) {
 
@@ -1709,27 +1504,12 @@ void ClientNode::RestackClient(Window above, int detail) {
 		if (detail == Below || detail == BottomIf) {
 
 			/* Insert to the bottom of the stack. */
-			this->next = NULL;
-			this->prev = nodeTail[this->state.getLayer()];
-			if (nodeTail[this->state.getLayer()]) {
-				nodeTail[this->state.getLayer()]->next = this;
-			} else {
-				nodes[this->state.getLayer()] = this;
-			}
-			nodeTail[this->state.getLayer()] = this;
+			ClientList::InsertAt(this);
 
 		} else {
 
 			/* Insert at the top of the stack. */
-			this->next = nodes[this->state.getLayer()];
-			this->prev = NULL;
-			if (nodes[this->state.getLayer()]) {
-				nodes[this->state.getLayer()]->prev = this;
-			} else {
-				nodeTail[this->state.getLayer()] = this;
-			}
-			nodes[this->state.getLayer()] = this;
-
+			ClientList::InsertFirst(this);
 		}
 	}
 
@@ -1741,7 +1521,6 @@ void ClientNode::RestackClient(Window above, int detail) {
 /** Restack the clients according the way we want them. */
 void ClientNode::RestackClients(void) {
 
-	ClientNode *np;
 	unsigned int layer, index;
 	int trayCount;
 	Window *stack;
@@ -1760,7 +1539,9 @@ void ClientNode::RestackClients(void) {
 	index = 0;
 	if (activeClient && (activeClient->getState()->getStatus() & STAT_FULLSCREEN)) {
 		fw = activeClient->window;
-		for (np = nodes[activeClient->getState()->getLayer()]; np; np = np->getNext()) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(activeClient->getState()->getLayer());
+		for (int i = 0; i < clients.size(); ++i) {
+			ClientNode *np = clients[i];
 			if (np->getOwner() == fw) {
 				if (np->getParent() != None) {
 					stack[index] = np->getParent();
@@ -1780,7 +1561,9 @@ void ClientNode::RestackClients(void) {
 	layer = LAST_LAYER;
 	for (;;) {
 
-		for (np = nodes[layer]; np; np = np->getNext()) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+		for (int i = 0; i < clients.size(); ++i) {
+			ClientNode *np = clients[i];
 			if ((np->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED))
 					&& !(np->getState()->getStatus() & STAT_HIDDEN)) {
 				if (fw != None && (np->getWindow() == fw || np->getOwner() == fw)) {
@@ -1843,20 +1626,10 @@ void ClientNode::RemoveClient() {
 
 	ColormapNode *cp;
 
-	Assert(np);
 	Assert(this->window != None);
 
 	/* Remove this client from the client list */
-	if (this->next) {
-		this->next->prev = this->prev;
-	} else {
-		nodeTail[this->state.getLayer()] = this->prev;
-	}
-	if (this->prev) {
-		this->prev->next = this->next;
-	} else {
-		nodes[this->state.getLayer()] = this->next;
-	}
+	ClientList::RemoveFrom(this);
 	clientCount -= 1;
 	XDeleteContext(display, this->window, clientContext);
 	if (this->parent != None) {
@@ -1869,7 +1642,7 @@ void ClientNode::RemoveClient() {
 
 	/* Make sure this client isn't active */
 	if (activeClient == this && !shouldExit) {
-		FocusNextStacked(this);
+		ClientList::FocusNextStacked(this);
 	}
 	if (activeClient == this) {
 
@@ -2048,8 +1821,6 @@ void ClientNode::SendConfigureEvent() {
 	XConfigureEvent event;
 	const ScreenType *sp;
 
-	Assert(np);
-
 	memset(&event, 0, sizeof(event));
 	event.display = display;
 	event.type = ConfigureNotify;
@@ -2146,8 +1917,6 @@ void ClientNode::ReadWMColormaps() {
 	ColormapNode *cp;
 	int count;
 
-	Assert(np);
-
 	if (JXGetWMColormapWindows(display, this->getWindow(), &windows, &count)) {
 		if (count > 0) {
 			int x;
@@ -2176,6 +1945,201 @@ void ClientNode::ReadWMColormaps() {
 
 		}
 	}
+
+}
+
+/** Attempt to place the client at the specified coordinates. */
+int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
+	int layer;
+	int north, south, east, west;
+	int x1, x2, y1, y2;
+	int ox1, ox2, oy1, oy2;
+	int overlap;
+
+	/* Set the client position. */
+	ClientState newState = *this->getState();
+	Border::GetBorderSize(&newState, &north, &south, &east, &west);
+	this->x = x + west;
+	this->y = y + north;
+	this->ConstrainSize();
+	this->ConstrainPosition();
+
+	/* Get the client boundaries. */
+	x1 = this->x - west;
+	x2 = this->x + this->width + east;
+	y1 = this->y - north;
+	y2 = this->y + this->height + south;
+
+	overlap = 0;
+
+	/* Return maximum cost for window outside bounding box. */
+	if (x1 < box->x || x2 > box->x + box->width || y1 < box->y || y2 > box->y + box->height) {
+		return INT_MAX;
+	}
+
+	/* Loop over each client. */
+	for (layer = this->getState()->getLayer(); layer < LAYER_COUNT; layer++) {
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(activeClient->getState()->getLayer());
+		for (int i = 0; i < clients.size(); ++i) {
+			ClientNode *tp = clients[i];
+
+			/* Skip clients that aren't visible. */
+			if (!IsClientOnCurrentDesktop(tp)) {
+				continue;
+			}
+			if (!(tp->state.getStatus() & STAT_MAPPED)) {
+				continue;
+			}
+			if (tp == this) {
+				continue;
+			}
+
+			/* Get the boundaries of the other client. */
+			Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+			ox1 = tp->x - west;
+			ox2 = tp->x + tp->width + east;
+			oy1 = tp->y - north;
+			oy2 = tp->y + tp->height + south;
+
+			/* Check for an overlap. */
+			if (x2 <= ox1 || x1 >= ox2) {
+				continue;
+			}
+			if (y2 <= oy1 || y1 >= oy2) {
+				continue;
+			}
+			overlap += (Min(ox2, x2) - Max(ox1, x1)) * (Min(oy2, y2) - Max(oy1, y1));
+		}
+	}
+
+	return overlap;
+}
+
+/** Tiled placement. */
+
+/** Move the window in the specified direction for reparenting. */
+void ClientNode::GravitateClient(char negate) {
+	int deltax, deltay;
+	this->GetGravityDelta(this->gravity, &deltax, &deltay);
+	if (negate) {
+		this->x += deltax;
+		this->y += deltay;
+	} else {
+		this->x -= deltax;
+		this->y -= deltay;
+	}
+}
+
+/** Snap to window borders. */
+void ClientNode::DoSnapBorder() {
+
+  ClientNode *tp;
+  const Tray *tray;
+  RectangleType client, other;
+  RectangleType left = { 0 };
+  RectangleType right = { 0 };
+  RectangleType top = { 0 };
+  RectangleType bottom = { 0 };
+  int layer;
+  int north, south, east, west;
+
+  GetClientRectangle(this, &client);
+
+  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+
+  other.valid = 1;
+
+  /* Work from the bottom of the window stack to the top. */
+  for (layer = 0; layer < LAYER_COUNT; layer++) {
+
+    /* Check tray windows. */
+	std::vector<BoundingBox> boxes = Tray::GetVisibleBounds();
+	std::vector<BoundingBox>::iterator it;
+	for(it = boxes.begin(); it != boxes.end(); ++it) {
+	  BoundingBox box = *it;
+
+      other.left = box.x;
+      other.right = box.x + box.width;
+      other.top = box.y;
+      other.bottom = box.y + box.height;
+
+      left.valid = CheckLeftValid(&client, &other, &left);
+      right.valid = CheckRightValid(&client, &other, &right);
+      top.valid = CheckTopValid(&client, &other, &top);
+      bottom.valid = CheckBottomValid(&client, &other, &bottom);
+
+      if (CheckOverlapTopBottom(&client, &other)) {
+        if (abs(client.left - other.right) <= settings.snapDistance) {
+          left = other;
+        }
+        if (abs(client.right - other.left) <= settings.snapDistance) {
+          right = other;
+        }
+      }
+      if (CheckOverlapLeftRight(&client, &other)) {
+        if (abs(client.top - other.bottom) <= settings.snapDistance) {
+          top = other;
+        }
+        if (abs(client.bottom - other.top) <= settings.snapDistance) {
+          bottom = other;
+        }
+      }
+
+    }
+
+    /* Check client windows. */
+	  std::vector<ClientNode*> clients = ClientList::GetList();
+	  for(int i = 0; i < clients.size(); ++i) {
+	    tp = clients[i];
+      if (tp == this || !ShouldSnap(tp)) {
+        continue;
+      }
+
+      GetClientRectangle(tp, &other);
+
+      /* Check if this border invalidates any previous value. */
+      left.valid = CheckLeftValid(&client, &other, &left);
+      right.valid = CheckRightValid(&client, &other, &right);
+      top.valid = CheckTopValid(&client, &other, &top);
+      bottom.valid = CheckBottomValid(&client, &other, &bottom);
+
+      /* Compute the new snap values. */
+      if (CheckOverlapTopBottom(&client, &other)) {
+        if (abs(client.left - other.right) <= settings.snapDistance) {
+          left = other;
+        }
+        if (abs(client.right - other.left) <= settings.snapDistance) {
+          right = other;
+        }
+      }
+      if (CheckOverlapLeftRight(&client, &other)) {
+        if (abs(client.top - other.bottom) <= settings.snapDistance) {
+          top = other;
+        }
+        if (abs(client.bottom - other.top) <= settings.snapDistance) {
+          bottom = other;
+        }
+      }
+
+    }
+
+  }
+
+  if (right.valid) {
+    this->x = right.left - this->getWidth() - west;
+  }
+  if (left.valid) {
+    this->x = left.right + east;
+  }
+  if (bottom.valid) {
+    this->y = bottom.top - south;
+    if (!(this->getState()->getStatus() & STAT_SHADED)) {
+      this->y -= this->getHeight();
+    }
+  }
+  if (top.valid) {
+    this->y = top.bottom + north;
+  }
 
 }
 
