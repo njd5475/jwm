@@ -19,25 +19,20 @@ struct TimeType;
 
 typedef struct ClientEntry {
 	ClientNode *client;
-	struct ClientEntry *next;
-	struct ClientEntry *prev;
 } ClientEntry;
 
 typedef struct TaskEntry {
-	ClientEntry *clients;
-	struct TaskEntry *next;
-	struct TaskEntry *prev;
+	std::vector<ClientEntry*> clients;
 } TaskEntry;
 
 class TaskBar : public TrayComponent {
-public:
+private:
 	TaskBar(Tray *tray, TrayComponent *parent);
-	virtual ~TaskBar() {}
+public:
+	virtual ~TaskBar();
+	static TaskBar *Create(Tray *tray, TrayComponent *parent);
 
 private:
-	TrayComponent *cp;
-	struct TaskBar *next;
-
 	int maxItemWidth;
 	int userHeight;
 	int itemHeight;
@@ -50,9 +45,8 @@ private:
 	TimeType mouseTime;
 	int mousex, mousey;
 
-	static TaskBar *bars;
-	static TaskEntry *taskEntries;
-	static TaskEntry *taskEntriesTail;
+	static std::vector<TaskBar*> bars;
+	static std::vector<TaskEntry*> taskEntries;
 public:
 	void ComputeItemSize();
 	char ShouldShowEntry(const TaskEntry *tp);

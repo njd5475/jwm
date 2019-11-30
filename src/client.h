@@ -125,6 +125,9 @@ public:
 			Border::DrawBorder(this);
 		}
 	}
+	unsigned int getDesktop() const {
+	  return this->state.getDesktop();
+	}
 	Window getOwner() const {
 		return this->owner;
 	}
@@ -294,7 +297,9 @@ public:
 	void setWidth(int width) {
 		this->width = width;
 	}
-
+	void setDesktop(unsigned int desktop) {
+	  this->state.setDesktop(desktop);
+	}
 	//TODO: Rename these methods to be better understood
 	void setWMDialogStatus() {
 		this->state.setWMDialogStatus();

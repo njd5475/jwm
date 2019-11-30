@@ -1242,7 +1242,7 @@ void ParseTaskList(const TokenNode *tp, Tray *tray) {
 	Assert(tp);
 	Assert(tray);
 
-	cp = new TaskBar(tray, tray->getLastComponent());
+	cp = TaskBar::Create(tray, tray->getLastComponent());
 	tray->AddTrayComponent(cp);
 
 	cp->SetMaxTaskBarItemWidth(findOrDefault(tp, "maxwidth", 0));

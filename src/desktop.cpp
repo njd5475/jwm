@@ -148,7 +148,7 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
 		for (int i = 0; i < clients.size(); ++i) {
 			ClientNode *np = clients[i];
-			if (np->getState()->getStatus() & STAT_STICKY) {
+			if (np->getStatus() & STAT_STICKY) {
 				continue;
 			}
 			if (np->getState()->getDesktop() == currentDesktop) {
@@ -162,7 +162,7 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
 		for (int i = 0; i < clients.size(); ++i) {
 			ClientNode *np = clients[i];
-			if (np->getState()->getStatus() & STAT_STICKY) {
+			if (np->getStatus() & STAT_STICKY) {
 				continue;
 			}
 			if (np->getState()->getDesktop() == desktop) {
@@ -171,7 +171,9 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 		}
 	}
 
+	showing[currentDesktop] = false;
 	currentDesktop = desktop;
+	showing[currentDesktop] = true;
 
 	Hints::SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
 	Hints::SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP, showing[currentDesktop]);
@@ -249,19 +251,19 @@ void Desktops::_ShowDesktop(void) {
 		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
 		for (int i = 0; i < clients.size(); ++i) {
 			np = clients[i];
-			if (np->getState()->getStatus() & STAT_NOLIST) {
+			if (np->getStatus() & STAT_NOLIST) {
 				continue;
 			}
-			if ((np->getState()->getDesktop() == currentDesktop) || (np->getState()->getStatus() & STAT_STICKY)) {
+			if ((np->getState()->getDesktop() == currentDesktop) || (np->getStatus() & STAT_STICKY)) {
 				if (showing[currentDesktop]) {
-					if (np->getState()->getStatus() & STAT_SDESKTOP) {
+					if (np->getStatus() & STAT_SDESKTOP) {
 						np->RestoreClient(0);
 					}
 				} else {
-					if (np->getState()->getStatus() & STAT_ACTIVE) {
+					if (np->getStatus() & STAT_ACTIVE) {
 						JXSetInputFocus(display, rootWindow, RevertToParent, CurrentTime);
 					}
-					if (np->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED)) {
+					if (np->getStatus() & (STAT_MAPPED | STAT_SHADED)) {
 						np->MinimizeClient(0);
 						np->setSDesktopStatus();
 					}
@@ -280,10 +282,10 @@ void Desktops::_ShowDesktop(void) {
 			std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
 			for(int i = 0; i < clients.size(); ++i) {
 				np = clients[i];
-				if (np->getState()->getStatus() & STAT_NOLIST) {
+				if (np->getStatus() & STAT_NOLIST) {
 					continue;
 				}
-				if ((np->getState()->getDesktop() == currentDesktop) || (np->getState()->getStatus() & STAT_STICKY)) {
+				if ((np->getDesktop() == currentDesktop) || (np->getStatus() & STAT_STICKY)) {
 					if (first) {
 						np->FocusClient();
 						first = 0;

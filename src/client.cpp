@@ -504,8 +504,6 @@ void ClientNode::SetClientWithdrawn() {
 
 /** Restore a window with its transients (helper method). */
 void ClientNode::RestoreTransients(char raise) {
-
-	ClientNode *tp;
 	int x;
 
 	/* Make sure this window is on the current desktop. */
@@ -729,7 +727,7 @@ void ClientNode::HideClient() {
 				JXUnmapWindow(display, this->window);
 			}
 		}
-		this->state.clearStatus();
+		//this->state.clearStatus();
 		this->state.setSDesktopStatus();
 		this->state.setMapped();
 		this->state.setShaded();
@@ -1979,7 +1977,7 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
 
 	/* Loop over each client. */
 	for (layer = this->getState()->getLayer(); layer < LAYER_COUNT; layer++) {
-		std::vector<ClientNode*> clients = ClientList::GetLayerList(activeClient->getState()->getLayer());
+		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
 		for (int i = 0; i < clients.size(); ++i) {
 			ClientNode *tp = clients[i];
 
