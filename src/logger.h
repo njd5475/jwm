@@ -22,6 +22,7 @@ public:
   static void Close();
   static void EnableStandardOut();
   static void AddListener(LoggerListener *listener);
+  static void RemoveListener(LoggerListener *listener);
 
 private:
   static void NotifyListeners(const char* message);

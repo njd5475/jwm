@@ -149,7 +149,7 @@ TokenNode *Tokenize(const char *line, const char *fileName) {
         }
         if (temp) {
           x += strlen(temp);
-          Release(temp);
+          delete[] temp;
         }
 
       } else if (current && !strncmp(line + x, "![CDATA[", 8)) {
@@ -189,7 +189,7 @@ TokenNode *Tokenize(const char *line, const char *fileName) {
         if (JLIKELY(temp)) {
           x += strlen(temp);
           LookupType(temp, current);
-          Release(temp);
+          delete[] temp;
         } else {
           Warning(_("%s[%u]: invalid open tag"), fileName, lineNumber);
         }
@@ -264,7 +264,7 @@ TokenNode *Tokenize(const char *line, const char *fileName) {
             if (JUNLIKELY(temp[0])) {
               Warning(_("%s[%u]: unexpected text: \"%s\""), fileName, lineNumber, temp);
             }
-            Release(temp);
+            delete[] temp;
           }
         }
       }
@@ -364,7 +364,7 @@ char *ReadElementName(const char *line) {
 /** Read the value of an element or attribute. */
 char *ReadValue(const char *line, const char *file, bool (*IsEnd)(char), unsigned int *offset,
     unsigned int *lineNumber) {
-  char *buffer;
+  char *buffer = NULL;
   char ch;
   unsigned int len, max;
   unsigned int x;
@@ -372,6 +372,7 @@ char *ReadValue(const char *line, const char *file, bool (*IsEnd)(char), unsigne
   len = 0;
   max = BLOCK_SIZE;
   buffer = new char[max + 1];
+  memset(buffer, 0, max+1);
 
   for (x = 0; !(IsEnd)(line[x]); x++) {
     if (line[x] == '&') {
@@ -390,7 +391,9 @@ char *ReadValue(const char *line, const char *file, bool (*IsEnd)(char), unsigne
     len += 1;
     if (len >= max) {
       max += BLOCK_SIZE;
-      buffer = (char*)Reallocate(buffer, max + 1);
+      delete[] buffer;
+      buffer = new char[max + 1];
+      memset(buffer, 0, max+1);
       if (JUNLIKELY(buffer == NULL)) {
         FatalError(_("out of memory"));
       }
@@ -516,10 +519,10 @@ void ReleaseTokens(TokenNode *np) {
     while (np->attributes) {
       ap = np->attributes->next;
       if (np->attributes->name) {
-        Release(np->attributes->name);
+        delete[] np->attributes->name;
       }
       if (np->attributes->value) {
-        Release(np->attributes->value);
+        delete[] np->attributes->value;
       }
       Release(np->attributes);
       np->attributes = ap;
@@ -530,7 +533,7 @@ void ReleaseTokens(TokenNode *np) {
     }
 
     if (np->value) {
-      Release(np->value);
+      delete[] np->value;
     }
 
     if (np->invalidName) {

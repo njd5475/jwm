@@ -210,7 +210,7 @@ void Menus::DestroyMenu(Menu *menu) {
 		while (menu->items) {
 			np = menu->items->next;
 			if (menu->items->name) {
-				Release(menu->items->name);
+				delete[](menu->items->name);
 			}
 			if (menu->items->tooltip) {
 				Release(menu->items->tooltip);
@@ -220,14 +220,14 @@ void Menus::DestroyMenu(Menu *menu) {
 			case MA_EXIT:
 			case MA_DYNAMIC:
 				if (menu->items->action.str) {
-					Release(menu->items->action.str);
+				  delete[](menu->items->action.str);
 				}
 				break;
 			default:
 				break;
 			}
 			if (menu->items->iconName) {
-				Release(menu->items->iconName);
+			  delete[](menu->items->iconName);
 			}
 			if (menu->items->submenu) {
 				DestroyMenu(menu->items->submenu);
@@ -242,7 +242,7 @@ void Menus::DestroyMenu(Menu *menu) {
 			Release(menu->dynamic);
 		}
 		if (menu->offsets) {
-			Release(menu->offsets);
+		  delete[](menu->offsets);
 		}
 		Release(menu);
 	}

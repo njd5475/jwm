@@ -48,10 +48,12 @@ typedef struct Strut {
 
 /** Struture to store information about a client window. */
 class ClientNode {
-public:
-	ClientNode(Window w, char alreadyMapped, char notOwner);
-	virtual ~ClientNode() {}
 private:
+	ClientNode(Window w, char alreadyMapped, char notOwner);
+protected:
+	virtual ~ClientNode();
+
+	static std::vector<ClientNode*> nodes;
 	Window window; /**< The client window. */
 	Window parent; /**< The frame window. */
 
@@ -116,6 +118,7 @@ public:
 	static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
 	static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
 	static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
+  static ClientNode *Create(Window w, char alreadyMapped, char notOwner);
 
 	/** The number of clients (maintained in client.c). */
 	static unsigned int clientCount;
@@ -343,7 +346,7 @@ public:
 	void (*getController())(int) {
 		return this->controller;
 	}
-	const char* getClassName() {
+	const char* getClassName() const {
 		return this->className;
 	}
 	const char* getInstanceName() {

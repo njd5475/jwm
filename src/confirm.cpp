@@ -307,7 +307,7 @@ void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*) ...)
 	DrawDialog();
 
 	/* Add the client and give it focus. */
-	dialog->node = new ClientNode(window, 0, 0);
+	dialog->node = ClientNode::Create(window, 0, 0);
 	Assert(dialog->node);
 	if (np) {
 		dialog->node->setOwner(np->getWindow());
@@ -343,9 +343,9 @@ void DestroyConfirmDialog(void) {
 
 	/* Free the message. */
 	for (x = 0; x < dialog->lineCount; x++) {
-		Release(dialog->message[x]);
+		delete[] dialog->message[x];
 	}
-	Release(dialog->message);
+	delete[] dialog->message;
 
 	Release(dialog);
 	dialog = NULL;

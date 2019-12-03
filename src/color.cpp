@@ -240,10 +240,10 @@ void Colors::DestroyColors(void) {
 		unsigned int x;
 		for (x = 0; x < COLOR_COUNT; x++) {
 			if (names[x]) {
-				Release(names[x]);
+				delete[] names[x];
 			}
 		}
-		Release(names);
+		delete[] names;
 		names = NULL;
 	}
 }

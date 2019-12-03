@@ -41,6 +41,7 @@ public:
 	void Draw();
 public:
 	static void StartupPortals();
+	static void ShutdownPortals();
 	static void Add(int x, int y, int width, int height);
 	static void DrawAll();
 	static char ProcessEvents(const XEvent *event);

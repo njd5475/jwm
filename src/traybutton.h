@@ -31,6 +31,7 @@ public:
 			const char *popup,
 			unsigned int width,
 			unsigned int height, Tray *tray, TrayComponent *parent);
+
 private:
 	/** Create a tray button component.
 	 * @param iconName The name of the icon to use for the button.
@@ -45,6 +46,8 @@ private:
 			const char *popup,
 			unsigned int width,
 			unsigned int height, Tray *tray, TrayComponent *parent);
+
+  virtual ~TrayButton();
 
 private:
 	char *label;

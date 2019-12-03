@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "LoggerListener.h"
 
+#include <algorithm>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -64,5 +65,12 @@ void Logger::NotifyListeners(const char* message) {
 	for(it = listeners.begin(); it != listeners.end(); ++it) {
 		(*it)->log(message);
 	}
+}
+
+void Logger::RemoveListener(LoggerListener *listener) {
+  std::vector<LoggerListener*>::iterator it = std::find(listeners.begin(), listeners.end(), listener);
+  if(it != listeners.end()) {
+    listeners.erase(it);
+  }
 }
 

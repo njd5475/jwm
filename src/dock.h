@@ -18,20 +18,19 @@ typedef struct DockNode {
 	Window window;
 	char needs_reparent;
 
-	struct DockNode *next;
-
 } DockNode;
 
 /** Structure to represent a dock tray component. */
 class DockType : public TrayComponent {
 public:
-	DockType(int width, Tray *tray, TrayComponent *parent);
-	virtual ~DockType() {}
+	virtual ~DockType();
 
+private:
+	DockType(int width, Tray *tray, TrayComponent *parent);
 	Window window;
 	int itemSize;
 
-	DockNode *nodes;
+	std::vector<DockNode*> nodes;
 
 	static const char *BASE_SELECTION_NAME;
 
@@ -39,7 +38,7 @@ public:
 	static char owner;
 	static Atom dockAtom;
 	static unsigned long orientation;
-
+public:
 	void SetSize(int width, int height);
 	void Create();
 	void Resize();
@@ -67,8 +66,9 @@ public:
 	 * Note that only one dock can be created.
 	 * @param width The width of an item in the dock.
 	 */
-	struct TrayComponent *_CreateDock(int width);
+	TrayComponent *_CreateDock(int width);
 
+	static DockType *Create(int width, Tray *tray, TrayComponent *parent);
 	/** Handle a client message sent to the dock window.
 	 * @param event The event.
 	 */

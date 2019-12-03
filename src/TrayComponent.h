@@ -138,6 +138,11 @@ public:
 	virtual void handlePressActions(int x, int y, int button);
 private:
 	std::vector<ActionNode*> actions;
+
+protected:
+	Tray *getParent() {
+	  return this->tray;
+	}
 };
 
 #endif /* SRC_TRAYCOMPONENT_H_ */

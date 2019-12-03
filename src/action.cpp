@@ -24,7 +24,7 @@ ActionNode::ActionNode(const char *action, int mask) :
 }
 
 ActionNode::~ActionNode() {
-	delete this->action;
+	delete[] this->action;
 }
 
 /** Process a button press. */

@@ -173,6 +173,7 @@ void WindowManager::Shutdown(void) {
 	Dialogs::ShutdownDialogs();
 #  endif
 	Popups::ShutdownPopup();
+	LogWindow::ShutdownPortals();
 	Binding::ShutdownBindings();
 	PagerType::ShutdownPager();
 	Roots::ShutdownRootMenu();
@@ -224,8 +225,8 @@ void WindowManager::Destroy(void) {
 	Setting::DestroySettings();
 	SwallowNode::DestroySwallow();
 	TaskBar::DestroyTaskBar();
-	Tray::DestroyTray();
 	TrayButton::DestroyTrayButtons();
+	Tray::DestroyTray();
 }
 
 /** Send _JWM_RESTART to the root window. */

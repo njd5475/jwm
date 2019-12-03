@@ -27,6 +27,11 @@
 #include "misc.h"
 #include "DesktopEnvironment.h"
 
+using namespace std;
+using ::TaskBar;
+std::vector<TaskBar*> TaskBar::bars;
+std::map<const char*, TaskBar::BarItem*> TaskBar::taskEntries;
+
 /** Initialize task bar data. */
 void TaskBar::InitializeTaskBar(void) {
 
@@ -38,6 +43,7 @@ void TaskBar::ShutdownTaskBar(void) {
     TaskBar *bar = bars[b];
     delete bar;
   }
+  bars.clear();
 }
 
 TaskBar::~TaskBar() {
@@ -55,9 +61,14 @@ void TaskBar::DestroyTaskBar(void) {
   std::vector<TaskBar*>::iterator it;
   while (!bars.empty()) {
     it = bars.begin();
-    Release((*it));
     bars.erase(it);
+    Release((*it));
   }
+
+  for (auto t : taskEntries) {
+    delete t.second;
+  }
+  taskEntries.clear();
 }
 
 void TaskBar::Draw(Graphics *g) {
@@ -126,13 +137,12 @@ void TaskBar::ComputeItemSize() {
 
   } else {
 
-    TaskEntry *ep;
+    BarItem *ep;
     unsigned itemCount = 0;
 
     this->itemHeight = this->getHeight();
-    for (int i = 0; i < taskEntries.size(); ++i) {
-      ep = taskEntries[i];
-      if (ShouldShowEntry(ep)) {
+    for (auto &entry : taskEntries) {
+      if (entry.second->ShouldFocusEntry()) {
         itemCount += 1;
       }
     }
@@ -150,43 +160,11 @@ void TaskBar::ComputeItemSize() {
   }
 }
 
-/** Check if all clients in this grou are on the top of their layer. */
-char TaskBar::IsGroupOnTop(const TaskEntry *entry) {
-  ClientEntry *cp;
-  int layer;
-
-  for (layer = FIRST_LAYER; layer <= LAST_LAYER; layer++) {
-    ClientNode *np;
-    char foundOther = 0;
-    std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
-    for (int i = 0; i < clients.size(); ++i) {
-      np = clients[i];
-      char found = 0;
-      if (!IsClientOnCurrentDesktop(np)) {
-        continue;
-      }
-      for (int c = 0; c < entry->clients.size(); ++c) {
-        cp = entry->clients[c];
-        if (np == cp->client) {
-          if (foundOther) {
-            return 0;
-          }
-          found = 1;
-          break;
-        }
-      }
-      foundOther = !found;
-    }
-  }
-  return 1;
-}
-
 /** Process a task list button event. */
 void TaskBar::ProcessButtonPress(int x, int y, int mask) {
-  TaskEntry *entry = this->GetEntry(x, y);
+  BarItem *entry = this->GetEntry(x, y);
 
   if (entry) {
-    ClientEntry *cp;
     ClientNode *focused = NULL;
     char hasActive = 0;
     char allTop;
@@ -194,33 +172,30 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
     switch (mask) {
     case Button1: /* Raise or minimize items in this group. */
 
-      allTop = IsGroupOnTop(entry);
+      allTop = entry->IsGroupOnTop();
       if (allTop) {
-        for (int c = 0; c < entry->clients.size(); ++c) {
-          cp = entry->clients[c];
-          int layer;
-          if (cp->client->getStatus() & STAT_MINIMIZED) {
-            continue;
-          } else if (!ClientList::ShouldFocus(cp->client, 0)) {
+        for (auto client : entry->shouldFocus()) {
+          if (!ClientList::ShouldFocus(client, 0)
+              || (client->getStatus() & STAT_MINIMIZED)) {
             continue;
           }
-          for (layer = LAST_LAYER; layer >= FIRST_LAYER; layer--) {
+
+          for (int layer = LAST_LAYER; layer >= FIRST_LAYER; layer--) {
             ClientNode *np;
             std::vector<ClientNode*> inLayer = ClientList::GetLayerList(layer);
             for (int i = 0; i < inLayer.size(); ++i) {
               np = inLayer[i];
-              if (np->getStatus() & STAT_MINIMIZED) {
-                continue;
-              } else if (!ClientList::ShouldFocus(np, 0)) {
+              if (!ClientList::ShouldFocus(np, 0)
+                  || (np->getStatus() & STAT_MINIMIZED)) {
                 continue;
               }
-              if (np == cp->client) {
+              if (np == client) {
                 const char isActive = (np->getStatus() & STAT_ACTIVE)
                     && IsClientOnCurrentDesktop(np);
                 if (isActive) {
                   focused = np;
                 }
-                if (!(cp->client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
+                if (!(client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
                     || isActive) {
                   hasActive = 1;
                 }
@@ -243,14 +218,12 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
         /* Try to find a client on a different desktop. */
         for (i = 0; i < settings.desktopCount - 1; i++) {
           const int target = (currentDesktop + i + 1) % settings.desktopCount;
-          for (int c = 0; c < entry->clients.size(); ++c) {
-            cp = entry->clients[c];
-            ClientNode *np = cp->client;
-            if (!ClientList::ShouldFocus(np, 0)) {
+          for (auto np : entry->shouldFocus()) {
+            if (np->getStatus() & STAT_STICKY) {
               continue;
-            } else if (np->getStatus() & STAT_STICKY) {
-              continue;
-            } else if (np->getState()->getDesktop() == target) {
+            }
+
+            if (np->getState()->getDesktop() == target) {
               if (!nextClient || (np->getStatus() & STAT_ACTIVE)) {
                 nextClient = np;
               }
@@ -266,11 +239,11 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
               nextClient->getState()->getDesktop());
           nextClient->RestoreClient(1);
         } else {
-          MinimizeGroup(entry);
+          entry->MinimizeGroup();
         }
       } else {
         /* The group was not currently on top, raise the group. */
-        FocusGroup(entry);
+        entry->focusGroup();
         if (focused) {
           /* If the group already contained the active client,
            * ensure that the same client remains active.
@@ -280,7 +253,7 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
       }
       break;
     case Button3:
-      ShowClientList(this, entry);
+      entry->ShowClientList(this);
       break;
     case Button4:
       FocusPrevious();
@@ -296,43 +269,39 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
 }
 
 /** Minimize all clients in a group. */
-void TaskBar::MinimizeGroup(const TaskEntry *tp) {
-  ClientEntry *cp;
-  for (int c = 0; c < tp->clients.size(); ++c) {
-    cp = tp->clients[c];
-    if (ClientList::ShouldFocus(cp->client, 1)) {
-      cp->client->MinimizeClient(0);
+void TaskBar::BarItem::MinimizeGroup() {
+  for (auto client : clients) {
+    if (ClientList::ShouldFocus(client, 1)) {
+      client->MinimizeClient(0);
     }
   }
 }
 
 /** Raise all clients in a group and focus the top-most. */
-void TaskBar::FocusGroup(const TaskEntry *tp) {
-  const char *className = tp->clients[0]->client->getClassName();
+void TaskBar::BarItem::focusGroup() {
+  ClientNode *client = (*clients.begin());
+  const char *className = client->getClassName();
   ClientNode **toRestore;
-  const ClientEntry *cp;
   unsigned restoreCount;
   int i;
-  char shouldSwitch;
 
   /* If there is no class name, then there will only be one client. */
   if (!className || !settings.groupTasks) {
-    if (!(tp->clients[0]->client->getStatus() & STAT_STICKY)) {
+    if (!(client->getStatus() & STAT_STICKY)) {
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
-          tp->clients[0]->client->getState()->getDesktop());
+          client->getDesktop());
     }
-    tp->clients[0]->client->RestoreClient(1);
-    tp->clients[0]->client->FocusClient();
+    client->RestoreClient(1);
+    client->FocusClient();
     return;
   }
 
   /* If there is a client in the group on this desktop,
    * then we remain on the same desktop. */
-  shouldSwitch = 1;
-  for (int c = 0; c < tp->clients.size(); ++c) {
-    cp = tp->clients[c];
-    if (IsClientOnCurrentDesktop(cp->client)) {
-      shouldSwitch = 0;
+  bool shouldSwitch = true;
+  for (auto client : clients) {
+    if (IsClientOnCurrentDesktop(client)) {
+      shouldSwitch = false;
       break;
     }
   }
@@ -348,7 +317,7 @@ void TaskBar::FocusGroup(const TaskEntry *tp) {
           if (ClientList::ShouldFocus(np, 0)) {
             if (!(np->getStatus() & STAT_STICKY)) {
               DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
-                  np->getState()->getDesktop());
+                  np->getDesktop());
             }
             break;
           }
@@ -394,146 +363,11 @@ void TaskBar::ProcessMotionEvent(int x, int y, int mask) {
   GetCurrentTime(&this->mouseTime);
 }
 
-/** Show the menu associated with a task list item. */
-void TaskBar::ShowClientList(TaskBar *bar, TaskEntry *tp) {
-  Menu *menu;
-  MenuItem *item;
-  ClientEntry *cp;
-
-  const ScreenType *sp;
-  int x, y;
-  Window w;
-
-  if (settings.groupTasks) {
-
-    menu = Menus::CreateMenu();
-
-    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-    item->name = CopyString(_("Close"));
-    item->action.type = MA_CLOSE | MA_GROUP_MASK;
-    item->action.context = tp;
-    item->next = menu->items;
-    menu->items = item;
-
-    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-    item->name = CopyString(_("Minimize"));
-    item->action.type = MA_MINIMIZE | MA_GROUP_MASK;
-    item->action.context = tp;
-    item->next = menu->items;
-    menu->items = item;
-
-    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-    item->name = CopyString(_("Restore"));
-    item->action.type = MA_RESTORE | MA_GROUP_MASK;
-    item->action.context = tp;
-    item->next = menu->items;
-    menu->items = item;
-
-    item = Menus::CreateMenuItem(MENU_ITEM_SUBMENU);
-    item->name = CopyString(_("Send To"));
-    item->action.type = MA_SENDTO_MENU | MA_GROUP_MASK;
-    item->action.context = tp;
-    item->next = menu->items;
-    menu->items = item;
-
-    /* Load the separator and group actions. */
-    item = Menus::CreateMenuItem(MENU_ITEM_SEPARATOR);
-    item->next = menu->items;
-    menu->items = item;
-
-    /* Load the clients into the menu. */
-    for (int c = 0; c < tp->clients.size(); ++c) {
-      cp = tp->clients[c];
-      if (!ClientList::ShouldFocus(cp->client, 0)) {
-        continue;
-      }
-      item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-      if (cp->client->getStatus() & STAT_MINIMIZED) {
-        size_t len = 0;
-        if (cp->client->getName()) {
-          len = strlen(cp->client->getName());
-        }
-        item->name = new char[len + 3];
-        item->name[0] = '[';
-        memcpy(&item->name[1], cp->client->getName(), len);
-        item->name[len + 1] = ']';
-        item->name[len + 2] = 0;
-      } else {
-        item->name = CopyString(cp->client->getName());
-      }
-      item->icon =
-          cp->client->getIcon() ?
-              cp->client->getIcon() : Icons::GetDefaultIcon();
-      item->action.type = MA_EXECUTE;
-      item->action.context = cp->client;
-      item->next = menu->items;
-      menu->items = item;
-    }
-  } else {
-    /* Not grouping clients. */
-    menu = CreateWindowMenu(tp->clients[0]->client);
-  }
-
-  /* Initialize and position the menu. */
-  Menus::InitializeMenu(menu);
-  sp = Screens::GetCurrentScreen(bar->getScreenX(), bar->getScreenY());
-  Cursors::GetMousePosition(&x, &y, &w);
-  if (bar->layout == LAYOUT_HORIZONTAL) {
-    if (bar->getScreenY() + bar->getHeight() / 2 < sp->y + sp->height / 2) {
-      /* Bottom of the screen: menus go up. */
-      y = bar->getScreenY() + bar->getHeight();
-    } else {
-      /* Top of the screen: menus go down. */
-      y = bar->getScreenY() - menu->height;
-    }
-    x -= menu->width / 2;
-    x = Max(x, sp->x);
-  } else {
-    if (bar->getScreenX() + bar->getWidth() / 2 < sp->x + sp->width / 2) {
-      /* Left side: menus go right. */
-      x = bar->getScreenX() + bar->getWidth();
-    } else {
-      /* Right side: menus go left. */
-      x = bar->getScreenX() - menu->width;
-    }
-    y -= menu->height / 2;
-    y = Max(y, sp->y);
-  }
-
-  Menus::ShowMenu(menu, RunTaskBarCommand, x, y, 0);
-
-  Menus::DestroyMenu(menu);
-
-}
-
 /** Run a menu action. */
 void TaskBar::RunTaskBarCommand(MenuAction *action, unsigned button) {
-  ClientEntry *cp;
-
   if (action->type & MA_GROUP_MASK) {
-    TaskEntry *tp = (TaskEntry*) action->context;
-    for (int c = 0; c < tp->clients.size(); ++c) {
-      cp = tp->clients[c];
-      if (!ClientList::ShouldFocus(cp->client, 0)) {
-        continue;
-      }
-      switch (action->type & ~MA_GROUP_MASK) {
-      case MA_SENDTO:
-        cp->client->SetClientDesktop(action->value);
-        break;
-      case MA_CLOSE:
-        cp->client->DeleteClient();
-        break;
-      case MA_RESTORE:
-        cp->client->RestoreClient(0);
-        break;
-      case MA_MINIMIZE:
-        cp->client->MinimizeClient(0);
-        break;
-      default:
-        break;
-      }
-    }
+    BarItem *tp = (BarItem*) action->context;
+    tp->RunTaskBarCommand(action, button);
   } else if (action->type == MA_EXECUTE) {
     if (button == Button3) {
       Window w;
@@ -554,22 +388,18 @@ void TaskBar::RunTaskBarCommand(MenuAction *action, unsigned button) {
 
 /** Add a client to the task bar. */
 void TaskBar::AddClientToTaskBar(ClientNode *np) {
-  TaskEntry *tp = NULL;
-  ClientEntry *cp = new ClientEntry;
-  cp->client = np;
-
+  BarItem *tp;
   if (np->getClassName() && settings.groupTasks) {
-    for (int i = 0; i < taskEntries.size(); ++i) {
-      tp = taskEntries[i];
-      const char *className = (*tp->clients.begin())->client->getClassName();
+    for (auto &entry : taskEntries) {
+      const char *className = entry.second->getClassName();
       if (className && !strcmp(np->getClassName(), className)) {
         break;
       }
     }
   }
   if (tp == NULL) {
-    tp = new TaskEntry;
-    taskEntries.push_back(tp);
+    tp = new BarItem(np);
+    taskEntries[tp->getClassName()] = tp;
   }
 
   _RequireTaskUpdate();
@@ -579,25 +409,19 @@ void TaskBar::AddClientToTaskBar(ClientNode *np) {
 
 /** Remove a client from the task bar. */
 void TaskBar::RemoveClientFromTaskBar(ClientNode *np) {
-  TaskEntry *tp;
-  std::vector<TaskEntry*>::iterator te;
-  for (te = taskEntries.begin(); te != taskEntries.end(); ++te) {
-    tp = *te;
-    ClientEntry *cp;
-    std::vector<ClientEntry*>::iterator it;
-    for (it = tp->clients.begin(); it != tp->clients.end(); ++it) {
-      cp = *it;
-      if (cp->client == np) {
-        tp->clients.erase(it);
-        Release(cp);
-        if (tp->clients.empty()) {
-          taskEntries.erase(te);
-          Release(tp);
-        }
-        _RequireTaskUpdate();
-        UpdateNetClientList();
-        return;
+  BarItem *tp;
+  std::vector<BarItem*>::iterator te;
+  for (auto &entry : taskEntries) {
+    tp = entry.second;
+
+    if (tp->RemoveClient(np)) {
+      if (tp->empty()) {
+        taskEntries.erase(entry.first);
+        Release(tp);
       }
+      _RequireTaskUpdate();
+      UpdateNetClientList();
+      return;
     }
   }
 }
@@ -614,7 +438,6 @@ void TaskBar::UpdateTaskBar(void) {
   for (int b = 0; b < bars.size(); ++b) {
     bar = bars[b];
     if (bar->layout == LAYOUT_VERTICAL) {
-      TaskEntry *taskEntry;
       lastHeight = bar->requestedHeight;
       if (bar->userHeight > 0) {
         bar->itemHeight = bar->userHeight;
@@ -622,9 +445,8 @@ void TaskBar::UpdateTaskBar(void) {
         bar->itemHeight = Fonts::GetStringHeight(FONT_TASKLIST) + 12;
       }
       bar->requestedHeight = 0;
-      for (int i = 0; i < taskEntries.size(); ++i) {
-        taskEntry = taskEntries[i];
-        if (bar->ShouldShowEntry(taskEntry)) {
+      for (auto &entry : taskEntries) {
+        if (entry.second->ShouldFocusEntry()) {
           bar->requestedHeight += bar->itemHeight;
         }
       }
@@ -643,7 +465,7 @@ void TaskBar::SignalTaskbar(const TimeType *now, int x, int y, Window w,
     void *data) {
 
   TaskBar *bp = (TaskBar*) data;
-  TaskEntry *ep;
+  BarItem *ep;
 
   if (w == bp->getTray()->getWindow()
       && abs(bp->mousex - x) < settings.doubleClickDelta
@@ -651,14 +473,12 @@ void TaskBar::SignalTaskbar(const TimeType *now, int x, int y, Window w,
     if (GetTimeDifference(now, &bp->mouseTime) >= settings.popupDelay) {
       ep = bp->GetEntry(x - bp->getScreenX(), y - bp->getScreenY());
       if (settings.groupTasks) {
-        if (ep && ep->clients[0]->client->getClassName()) {
-          Popups::ShowPopup(x, y, ep->clients[0]->client->getClassName(),
-          POPUP_TASK);
+        if (ep && ep->getClassName()) {
+          Popups::ShowPopup(x, y, ep->getClassName(), POPUP_TASK);
         }
       } else {
-        if (ep && ep->clients[0]->client->getName()) {
-          Popups::ShowPopup(x, y, ep->clients[0]->client->getName(),
-          POPUP_TASK);
+        if (ep && ep->getName()) {
+          Popups::ShowPopup(x, y, ep->getName(), POPUP_TASK);
         }
       }
     }
@@ -668,7 +488,6 @@ void TaskBar::SignalTaskbar(const TimeType *now, int x, int y, Window w,
 
 /** Draw a specific task bar. */
 void TaskBar::Render() {
-  TaskEntry *tp;
   char *displayName;
   Drawable drawable = this->getPixmap();
   bool border = false, fill = true;
@@ -697,53 +516,35 @@ void TaskBar::Render() {
 
   x = 0;
   y = 0;
-  for (int i = 0; i < taskEntries.size(); ++i) {
-    tp = taskEntries[i];
+  for (const auto &entry : taskEntries) {
+    BarItem *client = entry.second;
 
-    if (!ShouldShowEntry(tp)) {
+    if (!client->ShouldFocusEntry()) {
       continue;
     }
 
     /* Check for an active or urgent window and count clients. */
-    ClientEntry *cp;
-    unsigned clientCount = 0;
+    unsigned clientCount = client->activeCount();
     type = BUTTON_TASK;
-    for (int c = 0; c < tp->clients.size(); ++c) {
-      cp = tp->clients[c];
-      if (ClientList::ShouldFocus(cp->client, 0)) {
-        const char flash = (cp->client->getStatus() & STAT_FLASH) != 0;
-        const char active = (cp->client->getStatus() & STAT_ACTIVE)
-            && IsClientOnCurrentDesktop(cp->client);
-        if (flash || active) {
-          if (type == BUTTON_TASK) {
-            type = BUTTON_TASK_ACTIVE;
-          } else {
-            type = BUTTON_TASK;
-          }
-        }
-        clientCount += 1;
-      }
-    }
-    if (!tp->clients[0]->client->getIcon()) {
+    if (!client->getIcon()) {
       icon = Icons::GetDefaultIcon();
     } else {
-      icon = tp->clients[0]->client->getIcon();
+      icon = client->getIcon();
     }
     displayName = NULL;
     if (this->labeled) {
-      if (tp->clients[0]->client->getClassName() && settings.groupTasks) {
+      if (client->getClassName() && settings.groupTasks) {
         if (clientCount != 1) {
-          const size_t len = strlen(tp->clients[0]->client->getClassName())
-              + 16;
+          const size_t len = strlen(client->getClassName()) + 16;
           displayName = new char[len];
-          snprintf(displayName, len, "%s (%u)",
-              tp->clients[0]->client->getClassName(), clientCount);
+          snprintf(displayName, len, "%s (%u)", client->getClassName(),
+              clientCount);
           text = displayName;
         } else {
-          text = tp->clients[0]->client->getClassName();
+          text = client->getClassName();
         }
       } else {
-        text = tp->clients[0]->client->getName();
+        text = client->getName();
       }
     }
     DrawButton(type, alignment, font, text, fill, border, drawable, icon, x, y,
@@ -765,73 +566,33 @@ void TaskBar::Render() {
 
 /** Focus the next client in the task bar. */
 void TaskBar::FocusNext(void) {
-  TaskEntry *tp;
+  BarItem *tp;
 
   /* Find the current entry. */
-  std::vector<TaskEntry*>::iterator it = taskEntries.begin();
-  for (; it != taskEntries.end(); ++it) {
-    tp = *it;
-    ClientEntry *cp;
-    bool found = false;
-    for (int c = 0; c < tp->clients.size(); ++c) {
-      cp = tp->clients[c];
-      if ((cp->client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
-          && ClientList::ShouldFocus(cp->client, 1)
-          && (cp->client->getStatus() & STAT_ACTIVE)) {
-        found = true;
-        break;
-      }
-    }
+  for (auto &entry : taskEntries) {
+    tp = entry.second;
 
-    if (found) {
+    if (tp->hasActiveClient()) {
       break;
-    }
-  }
-
-  /* Move to the next group. */
-  if (tp) {
-    do {
-      ++it;
-      tp = *it;
-    } while (it != taskEntries.end() && !ShouldFocusEntry(tp));
-  }
-  if (!tp) {
-    /* Wrap around; start at the beginning. */
-    for (int i = 0; i < taskEntries.size(); ++i) {
-      tp = taskEntries[i];
-      if (ShouldFocusEntry(tp)) {
-        break;
-      }
     }
   }
 
   /* Focus the group if one exists. */
   if (tp) {
-    FocusGroup(tp);
+    tp->focusGroup();
   }
 }
 
 /** Focus the previous client in the task bar. */
 void TaskBar::FocusPrevious(void) {
-  TaskEntry *tp = NULL;
+  BarItem *tp = NULL;
 
   /* Find the current entry. */
-  std::vector<TaskEntry*>::iterator it = taskEntries.begin();
+  std::map<const char*, BarItem*>::iterator it = taskEntries.begin();
   for (; it != taskEntries.end(); ++it) {
-    tp = *it;
-    ClientEntry *cp = NULL;
-    bool found = false;
-    for (int c = 0; c < tp->clients.size(); ++c) {
-      cp = tp->clients[c];
-      if ((cp->client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
-          && ClientList::ShouldFocus(cp->client, 1)
-          && (cp->client->getStatus() & STAT_ACTIVE)) {
-        found = true;
-        break;
-      }
-    }
+    tp = it->second;
 
-    if(found) {
+    if (it->second->hasActiveClient()) {
       break;
     }
   }
@@ -840,14 +601,14 @@ void TaskBar::FocusPrevious(void) {
   if (tp) {
     do {
       ++it;
-      tp = *it;
-    } while (it != taskEntries.end() && !ShouldFocusEntry(tp));
+      tp = it->second;
+    } while (it != taskEntries.end() && !tp->ShouldFocusEntry());
   }
   if (!tp) {
     /* Wrap around; start at the end. */
-    for (std::vector<TaskEntry*>::reverse_iterator i = taskEntries.rbegin();
-        i != taskEntries.rend(); ++i) {
-      if (ShouldFocusEntry(*i)) {
+    for (std::map<const char*, BarItem*>::reverse_iterator i =
+        taskEntries.rbegin(); i != taskEntries.rend(); ++i) {
+      if (i->second->ShouldFocusEntry()) {
         break;
       }
     }
@@ -855,64 +616,8 @@ void TaskBar::FocusPrevious(void) {
 
   /* Focus the group if one exists. */
   if (tp) {
-    FocusGroup(tp);
+    tp->focusGroup();
   }
-}
-
-/** Determine if there is anything to show for the specified entry. */
-char TaskBar::ShouldShowEntry(const TaskEntry *tp) {
-  const ClientEntry *cp = NULL;
-  for (int c = 0; c < tp->clients.size(); ++c) {
-    cp = tp->clients[c];
-    if (ClientList::ShouldFocus(cp->client, 0)) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-/** Determine if we should attempt to focus an entry. */
-char TaskBar::ShouldFocusEntry(const TaskEntry *tp) {
-  const ClientEntry *cp = NULL;
-  for (int c = 0; c < tp->clients.size(); ++c) {
-    cp = tp->clients[c];
-    if (cp->client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
-      if (ClientList::ShouldFocus(cp->client, 1)) {
-        return 1;
-      }
-    }
-  }
-  return 0;
-}
-
-std::vector<TaskBar*> TaskBar::bars;
-std::vector<TaskEntry*> TaskBar::taskEntries;
-
-/** Get the item associated with a coordinate on the task bar. */
-TaskEntry* TaskBar::GetEntry(int x, int y) {
-  TaskEntry *tp = NULL;
-  int offset;
-
-  offset = 0;
-  for (int i = 0; i < taskEntries.size(); ++i) {
-    tp = taskEntries[i];
-    if (!ShouldShowEntry(tp)) {
-      continue;
-    }
-    if (this->layout == LAYOUT_HORIZONTAL) {
-      offset += this->itemWidth;
-      if (x < offset) {
-        return tp;
-      }
-    } else {
-      offset += this->itemHeight;
-      if (y < offset) {
-        return tp;
-      }
-    }
-  }
-
-  return NULL;
 }
 
 /** Set the maximum width of an item in the task bar. */
@@ -933,50 +638,312 @@ void TaskBar::SetTaskBarLabeled(TrayComponent *cp, char labeled) {
 
 /** Maintain the _NET_CLIENT_LIST[_STACKING] properties on the root. */
 void TaskBar::UpdateNetClientList(void) {
-  TaskEntry *tp;
-  ClientNode *client;
-  __uint32_t *windows;
-  unsigned int count;
-  int layer;
-
-  /* Determine how much we need to allocate. */
   if (ClientNode::clientCount == 0) {
-    windows = NULL;
-  } else {
-    windows = new __uint32_t [ClientNode::clientCount];
+    return;
   }
 
-  /* Set _NET_CLIENT_LIST */
-  count = 0;
-  for (int i = 0; i < taskEntries.size(); ++i) {
-    tp = taskEntries[i];
-    ClientEntry *cp;
-    for (int c = 0; c < tp->clients.size(); ++c) {
-      cp = tp->clients[c];
-      windows[count] = (__uint32_t ) cp->client->getWindow(); // need to cast to 32 bits
-      count += 1;
-    }
-  }
-  Assert(count <= clientCount);
-  JXChangeProperty(display, rootWindow, Hints::atoms[ATOM_NET_CLIENT_LIST],
-      XA_WINDOW, 32, PropModeReplace, (unsigned char* )windows, count);
-
-  /* Set _NET_CLIENT_LIST_STACKING */
-  count = 0;
-  for (layer = FIRST_LAYER; layer <= LAST_LAYER; layer++) {
-    std::vector<ClientNode*> inLayer = ClientList::GetLayerList(layer);
-    for (int x = 0; x < inLayer.size(); ++x) {
-      client = inLayer[x];
-      windows[count] = client->getWindow();
-      count += 1;
-    }
-  }
-  JXChangeProperty(display, rootWindow,
-      Hints::atoms[ATOM_NET_CLIENT_LIST_STACKING], XA_WINDOW, 32,
-      PropModeReplace, (unsigned char* )windows, count);
-
-  if (windows != NULL) {
-    ReleaseStack(windows);
-  }
+//  /* Set _NET_CLIENT_LIST */
+//  vector<__uint32_t> windows;
+//
+//  for (const auto &entry : taskEntries) {
+//    BarItem *tp = entry.second;
+//
+//    vector<Window> clientWindows = tp->getClientWindows();
+//    windows.insert(windows.end(), clientWindows.begin(), clientWindows.end());
+//  }
+//
+//  JXChangeProperty(display, rootWindow, Hints::atoms[ATOM_NET_CLIENT_LIST],
+//      XA_WINDOW, 32, PropModeReplace, (unsigned char* )windows.data(),
+//      windows.size());
+//
+//  /* Set _NET_CLIENT_LIST_STACKING */
+//  for (unsigned layer = FIRST_LAYER; layer <= LAST_LAYER; layer++) {
+//    for (auto client : ClientList::GetLayerList(layer)) {
+//      windows.push_back((__uint32_t ) client->getWindow());
+//    }
+//  }
+//  JXChangeProperty(display, rootWindow,
+//      Hints::atoms[ATOM_NET_CLIENT_LIST_STACKING], XA_WINDOW, 32,
+//      PropModeReplace, (unsigned char* )windows.data(), windows.size());
+//
+//  if (!windows.empty()) {
+//    ReleaseStack(windows);
+//  }
 
 }
+
+unsigned int TaskBar::BarItem::activeCount() {
+  int count = 0;
+  for (auto client : clients) {
+    if (ClientList::ShouldFocus(client, 0)
+        && ((client->getStatus() & STAT_FLASH) != 0
+            || ((client->getStatus() & STAT_ACTIVE)
+                && IsClientOnCurrentDesktop(client)))) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+unsigned int TaskBar::BarItem::focusCount() {
+  int count = 0;
+  for (auto client : clients) {
+    if (ClientList::ShouldFocus(client, 0)) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+bool TaskBar::BarItem::hasActiveClient() {
+  for (auto client : clients) {
+    if ((client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
+        && ClientList::ShouldFocus(client, 1)
+        && (client->getStatus() & STAT_ACTIVE)) {
+      return true;
+      break;
+    }
+  }
+  return false;
+}
+
+/** Determine if we should attempt to focus an entry. */
+bool TaskBar::BarItem::ShouldFocusEntry() {
+  for (auto client : clients) {
+    if (client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+      if (ClientList::ShouldFocus(client, 1)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Check if all clients in this grou are on the top of their layer. */
+bool TaskBar::BarItem::IsGroupOnTop() {
+  for (auto client : ClientList::GetLayerList(FIRST_LAYER)) {
+    bool found = false;
+    if (!IsClientOnCurrentDesktop(client)) {
+      continue;
+    }
+    for (auto barClient : clients) {
+      if (barClient == client) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/** Get the item associated with a coordinate on the task bar. */
+TaskBar::BarItem* TaskBar::GetEntry(int x, int y) {
+  BarItem *tp = NULL;
+  int offset;
+
+  offset = 0;
+  for (auto &entry : taskEntries) {
+    tp = entry.second;
+    if (!tp->ShouldFocusEntry()) {
+      continue;
+    }
+    if (this->layout == LAYOUT_HORIZONTAL) {
+      offset += this->itemWidth;
+      if (x < offset) {
+        return tp;
+      }
+    } else {
+      offset += this->itemHeight;
+      if (y < offset) {
+        return tp;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+vector<Window> TaskBar::BarItem::getClientWindows() {
+  vector<Window> windows;
+  for (auto client : clients) {
+    windows.push_back(client->getWindow());
+  }
+  return windows;
+}
+
+vector<ClientNode*> TaskBar::BarItem::shouldFocus() {
+  vector<ClientNode*> shouldFocus;
+  for (auto client : clients) {
+    if (ClientList::ShouldFocus(client, 0)) {
+      shouldFocus.push_back(client);
+    }
+  }
+  return shouldFocus;
+}
+
+/** Show the menu associated with a task list item. */
+void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
+  Menu *menu;
+  MenuItem *item;
+
+  const ScreenType *sp;
+  int x, y;
+  Window w;
+
+  if (settings.groupTasks) {
+
+    menu = Menus::CreateMenu();
+
+    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
+    item->name = CopyString(_("Close"));
+    item->action.type = MA_CLOSE | MA_GROUP_MASK;
+    item->action.context = this;
+    item->next = menu->items;
+    menu->items = item;
+
+    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
+    item->name = CopyString(_("Minimize"));
+    item->action.type = MA_MINIMIZE | MA_GROUP_MASK;
+    item->action.context = this;
+    item->next = menu->items;
+    menu->items = item;
+
+    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
+    item->name = CopyString(_("Restore"));
+    item->action.type = MA_RESTORE | MA_GROUP_MASK;
+    item->action.context = bar;
+    item->next = menu->items;
+    menu->items = item;
+
+    item = Menus::CreateMenuItem(MENU_ITEM_SUBMENU);
+    item->name = CopyString(_("Send To"));
+    item->action.type = MA_SENDTO_MENU | MA_GROUP_MASK;
+    item->action.context = this;
+    item->next = menu->items;
+    menu->items = item;
+
+    /* Load the separator and group actions. */
+    item = Menus::CreateMenuItem(MENU_ITEM_SEPARATOR);
+    item->next = menu->items;
+    menu->items = item;
+
+    /* Load the clients into the menu. */
+    for (auto client : this->shouldFocus()) {
+      item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
+      if (client->getStatus() & STAT_MINIMIZED) {
+        size_t len = 0;
+        if (client->getName()) {
+          len = strlen(client->getName());
+        }
+        item->name = new char[len + 3];
+        item->name[0] = '[';
+        memcpy(&item->name[1], client->getName(), len);
+        item->name[len + 1] = ']';
+        item->name[len + 2] = 0;
+      } else {
+        item->name = CopyString(client->getName());
+      }
+      item->icon =
+          client->getIcon() ? client->getIcon() : Icons::GetDefaultIcon();
+      item->action.type = MA_EXECUTE;
+      item->action.context = client;
+      item->next = menu->items;
+      menu->items = item;
+    }
+  } else {
+    /* Not grouping clients. */
+    menu = CreateWindowMenu(*clients.begin());
+  }
+
+  /* Initialize and position the menu. */
+  Menus::InitializeMenu(menu);
+  sp = Screens::GetCurrentScreen(bar->getScreenX(), bar->getScreenY());
+  Cursors::GetMousePosition(&x, &y, &w);
+  if (bar->layout == LAYOUT_HORIZONTAL) {
+    if (bar->getScreenY() + bar->getHeight() / 2 < sp->y + sp->height / 2) {
+      /* Bottom of the screen: menus go up. */
+      y = bar->getScreenY() + bar->getHeight();
+    } else {
+      /* Top of the screen: menus go down. */
+      y = bar->getScreenY() - menu->height;
+    }
+    x -= menu->width / 2;
+    x = Max(x, sp->x);
+  } else {
+    if (bar->getScreenX() + bar->getWidth() / 2 < sp->x + sp->width / 2) {
+      /* Left side: menus go right. */
+      x = bar->getScreenX() + bar->getWidth();
+    } else {
+      /* Right side: menus go left. */
+      x = bar->getScreenX() - menu->width;
+    }
+    y -= menu->height / 2;
+    y = Max(y, sp->y);
+  }
+
+  Menus::ShowMenu(menu, TaskBar::RunTaskBarCommand, x, y, 0);
+
+  Menus::DestroyMenu(menu);
+
+}
+
+const char* TaskBar::BarItem::getClassName() {
+  return (*clients.begin())->getClassName();
+}
+
+const char* TaskBar::BarItem::getName() {
+  return (*clients.begin())->getName();
+}
+
+IconNode* TaskBar::BarItem::getIcon() {
+  return (*clients.begin())->getIcon();
+}
+
+bool TaskBar::BarItem::empty() {
+  return clients.empty();
+}
+bool TaskBar::BarItem::RemoveClient(ClientNode *np) {
+  vector<ClientNode*>::iterator pos;
+  for (pos = clients.begin(); pos != clients.end(); ++pos) {
+    if (np == (*pos)) {
+      clients.erase(pos);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void TaskBar::BarItem::RunTaskBarCommand(MenuAction *action, unsigned button) {
+  for (auto client : clients) {
+    if (!ClientList::ShouldFocus(client, 0)) {
+      continue;
+    }
+    switch (action->type & ~MA_GROUP_MASK) {
+    case MA_SENDTO:
+      client->SetClientDesktop(action->value);
+      break;
+    case MA_CLOSE:
+      client->DeleteClient();
+      break;
+    case MA_RESTORE:
+      client->RestoreClient(0);
+      break;
+    case MA_MINIMIZE:
+      client->MinimizeClient(0);
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+TaskBar::BarItem::BarItem(ClientNode *atLeastOne) {
+  Assert(atLeastOne);
+  clients.push_back(atLeastOne);
+}
+
+TaskBar::BarItem::~BarItem() {
+
+}
+

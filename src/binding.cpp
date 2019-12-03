@@ -77,7 +77,7 @@ void Binding::InitializeBindings(void) {
 /** Startup bindings. */
 void Binding::StartupBindings(void) {
 
-	XModifierKeymap *modmap;
+	XModifierKeymap *modmap = NULL;
 	KeyNode *np;
 	Tray *tp;
 	int x;
@@ -134,7 +134,7 @@ void Binding::DestroyBindings(void) {
 		while (bindings[i]) {
 			KeyNode *np = bindings[i]->next;
 			if (bindings[i]->command) {
-				Release(bindings[i]->command);
+				delete[] bindings[i]->command;
 			}
 			Release(bindings[i]);
 			bindings[i] = np;
@@ -385,7 +385,7 @@ void Binding::InsertBinding(ActionType action, const char *modifiers,
 
 					sym = ParseKeyString(temp);
 					if (sym == NoSymbol) {
-						Release(temp);
+						delete[] temp;
 						return;
 					}
 
@@ -404,7 +404,7 @@ void Binding::InsertBinding(ActionType action, const char *modifiers,
 
 				}
 
-				Release(temp);
+				delete[] temp;
 
 				return;
 			}

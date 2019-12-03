@@ -1561,7 +1561,7 @@ void _HandleMapRequest(const XMapEvent *event) {
 	np = ClientNode::FindClientByWindow(event->window);
 	if (!np) {
 		Grabs::GrabServer();
-		np = new ClientNode(event->window, 0, 1);
+		np = ClientNode::Create(event->window, 0, 1);
 		if (np) {
 			if (!(np->getState()->getStatus() & STAT_NOFOCUS)) {
 				np->FocusClient();

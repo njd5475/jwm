@@ -82,6 +82,7 @@ void DesktopEnvironment::ShowDesktop() {
 bool DesktopEnvironment::RegisterComponent(Component *component) {
   ++this->_componentCount;
   this->_components.push_back(component);
+  return true;
 }
 
 DesktopEnvironment::DesktopEnvironment() :
@@ -170,7 +171,7 @@ void DesktopEnvironment::SetBackground(int id, const char* file, char* const nam
 }
 
 TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayComponent *parent) {
-  return DockType::dock = new DockType(width, tray, parent);
+  return DockType::Create(width, tray, parent);
 }
 
 Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {

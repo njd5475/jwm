@@ -30,7 +30,7 @@ void DockComponent::destroy() {
   DockType::_DestroyDock();
 }
 
-DockComponent::DockComponent() {
+DockComponent::DockComponent() : Component() {
 
 }
 

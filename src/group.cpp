@@ -75,7 +75,7 @@ void ReleasePatternList(PatternListType *lp) {
 	PatternListType *tp;
 	while (lp) {
 		tp = lp->next;
-		Release(lp->pattern);
+		delete[](lp->pattern);
 		Release(lp);
 		lp = tp;
 	}

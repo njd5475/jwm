@@ -165,13 +165,13 @@ ScaledIconNode *CreateScaledRenderIcon(ImageNode *image, long fg)
 
    /* Render the image data to the image pixmap. */
    JXPutImage(display, pmap, rootGC, destImage, 0, 0, 0, 0, width, height);
-   Release(destImage->data);
+   delete[](destImage->data);
    destImage->data = NULL;
    JXDestroyImage(destImage);
 
    /* Render the alpha data to the mask pixmap. */
    JXPutImage(display, mask, maskGC, destMask, 0, 0, 0, 0, width, height);
-   Release(destMask->data);
+   delete[](destMask->data);
    destMask->data = NULL;
    JXDestroyImage(destMask);
    JXFreeGC(display, maskGC);

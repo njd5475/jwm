@@ -93,6 +93,7 @@ private:
   std::vector<TrayComponent*> components;
   static std::vector<Tray*> trays;
 
+private:
   Tray();
   virtual ~Tray();
 
@@ -108,6 +109,7 @@ public:
   TrayAutoHideType getAutoHide() const {return this->autoHide;}
 
   void AddTrayComponent(TrayComponent *cp);
+  bool RemoveTrayComponent(TrayComponent* cp);
   void ShowTray();
   void HideTray();
   void DrawSpecificTray();

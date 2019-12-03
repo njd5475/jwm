@@ -35,6 +35,7 @@ TrayComponent::~TrayComponent() {
 		delete *it;
 	}
 	this->actions.clear();
+  tray->RemoveTrayComponent(this);
 }
 
 void TrayComponent::addAction(const char *action, int mask) {

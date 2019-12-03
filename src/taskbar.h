@@ -10,20 +10,15 @@
 #ifndef TASKBAR_H
 #define TASKBAR_H
 
+#include <vector>
+#include <map>
 #include "tray.h"
 #include "TrayComponent.h"
 
 struct MenuAction;
-struct ClientNode;
+class ClientNode;
+struct IconNode;
 struct TimeType;
-
-typedef struct ClientEntry {
-	ClientNode *client;
-} ClientEntry;
-
-typedef struct TaskEntry {
-	std::vector<ClientEntry*> clients;
-} TaskEntry;
 
 class TaskBar : public TrayComponent {
 private:
@@ -45,16 +40,41 @@ private:
 	TimeType mouseTime;
 	int mousex, mousey;
 
+	class BarItem {
+	public:
+	  BarItem(ClientNode* atLeastOne);
+	  virtual ~BarItem();
+	  bool ShouldFocusEntry();
+	  bool hasActiveClient();
+	  bool IsGroupOnTop();
+	  bool empty();
+	  bool RemoveClient(ClientNode *np);
+	  unsigned int activeCount();
+	  unsigned int focusCount();
+	  void MinimizeGroup();
+	  void focusGroup();
+	  std::vector<Window> getClientWindows();
+	  std::vector<ClientNode*> shouldFocus();
+	  const char* getClassName();
+	  const char* getName();
+	  IconNode *getIcon();
+	  void ShowClientList(TaskBar *bar);
+	  void RunTaskBarCommand(MenuAction* action, unsigned button);
+	private:
+	  std::vector<ClientNode*> clients;
+	};
+
+
 	static std::vector<TaskBar*> bars;
-	static std::vector<TaskEntry*> taskEntries;
+	static std::map<const char*, BarItem*> taskEntries;
 public:
 	void ComputeItemSize();
-	char ShouldShowEntry(const TaskEntry *tp);
-	static char ShouldFocusEntry(const TaskEntry *tp);
-	TaskEntry *GetEntry(int x, int y);
+	char ShouldShowEntry(const BarItem *tp);
+	//static char ShouldFocusEntry(const BarItem *tp);
+	BarItem *GetEntry(int x, int y);
 	void Render();
 	void Draw(Graphics *g);
-	void ShowClientList(TaskBar *bar, TaskEntry *tp);
+	void ShowClientList(TaskBar *bar, BarItem *tp);
 	static void RunTaskBarCommand(MenuAction *action, unsigned button);
 
 	void SetSize(int width, int height);
@@ -64,9 +84,9 @@ public:
 	void ProcessButtonRelease(int x, int y, int mask) {}
 	void ProcessMotionEvent(int x, int y, int mask);
 
-	static void MinimizeGroup(const TaskEntry *tp);
-	static void FocusGroup(const TaskEntry *tp);
-	static char IsGroupOnTop(const TaskEntry *entry);
+//	static void MinimizeGroup(const BarItem *tp);
+//	static void FocusGroup(const BarItem *tp);
+//	static char IsGroupOnTop(const BarItem *entry);
 	static void SignalTaskbar(const TimeType *now, int x, int y, Window w, void *data);
 
 	/*@{*/

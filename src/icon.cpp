@@ -130,13 +130,13 @@ void Icons::DestroyIcons(void) {
 	IconPathNode *pn;
 	while (iconPaths) {
 		pn = iconPaths->next;
-		Release(iconPaths->path);
+		delete[] iconPaths->path;
 		Release(iconPaths);
 		iconPaths = pn;
 	}
 	iconPathsTail = NULL;
 	if (iconHash) {
-		Release(iconHash);
+		delete[] (iconHash);
 		iconHash = NULL;
 	}
 	if (defaultIconName) {
@@ -159,7 +159,7 @@ void Icons::AddIconPath(char *path) {
 	Trim(path);
 
 	length = strlen(path);
-	if (path[length - 1] != '/') {
+	if (length >= 1 && path[length - 1] != '/') {
 		addSep = 1;
 	} else {
 		addSep = 0;
@@ -167,7 +167,8 @@ void Icons::AddIconPath(char *path) {
 
 	ip = new IconPathNode();
 	ip->path = new char[length + addSep + 1];
-	memcpy(ip->path, path, length + 1);
+	memset(ip->path, 0, length + addSep + 1);
+	strncpy(ip->path, path, length + 1);
 	if (addSep) {
 		ip->path[length] = '/';
 		ip->path[length + 1] = 0;
@@ -699,7 +700,7 @@ ScaledIconNode* GetScaledIcon(IconNode *icon, long fg, int rwidth,
 				CoordModeOrigin);
 		srcy += scaley;
 	}
-	Release(points);
+	delete[] points;
 
 	/* Release the mask GC. */
 	JXFreeGC(display, maskGC);
@@ -710,7 +711,7 @@ ScaledIconNode* GetScaledIcon(IconNode *icon, long fg, int rwidth,
 	/* Render the image to the color data pixmap. */
 	JXPutImage(display, np->image, rootGC, image, 0, 0, 0, 0, nwidth, nheight);
 	/* Release the XImage. */
-	Release(image->data);
+	delete[] image->data;
 	image->data = NULL;
 	JXDestroyImage(image);
 
@@ -822,7 +823,7 @@ void DoDestroyIcon(int index, IconNode *icon) {
 		}
 		DestroyImage(icon->images);
 		if (icon->name) {
-			Release(icon->name);
+			delete[] icon->name;
 		}
 
 		if (icon->prev) {

@@ -31,15 +31,10 @@ void Desktops::_StartupDesktops(void) {
 	unsigned int x;
 
 	for (x = 0; x < settings.desktopCount; x++) {
-		names.push_back(NULL);
-	}
-
-	for (x = 0; x < settings.desktopCount; x++) {
-		if (names[x] == NULL) {
-			char *defaultName = new char[4];
+			char defaultName[4];
+			memset(defaultName, 0, 4);
 			snprintf(defaultName, 4, "w-%d", x + 1);
-			names[x] = defaultName;
-		}
+			names.push_back(strdup(defaultName));
 	}
 
 	for (x = 0; x < settings.desktopCount; x++) {
@@ -50,11 +45,11 @@ void Desktops::_StartupDesktops(void) {
 /** Release desktop data. */
 void Desktops::_DestroyDesktops(void) {
 
-	unsigned int x;
-	for (x = 0; x < settings.desktopCount; x++) {
-		Release(names[x]);
+	for (int x = 0; x < names.size(); x++) {
+	  const char* name = names[x];
+		free(name);
 	}
-
+	names.clear();
 }
 
 /** Get the right desktop. */

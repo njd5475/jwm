@@ -1782,7 +1782,7 @@ TokenNode* TokenizeFile(const char *fileName) {
 	ExpandPath(&path);
 
 	int fd = open(path, O_RDONLY);
-	Release(path);
+	delete[] path;
 
 	if (fd < 0) {
 		return NULL;

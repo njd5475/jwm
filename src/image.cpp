@@ -642,7 +642,7 @@ void DestroyImage(ImageNode *image) {
    while(image) {
       ImageNode *next = image->next;
       if(image->data) {
-         Release(image->data);
+         delete[] image->data;
       }
       Release(image);
       image = next;

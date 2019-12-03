@@ -106,7 +106,7 @@ void Backgrounds::_DestroyBackgrounds(void) {
 	BackgroundNode *bp;
 	while (backgrounds) {
 		bp = backgrounds->next;
-		Release(backgrounds->value);
+		delete[](backgrounds->value);
 		Release(backgrounds);
 		backgrounds = bp;
 	}

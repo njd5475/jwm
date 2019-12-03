@@ -152,7 +152,7 @@ void Fonts::DestroyFonts(void) {
 	unsigned int x;
 	for (x = 0; x < FONT_COUNT; x++) {
 		if (fontNames[x]) {
-			Release(fontNames[x]);
+			delete[](fontNames[x]);
 			fontNames[x] = NULL;
 		}
 	}

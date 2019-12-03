@@ -70,7 +70,7 @@ void Screens::StartupScreens(void) {
 /** Shutdown screens. */
 void Screens::ShutdownScreens(void) {
 	if (screens) {
-		Release(screens);
+		delete[](screens);
 		screens = NULL;
 	}
 }
