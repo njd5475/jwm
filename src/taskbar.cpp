@@ -115,13 +115,13 @@ void TaskBar::SetSize(int width, int height) {
 /** Resize a task bar tray component. */
 void TaskBar::Resize() {
   TrayComponent::Resize();
-  if (this->buffer != None) {
-    JXFreePixmap(display, this->buffer);
+  if (this->pixmap != None) {
+    JXFreePixmap(display, this->pixmap);
   }
   this->pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(),
       this->getHeight(), rootDepth);
-  this->buffer = this->pixmap;
   Tray::ClearTrayDrawable(this);
+  this->UpdateSpecificTray(this->getTray());
 }
 
 /** Determine the size of items in the task bar. */
@@ -137,7 +137,6 @@ void TaskBar::ComputeItemSize() {
 
   } else {
 
-    BarItem *ep;
     unsigned itemCount = 0;
 
     this->itemHeight = this->getHeight();

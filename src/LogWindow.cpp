@@ -43,10 +43,11 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   JXSetWMNormalHints(display, window, &shints);
   JXStoreName(display, window, _("Portal"));
   Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE,
-      ATOM_NET_WM_WINDOW_TYPE_DIALOG);
+      ATOM_NET_WM_WINDOW_TYPE_UTILITY);
   node = ClientNode::Create(window, 0, 0);
-  node->setWMDialogStatus();
+  node->setNoBorderClose();
   node->FocusClient();
+  Hints::WriteState(node);
 
   /* Grab the mouse. */
   JXGrabButton(display, AnyButton, AnyModifier, window, True, ButtonReleaseMask,

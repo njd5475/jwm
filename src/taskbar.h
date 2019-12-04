@@ -69,7 +69,6 @@ private:
 	static std::map<const char*, BarItem*> taskEntries;
 public:
 	void ComputeItemSize();
-	char ShouldShowEntry(const BarItem *tp);
 	//static char ShouldFocusEntry(const BarItem *tp);
 	BarItem *GetEntry(int x, int y);
 	void Render();

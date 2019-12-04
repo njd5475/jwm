@@ -216,9 +216,92 @@ void ClientNode::LoadFocus(void) {
 }
 
 ClientNode::~ClientNode() {
+
+  ColormapNode *cp;
+
+  Assert(this->window != None);
+
+  /* Remove this client from the client list */
+  ClientList::RemoveFrom(this);
+  clientCount -= 1;
+  XDeleteContext(display, this->window, clientContext);
+  if (this->parent != None) {
+    XDeleteContext(display, this->parent, frameContext);
+  }
+
+  if (this->state.getStatus() & STAT_URGENT) {
+    _UnregisterCallback(SignalUrgent, this);
+  }
+
+  /* Make sure this client isn't active */
+  if (activeClient == this && !shouldExit) {
+    ClientList::FocusNextStacked(this);
+  }
+  if (activeClient == this) {
+
+    /* Must be the last client. */
+    Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, None);
+    activeClient = NULL;
+    JXSetInputFocus(display, rootWindow, RevertToParent, eventTime);
+
+  }
+
+  /* If the window manager is exiting (ie, not the client), then
+   * reparent etc. */
+  if (shouldExit && !(this->state.getStatus() & STAT_WMDIALOG)) {
+    if (this->state.getMaxFlags()) {
+      this->x = this->oldx;
+      this->y = this->oldy;
+      this->width = this->oldWidth;
+      this->height = this->oldHeight;
+      JXMoveResizeWindow(display, this->window, this->x, this->y, this->width,
+          this->height);
+    }
+    this->GravitateClient(1);
+    if ((this->state.getStatus() & STAT_HIDDEN)
+        || (!(this->state.getStatus() & STAT_MAPPED)
+            && (this->state.getStatus() & (STAT_MINIMIZED | STAT_SHADED)))) {
+      JXMapWindow(display, this->window);
+    }
+    JXUngrabButton(display, AnyButton, AnyModifier, this->window);
+    JXReparentWindow(display, this->window, rootWindow, this->x, this->y);
+    JXRemoveFromSaveSet(display, this->window);
+  }
+
+  /* Destroy the parent */
+  if (this->parent) {
+    JXDestroyWindow(display, this->parent);
+  }
+
+  if (this->instanceName) {
+    JXFree(this->instanceName);
+  }
+  if (this->className) {
+    JXFree(this->className);
+  }
+
+  if(this->window != window) {
+    JXKillClient(display, this->window);
+  }
+
+  TaskBar::RemoveClientFromTaskBar(this);
+  Places::RemoveClientStrut(this);
+
+  while (this->colormaps) {
+    cp = this->colormaps->next;
+    Release(this->colormaps);
+    this->colormaps = cp;
+  }
+
+  Icons::DestroyIcon(this->getIcon());
+
+  _RequireRestack();
+
   if (this->name) {
     delete[] this->name;
   }
+  this->name = NULL;
+
 }
 
 /** Add a window to management. */
@@ -1664,92 +1747,13 @@ void ClientNode::SendClientMessage(Window w, AtomType type, AtomType message) {
 
 /** Remove a client window from management. */
 void ClientNode::RemoveClient() {
-
-  ColormapNode *cp;
-
-  Assert(this->window != None);
-
-  /* Remove this client from the client list */
-  ClientList::RemoveFrom(this);
-  clientCount -= 1;
-  XDeleteContext(display, this->window, clientContext);
-  if (this->parent != None) {
-    XDeleteContext(display, this->parent, frameContext);
-  }
-
-  if (this->state.getStatus() & STAT_URGENT) {
-    _UnregisterCallback(SignalUrgent, this);
-  }
-
-  /* Make sure this client isn't active */
-  if (activeClient == this && !shouldExit) {
-    ClientList::FocusNextStacked(this);
-  }
-  if (activeClient == this) {
-
-    /* Must be the last client. */
-    Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, None);
-    activeClient = NULL;
-    JXSetInputFocus(display, rootWindow, RevertToParent, eventTime);
-
-  }
-
-  /* If the window manager is exiting (ie, not the client), then
-   * reparent etc. */
-  if (shouldExit && !(this->state.getStatus() & STAT_WMDIALOG)) {
-    if (this->state.getMaxFlags()) {
-      this->x = this->oldx;
-      this->y = this->oldy;
-      this->width = this->oldWidth;
-      this->height = this->oldHeight;
-      JXMoveResizeWindow(display, this->window, this->x, this->y, this->width,
-          this->height);
-    }
-    this->GravitateClient(1);
-    if ((this->state.getStatus() & STAT_HIDDEN)
-        || (!(this->state.getStatus() & STAT_MAPPED)
-            && (this->state.getStatus() & (STAT_MINIMIZED | STAT_SHADED)))) {
-      JXMapWindow(display, this->window);
-    }
-    JXUngrabButton(display, AnyButton, AnyModifier, this->window);
-    JXReparentWindow(display, this->window, rootWindow, this->x, this->y);
-    JXRemoveFromSaveSet(display, this->window);
-  }
-
-  /* Destroy the parent */
-  if (this->parent) {
-    JXDestroyWindow(display, this->parent);
-  }
-
-  if (this->instanceName) {
-    JXFree(this->instanceName);
-  }
-  if (this->className) {
-    JXFree(this->className);
-  }
-
-  TaskBar::RemoveClientFromTaskBar(this);
-  Places::RemoveClientStrut(this);
-
-  while (this->colormaps) {
-    cp = this->colormaps->next;
-    Release(this->colormaps);
-    this->colormaps = cp;
-  }
-
-  Icons::DestroyIcon(this->getIcon());
-
   std::vector<ClientNode*>::iterator found;
-  if ((found = std::find(nodes.begin(), nodes.end(), this)) != nodes.end()) {
+  if((found = std::find(nodes.begin(), nodes.end(), this)) != nodes.end()) {
     nodes.erase(found);
   }
 
   delete this;
-
-  _RequireRestack();
-
 }
-
 
 /** Determine the title to display for a client. */
 void ClientNode::ReadWMName() {
@@ -1762,11 +1766,13 @@ void ClientNode::ReadWMName() {
   unsigned char *name;
 
   if (this->getName()) {
-    Release(this->getName());
+    delete[] (this->getName());
   }
 
-  status = JXGetWindowProperty(display, this->getWindow(), Hints::atoms[ATOM_NET_WM_NAME], 0, 1024, False,
-      Hints::atoms[ATOM_UTF8_STRING], &realType, &realFormat, &count, &extra, &name);
+  status = JXGetWindowProperty(display, this->getWindow(),
+      Hints::atoms[ATOM_NET_WM_NAME], 0, 1024, False,
+      Hints::atoms[ATOM_UTF8_STRING], &realType, &realFormat, &count, &extra,
+      &name);
   if (status != Success || realFormat == 0) {
     this->name = NULL;
   } else {
@@ -1779,8 +1785,9 @@ void ClientNode::ReadWMName() {
 
 #ifdef USE_XUTF8
   if (!this->getName()) {
-    status = JXGetWindowProperty(display, this->getWindow(), XA_WM_NAME, 0, 1024, False,
-        Hints::atoms[ATOM_COMPOUND_TEXT], &realType, &realFormat, &count, &extra, &name);
+    status = JXGetWindowProperty(display, this->getWindow(), XA_WM_NAME, 0,
+        1024, False, Hints::atoms[ATOM_COMPOUND_TEXT], &realType, &realFormat,
+        &count, &extra, &name);
     if (status == Success && realFormat != 0) {
       char **tlist;
       XTextProperty tprop;
@@ -1789,7 +1796,8 @@ void ClientNode::ReadWMName() {
       tprop.encoding = Hints::atoms[ATOM_COMPOUND_TEXT];
       tprop.format = realFormat;
       tprop.nitems = count;
-      if (XmbTextPropertyToTextList(display, &tprop, &tlist, &tcount) == Success && tcount > 0) {
+      if (XmbTextPropertyToTextList(display, &tprop, &tlist, &tcount) == Success
+          && tcount > 0) {
         const size_t len = strlen(tlist[0]) + 1;
         this->name = new char[len];
         memcpy(this->name, tlist[0], len);
@@ -1820,7 +1828,6 @@ void ClientNode::ReadWMClass() {
     this->className = hint.res_class;
   }
 }
-
 
 /** Get the active client (possibly NULL). */
 ClientNode* ClientNode::GetActiveClient(void) {

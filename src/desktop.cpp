@@ -46,8 +46,7 @@ void Desktops::_StartupDesktops(void) {
 void Desktops::_DestroyDesktops(void) {
 
 	for (int x = 0; x < names.size(); x++) {
-	  const char* name = names[x];
-		free(name);
+		free(names[x]);
 	}
 	names.clear();
 }

@@ -61,12 +61,10 @@ void Commands::RunCommands(std::vector<char*> commands) {
 
 /** Release a command list. */
 void Commands::ReleaseCommands(std::vector<char*> commands) {
-	std::vector<char*>::iterator it;
-	while (!commands.empty()) {
-		it = commands.begin();
-		Release((*it));
-		commands.erase(it);
+	for(auto command : commands) {
+		Release(command);
 	}
+	commands.clear();
 }
 
 /** Add a command to a command list. */
