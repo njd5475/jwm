@@ -50,6 +50,7 @@ private:
 	static std::vector<char*> startupCommands;
 	static std::vector<char*> shutdownCommands;
 	static std::vector<char*> restartCommands;
+	static std::vector<pid_t> pids;
 
 	static void RunCommands(std::vector<char*> commands);
 	static void ReleaseCommands(std::vector<char*> commands);

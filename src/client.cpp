@@ -62,7 +62,7 @@ void ClientNode::StartupClients(void) {
   for (x = 0; x < childrenCount; x++) {
     if (JXGetWindowAttributes(display, childrenReturn[x], &attr)) {
       if (attr.override_redirect == False && attr.map_state == IsViewable) {
-        new ClientNode(childrenReturn[x], 1, 1);
+        Create(childrenReturn[x], 1, 1);
       }
     }
   }
@@ -217,6 +217,8 @@ void ClientNode::LoadFocus(void) {
 
 ClientNode::~ClientNode() {
 
+  this->state.setDelete();
+  SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
   ColormapNode *cp;
 
   Assert(this->window != None);
@@ -281,7 +283,7 @@ ClientNode::~ClientNode() {
   }
 
   if(this->window != window) {
-    JXKillClient(display, this->window);
+
   }
 
   TaskBar::RemoveClientFromTaskBar(this);
