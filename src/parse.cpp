@@ -139,8 +139,8 @@ static void ParseGroupOption(const TokenNode *tp, struct GroupType *group, const
 /* Style. */
 static void ParseWindowStyle(const TokenNode *tp);
 static void ParseActiveWindowStyle(const TokenNode *tp);
-static void ParseTrayStyle(const TokenNode *tp, FontType font, ColorType baseColor);
-static void ParseActive(const TokenNode *tp, ColorType fg, ColorType bg1, ColorType bg2, ColorType up, ColorType down);
+static void ParseTrayStyle(const TokenNode *tp, FontType font, ColorName baseColor);
+static void ParseActive(const TokenNode *tp, ColorName fg, ColorName bg1, ColorName bg2, ColorName up, ColorName down);
 static void ParsePagerStyle(const TokenNode *tp);
 static void ParseClockStyle(const TokenNode *tp);
 static void ParseMenuStyle(const TokenNode *tp);
@@ -157,7 +157,7 @@ static void ParseFocusModel(const TokenNode *tp);
 
 static AlignmentType ParseTextAlignment(const TokenNode *tp);
 static void ParseDecorations(const TokenNode *tp, DecorationsType *deco);
-static void ParseGradient(const char *value, ColorType a, ColorType b);
+static void ParseGradient(const char *value, ColorName a, ColorName b);
 static char* FindAttribute(AttributeNode *ap, const char *name);
 static int ParseTokenValue(const StringMappingType *mapping, int count, const TokenNode *tp, int def);
 static int ParseAttribute(const StringMappingType *mapping, int count, const TokenNode *tp, const char *attr, int def);
@@ -1032,17 +1032,17 @@ void ParseDesktopBackground(int desktop, const TokenNode *tp) {
 }
 
 /** Parse tray style. */
-void ParseTrayStyle(const TokenNode *tp, FontType font, ColorType fg) {
+void ParseTrayStyle(const TokenNode *tp, FontType font, ColorName fg) {
 	const TokenNode *np;
-	const ColorType bg1 = fg + COLOR_TRAY_BG1 - COLOR_TRAY_FG;
-	const ColorType bg2 = fg + COLOR_TRAY_BG2 - COLOR_TRAY_FG;
-	const ColorType activeFg = fg + COLOR_TRAY_ACTIVE_FG - COLOR_TRAY_FG;
-	const ColorType activeBg1 = fg + COLOR_TRAY_ACTIVE_BG1 - COLOR_TRAY_FG;
-	const ColorType activeBg2 = fg + COLOR_TRAY_ACTIVE_BG2 - COLOR_TRAY_FG;
-	const ColorType up = fg + COLOR_TRAY_UP - COLOR_TRAY_FG;
-	const ColorType down = fg + COLOR_TRAY_DOWN - COLOR_TRAY_FG;
-	const ColorType activeUp = fg + COLOR_TRAY_ACTIVE_UP - COLOR_TRAY_FG;
-	const ColorType activeDown = fg + COLOR_TRAY_ACTIVE_DOWN - COLOR_TRAY_FG;
+	const ColorName bg1 = fg + COLOR_TRAY_BG1 - COLOR_TRAY_FG;
+	const ColorName bg2 = fg + COLOR_TRAY_BG2 - COLOR_TRAY_FG;
+	const ColorName activeFg = fg + COLOR_TRAY_ACTIVE_FG - COLOR_TRAY_FG;
+	const ColorName activeBg1 = fg + COLOR_TRAY_ACTIVE_BG1 - COLOR_TRAY_FG;
+	const ColorName activeBg2 = fg + COLOR_TRAY_ACTIVE_BG2 - COLOR_TRAY_FG;
+	const ColorName up = fg + COLOR_TRAY_UP - COLOR_TRAY_FG;
+	const ColorName down = fg + COLOR_TRAY_DOWN - COLOR_TRAY_FG;
+	const ColorName activeUp = fg + COLOR_TRAY_ACTIVE_UP - COLOR_TRAY_FG;
+	const ColorName activeDown = fg + COLOR_TRAY_ACTIVE_DOWN - COLOR_TRAY_FG;
 
 	/* TaskListStyle has extra attributes. */
 	if (tp->type == TOK_TASKLISTSTYLE) {
@@ -1094,7 +1094,7 @@ void ParseTrayStyle(const TokenNode *tp, FontType font, ColorType fg) {
 }
 
 /** Parse active tray style. */
-void ParseActive(const TokenNode *tp, ColorType fg, ColorType bg1, ColorType bg2, ColorType up, ColorType down) {
+void ParseActive(const TokenNode *tp, ColorName fg, ColorName bg1, ColorName bg2, ColorName up, ColorName down) {
 	const TokenNode *np;
 
 	for (np = tp->subnodeHead; np; np = np->next) {
@@ -1690,7 +1690,7 @@ void ParseDecorations(const TokenNode *tp, DecorationsType *deco) {
 }
 
 /** Parse a color which may be a gradient. */
-void ParseGradient(const char *value, ColorType a, ColorType b) {
+void ParseGradient(const char *value, ColorName a, ColorName b) {
 
 	const char *sep;
 	char *temp;

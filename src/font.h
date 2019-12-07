@@ -48,7 +48,7 @@ public:
 	 * @param width The maximum width allowed.
 	 * @param str The string to render.
 	 */
-	static void RenderString(Drawable d, FontType font, ColorType color, int x, int y, int width, const char *str);
+	static void RenderString(Drawable d, FontType font, ColorName color, int x, int y, int width, const char *str);
 
 	/** Get the width of a string.
 	 * @param ft The font used to determine the width.

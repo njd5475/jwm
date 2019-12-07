@@ -308,7 +308,7 @@ void Fonts::SetFont(FontType type, const char *value) {
 }
 
 /** Display a string. */
-void Fonts::RenderString(Drawable d, FontType font, ColorType color, int x,
+void Fonts::RenderString(Drawable d, FontType font, ColorName color, int x,
 		int y, int width, const char *str) {
 	XRectangle rect;
 	Region renderRegion;

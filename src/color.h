@@ -14,7 +14,7 @@
  * For easier parsing, tray components must all have colors ordered the
  * same way as COLOR_TRAY_*.
  */
-typedef unsigned char ColorType;
+typedef unsigned char ColorName;
 #define COLOR_TITLE_FG                 0
 #define COLOR_TITLE_ACTIVE_FG          1
 #define COLOR_TITLE_BG1                2
@@ -97,7 +97,7 @@ public:
 	 * @param c The component whose color to set.
 	 * @param value The color to use.
 	 */
-	static void SetColor(ColorType c, const char *value);
+	static void SetColor(ColorName c, const char *value);
 
 	/** Parse a color.
 	 * @param value The color name or hex value.
@@ -116,7 +116,7 @@ public:
  * @param type The color whose XFT color to get.
  * @return The XFT color.
  */
-static XftColor *GetXftColor(ColorType type);
+static XftColor *GetXftColor(ColorName type);
 #endif
 
 private:
@@ -137,7 +137,7 @@ private:
 
 	static unsigned long GetDirectPixel(const XColor *c);
 	static void GetMappedPixel(XColor *c);
-	static void AllocateColor(ColorType type, XColor *c);
+	static void AllocateColor(ColorName type, XColor *c);
 
 	static unsigned long ReadHex(const char *hex);
 	static char ParseColorToRGB(const char *value, XColor *c);
@@ -145,8 +145,8 @@ private:
 	static void InitializeNames(void);
 
 	static XColor GetXColorFromRGB(unsigned long rgb);
-	static void LightenColor(ColorType oldColor, ColorType newColor);
-	static void DarkenColor(ColorType oldColor, ColorType newColor);
+	static void LightenColor(ColorName oldColor, ColorName newColor);
+	static void DarkenColor(ColorName oldColor, ColorName newColor);
 
 };
 

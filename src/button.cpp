@@ -20,7 +20,7 @@
 void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill, bool border,
 		Drawable drawable, struct IconNode *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
 
-	ColorType fg;
+	ColorName fg;
 	long bg1, bg2;
 	long up, down;
 	DecorationsType decorations;

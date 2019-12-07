@@ -772,7 +772,7 @@ void Menus::DrawMenuItem(Menu *menu, MenuItem *item, int index) {
 
 	if (item->type != MENU_ITEM_SEPARATOR) {
 		ButtonType type = BUTTON_LABEL;
-		ColorType fg = COLOR_MENU_FG;
+		ColorName fg = COLOR_MENU_FG;
 		if (menu->currentIndex == index) {
 			type = BUTTON_MENU_ACTIVE;
 			fg = COLOR_MENU_ACTIVE_FG;

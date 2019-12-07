@@ -16,7 +16,7 @@
 
 /** Mapping between color types and default values. */
 typedef struct {
-	ColorType type;
+	ColorName type;
 	unsigned int value;
 } DefaultColorNode;
 
@@ -74,8 +74,8 @@ static const DefaultColorNode DEFAULT_COLORS[] = {
 static const unsigned DEFAULT_COUNT = ARRAY_LENGTH(DEFAULT_COLORS);
 
 static struct {
-	ColorType src;
-	ColorType dest;
+	ColorName src;
+	ColorName dest;
 } INHERITED_COLORS[] = { { COLOR_TRAY_FG, COLOR_CLOCK_FG }, { COLOR_TRAY_BG1, COLOR_CLOCK_BG1 }, { COLOR_TRAY_BG2,
 		COLOR_CLOCK_BG2 }, { COLOR_TRAY_FG, COLOR_TASKLIST_FG }, { COLOR_TRAY_BG1, COLOR_TASKLIST_BG1 }, {
 		COLOR_TRAY_BG2, COLOR_TASKLIST_BG2 }, { COLOR_TRAY_ACTIVE_FG, COLOR_TASKLIST_ACTIVE_FG }, {
@@ -90,9 +90,9 @@ static struct {
 static const unsigned INHERITED_COUNT = ARRAY_LENGTH(INHERITED_COLORS);
 
 static struct {
-	ColorType base;
-	ColorType up;
-	ColorType down;
+	ColorName base;
+	ColorName up;
+	ColorName down;
 } DERIVED_COLORS[] = { { COLOR_TITLE_BG1, COLOR_TITLE_UP, COLOR_TITLE_DOWN }, { COLOR_TITLE_ACTIVE_BG1,
 		COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN }, { COLOR_TRAY_BG1, COLOR_TRAY_UP, COLOR_TRAY_DOWN }, {
 		COLOR_TRAY_ACTIVE_BG1, COLOR_TRAY_ACTIVE_UP, COLOR_TRAY_ACTIVE_DOWN }, { COLOR_TASKLIST_BG1, COLOR_TASKLIST_UP,
@@ -148,9 +148,9 @@ void Colors::StartupColors(void) {
 	/* Inherit colors. */
 	if (names) {
 		for (x = 0; x < INHERITED_COUNT; x++) {
-			const ColorType dest = INHERITED_COLORS[x].dest;
+			const ColorName dest = INHERITED_COLORS[x].dest;
 			if (!names[dest]) {
-				const ColorType src = INHERITED_COLORS[x].src;
+				const ColorName src = INHERITED_COLORS[x].src;
 				names[dest] = CopyString(names[src]);
 			}
 		}
@@ -170,7 +170,7 @@ void Colors::StartupColors(void) {
 
 	/* Load defaults. */
 	for (x = 0; x < DEFAULT_COUNT; x++) {
-		const ColorType type = DEFAULT_COLORS[x].type;
+		const ColorName type = DEFAULT_COLORS[x].type;
 		if (!names || !names[type]) {
 			const unsigned rgb = DEFAULT_COLORS[x].value;
 			c.red = ((rgb >> 16) & 0xFF) * 257;
@@ -274,7 +274,7 @@ unsigned long Colors::GetRGBFromXColor(const XColor *c) {
 }
 
 /** Set the color to use for a component. */
-void Colors::SetColor(ColorType c, const char *value) {
+void Colors::SetColor(ColorName c, const char *value) {
 	if (JUNLIKELY(!value)) {
 		Warning("empty color tag");
 		return;
@@ -383,7 +383,7 @@ void Colors::GetMappedPixel(XColor *c) {
 }
 
 /** Allocate a pixel from RGB components. */
-void Colors::AllocateColor(ColorType type, XColor *c) {
+void Colors::AllocateColor(ColorName type, XColor *c) {
 	unsigned i;
 
 	/* Save the desired RGB color. */
@@ -427,7 +427,7 @@ void Colors::GetColor(XColor *c) {
 
 /** Get an XFT color for the specified component. */
 #ifdef USE_XFT
-XftColor* Colors::GetXftColor(ColorType type) {
+XftColor* Colors::GetXftColor(ColorName type) {
 
 	if (!xftColors[type]) {
 		XRenderColor rcolor;
@@ -458,7 +458,7 @@ XColor Colors::GetXColorFromRGB(unsigned long rgb) {
 }
 
 /** Compute a color lighter than the input. */
-void Colors::LightenColor(ColorType oldColor, ColorType newColor) {
+void Colors::LightenColor(ColorName oldColor, ColorName newColor) {
 
 	XColor temp;
 	int red, green, blue;
@@ -493,7 +493,7 @@ void Colors::LightenColor(ColorType oldColor, ColorType newColor) {
 }
 
 /** Compute a color darker than the input. */
-void Colors::DarkenColor(ColorType oldColor, ColorType newColor) {
+void Colors::DarkenColor(ColorName oldColor, ColorName newColor) {
 
 	XColor temp;
 	int red, green, blue;

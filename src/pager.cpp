@@ -588,7 +588,7 @@ void PagerType::DrawPagerClient(ClientNode *np) {
 
   /* Fill the client if there's room. */
   if (width > 1 && height > 1) {
-    ColorType fillColor;
+    ColorName fillColor;
     if ((np->getState()->getStatus() & STAT_ACTIVE)
         && (np->getState()->getDesktop() == currentDesktop
             || (np->getState()->getStatus() & STAT_STICKY))) {

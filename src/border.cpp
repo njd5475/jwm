@@ -354,7 +354,7 @@ void Border::DrawBorder(ClientNode *np) {
 
 /** Helper method for drawing borders. */
 void Border::DrawBorderHelper(const ClientNode *np) {
-	ColorType borderTextColor;
+	ColorName borderTextColor;
 
 	long titleColor1, titleColor2;
 	long outlineColor;
