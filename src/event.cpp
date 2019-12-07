@@ -33,6 +33,7 @@
 #include "pager.h"
 #include "DesktopEnvironment.h"
 #include "LogWindow.h"
+#include "Flex.h"
 
 #define MIN_TIME_DELTA 50
 
@@ -285,6 +286,7 @@ char _WaitForEvent(XEvent *event) {
 		}
 		sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
 		Logger::Log(buf);
+		Flex::DrawAll();
 
 		if (!handled) {
 			handled = Tray::ProcessTrayEvent(event);

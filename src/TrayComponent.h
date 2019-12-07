@@ -109,7 +109,9 @@ public:
 		this->Create();
 	}
 
-	virtual void Draw() {}
+	virtual void Draw() {
+	  Log("TrayComponent Draw called but not implemented");
+	}
 
 	virtual void Create() = 0;
 
@@ -126,7 +128,9 @@ public:
 	/** Callback to redraw the component contents.
 	 * This is only needed for components that use actions.
 	 */
-	virtual void Redraw() {}
+	virtual void Redraw() {
+	  Log("TrayComponent Redraw called but not implemented");
+	}
 
 	void ungrab() {this->grabbed = 0;}
 	void grab() {this->grabbed = 1;}

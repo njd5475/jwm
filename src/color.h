@@ -10,6 +10,8 @@
 #ifndef COLOR_H
 #define COLOR_H
 
+#include "jwm.h"
+
 /** Enumeration of colors used for various JWM components.
  * For easier parsing, tray components must all have colors ordered the
  * same way as COLOR_TRAY_*.

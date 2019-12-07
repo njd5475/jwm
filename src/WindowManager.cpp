@@ -52,6 +52,7 @@
 #include "timing.h"
 #include "tray.h"
 #include "traybutton.h"
+#include "Flex.h"
 
 WindowManager::WindowManager() {
 
@@ -158,6 +159,8 @@ void WindowManager::Startup(void) {
 	LogWindow::Add(30, 30, 300, 200);
 	LogWindow::StartupPortals();
 	LogWindow::DrawAll();
+
+	Flex::Create();
 }
 
 /** Shutdown the various JWM components.
@@ -227,6 +230,7 @@ void WindowManager::Destroy(void) {
 	TaskBar::DestroyTaskBar();
 	TrayButton::DestroyTrayButtons();
 	Tray::DestroyTray();
+	Flex::DestroyFlexes();
 }
 
 /** Send _JWM_RESTART to the root window. */
