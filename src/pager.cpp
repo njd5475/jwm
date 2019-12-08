@@ -198,15 +198,16 @@ void PagerType::StartPagerMove(int x, int y) {
   for (int i = 0; i < all.size(); ++i) {
     np = all[i];
     /* Skip this client if it isn't mapped. */
-    if (!(np->getState()->getStatus() & STAT_MAPPED)) {
+    if (!(np->getState()->isMapped())) {
       continue;
     }
-    if (np->getState()->getStatus() & STAT_NOPAGER) {
+    //TODO: Pager should have an ignore list.
+    if (np->getState()->shouldNotShowInPager()) {
       continue;
     }
 
     /* Skip this client if it isn't on the selected desktop. */
-    if (np->getState()->getStatus() & STAT_STICKY) {
+    if (np->getState()->isSticky()) {
       if (currentDesktop != desktop) {
         continue;
       }
@@ -340,7 +341,7 @@ void PagerType::StartPagerMove(int x, int y) {
 
       /* If this client isn't sticky and now on a different desktop
        * change the client's desktop. */
-      if (!(np->getState()->getStatus() & STAT_STICKY)) {
+      if (!(np->getState()->isSticky())) {
         if (desktop != oldDesk) {
           np->SetClientDesktop((unsigned int) desktop);
           oldDesk = desktop;
@@ -533,15 +534,15 @@ void PagerType::DrawPagerClient(ClientNode *np) {
   int offx, offy;
 
   /* Don't draw the client if it isn't mapped. */
-  if (!(np->getState()->getStatus() & STAT_MAPPED)) {
+  if (!(np->getState()->isMapped())) {
     return;
   }
-  if (np->getState()->getStatus() & STAT_NOPAGER) {
+  if (np->getState()->shouldNotShowInPager()) {
     return;
   }
 
   /* Determine the desktop for the client. */
-  if (np->getState()->getStatus() & STAT_STICKY) {
+  if (np->getState()->isSticky()) {
     offx = currentDesktop % settings.desktopWidth;
     offy = currentDesktop / settings.desktopWidth;
   } else {
@@ -589,11 +590,11 @@ void PagerType::DrawPagerClient(ClientNode *np) {
   /* Fill the client if there's room. */
   if (width > 1 && height > 1) {
     ColorName fillColor;
-    if ((np->getState()->getStatus() & STAT_ACTIVE)
+    if ((np->getState()->isActive())
         && (np->getState()->getDesktop() == currentDesktop
-            || (np->getState()->getStatus() & STAT_STICKY))) {
+            || (np->getState()->isSticky()))) {
       fillColor = COLOR_PAGER_ACTIVE_FG;
-    } else if (np->getState()->getStatus() & STAT_FLASH) {
+    } else if (np->getState()->shouldFlash()) {
       fillColor = COLOR_PAGER_ACTIVE_FG;
     } else {
       fillColor = COLOR_PAGER_FG;

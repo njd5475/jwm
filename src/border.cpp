@@ -185,7 +185,7 @@ MouseContextType Border::GetBorderContext(const ClientNode *np, int x, int y) {
 
 	resizeMask = MC_BORDER_S | MC_BORDER_N | MC_BORDER_E | MC_BORDER_W
 			| MC_BORDER;
-	if (np->getState()->getStatus() & STAT_SHADED) {
+	if (np->getState()->isShaded()) {
 		resizeMask &= ~(MC_BORDER_N | MC_BORDER_S);
 	}
 
@@ -240,14 +240,14 @@ void Border::ResetBorder(const ClientNode *np) {
 	/* Determine the size of the window. */
 	GetBorderSize(np->getState(), &north, &south, &east, &west);
 	width = np->getWidth() + east + west;
-	if (np->getState()->getStatus() & STAT_SHADED) {
+	if (np->getState()->isShaded()) {
 		height = north + south;
 	} else {
 		height = np->getHeight() + north + south;
 	}
 
 	/** Set the window size. */
-	if (!(np->getState()->getStatus() & STAT_SHADED)) {
+	if (!(np->getState()->isShaded())) {
 		JXMoveResizeWindow(display, np->getWindow(), west, north,
 				np->getWidth(), np->getHeight());
 	}
@@ -255,7 +255,8 @@ void Border::ResetBorder(const ClientNode *np) {
 			np->getY() - north, width, height);
 
 #ifdef USE_SHAPE
-	if (settings.cornerRadius > 0 || (np->getState()->getStatus() & STAT_SHAPED)) {
+  if (settings.cornerRadius > 0
+      || (np->getState()->isShaped())) {
 
 		/* First set the shape to the window border. */
 		shapePixmap = JXCreatePixmap(display, np->getParent(), width, height,
@@ -269,8 +270,8 @@ void Border::ResetBorder(const ClientNode *np) {
 		/* Draw the window area without the corners. */
 		/* Corner bound radius -1 to allow slightly better outline drawing */
 		JXSetForeground(display, shapeGC, 1);
-		if ((np->getState()->getStatus() & STAT_FULLSCREEN)
-				&& !(np->getState()->getStatus() & STAT_SHADED)) {
+		if ((np->getState()->isFullscreen())
+				&& !(np->getState()->isShaded())) {
 			JXFillRectangle(display, shapePixmap, shapeGC, 0, 0, width, height);
 		} else {
 			FillRoundedRectangle(shapePixmap, shapeGC, 0, 0, width, height,
@@ -278,8 +279,8 @@ void Border::ResetBorder(const ClientNode *np) {
 		}
 
 		/* Apply the client window. */
-		if (!(np->getState()->getStatus() & STAT_SHADED)
-				&& (np->getState()->getStatus() & STAT_SHAPED)) {
+		if (!(np->getState()->isShaded())
+				&& (np->getState()->isShaped())) {
 
 			XRectangle *rects;
 			int count;
@@ -330,12 +331,12 @@ void Border::DrawBorder(ClientNode *np) {
 	}
 
 	/* Must be either mapped or shaded to have a border. */
-	if (!(np->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED))) {
+	if (!(np->getState()->isStatus(STAT_MAPPED | STAT_SHADED))) {
 		return;
 	}
 
 	/* Hidden and fullscreen windows don't get borders. */
-	if (np->getState()->getStatus() & (STAT_HIDDEN | STAT_FULLSCREEN)) {
+	if (np->getState()->isStatus(STAT_HIDDEN | STAT_FULLSCREEN)) {
 		return;
 	}
 
@@ -373,7 +374,7 @@ void Border::DrawBorderHelper(const ClientNode *np) {
 	height = np->getHeight() + north + south;
 
 	/* Determine the colors and gradients to use. */
-	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
+	if (np->getState()->isStatus(STAT_ACTIVE | STAT_FLASH)) {
 
 		borderTextColor = COLOR_TITLE_ACTIVE_FG;
 		titleColor1 = Colors::lookupColor(COLOR_TITLE_ACTIVE_BG1);
@@ -469,7 +470,7 @@ void Border::DrawBorderHelper(const ClientNode *np) {
 		DrawBorderHandles(np, np->getParent(), gc);
 	} else {
 		JXSetForeground(display, gc, outlineColor);
-		if (np->getState()->getStatus() & STAT_SHADED) {
+		if (np->getState()->isShaded()) {
 			DrawRoundedRectangle(np->getParent(), gc, 0, 0, width - 1,
 					north - 1, settings.cornerRadius);
 		} else {
@@ -497,7 +498,7 @@ void Border::DrawBorderHandles(const ClientNode *np, Pixmap canvas, GC gc) {
 	GetBorderSize(np->getState(), &north, &south, &east, &west);
 	titleHeight = GetTitleHeight();
 	width = np->getWidth() + east + west;
-	if (np->getState()->getStatus() & STAT_SHADED) {
+	if (np->getState()->isShaded()) {
 		height = north + south;
 	} else {
 		height = np->getHeight() + north + south;
@@ -507,7 +508,7 @@ void Border::DrawBorderHandles(const ClientNode *np, Pixmap canvas, GC gc) {
 	starty = settings.borderWidth;
 
 	/* Determine the colors to use. */
-	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
+	if (np->getState()->isStatus(STAT_ACTIVE | STAT_FLASH)) {
 		pixelUp = Colors::lookupColor(COLOR_TITLE_ACTIVE_UP);
 		pixelDown = Colors::lookupColor(COLOR_TITLE_ACTIVE_DOWN);
 	} else {
@@ -638,7 +639,7 @@ void Border::DrawBorderHandles(const ClientNode *np, Pixmap canvas, GC gc) {
 
 	/* Draw marks */
 	if ((np->getState()->getBorder() & BORDER_RESIZE)
-			&& !(np->getState()->getStatus() & STAT_SHADED)) {
+			&& !(np->getState()->isShaded())) {
 
 		/* Upper left */
 		segments[0].x1 = titleHeight + settings.borderWidth - 1;
@@ -771,7 +772,7 @@ void Border::DrawButtonBorder(const ClientNode *np, int x, Pixmap canvas,
 	}
 
 	/* Determine the colors to use. */
-	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
+	if (np->getState()->isStatus(STAT_ACTIVE | STAT_FLASH)) {
 		pixelUp = Colors::lookupColor(COLOR_TITLE_ACTIVE_UP);
 		pixelDown = Colors::lookupColor(COLOR_TITLE_ACTIVE_DOWN);
 	} else {
@@ -814,7 +815,7 @@ XPoint Border::DrawBorderButtons(const ClientNode *np, Pixmap canvas, GC gc) {
 					settings.borderWidth - 1 : 0;
 
 	/* Determine the foreground color to use. */
-	if (np->getState()->getStatus() & (STAT_ACTIVE | STAT_FLASH)) {
+	if (np->getState()->isStatus(STAT_ACTIVE | STAT_FLASH)) {
 		fg = Colors::lookupColor(COLOR_TITLE_ACTIVE_FG);
 	} else {
 		fg = Colors::lookupColor(COLOR_TITLE_FG);
@@ -1115,7 +1116,7 @@ void Border::GetBorderSize(const ClientState *state, int *north, int *south,
 	Assert(west);
 
 	/* Full screen is a special case. */
-	if (state->getStatus() & STAT_FULLSCREEN) {
+	if (state->isFullscreen()) {
 		*north = 0;
 		*south = 0;
 		*east = 0;
@@ -1136,7 +1137,7 @@ void Border::GetBorderSize(const ClientState *state, int *north, int *south,
 			*north += settings.borderWidth;
 			*south = settings.borderWidth;
 		} else {
-			if (state->getStatus() & STAT_SHADED) {
+			if (state->isShaded()) {
 				*south = 0;
 			} else {
 				*south = settings.borderWidth;

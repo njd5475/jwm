@@ -142,7 +142,7 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
 		for (int i = 0; i < clients.size(); ++i) {
 			ClientNode *np = clients[i];
-			if (np->getStatus() & STAT_STICKY) {
+			if (np->getState()->isSticky()) {
 				continue;
 			}
 			if (np->getState()->getDesktop() == currentDesktop) {
@@ -156,7 +156,7 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
 		for (int i = 0; i < clients.size(); ++i) {
 			ClientNode *np = clients[i];
-			if (np->getStatus() & STAT_STICKY) {
+			if (np->getState()->isSticky()) {
 				continue;
 			}
 			if (np->getState()->getDesktop() == desktop) {
@@ -245,19 +245,19 @@ void Desktops::_ShowDesktop(void) {
 		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
 		for (int i = 0; i < clients.size(); ++i) {
 			np = clients[i];
-			if (np->getStatus() & STAT_NOLIST) {
+			if (np->getState()->shouldSkipInTaskList()) {
 				continue;
 			}
-			if ((np->getState()->getDesktop() == currentDesktop) || (np->getStatus() & STAT_STICKY)) {
+			if ((np->getState()->getDesktop() == currentDesktop) || (np->getState()->isSticky())) {
 				if (showing[currentDesktop]) {
-					if (np->getStatus() & STAT_SDESKTOP) {
+					if (np->getState()->wasMinimizedToShowDesktop()) {
 						np->RestoreClient(0);
 					}
 				} else {
-					if (np->getStatus() & STAT_ACTIVE) {
+					if (np->getState()->isActive()) {
 						JXSetInputFocus(display, rootWindow, RevertToParent, CurrentTime);
 					}
-					if (np->getStatus() & (STAT_MAPPED | STAT_SHADED)) {
+					if (np->getState()->isStatus(STAT_MAPPED | STAT_SHADED)) {
 						np->MinimizeClient(0);
 						np->setSDesktopStatus();
 					}
@@ -276,10 +276,10 @@ void Desktops::_ShowDesktop(void) {
 			std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
 			for(int i = 0; i < clients.size(); ++i) {
 				np = clients[i];
-				if (np->getStatus() & STAT_NOLIST) {
+				if (np->getState()->shouldSkipInTaskList()) {
 					continue;
 				}
-				if ((np->getDesktop() == currentDesktop) || (np->getStatus() & STAT_STICKY)) {
+				if ((np->getDesktop() == currentDesktop) || (np->getState()->isSticky())) {
 					if (first) {
 						np->FocusClient();
 						first = 0;

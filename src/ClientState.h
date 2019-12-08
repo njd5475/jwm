@@ -182,16 +182,109 @@ public:
 		return this->layer;
 	}
 
-	unsigned int getStatus() const {
-		return this->status;
-	}
-
 	unsigned short getBorder() const {
 		return this->border;
 	}
 
 	unsigned char getMaxFlags() const {
 		return this->maxFlags;
+	}
+
+	bool isStatus(unsigned int flags) const {
+	  return (this->status & flags);
+	}
+	bool isFullscreen() const {
+	  return isStatus(STAT_FULLSCREEN);
+	}
+	bool isPosition() const {
+	  return isStatus(STAT_POSITION);
+	}
+	bool isMapped() const {
+	  return isStatus(STAT_MAPPED);
+	}
+	bool isShaded() const {
+	  return isStatus(STAT_SHADED);
+	}
+	bool isMinimized() const {
+	  return isStatus(STAT_MINIMIZED);
+	}
+	bool isShaped() const {
+	  return isStatus(STAT_SHAPED);
+	}
+	bool isIgnoringProgramPosition() const {
+	  return isStatus(STAT_PIGNORE);
+	}
+	bool isTiled() const {
+	  return isStatus(STAT_TILED);
+	}
+	bool isCentered() const {
+	  return isStatus(STAT_CENTERED);
+	}
+	bool isUrgent() const {
+	  return isStatus(STAT_URGENT);
+	}
+	bool isDialogWindow() const {
+	  return isStatus(STAT_WMDIALOG);
+	}
+	bool isHidden() const {
+	  return isStatus(STAT_HIDDEN);
+	}
+	bool hasOpacity() const {
+	  return isStatus(STAT_OPACITY);
+	}
+	bool isSticky() const {
+	  return isStatus(STAT_STICKY);
+	}
+	bool isActive() const {
+	  return isStatus(STAT_ACTIVE);
+	}
+	bool isFixed() const {
+	  return isStatus(STAT_FIXED);
+	}
+	bool willIgnoreIncrementWhenMaximized() const {
+	  return isStatus(STAT_IIGNORE);
+	}
+	bool canFocus() const {
+	  return isStatus(STAT_CANFOCUS);
+	}
+	bool shouldTakeFocus() const {
+	  return isStatus(STAT_TAKEFOCUS);
+	}
+	bool shouldDelete() const {
+	  return isStatus(STAT_DELETE);
+	}
+	bool shouldFlash() const {
+	  return isStatus(STAT_FLASH);
+	}
+	bool isNotUrgent() const {
+	  return isStatus(STAT_NOTURGENT);
+	}
+	bool shouldSkipInTaskList() const {
+	  return isStatus(STAT_NOLIST);
+	}
+	bool wasMinimizedToShowDesktop() const {
+	  return isStatus(STAT_SDESKTOP);
+	}
+	bool isDragable() const {
+	  return isStatus(STAT_DRAG);
+	}
+	bool isNotDraggable() const {
+	  return isStatus(STAT_NODRAG);
+	}
+	bool shouldIgnoreSpecifiedList() const {
+	  return isStatus(STAT_ILIST);
+	}
+	bool shouldIgnorePager() const {
+	  return isStatus(STAT_IPAGER);
+	}
+	bool notFocusableIfMapped() const {
+	  return isStatus(STAT_NOFOCUS);
+	}
+	bool shouldNotShowInPager() const {
+	  return isStatus(STAT_NOPAGER);
+	}
+	bool isAeroSnapEnabled() const {
+	  return isStatus(STAT_AEROSNAP);
 	}
 
 	void setActive() {

@@ -28,7 +28,7 @@ public:
 	 */
 #define IsClientOnCurrentDesktop( np ) \
    ((np->getState()->getDesktop() == currentDesktop) \
-      || (np->getStatus() & STAT_STICKY))
+      || (np->getState()->isSticky()))
 
 	/** Determine if a client is allowed focus.
 	 * @param np The client.

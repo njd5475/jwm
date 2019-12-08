@@ -261,11 +261,11 @@ void Hints::ReadClientInfo(ClientNode *np, char alreadyMapped) {
 void Hints::WriteState(ClientNode *np) {
 	unsigned long data[2];
 
-	if (np->getState()->getStatus() & STAT_MAPPED) {
+	if (np->getState()->isMapped()) {
 		data[0] = NormalState;
-	} else if (np->getState()->getStatus() & STAT_MINIMIZED) {
+	} else if (np->getState()->isMinimized()) {
 		data[0] = IconicState;
-	} else if (np->getState()->getStatus() & STAT_SHADED) {
+	} else if (np->getState()->isShaded()) {
 		data[0] = NormalState;
 	} else {
 		data[0] = WithdrawnState;
@@ -308,14 +308,14 @@ void Hints::WriteNetState(ClientNode *np) {
 	Assert(np);
 
 	/* We remove the _NET_WM_STATE and _NET_WM_DESKTOP for withdrawn windows. */
-	if (!(np->getState()->getStatus() & (STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
+	if (!(np->getState()->isStatus(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
 		JXDeleteProperty(display, np->getWindow(), atoms[ATOM_NET_WM_STATE]);
 		JXDeleteProperty(display, np->getWindow(), atoms[ATOM_NET_WM_DESKTOP]);
 		return;
 	}
 
 	index = 0;
-	if (np->getState()->getStatus() & STAT_MINIMIZED) {
+	if (np->getState()->isMinimized()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_HIDDEN];
 	}
 
@@ -338,23 +338,23 @@ void Hints::WriteNetState(ClientNode *np) {
 		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT];
 	}
 
-	if (np->getState()->getStatus() & STAT_SHADED) {
+	if (np->getState()->isShaded()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_SHADED];
 	}
 
-	if (np->getState()->getStatus() & STAT_STICKY) {
+	if (np->getState()->isSticky()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_STICKY];
 	}
 
-	if (np->getState()->getStatus() & STAT_FULLSCREEN) {
+	if (np->getState()->isFullscreen()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_FULLSCREEN];
 	}
 
-	if (np->getState()->getStatus() & STAT_NOLIST) {
+	if (np->getState()->shouldSkipInTaskList()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR];
 	}
 
-	if (np->getState()->getStatus() & STAT_NOPAGER) {
+	if (np->getState()->shouldNotShowInPager()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_SKIP_PAGER];
 	}
 
@@ -366,10 +366,10 @@ void Hints::WriteNetState(ClientNode *np) {
 		}
 	}
 
-	if (np->getState()->getStatus() & STAT_URGENT) {
+	if (np->getState()->isUrgent()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_DEMANDS_ATTENTION];
 	}
-	if (np->getState()->getStatus() & STAT_ACTIVE) {
+	if (np->getState()->isActive()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_FOCUSED];
 	}
 
@@ -431,7 +431,7 @@ void WriteNetAllowed(ClientNode *np) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MOVE];
 	}
 
-	if (!(np->getState()->getStatus() & STAT_STICKY)) {
+	if (!(np->getState()->isSticky())) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_CHANGE_DESKTOP];
 	}
 

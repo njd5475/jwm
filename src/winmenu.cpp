@@ -40,14 +40,14 @@ Menu *CreateWindowMenu(ClientNode *np) {
 
   /* Note that items are added in reverse order of display. */
 
-  if (!(np->getState()->getStatus() & STAT_WMDIALOG)) {
+  if (!(np->getState()->isDialogWindow())) {
     AddWindowMenuItem(menu, _("Close"), MA_CLOSE, np, 0);
     AddWindowMenuItem(menu, _("Kill"), MA_KILL, np, 0);
     AddWindowMenuItem(menu, NULL, MA_NONE, np, 0);
   }
 
-  if (!((np->getState()->getStatus() & (STAT_FULLSCREEN | STAT_MINIMIZED)) || np->getState()->getMaxFlags())) {
-    if (np->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED)) {
+  if (!((np->getState()->isStatus(STAT_FULLSCREEN | STAT_MINIMIZED)) || np->getState()->getMaxFlags())) {
+    if (np->getState()->isStatus(STAT_MAPPED | STAT_SHADED)) {
       if (np->getState()->getBorder() & BORDER_RESIZE) {
         AddWindowMenuItem(menu, _("Resize"), MA_RESIZE, np, 0);
       }
@@ -57,29 +57,29 @@ Menu *CreateWindowMenu(ClientNode *np) {
     }
   }
 
-  if ((np->getState()->getBorder() & BORDER_MIN) && !(np->getState()->getStatus() & STAT_MINIMIZED)) {
+  if ((np->getState()->getBorder() & BORDER_MIN) && !(np->getState()->isMinimized())) {
     AddWindowMenuItem(menu, _("Minimize"), MA_MINIMIZE, np, 0);
   }
 
-  if (!(np->getState()->getStatus() & STAT_FULLSCREEN)) {
-    if (!(np->getState()->getStatus() & STAT_MINIMIZED)) {
-      if (np->getState()->getStatus() & STAT_SHADED) {
+  if (!(np->getState()->isFullscreen())) {
+    if (!(np->getState()->isMinimized())) {
+      if (np->getState()->isShaded()) {
         AddWindowMenuItem(menu, _("Unshade"), MA_SHADE, np, 0);
       } else if (np->getState()->getBorder() & BORDER_SHADE) {
         AddWindowMenuItem(menu, _("Shade"), MA_SHADE, np, 0);
       }
     }
     if (np->getState()->getBorder() & BORDER_MAX) {
-      if ((np->getState()->getStatus() & STAT_MINIMIZED) || !(np->getState()->getMaxFlags() & MAX_VERT) || (np->getState()->getMaxFlags() & MAX_HORIZ)) {
+      if ((np->getState()->isMinimized()) || !(np->getState()->getMaxFlags() & MAX_VERT) || (np->getState()->getMaxFlags() & MAX_HORIZ)) {
         AddWindowMenuItem(menu, _("Maximize-y"), MA_MAXIMIZE_V, np, 0);
       }
-      if ((np->getState()->getStatus() & STAT_MINIMIZED) || !(np->getState()->getMaxFlags() & MAX_HORIZ) || (np->getState()->getMaxFlags() & MAX_VERT)) {
+      if ((np->getState()->isMinimized()) || !(np->getState()->getMaxFlags() & MAX_HORIZ) || (np->getState()->getMaxFlags() & MAX_VERT)) {
         AddWindowMenuItem(menu, _("Maximize-x"), MA_MAXIMIZE_H, np, 0);
       }
-      if ((np->getState()->getStatus() & STAT_MINIMIZED) || !(np->getState()->getMaxFlags() & (MAX_VERT | MAX_HORIZ))) {
+      if ((np->getState()->isMinimized()) || !(np->getState()->getMaxFlags() & (MAX_VERT | MAX_HORIZ))) {
         AddWindowMenuItem(menu, _("Maximize"), MA_MAXIMIZE, np, 0);
       }
-      if (!(np->getState()->getStatus() & STAT_MINIMIZED)) {
+      if (!(np->getState()->isMinimized())) {
         if ((np->getState()->getMaxFlags() & MAX_HORIZ) && (np->getState()->getMaxFlags() & MAX_VERT)) {
           AddWindowMenuItem(menu, _("Restore"), MA_MAXIMIZE, np, 0);
         } else if (np->getState()->getMaxFlags() & MAX_VERT) {
@@ -91,13 +91,13 @@ Menu *CreateWindowMenu(ClientNode *np) {
     }
   }
 
-  if (np->getState()->getStatus() & STAT_MINIMIZED) {
+  if (np->getState()->isMinimized()) {
     AddWindowMenuItem(menu, _("Restore"), MA_RESTORE, np, 0);
   }
 
-  if (!(np->getState()->getStatus() & STAT_WMDIALOG)) {
+  if (!(np->getState()->isDialogWindow())) {
     if (settings.desktopCount > 1) {
-      if (np->getState()->getStatus() & STAT_STICKY) {
+      if (np->getState()->isSticky()) {
         AddWindowMenuItem(menu, _("Unstick"), MA_STICK, np, 0);
       } else {
         AddWindowMenuItem(menu, _("Stick"), MA_STICK, np, 0);
@@ -107,7 +107,7 @@ Menu *CreateWindowMenu(ClientNode *np) {
     CreateWindowLayerMenu(menu, np);
 
     if (settings.desktopCount > 1) {
-      if (!(np->getState()->getStatus() & STAT_STICKY)) {
+      if (!(np->getState()->isSticky())) {
         CreateWindowSendToMenu(menu, np);
       }
     }
@@ -158,7 +158,7 @@ void CreateWindowSendToMenu(Menu *menu, ClientNode *np) {
 
   mask = 0;
   for (x = 0; x < settings.desktopCount; x++) {
-    if (np->getState()->getDesktop() == x || (np->getState()->getStatus() & STAT_STICKY)) {
+    if (np->getState()->getDesktop() == x || (np->getState()->isSticky())) {
       mask |= 1 << x;
     }
   }
@@ -223,7 +223,7 @@ void RunWindowCommand(MenuAction *action, unsigned button) {
   ClientNode *client = (ClientNode*) action->context;
   switch (action->type) {
   case MA_STICK:
-    if (client->getState()->getStatus() & STAT_STICKY) {
+    if (client->getState()->isSticky()) {
       client->SetClientSticky(0);
     } else {
       client->SetClientSticky(1);
@@ -231,7 +231,7 @@ void RunWindowCommand(MenuAction *action, unsigned button) {
     break;
   case MA_MAXIMIZE:
     if ((client->getState()->getMaxFlags() & MAX_HORIZ) && (client->getState()->getMaxFlags() & MAX_VERT)
-        && !(client->getState()->getStatus() & STAT_MINIMIZED)) {
+        && !(client->getState()->isMinimized())) {
       client->MaximizeClient(MAX_NONE);
     } else {
       client->MaximizeClient( MAX_VERT | MAX_HORIZ);
@@ -239,7 +239,7 @@ void RunWindowCommand(MenuAction *action, unsigned button) {
     break;
   case MA_MAXIMIZE_H:
     if ((client->getState()->getMaxFlags() & MAX_HORIZ) && !(client->getState()->getMaxFlags() & MAX_VERT)
-        && !(client->getState()->getStatus() & STAT_MINIMIZED)) {
+        && !(client->getState()->isMinimized())) {
       client->MaximizeClient( MAX_NONE);
     } else {
       client->MaximizeClient( MAX_HORIZ);
@@ -247,7 +247,7 @@ void RunWindowCommand(MenuAction *action, unsigned button) {
     break;
   case MA_MAXIMIZE_V:
     if ((client->getState()->getMaxFlags() & MAX_VERT) && !(client->getState()->getMaxFlags() & MAX_HORIZ)
-        && !(client->getState()->getStatus() & STAT_MINIMIZED)) {
+        && !(client->getState()->isMinimized())) {
       client->MaximizeClient( MAX_NONE);
     } else {
       client->MaximizeClient(MAX_VERT);
@@ -267,7 +267,7 @@ void RunWindowCommand(MenuAction *action, unsigned button) {
     client->SetClientDesktop(action->value);
     break;
   case MA_SHADE:
-    if (client->getState()->getStatus() & STAT_SHADED) {
+    if (client->getState()->isShaded()) {
       client->UnshadeClient();
     } else {
       client->ShadeClient();

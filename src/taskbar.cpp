@@ -175,7 +175,7 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
       if (allTop) {
         for (auto client : entry->shouldFocus()) {
           if (!ClientList::ShouldFocus(client, 0)
-              || (client->getStatus() & STAT_MINIMIZED)) {
+              || (client->getState()->isMinimized())) {
             continue;
           }
 
@@ -185,16 +185,16 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
             for (int i = 0; i < inLayer.size(); ++i) {
               np = inLayer[i];
               if (!ClientList::ShouldFocus(np, 0)
-                  || (np->getStatus() & STAT_MINIMIZED)) {
+                  || (np->getState()->isMinimized())) {
                 continue;
               }
               if (np == client) {
-                const char isActive = (np->getStatus() & STAT_ACTIVE)
+                const char isActive = (np->getState()->isActive())
                     && IsClientOnCurrentDesktop(np);
                 if (isActive) {
                   focused = np;
                 }
-                if (!(client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
+                if (!(client->getState()->isStatus(STAT_CANFOCUS | STAT_TAKEFOCUS))
                     || isActive) {
                   hasActive = 1;
                 }
@@ -218,12 +218,12 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
         for (i = 0; i < settings.desktopCount - 1; i++) {
           const int target = (currentDesktop + i + 1) % settings.desktopCount;
           for (auto np : entry->shouldFocus()) {
-            if (np->getStatus() & STAT_STICKY) {
+            if (np->getState()->isSticky()) {
               continue;
             }
 
             if (np->getState()->getDesktop() == target) {
-              if (!nextClient || (np->getStatus() & STAT_ACTIVE)) {
+              if (!nextClient || (np->getState()->isActive())) {
                 nextClient = np;
               }
             }
@@ -286,7 +286,7 @@ void TaskBar::BarItem::focusGroup() {
 
   /* If there is no class name, then there will only be one client. */
   if (!className || !settings.groupTasks) {
-    if (!(client->getStatus() & STAT_STICKY)) {
+    if (!(client->getState()->isSticky())) {
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
           client->getDesktop());
     }
@@ -314,7 +314,7 @@ void TaskBar::BarItem::focusGroup() {
         np = inLayer[x];
         if (np->getClassName() && !strcmp(np->getClassName(), className)) {
           if (ClientList::ShouldFocus(np, 0)) {
-            if (!(np->getStatus() & STAT_STICKY)) {
+            if (!(np->getState()->isSticky())) {
               DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
                   np->getDesktop());
             }
@@ -347,7 +347,7 @@ void TaskBar::BarItem::focusGroup() {
     toRestore[i]->RestoreClient(1);
   }
   for (i = 0; i < restoreCount; i++) {
-    if (toRestore[i]->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+    if (toRestore[i]->getState()->isStatus(STAT_CANFOCUS | STAT_TAKEFOCUS)) {
       toRestore[i]->FocusClient();
       break;
     }
@@ -675,8 +675,8 @@ unsigned int TaskBar::BarItem::activeCount() {
   int count = 0;
   for (auto client : clients) {
     if (ClientList::ShouldFocus(client, 0)
-        && ((client->getStatus() & STAT_FLASH) != 0
-            || ((client->getStatus() & STAT_ACTIVE)
+        && ((client->getState()->shouldFlash()) != 0
+            || ((client->getState()->isActive())
                 && IsClientOnCurrentDesktop(client)))) {
       count += 1;
     }
@@ -696,9 +696,9 @@ unsigned int TaskBar::BarItem::focusCount() {
 
 bool TaskBar::BarItem::hasActiveClient() {
   for (auto client : clients) {
-    if ((client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))
+    if ((client->getState()->isStatus(STAT_CANFOCUS | STAT_TAKEFOCUS))
         && ClientList::ShouldFocus(client, 1)
-        && (client->getStatus() & STAT_ACTIVE)) {
+        && (client->getState()->isActive())) {
       return true;
       break;
     }
@@ -709,7 +709,7 @@ bool TaskBar::BarItem::hasActiveClient() {
 /** Determine if we should attempt to focus an entry. */
 bool TaskBar::BarItem::ShouldFocusEntry() {
   for (auto client : clients) {
-    if (client->getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS)) {
+    if (client->getState()->isStatus(STAT_CANFOCUS | STAT_TAKEFOCUS)) {
       if (ClientList::ShouldFocus(client, 1)) {
         return true;
       }
@@ -829,7 +829,7 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
     /* Load the clients into the menu. */
     for (auto client : this->shouldFocus()) {
       item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-      if (client->getStatus() & STAT_MINIMIZED) {
+      if (client->getState()->isMinimized()) {
         size_t len = 0;
         if (client->getName()) {
           len = strlen(client->getName());

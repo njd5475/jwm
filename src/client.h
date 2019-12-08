@@ -124,7 +124,7 @@ public:
 	static unsigned int clientCount;
 
 	void DrawBorder() {
-		if (!(getState()->getStatus() & (STAT_HIDDEN | STAT_MINIMIZED))) {
+		if (!(this->state.isStatus(STAT_HIDDEN | STAT_MINIMIZED))) {
 			Border::DrawBorder(this);
 		}
 	}
@@ -324,7 +324,7 @@ public:
 		this->state.setMapped();
 	}
 	bool isMapped() {
-		return this->state.getStatus() & STAT_MAPPED;
+		return this->state.isStatus(STAT_MAPPED);
 	}
 	void setShaded() {
 		this->state.setShaded();
@@ -338,9 +338,6 @@ public:
 	int getYInc() {return this->yinc;}
 	int getXInc() {return this->xinc;}
 
-	unsigned int getStatus() const {
-		return this->state.getStatus();
-	}
 	AspectRatio getAspect() {return this->aspect;}
 
 	void (*getController())(int) {

@@ -116,7 +116,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
   if (!(this->state.getBorder() & BORDER_RESIZE)) {
     return;
   }
-  if (this->state.getStatus() & STAT_FULLSCREEN) {
+  if (this->state.isFullscreen()) {
     return;
   }
   if (this->state.getMaxFlags()) {
@@ -187,7 +187,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
 
         if (settings.resizeMode == RESIZE_OUTLINE) {
           Outline::ClearOutline();
-          if (this->state.getStatus() & STAT_SHADED) {
+          if (this->state.isShaded()) {
             Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
           } else {
             Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
@@ -225,7 +225,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
   if (!(this->state.getBorder() & BORDER_RESIZE)) {
     return;
   }
-  if (this->state.getStatus() & STAT_FULLSCREEN) {
+  if (this->state.isFullscreen()) {
     return;
   }
   if (this->state.getMaxFlags()) {
@@ -261,7 +261,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
   if (context & MC_BORDER_N) {
     starty = this->y - north;
   } else if (context & MC_BORDER_S) {
-    if (this->state.getStatus() & STAT_SHADED) {
+    if (this->state.isShaded()) {
       starty = this->y;
     } else {
       starty = this->y + this->height;
@@ -361,7 +361,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
 
       if (settings.resizeMode == RESIZE_OUTLINE) {
         Outline::ClearOutline();
-        if (this->state.getStatus() & STAT_SHADED) {
+        if (this->state.isShaded()) {
           Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
         } else {
           Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);

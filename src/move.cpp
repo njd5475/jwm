@@ -83,7 +83,7 @@ char ClientNode::MoveClient(int startx, int starty) {
   if (!(this->getState()->getBorder() & BORDER_MOVE)) {
     return 0;
   }
-  if (this->getState()->getStatus() & STAT_FULLSCREEN) {
+  if (this->getState()->isFullscreen()) {
     return 0;
   }
 
@@ -169,7 +169,7 @@ char ClientNode::MoveClient(int startx, int starty) {
         }
       } else {
         /* If alt is not pressed, snap to borders. */
-        if (this->getState()->getStatus() & STAT_AEROSNAP) {
+        if (this->getState()->isAeroSnapEnabled()) {
           if (atTop & atLeft) {
             if (atSideFirst) {
               flags = MAX_TOP | MAX_LEFT;
@@ -234,7 +234,7 @@ char ClientNode::MoveClient(int startx, int starty) {
         if (settings.moveMode == MOVE_OUTLINE) {
           Outline::ClearOutline();
           height = north + south;
-          if (!(this->getState()->getStatus() & STAT_SHADED)) {
+          if (!(this->getState()->isShaded())) {
             height += this->getHeight();
           }
           Outline::DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
@@ -268,7 +268,7 @@ char ClientNode::MoveClientKeyboard() {
   if (!(this->getState()->getBorder() & BORDER_MOVE)) {
     return 0;
   }
-  if (this->getState()->getStatus() & STAT_FULLSCREEN) {
+  if (this->getState()->isFullscreen()) {
     return 0;
   }
 
@@ -301,7 +301,7 @@ char ClientNode::MoveClientKeyboard() {
   Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
   _DiscardMotionEvents(&event, this->window);
 
-  if (this->getState()->getStatus() & STAT_SHADED) {
+  if (this->getState()->isShaded()) {
     height = 0;
   } else {
     height = this->getHeight();
@@ -476,7 +476,7 @@ void ClientNode::DoSnapScreen() {
     }
     if (abs(client.bottom - sp->height - sp->y) <= settings.snapDistance) {
       this->y = sp->y + sp->height - south;
-      if (!(this->getState()->getStatus() & STAT_SHADED)) {
+      if (!(this->getState()->isShaded())) {
         this->y -= this->getHeight();
       }
     }
@@ -491,9 +491,9 @@ void ClientNode::DoSnapScreen() {
 
 /** Determine if we should snap to the specified client. */
 char ShouldSnap(ClientNode *np) {
-  if (np->getState()->getStatus() & STAT_HIDDEN) {
+  if (np->getState()->isHidden()) {
     return 0;
-  } else if (np->getState()->getStatus() & STAT_MINIMIZED) {
+  } else if (np->getState()->isMinimized()) {
     return 0;
   } else {
     return 1;
@@ -510,7 +510,7 @@ void GetClientRectangle(ClientNode *np, RectangleType *r) {
   r->left = np->getX() - west;
   r->right = np->getX() + np->getWidth() + east;
   r->top = np->getY() - north;
-  if (np->getState()->getStatus() & STAT_SHADED) {
+  if (np->getState()->isShaded()) {
     r->bottom = np->getY() + south;
   } else {
     r->bottom = np->getY() + np->getHeight() + south;

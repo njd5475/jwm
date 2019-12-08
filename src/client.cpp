@@ -99,8 +99,8 @@ void ClientNode::PlaceClient(ClientNode *np, char alreadyMapped) {
   BoundingBox box;
   const ScreenType *sp;
 
-  if (alreadyMapped || (np->getState()->getStatus() & STAT_POSITION)
-      || (!(np->getState()->getStatus() & STAT_PIGNORE)
+  if (alreadyMapped || (np->getState()->isPosition())
+      || (!(np->getState()->isIgnoringProgramPosition())
           && (np->getSizeFlags() & (PPosition | USPosition)))) {
 
     np->GravitateClient(0);
@@ -117,14 +117,14 @@ void ClientNode::PlaceClient(ClientNode *np, char alreadyMapped) {
     SubtractStrutBounds(&box, np);
 
     /* If tiled is specified, first attempt to use tiled placement. */
-    if (np->getState()->getStatus() & STAT_TILED) {
+    if (np->getState()->isTiled()) {
       if (np->TileClient(&box)) {
         return;
       }
     }
 
     /* Either tiled placement failed or was not specified. */
-    if (np->getState()->getStatus() & STAT_CENTERED) {
+    if (np->getState()->isCentered()) {
       np->CenterClient(&box);
     } else {
       np->CascadeClient(&box);
@@ -231,7 +231,7 @@ ClientNode::~ClientNode() {
     XDeleteContext(display, this->parent, frameContext);
   }
 
-  if (this->state.getStatus() & STAT_URGENT) {
+  if (this->state.isUrgent()) {
     _UnregisterCallback(SignalUrgent, this);
   }
 
@@ -250,7 +250,7 @@ ClientNode::~ClientNode() {
 
   /* If the window manager is exiting (ie, not the client), then
    * reparent etc. */
-  if (shouldExit && !(this->state.getStatus() & STAT_WMDIALOG)) {
+  if (shouldExit && !(this->state.isDialogWindow())) {
     if (this->state.getMaxFlags()) {
       this->x = this->oldx;
       this->y = this->oldy;
@@ -260,9 +260,9 @@ ClientNode::~ClientNode() {
           this->height);
     }
     this->GravitateClient(1);
-    if ((this->state.getStatus() & STAT_HIDDEN)
-        || (!(this->state.getStatus() & STAT_MAPPED)
-            && (this->state.getStatus() & (STAT_MINIMIZED | STAT_SHADED)))) {
+    if ((this->state.isHidden())
+        || (!(this->state.isMapped())
+            && (this->state.isStatus(STAT_MINIMIZED | STAT_SHADED)))) {
       JXMapWindow(display, this->window);
     }
     JXUngrabButton(display, AnyButton, AnyModifier, this->window);
@@ -282,7 +282,7 @@ ClientNode::~ClientNode() {
     JXFree(this->className);
   }
 
-  if(this->window != window) {
+  if (this->window != window) {
 
   }
 
@@ -389,7 +389,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   this->ReparentClient();
   XSaveContext(display, this->window, clientContext, (char*) this);
 
-  if (this->state.getStatus() & STAT_MAPPED) {
+  if (this->state.isMapped()) {
     JXMapWindow(display, this->window);
   }
 
@@ -399,12 +399,12 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
     this->RaiseClient();
   }
 
-  if (this->state.getStatus() & STAT_OPACITY) {
+  if (this->state.hasOpacity()) {
     this->SetOpacity(this->state.getOpacity(), 1);
   } else {
     this->SetOpacity(settings.inactiveClientOpacity, 1);
   }
-  if (this->state.getStatus() & STAT_STICKY) {
+  if (this->state.isSticky()) {
     Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, ~0UL);
   } else {
     Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP,
@@ -412,13 +412,13 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   }
 
   /* Shade the client if requested. */
-  if (this->state.getStatus() & STAT_SHADED) {
+  if (this->state.isShaded()) {
     this->state.setNoShaded();
     this->ShadeClient();
   }
 
   /* Minimize the client if requested. */
-  if (this->state.getStatus() & STAT_MINIMIZED) {
+  if (this->state.isMinimized()) {
     this->state.setNoMinimized();
     this->MinimizeClient(0);
   }
@@ -430,7 +430,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
     this->MaximizeClient(flags);
   }
 
-  if (this->state.getStatus() & STAT_URGENT) {
+  if (this->state.isUrgent()) {
     _RegisterCallback(URGENCY_DELAY, SignalUrgent, this);
   }
 
@@ -442,8 +442,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   this->SendConfigureEvent();
 
   /* Hide the client if we're not on the right desktop. */
-  if (this->state.getDesktop() != currentDesktop
-      && !(this->state.getStatus() & STAT_STICKY)) {
+  if (this->state.getDesktop() != currentDesktop && !(this->state.isSticky())) {
     this->HideClient();
   }
 
@@ -457,7 +456,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   }
 
   /* Make the client fullscreen if requested. */
-  if (this->state.getStatus() & STAT_FULLSCREEN) {
+  if (this->state.isFullscreen()) {
     this->state.setNoFullscreen();
     this->SetClientFullScreen(1);
   }
@@ -475,7 +474,7 @@ void ClientNode::MinimizeClient(char lower) {
 void ClientNode::MinimizeTransients(char lower) {
 
   /* Unmap the window and update its state. */
-  if (this->state.getStatus() & (STAT_MAPPED | STAT_SHADED)) {
+  if (this->state.isStatus(STAT_MAPPED | STAT_SHADED)) {
     this->UnmapClient();
     if (this->parent != None) {
       JXUnmapWindow(display, this->parent);
@@ -547,7 +546,7 @@ void ClientNode::GetGravityDelta(int gravity, int *x, int *y) {
 
 /** Shade a client. */
 void ClientNode::ShadeClient() {
-  if ((this->state.getStatus() & (STAT_SHADED | STAT_FULLSCREEN))
+  if ((this->state.isStatus(STAT_SHADED | STAT_FULLSCREEN))
       || !(this->state.getBorder() & BORDER_SHADE)) {
     return;
   }
@@ -563,11 +562,11 @@ void ClientNode::ShadeClient() {
 
 /** Unshade a client. */
 void ClientNode::UnshadeClient() {
-  if (!(this->state.getStatus() & STAT_SHADED)) {
+  if (!(this->state.isShaded())) {
     return;
   }
 
-  if (!(this->state.getStatus() & (STAT_MINIMIZED | STAT_SDESKTOP))) {
+  if (!(this->state.isStatus(STAT_MINIMIZED | STAT_SDESKTOP))) {
     JXMapWindow(display, this->window);
     this->state.setMapped();
   }
@@ -588,13 +587,13 @@ void ClientNode::SetClientWithdrawn() {
     ClientList::FocusNextStacked(this);
   }
 
-  if (this->state.getStatus() & STAT_MAPPED) {
+  if (this->state.isMapped()) {
     this->UnmapClient();
     if (this->parent != None) {
       JXUnmapWindow(display, this->parent);
     }
-  } else if (this->state.getStatus() & STAT_SHADED) {
-    if (!(this->state.getStatus() & STAT_MINIMIZED)) {
+  } else if (this->state.isShaded()) {
+    if (!(this->state.isMinimized())) {
       if (this->parent != None) {
         JXUnmapWindow(display, this->parent);
       }
@@ -619,8 +618,8 @@ void ClientNode::RestoreTransients(char raise) {
   this->SetClientDesktop(currentDesktop);
 
   /* Restore this window. */
-  if (!(this->state.getStatus() & STAT_MAPPED)) {
-    if (this->state.getStatus() & STAT_SHADED) {
+  if (!(this->state.isMapped())) {
+    if (this->state.isShaded()) {
       if (this->parent != None) {
         JXMapWindow(display, this->parent);
       }
@@ -641,7 +640,7 @@ void ClientNode::RestoreTransients(char raise) {
   std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
   for (int i = 0; i < children.size(); ++i) {
     ClientNode *tp = children[i];
-    if (tp->state.getStatus() & STAT_MINIMIZED) {
+    if (tp->state.isMinimized()) {
       tp->RestoreTransients(raise);
     }
 
@@ -657,8 +656,7 @@ void ClientNode::RestoreTransients(char raise) {
 
 /** Restore a client window and its transients. */
 void ClientNode::RestoreClient(char raise) {
-  if ((this->state.getStatus() & STAT_FIXED)
-      && !(this->state.getStatus() & STAT_STICKY)) {
+  if ((this->state.isFixed()) && !(this->state.isSticky())) {
     DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
         this->state.getDesktop());
   }
@@ -669,19 +667,18 @@ void ClientNode::RestoreClient(char raise) {
 
 /** Update window state information. */
 void ClientNode::_UpdateState() {
-  const char alreadyMapped =
-      (this->getState()->getStatus() & STAT_MAPPED) ? 1 : 0;
-  const char active = (this->getState()->getStatus() & STAT_ACTIVE) ? 1 : 0;
+  const char alreadyMapped = (this->getState()->isMapped()) ? 1 : 0;
+  const char active = (this->getState()->isActive()) ? 1 : 0;
 
   /* Remove from the layer list. */
   ClientList::RemoveFrom(this);
 
   /* Read the state (and new layer). */
-  if (this->getState()->getStatus() & STAT_URGENT) {
+  if (this->getState()->isUrgent()) {
     _UnregisterCallback(ClientNode::SignalUrgent, this);
   }
   this->state = Hints::ReadWindowState(this->getWindow(), alreadyMapped);
-  if (this->getState()->getStatus() & STAT_URGENT) {
+  if (this->getState()->isUrgent()) {
     _RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, this);
   }
 
@@ -748,7 +745,7 @@ void ClientNode::SetClientSticky(char isSticky) {
   bool old = false;
 
   /* Get the old sticky.getStatus(). */
-  if (this->state.getStatus() & STAT_STICKY) {
+  if (this->state.isSticky()) {
     old = true;
   }
 
@@ -803,7 +800,7 @@ void ClientNode::SetClientDesktop(unsigned int desktop) {
     return;
   }
 
-  if (!(this->state.getStatus() & STAT_STICKY)) {
+  if (!(this->state.isSticky())) {
     ClientNode *tp;
 
     std::vector<ClientNode*> all = ClientList::GetSelfAndChildren(this);
@@ -829,12 +826,12 @@ void ClientNode::SetClientDesktop(unsigned int desktop) {
 
 /** Hide a client. This will not update transients. */
 void ClientNode::HideClient() {
-  if (!(this->state.getStatus() & STAT_HIDDEN)) {
+  if (!(this->state.isHidden())) {
     if (activeClient == this) {
       activeClient = NULL;
     }
     this->state.setHidden();
-    if (this->state.getStatus() & (STAT_MAPPED | STAT_SHADED)) {
+    if (this->state.isStatus(STAT_MAPPED | STAT_SHADED)) {
       if (this->parent != None) {
         JXUnmapWindow(display, this->parent);
       } else {
@@ -850,16 +847,16 @@ void ClientNode::HideClient() {
 
 /** Show a hidden client. This will not update transients. */
 void ClientNode::ShowClient() {
-  if (this->state.getStatus() & STAT_HIDDEN) {
+  if (this->state.isHidden()) {
     this->state.setNotHidden();
-    if (this->state.getStatus() & (STAT_MAPPED | STAT_SHADED)) {
-      if (!(this->state.getStatus() & STAT_MINIMIZED)) {
+    if (this->state.isStatus(STAT_MAPPED | STAT_SHADED)) {
+      if (!(this->state.isMinimized())) {
         if (this->parent != None) {
           JXMapWindow(display, this->parent);
         } else {
           JXMapWindow(display, this->window);
         }
-        if (this->state.getStatus() & STAT_ACTIVE) {
+        if (this->state.isActive()) {
           this->FocusClient();
         }
       }
@@ -871,18 +868,18 @@ void ClientNode::ShowClient() {
 void ClientNode::MaximizeClient(MaxFlags flags) {
 
   /* Don't allow maximization of full-screen clients. */
-  if (this->state.getStatus() & STAT_FULLSCREEN) {
+  if (this->state.isFullscreen()) {
     return;
   }
   if (!(this->state.getBorder() & BORDER_MAX)) {
     return;
   }
 
-  if (this->state.getStatus() & STAT_SHADED) {
+  if (this->state.isShaded()) {
     this->UnshadeClient();
   }
 
-  if (this->state.getStatus() & STAT_MINIMIZED) {
+  if (this->state.isMinimized()) {
     this->RestoreClient(1);
   }
 
@@ -1074,19 +1071,19 @@ void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
   if (flags & MAX_HORIZ) {
     newX = box.x + west;
     newWidth = box.width - east - west;
-    if (!(newState.getStatus() & STAT_IIGNORE)) {
+    if (!(newState.willIgnoreIncrementWhenMaximized())) {
       newWidth -= ((this->getWidth() - this->getBaseWidth()) % this->getXInc());
     }
   } else if (flags & MAX_LEFT) {
     newX = box.x + west;
     newWidth = box.width / 2 - east - west;
-    if (!(newState.getStatus() & STAT_IIGNORE)) {
+    if (!(newState.willIgnoreIncrementWhenMaximized())) {
       newWidth -= ((this->getWidth() - this->getBaseWidth()) % this->getXInc());
     }
   } else if (flags & MAX_RIGHT) {
     newX = box.x + box.width / 2 + west;
     newWidth = box.width / 2 - east - west;
-    if (!(newState.getStatus() & STAT_IIGNORE)) {
+    if (!(newState.willIgnoreIncrementWhenMaximized())) {
       newWidth -= ((this->getWidth() - this->getBaseWidth()) % this->getXInc());
     }
   }
@@ -1095,21 +1092,21 @@ void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
   if (flags & MAX_VERT) {
     newY = box.y + north;
     newHeight = box.height - north - south;
-    if (!(newState.getStatus() & STAT_IIGNORE)) {
+    if (!(newState.willIgnoreIncrementWhenMaximized())) {
       newHeight -= ((this->getHeight() - this->getBaseHeight())
           % this->getYInc());
     }
   } else if (flags & MAX_TOP) {
     newY = box.y + north;
     newHeight = box.height / 2 - north - south;
-    if (!(newState.getStatus() & STAT_IIGNORE)) {
+    if (!(newState.willIgnoreIncrementWhenMaximized())) {
       newHeight -= ((this->getHeight() - this->getBaseHeight())
           % this->getYInc());
     }
   } else if (flags & MAX_BOTTOM) {
     newY = box.y + box.height / 2 + north;
     newHeight = box.height / 2 - north - south;
-    if (!(newState.getStatus() & STAT_IIGNORE)) {
+    if (!(newState.willIgnoreIncrementWhenMaximized())) {
       newHeight -= ((this->getHeight() - this->getBaseHeight())
           % this->getYInc());
     }
@@ -1141,14 +1138,14 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
   const ScreenType *sp;
 
   /* Make sure there's something to do. */
-  if (!fullScreen == !(this->state.getStatus() & STAT_FULLSCREEN)) {
+  if (!fullScreen == !(this->state.isFullscreen())) {
     return;
   }
   if (!(this->state.getBorder() & BORDER_FULLSCREEN)) {
     return;
   }
 
-  if (this->state.getStatus() & STAT_SHADED) {
+  if (this->state.isShaded()) {
     this->UnshadeClient();
   }
 
@@ -1485,17 +1482,17 @@ void ClientNode::ConstrainPosition() {
 
 /** Set the active client. */
 void ClientNode::FocusClient() {
-  if (this->state.getStatus() & STAT_HIDDEN) {
+  if (this->state.isHidden()) {
     return;
   }
-  if (!(this->state.getStatus() & (STAT_CANFOCUS | STAT_TAKEFOCUS))) {
+  if (!(this->state.isStatus(STAT_CANFOCUS | STAT_TAKEFOCUS))) {
     return;
   }
 
-  if (activeClient != this || !(this->state.getStatus() & STAT_ACTIVE)) {
+  if (activeClient != this || !(this->state.isActive())) {
     if (activeClient) {
       activeClient->state.setNotActive();
-      if (!(activeClient->state.getStatus() & STAT_OPACITY)) {
+      if (!(activeClient->state.hasOpacity())) {
         activeClient->SetOpacity(settings.inactiveClientOpacity, 0);
       }
       Border::DrawBorder(activeClient);
@@ -1503,7 +1500,7 @@ void ClientNode::FocusClient() {
     }
     this->state.setActive();
     activeClient = this;
-    if (!(this->state.getStatus() & STAT_OPACITY)) {
+    if (!(this->state.hasOpacity())) {
       this->SetOpacity(settings.activeClientOpacity, 0);
     }
 
@@ -1512,14 +1509,14 @@ void ClientNode::FocusClient() {
     _RequireTaskUpdate();
   }
 
-  if (this->state.getStatus() & STAT_MAPPED) {
+  if (this->state.isMapped()) {
     this->UpdateClientColormap(-1);
     Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, this->window);
     Hints::WriteNetState(this);
-    if (this->state.getStatus() & STAT_CANFOCUS) {
+    if (this->state.canFocus()) {
       JXSetInputFocus(display, this->window, RevertToParent, eventTime);
     }
-    if (this->state.getStatus() & STAT_TAKEFOCUS) {
+    if (this->state.shouldTakeFocus()) {
       SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_TAKE_FOCUS);
     }
   } else {
@@ -1538,7 +1535,7 @@ void ClientNode::RefocusClient(void) {
 /** Send a delete message to a client. */
 void ClientNode::DeleteClient() {
   Hints::ReadWMProtocols(this->window, &this->state);
-  if (this->state.getStatus() & STAT_DELETE) {
+  if (this->state.shouldDelete()) {
     SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
   } else {
     this->KillClient();
@@ -1661,8 +1658,7 @@ void ClientNode::RestackClients(void) {
   /* Prepare the stacking array. */
   fw = None;
   index = 0;
-  if (activeClient
-      && (activeClient->getState()->getStatus() & STAT_FULLSCREEN)) {
+  if (activeClient && (activeClient->getState()->isFullscreen())) {
     fw = activeClient->window;
     std::vector<ClientNode*> clients = ClientList::GetLayerList(
         activeClient->getState()->getLayer());
@@ -1690,8 +1686,8 @@ void ClientNode::RestackClients(void) {
     std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
     for (int i = 0; i < clients.size(); ++i) {
       ClientNode *np = clients[i];
-      if ((np->getState()->getStatus() & (STAT_MAPPED | STAT_SHADED))
-          && !(np->getState()->getStatus() & STAT_HIDDEN)) {
+      if ((np->getState()->isStatus(STAT_MAPPED | STAT_SHADED))
+          && !(np->getState()->isHidden())) {
         if (fw != None && (np->getWindow() == fw || np->getOwner() == fw)) {
           continue;
         }
@@ -1750,7 +1746,7 @@ void ClientNode::SendClientMessage(Window w, AtomType type, AtomType message) {
 /** Remove a client window from management. */
 void ClientNode::RemoveClient() {
   std::vector<ClientNode*>::iterator found;
-  if((found = std::find(nodes.begin(), nodes.end(), this)) != nodes.end()) {
+  if ((found = std::find(nodes.begin(), nodes.end(), this)) != nodes.end()) {
     nodes.erase(found);
   }
 
@@ -1930,7 +1926,7 @@ void ClientNode::ReparentClient() {
     /* Reparent the client window. */
     JXReparentWindow(display, this->window, this->parent, west, north);
 
-    if (this->state.getStatus() & STAT_MAPPED) {
+    if (this->state.isMapped()) {
       JXMapWindow(display, this->parent);
     }
   }
@@ -1951,7 +1947,7 @@ void ClientNode::SendConfigureEvent() {
   event.type = ConfigureNotify;
   event.event = this->window;
   event.window = this->window;
-  if (this->state.getStatus() & STAT_FULLSCREEN) {
+  if (this->state.isFullscreen()) {
     sp = Screens::GetCurrentScreen(this->x, this->y);
     event.x = sp->x;
     event.y = sp->y;
@@ -2009,9 +2005,9 @@ void ClientNode::SignalUrgent(const TimeType *now, int x, int y, Window w,
   ClientNode *np = (ClientNode*) data;
 
   /* Redraw borders. */
-  if (np->getState()->getStatus() & STAT_FLASH) {
+  if (np->getState()->shouldFlash()) {
     np->state.setNoFlash();
-  } else if (!(np->state.getStatus() & STAT_NOTURGENT)) {
+  } else if (!(np->state.isNotUrgent())) {
     np->state.setFlash();
   }
   Border::DrawBorder(np);
@@ -2022,7 +2018,7 @@ void ClientNode::SignalUrgent(const TimeType *now, int x, int y, Window w,
 
 /** Unmap a client window and consume the UnmapNotify event. */
 void ClientNode::UnmapClient() {
-  if (this->state.getStatus() & STAT_MAPPED) {
+  if (this->state.isMapped()) {
     XEvent e;
 
     /* Unmap the window and record that we did so. */
@@ -2115,7 +2111,7 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
       if (!IsClientOnCurrentDesktop(tp)) {
         continue;
       }
-      if (!(tp->state.getStatus() & STAT_MAPPED)) {
+      if (!(tp->state.isMapped())) {
         continue;
       }
       if (tp == this) {
@@ -2261,7 +2257,7 @@ void ClientNode::DoSnapBorder() {
   }
   if (bottom.valid) {
     this->y = bottom.top - south;
-    if (!(this->getState()->getStatus() & STAT_SHADED)) {
+    if (!(this->getState()->isShaded())) {
       this->y -= this->getHeight();
     }
   }
