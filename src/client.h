@@ -138,15 +138,17 @@ typedef struct Strut {
 
 /** Struture to store information about a client window. */
 class ClientNode {
+
 private:
   ClientNode(Window w, char alreadyMapped, char notOwner);
+
 protected:
   virtual ~ClientNode();
 
   static std::vector<ClientNode*> nodes;
+
   Window window; /**< The client window. */
   Window parent; /**< The frame window. */
-
   Window owner; /**< The owner window (for transients). */
 
   int x, y; /**< The location of the window. */
@@ -185,45 +187,22 @@ protected:
 
 protected:
   void saveBounds();
+
 public:
 
   static char DoRemoveClientStrut(ClientNode *np);
   static void InsertStrut(const BoundingBox *box, ClientNode *np);
-
-  /** Get the bounding box for the screen.
-   * @param sp A pointer to the screen whose bounds to get.
-   * @param box The bounding box for the screen.
-   */
+  static void RestackClients(void);
   static void GetScreenBounds(const struct ScreenType *sp, BoundingBox *box);
-
   static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
   static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
   static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
   static ClientNode *Create(Window w, char alreadyMapped, char notOwner);
-  /** Find a client by window or parent window.
-   * @param w The window.
-   * @return The client (NULL if not found).
-   */
-  static ClientNode *FindClient(Window w);
-
-  /** Find a client by window.
-   * @param w The window.
-   * @return The client (NULL if not found).
-   */
+  static ClientNode *FindClient(Window w); // by window or parent
   static ClientNode *FindClientByWindow(Window w);
-
-  /** Find a client by its parent window.
-   * @param p The parent window.
-   * @return The client (NULL if not found).
-   */
   static ClientNode *FindClientByParent(Window p);
-
-  /** Get the active client.
-   * @return The active client (NULL if no client is active).
-   */
   static ClientNode *GetActiveClient(void);
 
-  /*@{*/
   static void InitializeClients();
   static void StartupClients(void);
   static void ShutdownClients(void);
@@ -288,7 +267,6 @@ public:
   int getXInc() {return this->xinc;}
 
   AspectRatio getAspect() {return this->aspect;}
-
   const char* getClassName() const;
   const char* getInstanceName();
 
@@ -298,7 +276,6 @@ public:
   ColormapNode* getColormaps() const;
 
   Window getWindow() const;
-
   Window getParent() const;
   const char* getName() const;
   int getWidth() const;
@@ -349,34 +326,9 @@ public:
   void UpdateSize(const MouseContextType context, const int x, const int y, const int startx,
       const int starty, const int oldx, const int oldy, const int oldw, const int oldh);
 
-  /*@}*/
-
-  /** Add a window to management.
-   * @param w The client window.
-   * @param alreadyMapped 1 if the window is mapped, 0 if not.
-   * @param notOwner 1 if JWM doesn't own this window, 0 if JWM is the owner.
-   * @return The client window data.
-   */
-  //static ClientNode *AddClientWindow(Window w, char alreadyMapped, char notOwner);
-  /** Remove a client from management.
-   * @param np The client to remove.
-   */
   void RemoveClient();
-
-  /** Minimize a client.
-   * @param np The client to minimize.
-   * @param lower Set to lower the client in the stacking order.
-   */
   void MinimizeClient(char lower);
-
-  /** Shade a client.
-   * @param np The client to shade.
-   */
   void ShadeClient();
-
-  /** Unshade a client.
-   * @param np The client to unshade.
-   */
   void UnshadeClient();
 
   /** Set a client's status to withdrawn.
@@ -385,18 +337,13 @@ public:
    * it can be reused at a later time.
    * @param np The client whose status to change.
    */
-  void SetClientWithdrawn();
+  void sendToBackground();
 
   /** Restore a client from minimized state.
    * @param np The client to restore.
    * @param raise 1 to raise the client, 0 to leave stacking unchanged.
    */
   void RestoreClient(char raise);
-
-  /** Maximize a client.
-   * @param np The client to maximize (NULL is allowed).
-   * @param flags The type of maximization to perform.
-   */
   void MaximizeClient(MaxFlags flags);
 
   /** Maximize a client using the default maximize settings.
@@ -413,7 +360,7 @@ public:
   /** Set the keyboard focus to a client.
    * @param np The client to focus.
    */
-  void FocusClient();
+  void keyboardFocus();
 
   /** Tell a client to exit.
    * @param np The client to delete.
@@ -436,63 +383,18 @@ public:
    * @param detail The stack mode (Above, Below, etc).
    */
   void RestackClient(Window above, int detail);
-
-  /** Restack the clients.
-   * This is used when a client is mapped so that the stacking order
-   * remains consistent.
-   */
-  static void RestackClients(void);
-
-  /** Set the layer of a client.
-   * @param np The client whose layer to set.
-   * @param layer the layer to assign to the client.
-   */
   void SetClientLayer(unsigned int layer);
-
-  /** Set the desktop for a client.
-   * @param np The client.
-   * @param desktop The desktop to be assigned to the client.
-   */
   void SetClientDesktop(unsigned int desktop);
-
-  /** Set the sticky status of a client.
-   * A sticky client will appear on all desktops.
-   * @param np The client.
-   * @param isSticky 1 to make the client sticky, 0 to make it not sticky.
-   */
   void SetClientSticky(char isSticky);
 
-  /** Hide a client.
-   * This is used for changing desktops.
-   * @param np The client to hide.
-   */
   void HideClient();
-
-  /** Show a client.
-   * This is used for changing desktops.
-   * @param np The client to show.
-   */
   void ShowClient();
 
-  /** Update a client's colormap.
-   * @param np The client.
-   */
   void UpdateClientColormap(Colormap cmap);
-
-  /** Reparent a client.
-   * This will create a window for a frame (or destroy it) depending on
-   * whether a client needs a frame.
-   * @param np The client.
-   */
   void ReparentClient();
-
-  /** Send a configure event to a client.
-   * This will send updated location and size information to a client.
-   * @param np The client to get the event.
-   */
   void SendConfigureEvent();
-
   void MinimizeTransients(char lower);
+
 private:
   unsigned int status; /**< Status bit mask. */
   unsigned int opacity; /**< Opacity (0 - 0xFFFFFFFF). */
@@ -503,39 +405,25 @@ private:
   unsigned char defaultLayer; /**< Default window layer. */
 
 public:
+
   void resetMaxFlags();
-
-  void setDelete();
-
-  void setTakeFocus();
-
-  void setNoDelete();
-
-  void setNoTakeFocus();
-  void setLayer(unsigned char layer);
-  void setDefaultLayer(unsigned char defaultLayer);
-  unsigned char getDefaultLayer() const;
-
   void resetBorder();
   void resetLayer();
   void resetDefaultLayer();
   void resetLayerToDefault();
+  void resetMappedState();
 
   void clearMaxFlags();
   void clearBorder();
   void clearStatus();
   void clearToNoList();
+  void clearToNoPager();
+  void clearToSticky();
 
-  unsigned int getOpacity();
-  unsigned short getDesktop() const;
-
-  void setNotMapped();
-  void setShaped();
-  void setDesktop(unsigned short desktop);
-
-  unsigned char getLayer() const;
-  unsigned short getBorder() const;
-  unsigned char getMaxFlags() const;
+  void ignoreProgramList();
+  void ignoreProgramSpecificPager();
+  void ignoreProgramSpecificPosition();
+  void ignoreIncrementWhenMaximized();
 
   bool isStatus(unsigned int flags) const;
   bool isFullscreen() const;
@@ -550,27 +438,44 @@ public:
   bool isUrgent() const;
   bool isDialogWindow() const;
   bool isHidden() const;
-  bool hasOpacity() const;
   bool isSticky() const;
   bool isActive() const;
   bool isFixed() const;
-
-  bool willIgnoreIncrementWhenMaximized() const;
-  bool canFocus() const;
+  bool isDragable() const;
+  bool isNotUrgent() const;
+  bool isNotDraggable() const;
+  bool isAeroSnapEnabled() const;
   bool shouldTakeFocus() const;
   bool shouldDelete() const;
   bool shouldFlash() const;
-  bool isNotUrgent() const;
   bool shouldSkipInTaskList() const;
-  bool wasMinimizedToShowDesktop() const;
-  bool isDragable() const;
-  bool isNotDraggable() const;
   bool shouldIgnoreSpecifiedList() const;
   bool shouldIgnorePager() const;
-  bool notFocusableIfMapped() const;
   bool shouldNotShowInPager() const;
-  bool isAeroSnapEnabled() const;
+  bool wasMinimizedToShowDesktop() const;
+  bool notFocusableIfMapped() const;
+  bool willIgnoreIncrementWhenMaximized() const;
+  bool hasOpacity() const;
+  bool canFocus() const;
 
+  void setDefaultLayer(unsigned char defaultLayer);
+  unsigned char getDefaultLayer() const;
+  void setDesktop(unsigned short desktop);
+  unsigned short getDesktop() const;
+  void setCurrentDesktop(unsigned int desktop);
+
+  unsigned int getOpacity();
+  unsigned char getLayer() const;
+  unsigned short getBorder() const;
+  unsigned char getMaxFlags() const;
+
+  void setNotMapped();
+  void setShaped();
+  void setDelete();
+  void setTakeFocus();
+  void setNoDelete();
+  void setNoTakeFocus();
+  void setLayer(unsigned char layer);
   void setActive();
   void setNotActive();
   void setMaxFlags(MaxFlags flags);
@@ -591,12 +496,6 @@ public:
   void setNoShaded();
   void setNoList();
   void setSticky();
-
-
-  void clearToNoPager();
-  void resetMappedState();
-  void clearToSticky();
-
   void setNoSticky();
   void setNoDrag();
   void setNoMinimized();
@@ -604,7 +503,6 @@ public:
   void setEdgeSnap();
   void setDrag();
   void setFixed();
-  void setCurrentDesktop(unsigned int desktop);
   void setFullscreen();
   void setMaximized();
   void setCentered();
@@ -614,12 +512,6 @@ public:
   void setTaskListSkipped();
   void setNoFocus();
   void setOpacityFixed();
-
-  void ignoreProgramList();
-  void ignoreProgramSpecificPager();
-  void ignoreProgramSpecificPosition();
-  void ignoreIncrementWhenMaximized();
-
   void setBorderOutline();
   void setBorderTitle();
   void setBorderMin();
@@ -659,9 +551,9 @@ private:
   static int *cascadeOffsets;
 
   static void LoadFocus(void);
+  static void KillClientHandler(ClientNode *np);
   void RestackTransients();
   void RestoreTransients(char raise);
-  static void KillClientHandler(ClientNode *np);
   void UnmapClient();
 public:
   static ClientNode *activeClient;

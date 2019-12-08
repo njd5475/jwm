@@ -210,7 +210,7 @@ void ClientNode::LoadFocus(void) {
 
   np = FindClient(childReturn);
   if (np) {
-    np->FocusClient();
+    np->keyboardFocus();
   }
 
 }
@@ -451,7 +451,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   /* Focus transients if their parent has focus. */
   if (this->owner != None) {
     if (activeClient && this->owner == activeClient->window) {
-      this->FocusClient();
+      this->keyboardFocus();
     }
   }
 
@@ -580,7 +580,7 @@ void ClientNode::UnshadeClient() {
 }
 
 /** Set a client's state to withdrawn. */
-void ClientNode::SetClientWithdrawn() {
+void ClientNode::sendToBackground() {
   if (activeClient == this) {
     activeClient = NULL;
     this->setNotActive();
@@ -647,7 +647,7 @@ void ClientNode::RestoreTransients(char raise) {
   }
 
   if (raise) {
-    this->FocusClient();
+    this->keyboardFocus();
     this->RaiseClient();
   }
   Hints::WriteState(this);
@@ -690,7 +690,7 @@ void ClientNode::_UpdateState() {
   ClientList::InsertAt(this);
 
   if (active) {
-    this->FocusClient();
+    this->keyboardFocus();
   }
 
 }
@@ -871,7 +871,7 @@ void ClientNode::ShowClient() {
           JXMapWindow(display, this->window);
         }
         if (this->isActive()) {
-          this->FocusClient();
+          this->keyboardFocus();
         }
       }
     }
@@ -898,7 +898,7 @@ void ClientNode::MaximizeClient(MaxFlags flags) {
   }
 
   this->RaiseClient();
-  this->FocusClient();
+  this->keyboardFocus();
   if (this->getMaxFlags()) {
     /* Undo existing maximization. */
     this->x = this->oldx;
@@ -1493,7 +1493,7 @@ void ClientNode::ConstrainPosition() {
 }
 
 /** Set the active client. */
-void ClientNode::FocusClient() {
+void ClientNode::keyboardFocus() {
   if (this->isHidden()) {
     return;
   }
@@ -1540,7 +1540,7 @@ void ClientNode::FocusClient() {
 /** Refocus the active client (if there is one). */
 void ClientNode::RefocusClient(void) {
   if (activeClient) {
-    activeClient->FocusClient();
+    activeClient->keyboardFocus();
   }
 }
 

@@ -247,7 +247,7 @@ void TaskBar::ProcessButtonPress(int x, int y, int mask) {
           /* If the group already contained the active client,
            * ensure that the same client remains active.
            */
-          focused->FocusClient();
+          focused->keyboardFocus();
         }
       }
       break;
@@ -291,7 +291,7 @@ void TaskBar::BarItem::focusGroup() {
           client->getDesktop());
     }
     client->RestoreClient(1);
-    client->FocusClient();
+    client->keyboardFocus();
     return;
   }
 
@@ -348,7 +348,7 @@ void TaskBar::BarItem::focusGroup() {
   }
   for (i = 0; i < restoreCount; i++) {
     if (toRestore[i]->isStatus(STAT_CANFOCUS | STAT_TAKEFOCUS)) {
-      toRestore[i]->FocusClient();
+      toRestore[i]->keyboardFocus();
       break;
     }
   }
@@ -376,7 +376,7 @@ void TaskBar::RunTaskBarCommand(MenuAction *action, unsigned button) {
     } else {
       ClientNode *np = (ClientNode*) action->context;
       np->RestoreClient(1);
-      np->FocusClient();
+      np->keyboardFocus();
       Cursors::MoveMouse(np->getWindow(), np->getWidth() / 2,
           np->getHeight() / 2);
     }

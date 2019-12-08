@@ -281,7 +281,7 @@ void Desktops::_ShowDesktop(void) {
 				}
 				if ((np->getDesktop() == currentDesktop) || (np->isSticky())) {
 					if (first) {
-						np->FocusClient();
+						np->keyboardFocus();
 						first = 0;
 					}
 					Border::DrawBorder(np);

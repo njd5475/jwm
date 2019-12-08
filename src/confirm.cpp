@@ -313,7 +313,7 @@ void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*) ...)
 		dialog->node->setOwner(np->getWindow());
 	}
 	dialog->node->setDialogWindowStatus();
-	dialog->node->FocusClient();
+	dialog->node->keyboardFocus();
 
 	/* Grab the mouse. */
 	JXGrabButton(display, AnyButton, AnyModifier, window, True, ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None,

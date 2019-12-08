@@ -170,7 +170,7 @@ void ClientList::WalkWindowStack(char forward) {
       }
       JXRaiseWindow(display,
           np->getParent() ? np->getParent() : np->getWindow());
-      np->FocusClient();
+      np->keyboardFocus();
       break;
 
     }
@@ -222,7 +222,7 @@ void ClientList::FocusNextStacked(ClientNode *np) {
       client = nodes[x][at];
       if ((client->isStatus(STAT_MAPPED | STAT_SHADED))
           && !(client->isHidden())) {
-        client->FocusClient();
+        client->keyboardFocus();
         return;
       }
     }
@@ -235,7 +235,7 @@ void ClientList::FocusNextStacked(ClientNode *np) {
       client = nodes[x][at];
       if ((client->isStatus(STAT_MAPPED | STAT_SHADED))
           && !(client->isHidden())) {
-        client->FocusClient();
+        client->keyboardFocus();
         return;
       }
     }

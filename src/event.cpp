@@ -491,7 +491,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
   if (np) {
     /* Click on the border. */
     if (event->type == ButtonPress) {
-      np->FocusClient();
+      np->keyboardFocus();
       np->RaiseClient();
     }
     context = Border::GetBorderContext(np, event->x, event->y);
@@ -514,7 +514,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
       switch (event->button) {
       case Button1:
       case Button2:
-        np->FocusClient();
+        np->keyboardFocus();
         if (settings.focusModel == FOCUS_SLOPPY
             || settings.focusModel == FOCUS_CLICK) {
           np->RaiseClient();
@@ -530,7 +530,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
           np->ResizeClient(MC_BORDER | MC_BORDER_E | MC_BORDER_S,
               event->x + west, event->y + north);
         } else {
-          np->FocusClient();
+          np->keyboardFocus();
           if (settings.focusModel == FOCUS_SLOPPY
               || settings.focusModel == FOCUS_CLICK) {
             np->RaiseClient();
@@ -962,7 +962,7 @@ void _HandleEnterNotify(const XCrossingEvent *event) {
     if (!(np->isActive())
         && (settings.focusModel == FOCUS_SLOPPY
             || settings.focusModel == FOCUS_SLOPPY_TITLE)) {
-      np->FocusClient();
+      np->keyboardFocus();
     }
     if (np->getParent() == event->window) {
       np->setMouseContext(Border::GetBorderContext(np, event->x, event->y));
@@ -1098,7 +1098,7 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
       switch (event->data.l[0]) {
       case WithdrawnState:
-        np->SetClientWithdrawn();
+        np->sendToBackground();
         break;
       case IconicState:
         np->MinimizeClient(1);
@@ -1114,7 +1114,7 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 
       np->RestoreClient(1);
       np->ShadeClient();
-      np->FocusClient();
+      np->keyboardFocus();
 
     } else if (event->message_type == Hints::atoms[ATOM_NET_WM_DESKTOP]) {
 
@@ -1602,7 +1602,7 @@ void _HandleMapRequest(const XMapEvent *event) {
     np = ClientNode::Create(event->window, 0, 1);
     if (np) {
       if (!(np->notFocusableIfMapped())) {
-        np->FocusClient();
+        np->keyboardFocus();
       }
     } else {
       JXMapWindow(display, event->window);
@@ -1620,7 +1620,7 @@ void _HandleMapRequest(const XMapEvent *event) {
         np->setCurrentDesktop(currentDesktop);
       }
       if (!(np->notFocusableIfMapped())) {
-        np->FocusClient();
+        np->keyboardFocus();
         np->RaiseClient();
       }
       Hints::WriteState(np);

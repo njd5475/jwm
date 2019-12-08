@@ -46,7 +46,7 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
       ATOM_NET_WM_WINDOW_TYPE_UTILITY);
   node = ClientNode::Create(window, 0, 0);
   node->setNoBorderClose();
-  node->FocusClient();
+  node->keyboardFocus();
   Hints::WriteState(node);
 
   /* Grab the mouse. */
@@ -69,7 +69,7 @@ LogWindow::LogWindow(const LogWindow &p) {
 
 LogWindow::~LogWindow() {
   for(auto line : lines) {
-    free(line);
+    free((void*)line);
   }
   lines.clear();
 
