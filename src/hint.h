@@ -135,8 +135,6 @@ extern const char managerProperty[];
 
 typedef unsigned char WinLayerType;
 
-class ClientState;
-
 class Hints {
 public:
 	static Atom atoms[ATOM_COUNT];
@@ -160,52 +158,55 @@ public:
 	 * @param np The client.
 	 * @param alreadyMapped Set if the client is already mapped.
 	 */
-	static void ReadClientInfo(struct ClientNode *np, char alreadyMapped);
+	static void ReadClientInfo(const ClientNode *np, char alreadyMapped);
 
 	/** Read a client's name.
 	 * @param np The client.
 	 */
-	static void ReadWMName(struct ClientNode *np);
+	static void ReadWMName(const ClientNode *np);
 
 	/** Read a client's class.
 	 * @param np The client.
 	 */
-	static void ReadWMClass(struct ClientNode *np);
+	static void ReadWMClass(const ClientNode *np);
 
 	/** Read normal hints for a client.
 	 * @param np The client.
 	 */
-	static void ReadWMNormalHints(struct ClientNode *np);
+	static void ReadWMNormalHints(const ClientNode *np);
 
 	/** Read the WM_PROTOCOLS property for a window.
 	 * @param w The window.
 	 * @param state The client state to update.
 	 */
-	static void ReadWMProtocols(Window w, ClientState *state);
+	//TODO: Move to clientnode
+	static void ReadWMProtocols(Window w, ClientNode *node);
 
 	/** Read colormap information for a client.
 	 * @param np The client.
 	 */
-	static void ReadWMColormaps(struct ClientNode *np);
+	static void ReadWMColormaps(const ClientNode *np);
 
 	/** Determine the layer of a client.
 	 * @param np The client.
 	 */
-	static void ReadWinLayer(struct ClientNode *np);
+	static void ReadWinLayer(const ClientNode *np);
 
 	/** Read the current state of a window.
 	 * @param win The window.
 	 * @param alreadyMapped Set if the window is already mapped.
 	 * @return The window state.
 	 */
-	static ClientState ReadWindowState(Window win, char alreadyMapped);
+  //TODO: Move to clientnode
+	static void ReadWindowState(ClientNode* node, Window win, char alreadyMapped);
 
 	/** Read WM hints.
 	 * @param win The window.
 	 * @param state The state hints to update.
 	 * @param alreadyMapped Set if the window is already mapped.
 	 */
-	static void ReadWMHints(Window win, ClientState *state, char alreadyMapped);
+  //TODO: Move to clientnode
+	static void ReadWMHints(Window win, ClientNode *node, char alreadyMapped);
 
 	/** Read opacity.
 	 * @param win The window.
@@ -217,25 +218,25 @@ public:
 	 * Note that this will call WriteNetState.
 	 * @param np The client.
 	 */
-	static void WriteState(struct ClientNode *np);
+	static void WriteState(const ClientNode *np);
 
 	/** Set _NET_WM_STATE.
 	 * @param np The client.
 	 */
-	static void WriteNetState(struct ClientNode *np);
+	static void WriteNetState(const ClientNode *np);
 
 	/** Set the opacity of a client window.
 	 * @param np The client.
 	 * @param opacity The opacity to set.
 	 * @param force Set the opacity even if it hasn't changed.
 	 */
-	static void SetOpacity(struct ClientNode *np, unsigned int opacity, char force);
+	static void SetOpacity(const ClientNode *np, unsigned int opacity, char force);
 
 	/** Set the frame extents of a window.
 	 * @param win The window.
 	 * @param state The client state.
 	 */
-	static void WriteFrameExtents(Window win, const ClientState *state);
+	static void WriteFrameExtents(Window win, const ClientNode *state);
 
 	/** Read a cardinal atom.
 	 * @param window The window.
@@ -280,6 +281,15 @@ public:
 	 * @param value The value.
 	 */
 	static void SetAtomAtom(Window window, AtomType atom, AtomType value);
+
+	static bool IsDeleteAtomSet(Window w);
+private:
+
+	static char CheckShape(Window win);
+  //TODO: Move to clientnode
+	static void WriteNetAllowed(const ClientNode *np);
+	static void ReadWMState(Window win, ClientNode *state);
+	static void ReadMotifHints(Window win, ClientNode *state);
 
 };
 

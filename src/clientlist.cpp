@@ -36,7 +36,7 @@ char ClientList::ShouldFocus(const ClientNode *np, char current) {
   }
 
   /* Don't display a client if it doesn't want to be displayed. */
-  if (np->getState()->shouldSkipInTaskList()) {
+  if (np->shouldSkipInTaskList()) {
     return 0;
   }
 
@@ -45,7 +45,7 @@ char ClientList::ShouldFocus(const ClientNode *np, char current) {
     return 0;
   }
 
-  if (!(np->getState()->isStatus(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
+  if (!(np->isStatus(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
     return 0;
   }
 
@@ -155,14 +155,14 @@ void ClientList::WalkWindowStack(char forward) {
        * a state that doesn't allow focus.
        */
       if (np == NULL || !ShouldFocus(np, 1)
-          || (np->getState()->isActive())) {
+          || (np->isActive())) {
         continue;
       }
 
       /* Show the window.
        * Only when the walk completes do we update the stacking order. */
       ClientNode::RestackClients();
-      if (np->getState()->isMinimized()) {
+      if (np->isMinimized()) {
         np->RestoreClient(1);
         wasMinimized = 1;
       } else {
@@ -190,7 +190,7 @@ void ClientList::StopWindowWalk(void) {
     /* Look up the current window. */
     np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
     if (np) {
-      if (np->getState()->isMinimized()) {
+      if (np->isMinimized()) {
         np->RestoreClient(1);
       } else {
         np->RaiseClient();
@@ -220,8 +220,8 @@ void ClientList::FocusNextStacked(ClientNode *np) {
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
-      if ((client->getState()->isStatus(STAT_MAPPED | STAT_SHADED))
-          && !(client->getState()->isHidden())) {
+      if ((client->isStatus(STAT_MAPPED | STAT_SHADED))
+          && !(client->isHidden())) {
         client->FocusClient();
         return;
       }
@@ -230,11 +230,11 @@ void ClientList::FocusNextStacked(ClientNode *np) {
 
   // focus first client in thats mapped shaded and not hidden only top-most layer that has clients
 
-  for (int x = client->getState()->getLayer() - 1; x >= FIRST_LAYER; x--) {
+  for (int x = client->getLayer() - 1; x >= FIRST_LAYER; x--) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
-      if ((client->getState()->isStatus(STAT_MAPPED | STAT_SHADED))
-          && !(client->getState()->isHidden())) {
+      if ((client->isStatus(STAT_MAPPED | STAT_SHADED))
+          && !(client->isHidden())) {
         client->FocusClient();
         return;
       }
@@ -305,14 +305,14 @@ void ClientList::MinimizeTransientWindows(ClientNode *client, bool lower) {
   vector<ClientNode*> children = GetChildren(client->getWindow());
   for (int i = 0; i < children.size(); ++i) {
     ClientNode *child = children[i];
-    if ((child->getState()->isStatus(STAT_MAPPED | STAT_SHADED))
-        && !(child->getState()->isMinimized())) {
+    if ((child->isStatus(STAT_MAPPED | STAT_SHADED))
+        && !(child->isMinimized())) {
       child->MinimizeTransients(lower);
     }
   }
 
   /* Focus the next window. */
-  if (client->getState()->isActive()) {
+  if (client->isActive()) {
     FocusNextStacked(client);
   }
 

@@ -12,9 +12,8 @@
 
 #include <vector>
 #include "hint.h"
-#include "ClientState.h"
 
-class ClientNode;
+#include "client.h"
 
 class ClientList {
 private:
@@ -27,8 +26,8 @@ public:
 	 * @return 1 if on the current desktop, 0 otherwise.
 	 */
 #define IsClientOnCurrentDesktop( np ) \
-   ((np->getState()->getDesktop() == currentDesktop) \
-      || (np->getState()->isSticky()))
+   ((np->getDesktop() == currentDesktop) \
+      || (np->isSticky()))
 
 	/** Determine if a client is allowed focus.
 	 * @param np The client.

@@ -14,7 +14,6 @@
 #include "icon.h"
 #include "Component.h"
 
-
 typedef struct {
   int left, right;
   int top, bottom;
@@ -78,7 +77,7 @@ public:
    * @param east Pointer to the value to contain the east border size.
    * @param west Pointer to the value to contain the west border size.
    */
-  static void GetBorderSize(const struct ClientState *state,
+  static void GetBorderSize(const ClientNode *state,
       int *north, int *south, int *east, int *west);
 
   /** Redraw all borders on the current desktop. */

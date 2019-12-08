@@ -80,10 +80,10 @@ char ClientNode::MoveClient(int startx, int starty) {
   int north, south, east, west;
   int height;
 
-  if (!(this->getState()->getBorder() & BORDER_MOVE)) {
+  if (!(this->getBorder() & BORDER_MOVE)) {
     return 0;
   }
-  if (this->getState()->isFullscreen()) {
+  if (this->isFullscreen()) {
     return 0;
   }
 
@@ -103,7 +103,7 @@ char ClientNode::MoveClient(int startx, int starty) {
     return 0;
   }
 
-  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  Border::GetBorderSize(this, &north, &south, &east, &west);
   startx -= west;
   starty -= north;
 
@@ -169,7 +169,7 @@ char ClientNode::MoveClient(int startx, int starty) {
         }
       } else {
         /* If alt is not pressed, snap to borders. */
-        if (this->getState()->isAeroSnapEnabled()) {
+        if (this->isAeroSnapEnabled()) {
           if (atTop & atLeft) {
             if (atSideFirst) {
               flags = MAX_TOP | MAX_LEFT;
@@ -204,13 +204,13 @@ char ClientNode::MoveClient(int startx, int starty) {
             flags = MAX_VERT | MAX_HORIZ;
             atSideFirst = 0;
           }
-          if (flags != this->getState()->getMaxFlags()) {
+          if (flags != this->getMaxFlags()) {
             if (settings.moveMode == MOVE_OUTLINE) {
               Outline::ClearOutline();
             }
             this->MaximizeClient(flags);
           }
-          if (!this->getState()->getMaxFlags()) {
+          if (!this->getMaxFlags()) {
             DoSnap(this);
           }
         } else {
@@ -222,7 +222,7 @@ char ClientNode::MoveClient(int startx, int starty) {
         this->RestartMove(&doMove);
       } else if (!doMove && (abs(this->getX() - oldx) > MOVE_DELTA || abs(this->getY() - oldy) > MOVE_DELTA)) {
 
-        if (this->getState()->getMaxFlags()) {
+        if (this->getMaxFlags()) {
           this->MaximizeClient(MAX_NONE);
         }
 
@@ -234,7 +234,7 @@ char ClientNode::MoveClient(int startx, int starty) {
         if (settings.moveMode == MOVE_OUTLINE) {
           Outline::ClearOutline();
           height = north + south;
-          if (!(this->getState()->isShaded())) {
+          if (!(this->isShaded())) {
             height += this->getHeight();
           }
           Outline::DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
@@ -265,14 +265,14 @@ char ClientNode::MoveClientKeyboard() {
   int height;
   int north, south, east, west;
   Window win;
-  if (!(this->getState()->getBorder() & BORDER_MOVE)) {
+  if (!(this->getBorder() & BORDER_MOVE)) {
     return 0;
   }
-  if (this->getState()->isFullscreen()) {
+  if (this->isFullscreen()) {
     return 0;
   }
 
-  if (this->getState()->getMaxFlags() != MAX_NONE) {
+  if (this->getMaxFlags() != MAX_NONE) {
     this->MaximizeClient(MAX_NONE);
   }
 
@@ -286,7 +286,7 @@ char ClientNode::MoveClientKeyboard() {
     return 0;
   }
 
-  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  Border::GetBorderSize(this, &north, &south, &east, &west);
 
   oldx = this->getX();
   oldy = this->getY();
@@ -301,7 +301,7 @@ char ClientNode::MoveClientKeyboard() {
   Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
   _DiscardMotionEvents(&event, this->window);
 
-  if (this->getState()->isShaded()) {
+  if (this->isShaded()) {
     height = 0;
   } else {
     height = this->getHeight();
@@ -410,7 +410,7 @@ void ClientNode::StopMove(int doMove, int oldx, int oldy) {
     return;
   }
 
-  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  Border::GetBorderSize(this, &north, &south, &east, &west);
   if (this->parent != None) {
     JXMoveWindow(display, this->parent, this->getX() - west, this->getY() - north);
   } else {
@@ -425,7 +425,7 @@ void ClientNode::RestartMove(int *doMove) {
     int north, south, east, west;
     *doMove = 0;
     DestroyMoveWindow();
-    Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+    Border::GetBorderSize(this, &north, &south, &east, &west);
     if (this->getParent() != None) {
       JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
     } else {
@@ -461,7 +461,7 @@ void ClientNode::DoSnapScreen() {
 
   GetClientRectangle(this, &client);
 
-  Border::GetBorderSize(this->getState(), &north, &south, &east, &west);
+  Border::GetBorderSize(this, &north, &south, &east, &west);
 
   screenCount = Screens::GetScreenCount();
   for (screen = 0; screen < screenCount; screen++) {
@@ -476,7 +476,7 @@ void ClientNode::DoSnapScreen() {
     }
     if (abs(client.bottom - sp->height - sp->y) <= settings.snapDistance) {
       this->y = sp->y + sp->height - south;
-      if (!(this->getState()->isShaded())) {
+      if (!(this->isShaded())) {
         this->y -= this->getHeight();
       }
     }
@@ -491,9 +491,9 @@ void ClientNode::DoSnapScreen() {
 
 /** Determine if we should snap to the specified client. */
 char ShouldSnap(ClientNode *np) {
-  if (np->getState()->isHidden()) {
+  if (np->isHidden()) {
     return 0;
-  } else if (np->getState()->isMinimized()) {
+  } else if (np->isMinimized()) {
     return 0;
   } else {
     return 1;
@@ -505,12 +505,12 @@ void GetClientRectangle(ClientNode *np, RectangleType *r) {
 
   int north, south, east, west;
 
-  Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
+  Border::GetBorderSize(np, &north, &south, &east, &west);
 
   r->left = np->getX() - west;
   r->right = np->getX() + np->getWidth() + east;
   r->top = np->getY() - north;
-  if (np->getState()->isShaded()) {
+  if (np->isShaded()) {
     r->bottom = np->getY() + south;
   } else {
     r->bottom = np->getY() + np->getHeight() + south;

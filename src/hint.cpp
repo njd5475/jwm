@@ -136,11 +136,6 @@ const Hints::AtomNode Hints::atomList[] = {
 
 };
 
-static char CheckShape(Window win);
-static void WriteNetAllowed(ClientNode *np);
-static void ReadWMState(Window win, ClientState *state);
-static void ReadMotifHints(Window win, ClientState *state);
-
 /** Set root hints and intern atoms. */
 void Hints::StartupHints(void) {
 
@@ -235,7 +230,7 @@ void Hints::ReadCurrentDesktop(void) {
 /** Read client hints.
  * This is called while the client is being added to management.
  */
-void Hints::ReadClientInfo(ClientNode *np, char alreadyMapped) {
+void Hints::ReadClientInfo(const ClientNode *np, char alreadyMapped) {
 
 	Status status;
 
@@ -258,14 +253,14 @@ void Hints::ReadClientInfo(ClientNode *np, char alreadyMapped) {
 }
 
 /** Write the window state hint for a client. */
-void Hints::WriteState(ClientNode *np) {
+void Hints::WriteState(const ClientNode *np) {
 	unsigned long data[2];
 
-	if (np->getState()->isMapped()) {
+	if (np->isMapped()) {
 		data[0] = NormalState;
-	} else if (np->getState()->isMinimized()) {
+	} else if (np->isMinimized()) {
 		data[0] = IconicState;
-	} else if (np->getState()->isShaded()) {
+	} else if (np->isShaded()) {
 		data[0] = NormalState;
 	} else {
 		data[0] = WithdrawnState;
@@ -280,96 +275,80 @@ void Hints::WriteState(ClientNode *np) {
 	}
 
 	Hints::WriteNetState(np);
-	Hints::WriteFrameExtents(np->getWindow(), np->getState());
+	Hints::WriteFrameExtents(np->getWindow(), np);
 	WriteNetAllowed(np);
 }
 
-/** Set the opacity of a client. */
-void ClientNode::SetOpacity(unsigned int opacity, char force) {
-	Window w;
-	if (this->state.getOpacity() == opacity && !force) {
-		return;
-	}
-
-	w = this->parent != None ? this->parent : this->window;
-	this->state.setOpacity(opacity);
-	if (opacity == 0xFFFFFFFF) {
-		JXDeleteProperty(display, w, Hints::atoms[ATOM_NET_WM_WINDOW_OPACITY]);
-	} else {
-		Hints::SetCardinalAtom(w, ATOM_NET_WM_WINDOW_OPACITY, opacity);
-	}
-}
-
 /** Write the net state hint for a client. */
-void Hints::WriteNetState(ClientNode *np) {
+void Hints::WriteNetState(const ClientNode *np) {
 	unsigned long values[16];
 	int index;
 
 	Assert(np);
 
 	/* We remove the _NET_WM_STATE and _NET_WM_DESKTOP for withdrawn windows. */
-	if (!(np->getState()->isStatus(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
+	if (!(np->isStatus(STAT_MAPPED | STAT_MINIMIZED | STAT_SHADED))) {
 		JXDeleteProperty(display, np->getWindow(), atoms[ATOM_NET_WM_STATE]);
 		JXDeleteProperty(display, np->getWindow(), atoms[ATOM_NET_WM_DESKTOP]);
 		return;
 	}
 
 	index = 0;
-	if (np->getState()->isMinimized()) {
+	if (np->isMinimized()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_HIDDEN];
 	}
 
-	if (np->getState()->getMaxFlags() & MAX_HORIZ) {
+	if (np->getMaxFlags() & MAX_HORIZ) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ];
 	}
-	if (np->getState()->getMaxFlags() & MAX_VERT) {
+	if (np->getMaxFlags() & MAX_VERT) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT];
 	}
-	if (np->getState()->getMaxFlags() & MAX_TOP) {
+	if (np->getMaxFlags() & MAX_TOP) {
 		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_TOP];
 	}
-	if (np->getState()->getMaxFlags() & MAX_BOTTOM) {
+	if (np->getMaxFlags() & MAX_BOTTOM) {
 		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_BOTTOM];
 	}
-	if (np->getState()->getMaxFlags() & MAX_LEFT) {
+	if (np->getMaxFlags() & MAX_LEFT) {
 		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_LEFT];
 	}
-	if (np->getState()->getMaxFlags() & MAX_RIGHT) {
+	if (np->getMaxFlags() & MAX_RIGHT) {
 		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT];
 	}
 
-	if (np->getState()->isShaded()) {
+	if (np->isShaded()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_SHADED];
 	}
 
-	if (np->getState()->isSticky()) {
+	if (np->isSticky()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_STICKY];
 	}
 
-	if (np->getState()->isFullscreen()) {
+	if (np->isFullscreen()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_FULLSCREEN];
 	}
 
-	if (np->getState()->shouldSkipInTaskList()) {
+	if (np->shouldSkipInTaskList()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR];
 	}
 
-	if (np->getState()->shouldNotShowInPager()) {
+	if (np->shouldNotShowInPager()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_SKIP_PAGER];
 	}
 
-	if (np->getState()->getLayer() != np->getState()->getDefaultLayer()) {
-		if (np->getState()->getLayer() == LAYER_BELOW) {
+	if (np->getLayer() != np->getDefaultLayer()) {
+		if (np->getLayer() == LAYER_BELOW) {
 			values[index++] = atoms[ATOM_NET_WM_STATE_BELOW];
-		} else if (np->getState()->getLayer() == LAYER_ABOVE) {
+		} else if (np->getLayer() == LAYER_ABOVE) {
 			values[index++] = atoms[ATOM_NET_WM_STATE_ABOVE];
 		}
 	}
 
-	if (np->getState()->isUrgent()) {
+	if (np->isUrgent()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_DEMANDS_ATTENTION];
 	}
-	if (np->getState()->isActive()) {
+	if (np->isActive()) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_FOCUSED];
 	}
 
@@ -378,7 +357,7 @@ void Hints::WriteNetState(ClientNode *np) {
 }
 
 /** Set _NET_FRAME_EXTENTS. */
-void Hints::WriteFrameExtents(Window win, const ClientState *state) {
+void Hints::WriteFrameExtents(Window win, const ClientNode *state) {
 	unsigned long values[4];
 	int north, south, east, west;
 
@@ -396,7 +375,7 @@ void Hints::WriteFrameExtents(Window win, const ClientState *state) {
 }
 
 /** Write the allowed action property. */
-void WriteNetAllowed(ClientNode *np) {
+void Hints::WriteNetAllowed(const ClientNode *np) {
 
 	unsigned long values[12];
 	unsigned int index;
@@ -405,33 +384,33 @@ void WriteNetAllowed(ClientNode *np) {
 
 	index = 0;
 
-	if (np->getState()->getBorder() & BORDER_SHADE) {
+	if (np->getBorder() & BORDER_SHADE) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_SHADE];
 	}
 
-	if (np->getState()->getBorder() & BORDER_MIN) {
+	if (np->getBorder() & BORDER_MIN) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MINIMIZE];
 	}
 
-	if (np->getState()->getBorder() & BORDER_MAX) {
+	if (np->getBorder() & BORDER_MAX) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MAXIMIZE_HORZ];
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MAXIMIZE_VERT];
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_FULLSCREEN];
 	}
 
-	if (np->getState()->getBorder() & BORDER_CLOSE) {
+	if (np->getBorder() & BORDER_CLOSE) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_CLOSE];
 	}
 
-	if (np->getState()->getBorder() & BORDER_RESIZE) {
+	if (np->getBorder() & BORDER_RESIZE) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_RESIZE];
 	}
 
-	if (np->getState()->getBorder() & BORDER_MOVE) {
+	if (np->getBorder() & BORDER_MOVE) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_MOVE];
 	}
 
-	if (!(np->getState()->isSticky())) {
+	if (!(np->isSticky())) {
 		values[index++] = Hints::atoms[ATOM_NET_WM_ACTION_CHANGE_DESKTOP];
 	}
 
@@ -445,7 +424,7 @@ void WriteNetAllowed(ClientNode *np) {
 }
 
 /** Check if a window uses the shape extension. */
-char CheckShape(Window win) {
+char Hints::CheckShape(Window win) {
 #ifdef USE_SHAPE
 	int shaped = 0;
 	int r1;
@@ -463,9 +442,8 @@ char CheckShape(Window win) {
 }
 
 /** Read all hints needed to determine the current window state. */
-ClientState Hints::ReadWindowState(Window win, char alreadyMapped) {
+void Hints::ReadWindowState(ClientNode *result, Window win, char alreadyMapped) {
 
-	ClientState result;
 	Status status;
 	unsigned long count, x;
 	unsigned long extra;
@@ -478,31 +456,31 @@ ClientState Hints::ReadWindowState(Window win, char alreadyMapped) {
 
 	Assert(win != None);
 
-	result.clearStatus();
-	result.setMapped();
-	result.clearMaxFlags();
-	result.resetBorder();
-	result.resetLayer();
-	result.resetDefaultLayer();
-	result.setDesktop(currentDesktop);
-	result.setOpacity(UINT_MAX);
+	result->clearStatus();
+	result->setMapped();
+	result->clearMaxFlags();
+	result->resetBorder();
+	result->resetLayer();
+	result->resetDefaultLayer();
+	result->setDesktop(currentDesktop);
+	result->setOpacity(UINT_MAX);
 
-	Hints::ReadWMProtocols(win, &result);
-	Hints::ReadWMHints(win, &result, alreadyMapped);
-	ReadWMState(win, &result);
-	ReadMotifHints(win, &result);
+	Hints::ReadWMProtocols(win, result);
+	Hints::ReadWMHints(win, result, alreadyMapped);
+	ReadWMState(win, result);
+	ReadMotifHints(win, result);
 	unsigned int readOpacity;
 	Hints::ReadWMOpacity(win, &readOpacity);
-	result.setOpacity(readOpacity);
+	result->setOpacity(readOpacity);
 
 	/* _NET_WM_DESKTOP */
 	if (Hints::GetCardinalAtom(win, ATOM_NET_WM_DESKTOP, &card)) {
 		if (card == ~0UL) {
-			result.setSticky();
+			result->setSticky();
 		} else if (card < settings.desktopCount) {
-			result.setDesktop(card);
+			result->setDesktop(card);
 		} else {
-			result.setDesktop(settings.desktopCount - 1);
+			result->setDesktop(settings.desktopCount - 1);
 		}
 	}
 
@@ -514,36 +492,36 @@ ClientState Hints::ReadWindowState(Window win, char alreadyMapped) {
 			state = (Atom*) temp;
 			for (x = 0; x < count; x++) {
 				if (state[x] == atoms[ATOM_NET_WM_STATE_STICKY]) {
-					result.setSticky();
+					result->setSticky();
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_SHADED]) {
-					result.setShaded();
+					result->setShaded();
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT]) {
-					result.setMaxFlags(result.getMaxFlags() | MAX_VERT);
+					result->setMaxFlags(result->getMaxFlags() | MAX_VERT);
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
-					result.setMaxFlags(result.getMaxFlags() | MAX_HORIZ);
+					result->setMaxFlags(result->getMaxFlags() | MAX_HORIZ);
 				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_TOP]) {
-					result.setMaxFlags(result.getMaxFlags() | MAX_TOP);
+					result->setMaxFlags(result->getMaxFlags() | MAX_TOP);
 				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_BOTTOM]) {
-					result.setMaxFlags(result.getMaxFlags() | MAX_BOTTOM);
+					result->setMaxFlags(result->getMaxFlags() | MAX_BOTTOM);
 				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_LEFT]) {
-					result.setMaxFlags(result.getMaxFlags() | MAX_LEFT);
+					result->setMaxFlags(result->getMaxFlags() | MAX_LEFT);
 				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT]) {
-					result.setMaxFlags(result.getMaxFlags() | MAX_RIGHT);
+					result->setMaxFlags(result->getMaxFlags() | MAX_RIGHT);
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_FULLSCREEN]) {
-					result.setFullscreen();
+					result->setFullscreen();
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_HIDDEN]) {
-					result.setMinimized();
+					result->setMinimized();
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_SKIP_TASKBAR]) {
-					result.setNoList();
+					result->setNoList();
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_SKIP_PAGER]) {
-					result.setNoPager();
+					result->setNoPager();
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_ABOVE]) {
-					result.setLayer(LAYER_ABOVE);
+					result->setLayer(LAYER_ABOVE);
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_BELOW]) {
-					result.setLayer(LAYER_BELOW);
+					result->setLayer(LAYER_BELOW);
 
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_DEMANDS_ATTENTION]) {
-					result.setUrgent();
+					result->setUrgent();
 				}
 			}
 		}
@@ -562,40 +540,40 @@ ClientState Hints::ReadWindowState(Window win, char alreadyMapped) {
 			if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_NORMAL]) {
 				break;
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_DESKTOP]) {
-				result.setDefaultLayer(LAYER_DESKTOP);
-				result.clearBorder();
-				result.setSticky();
-				result.setNoList();
-				result.setNoFocus();
+				result->setDefaultLayer(LAYER_DESKTOP);
+				result->clearBorder();
+				result->setSticky();
+				result->setNoList();
+				result->setNoFocus();
 				break;
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_DOCK]) {
-				result.clearBorder();
-				result.setDefaultLayer(LAYER_ABOVE);
-				result.setNoFocus();
+				result->clearBorder();
+				result->setDefaultLayer(LAYER_ABOVE);
+				result->setNoFocus();
 				break;
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_SPLASH]) {
-				result.clearBorder();
+				result->clearBorder();
 				break;
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_DIALOG]) {
-				result.setNoBorderMin();
-				result.setNoBorderMax();
+				result->setNoBorderMin();
+				result->setNoBorderMax();
 				break;
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_MENU]) {
-				result.setNoBorderMax();
-				result.setNoList();
+				result->setNoBorderMax();
+				result->setNoList();
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION]) {
-				result.clearBorder();
-				result.setHasNoList();
-				result.setNoFocus();
+				result->clearBorder();
+				result->setHasNoList();
+				result->setNoFocus();
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_TOOLBAR]) {
-				result.setNoBorderMax();
-				result.setDefaultLayer(LAYER_ABOVE);
-				result.setSticky();
-				result.setNoList();
-				result.setNoFocus();
+				result->setNoBorderMax();
+				result->setDefaultLayer(LAYER_ABOVE);
+				result->setSticky();
+				result->setNoList();
+				result->setNoFocus();
 			} else if (state[x] == atoms[ATOM_NET_WM_WINDOW_TYPE_UTILITY]) {
-				result.setNoBorderMax();
-				result.setNoFocus();
+				result->setNoBorderMax();
+				result->setNoFocus();
 			} else {
 				Debug("Unknown _NET_WM_WINDOW_TYPE: %lu", state[x]);
 			}
@@ -613,26 +591,24 @@ ClientState Hints::ReadWindowState(Window win, char alreadyMapped) {
 	/* _NET_WM_USER_TIME */
 	if (Hints::GetCardinalAtom(utwin, ATOM_NET_WM_USER_TIME, &card)) {
 		if (card == 0) {
-			result.setNoFocus();
+			result->setNoFocus();
 		}
 	}
 
 	/* Use the default layer if the layer wasn't set explicitly. */
-	if (result.getLayer() == LAYER_NORMAL) {
-		result.resetLayerToDefault();
+	if (result->getLayer() == LAYER_NORMAL) {
+		result->resetLayerToDefault();
 	}
 
 	/* Check if this window uses the shape extension. */
 	if (CheckShape(win)) {
-		result.setShaped();
+		result->setShaped();
 	}
-
-	return result;
 
 }
 
 /** Read the protocols hint for a window. */
-void Hints::ReadWMProtocols(Window w, ClientState *state) {
+void Hints::ReadWMProtocols(Window w, ClientNode *state) {
 
 	unsigned long count, x;
 	int status;
@@ -665,78 +641,35 @@ void Hints::ReadWMProtocols(Window w, ClientState *state) {
 
 }
 
-/** Read the "normal hints" for a client. */
-void ClientNode::ReadWMNormalHints() {
+bool Hints::IsDeleteAtomSet(Window w) {
+  unsigned long count, x;
+  int status;
+  unsigned long extra;
+  Atom realType;
+  int realFormat;
+  unsigned char *temp;
+  Atom *p;
 
-	XSizeHints hints;
-	long temp;
+  Assert(w != None);
 
-	Assert(np);
+  status = JXGetWindowProperty(display, w, atoms[ATOM_WM_PROTOCOLS], 0, 32, False, XA_ATOM, &realType, &realFormat,
+      &count, &extra, &temp);
+  p = (Atom*) temp;
+  if (status != Success || realFormat == 0 || !p) {
+    return false;
+  }
 
-	if (!JXGetWMNormalHints(display, this->getWindow(), &hints, &temp)) {
-		this->sizeFlags = 0;
-	} else {
-		this->sizeFlags = hints.flags;
-	}
+  for (x = 0; x < count; x++) {
+    if (p[x] == atoms[ATOM_WM_DELETE_WINDOW]) {
+      return true;
+    }
+  }
 
-	if (this->sizeFlags & PResizeInc) {
-		this->xinc = Max(1, hints.width_inc);
-		this->yinc = Max(1, hints.height_inc);
-	} else {
-		this->xinc = 1;
-		this->yinc = 1;
-	}
-
-	if (this->sizeFlags & PMinSize) {
-		this->minWidth = Max(0, hints.min_width);
-		this->minHeight = Max(0, hints.min_height);
-	} else {
-		this->minWidth = 1;
-		this->minHeight = 1;
-	}
-
-	if (this->sizeFlags & PMaxSize) {
-		this->maxWidth = hints.max_width;
-		this->maxHeight = hints.max_height;
-		if (this->maxWidth <= 0) {
-			this->maxWidth = rootWidth;
-		}
-		if (this->maxHeight <= 0) {
-			this->maxHeight = rootHeight;
-		}
-	} else {
-		this->maxWidth = MAX_WINDOW_WIDTH;
-		this->maxHeight = MAX_WINDOW_HEIGHT;
-	}
-
-	if (this->sizeFlags & PBaseSize) {
-		this->baseWidth = hints.base_width;
-		this->baseHeight = hints.base_height;
-	} else if (this->sizeFlags & PMinSize) {
-		this->baseWidth = this->minWidth;
-		this->baseHeight = this->minHeight;
-	} else {
-		this->baseWidth = 0;
-		this->baseHeight = 0;
-	}
-
-	if (this->sizeFlags & PAspect) {
-		this->aspect.minx = hints.min_aspect.x;
-		this->aspect.miny = hints.min_aspect.y;
-		this->aspect.maxx = hints.max_aspect.x;
-		this->aspect.maxy = hints.max_aspect.y;
-	}
-
-	if (this->sizeFlags & PWinGravity) {
-		this->gravity = hints.win_gravity;
-	} else {
-		this->gravity = 1;
-	}
-
+  JXFree(p);
 }
 
 /** Read the WM state for a window. */
-void ReadWMState(Window win, ClientState *state) {
+void Hints::ReadWMState(Window win, ClientNode *node) {
 
 	Status status;
 	unsigned long count;
@@ -752,10 +685,10 @@ void ReadWMState(Window win, ClientState *state) {
 		if (JLIKELY(count == 2)) {
 			switch (temp[0]) {
 			case IconicState:
-				state->setMinimized();
+				node->setMinimized();
 				break;
 			case WithdrawnState:
-				state->setNoMinimized();
+				node->setNoMinimized();
 				break;
 			default:
 				break;
@@ -767,34 +700,34 @@ void ReadWMState(Window win, ClientState *state) {
 }
 
 /** Read the WM hints for a window. */
-void Hints::ReadWMHints(Window win, ClientState *state, char alreadyMapped) {
+void Hints::ReadWMHints(Window win, ClientNode *node, char alreadyMapped) {
 
 	XWMHints *wmhints;
 
 	Assert(win != None);
-	Assert(state);
+	Assert(node);
 
-	state->setCanFocus();
+	node->setCanFocus();
 
 	wmhints = JXGetWMHints(display, win);
 	if (wmhints) {
 		if (!alreadyMapped && (wmhints->flags & StateHint)) {
 			switch (wmhints->initial_state) {
 			case IconicState:
-				state->setMinimized();
+				node->setMinimized();
 				break;
 			default:
 				break;
 			}
 		}
 		if ((wmhints->flags & InputHint) && wmhints->input == False) {
-			state->setNoCanFocus();
+			node->setNoCanFocus();
 		}
 		if (wmhints->flags & XUrgencyHint) {
-			state->setUrgent();
+			node->setUrgent();
 		} else {
-			state->setNotUrgent();
-			state->setNoFlash();
+			node->setNotUrgent();
+			node->setNoFlash();
 		}
 		JXFree(wmhints);
 	}
@@ -812,7 +745,7 @@ void Hints::ReadWMOpacity(Window win, unsigned *opacity) {
 }
 
 /** Read _MOTIF_WM_HINTS */
-void ReadMotifHints(Window win, ClientState *state) {
+void Hints::ReadMotifHints(Window win, ClientNode *state) {
 
 	PropMwmHints *mhints;
 	Atom type;

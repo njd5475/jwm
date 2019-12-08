@@ -154,10 +154,7 @@ void SwallowNode::Destroy() {
 		JXReparentWindow(display, this->window, rootWindow, 0, 0);
 		JXRemoveFromSaveSet(display, this->window);
 
-		ClientState state;
-		memset(&state, 0, sizeof(state));
-		Hints::ReadWMProtocols(this->window, &state);
-		if (state.shouldDelete()) {
+		if (Hints::IsDeleteAtomSet(this->window)) {
 			ClientNode::SendClientMessage(this->window, ATOM_WM_PROTOCOLS,
 					ATOM_WM_DELETE_WINDOW);
 		} else {

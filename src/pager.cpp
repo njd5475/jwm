@@ -198,21 +198,21 @@ void PagerType::StartPagerMove(int x, int y) {
   for (int i = 0; i < all.size(); ++i) {
     np = all[i];
     /* Skip this client if it isn't mapped. */
-    if (!(np->getState()->isMapped())) {
+    if (!(np->isMapped())) {
       continue;
     }
     //TODO: Pager should have an ignore list.
-    if (np->getState()->shouldNotShowInPager()) {
+    if (np->shouldNotShowInPager()) {
       continue;
     }
 
     /* Skip this client if it isn't on the selected desktop. */
-    if (np->getState()->isSticky()) {
+    if (np->isSticky()) {
       if (currentDesktop != desktop) {
         continue;
       }
     } else {
-      if (np->getState()->getDesktop() != desktop) {
+      if (np->getDesktop() != desktop) {
         continue;
       }
     }
@@ -267,7 +267,7 @@ void PagerType::StartPagerMove(int x, int y) {
   Assert(np);
 
   /* The selected client was found. Now make sure we can move it. */
-  if (!(np->getState()->getBorder() & BORDER_MOVE)) {
+  if (!(np->getBorder() & BORDER_MOVE)) {
     return;
   }
 
@@ -277,19 +277,19 @@ void PagerType::StartPagerMove(int x, int y) {
   }
 
   /* If the client is maximized, unmaximize it. */
-  maxFlags = np->getState()->getMaxFlags();
-  if (np->getState()->getMaxFlags()) {
+  maxFlags = np->getMaxFlags();
+  if (np->getMaxFlags()) {
     np->MaximizeClient(MAX_NONE);
   }
 
-  Border::GetBorderSize(np->getState(), &north, &south, &east, &west);
+  Border::GetBorderSize(np, &north, &south, &east, &west);
 
   np->setController(PagerType::PagerMoveController);
   shouldStopMove = 0;
 
   oldx = np->getX();
   oldy = np->getY();
-  oldDesk = np->getState()->getDesktop();
+  oldDesk = np->getDesktop();
 
   startx = x;
   starty = y;
@@ -341,7 +341,7 @@ void PagerType::StartPagerMove(int x, int y) {
 
       /* If this client isn't sticky and now on a different desktop
        * change the client's desktop. */
-      if (!(np->getState()->isSticky())) {
+      if (!(np->isSticky())) {
         if (desktop != oldDesk) {
           np->SetClientDesktop((unsigned int) desktop);
           oldDesk = desktop;
@@ -387,7 +387,7 @@ void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
   this->x = x;
   this->y = y;
 
-  Border::GetBorderSize(&this->state, &north, &south, &east, &west);
+  Border::GetBorderSize(this, &north, &south, &east, &west);
   JXMoveWindow(display, this->parent, this->getX() - west,
       this->getY() - north);
   this->SendConfigureEvent();
@@ -534,20 +534,20 @@ void PagerType::DrawPagerClient(ClientNode *np) {
   int offx, offy;
 
   /* Don't draw the client if it isn't mapped. */
-  if (!(np->getState()->isMapped())) {
+  if (!(np->isMapped())) {
     return;
   }
-  if (np->getState()->shouldNotShowInPager()) {
+  if (np->shouldNotShowInPager()) {
     return;
   }
 
   /* Determine the desktop for the client. */
-  if (np->getState()->isSticky()) {
+  if (np->isSticky()) {
     offx = currentDesktop % settings.desktopWidth;
     offy = currentDesktop / settings.desktopWidth;
   } else {
-    offx = np->getState()->getDesktop() % settings.desktopWidth;
-    offy = np->getState()->getDesktop() / settings.desktopWidth;
+    offx = np->getDesktop() % settings.desktopWidth;
+    offy = np->getDesktop() / settings.desktopWidth;
   }
   offx *= this->deskWidth + 1;
   offy *= this->deskHeight + 1;
@@ -590,11 +590,11 @@ void PagerType::DrawPagerClient(ClientNode *np) {
   /* Fill the client if there's room. */
   if (width > 1 && height > 1) {
     ColorName fillColor;
-    if ((np->getState()->isActive())
-        && (np->getState()->getDesktop() == currentDesktop
-            || (np->getState()->isSticky()))) {
+    if ((np->isActive())
+        && (np->getDesktop() == currentDesktop
+            || (np->isSticky()))) {
       fillColor = COLOR_PAGER_ACTIVE_FG;
-    } else if (np->getState()->shouldFlash()) {
+    } else if (np->shouldFlash()) {
       fillColor = COLOR_PAGER_ACTIVE_FG;
     } else {
       fillColor = COLOR_PAGER_FG;

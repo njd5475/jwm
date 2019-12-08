@@ -12,7 +12,7 @@
 
 #include "border.h"
 
-struct ClientNode;
+class ClientNode;
 
 /** Resize a client window.
  * @param np The client to resize.
@@ -20,14 +20,14 @@ struct ClientNode;
  * @param startx The starting mouse x-coordinate (window relative).
  * @param starty The starting mouse y-coordinate (window relative).
  */
-void ResizeClient(struct ClientNode *np, MouseContextType context,
+void ResizeClient(ClientNode *np, MouseContextType context,
                   int startx, int starty);
 
 /** Resize a client window using the keyboard (mouse optional).
  * @param np The client to resize.
  * @param context The mouse context.
  */
-void ResizeClientKeyboard(struct ClientNode *np, MouseContextType context);
+void ResizeClientKeyboard(ClientNode *np, MouseContextType context);
 
 #endif /* RESIZE_H */
 

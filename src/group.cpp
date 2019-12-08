@@ -359,7 +359,7 @@ void ApplyGroup(const GroupType *gp, ClientNode *np) {
 		case OPTION_X:
 			if (lp->value.s < 0) {
 				int north, south, east, west;
-				Border::GetBorderSize(np->getState(), &north, &south, &east,
+				Border::GetBorderSize(np, &north, &south, &east,
 						&west);
 				np->setX(
 						rootWidth + lp->value.s - np->getWidth() - east - west);
@@ -371,7 +371,7 @@ void ApplyGroup(const GroupType *gp, ClientNode *np) {
 		case OPTION_Y:
 			if (lp->value.s < 0) {
 				int north, south, east, west;
-				Border::GetBorderSize(np->getState(), &north, &south, &east,
+				Border::GetBorderSize(np, &north, &south, &east,
 						&west);
 				np->setY(
 						rootHeight + lp->value.s - np->getHeight() - north
