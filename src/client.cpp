@@ -657,8 +657,7 @@ void ClientNode::RestoreTransients(char raise) {
 /** Restore a client window and its transients. */
 void ClientNode::RestoreClient(char raise) {
   if ((this->isFixed()) && !(this->isSticky())) {
-    DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(
-        this->getDesktop());
+    DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(this->getDesktop());
   }
   this->RestoreTransients(raise);
   _RequireRestack();
@@ -830,8 +829,7 @@ void ClientNode::SetClientDesktop(unsigned int desktop) {
         tp->HideClient();
       }
 
-      Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP,
-          tp->getDesktop());
+      Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, tp->getDesktop());
 
     }
     _RequirePagerUpdate();
@@ -943,6 +941,7 @@ void ClientNode::MaximizeClientDefault() {
   this->MaximizeClient(flags);
 
 }
+
 char ClientNode::TileClient(const BoundingBox *box) {
 
   int layer;
@@ -1699,8 +1698,7 @@ void ClientNode::RestackClients(void) {
     std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
     for (int i = 0; i < clients.size(); ++i) {
       ClientNode *np = clients[i];
-      if ((np->isStatus(STAT_MAPPED | STAT_SHADED))
-          && !(np->isHidden())) {
+      if ((np->isStatus(STAT_MAPPED | STAT_SHADED)) && !(np->isHidden())) {
         if (fw != None && (np->getWindow() == fw || np->getOwner() == fw)) {
           continue;
         }
@@ -2151,7 +2149,6 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
   return overlap;
 }
 
-
 /** Read the "normal hints" for a client. */
 void ClientNode::ReadWMNormalHints() {
 
@@ -2350,3 +2347,642 @@ void ClientNode::DoSnapBorder() {
 
 }
 
+void ClientNode::DrawBorder() {
+  if (!(this->isStatus(STAT_HIDDEN | STAT_MINIMIZED))) {
+    Border::DrawBorder(this);
+  }
+}
+
+Window ClientNode::getOwner() const {
+  return this->owner;
+}
+
+void ClientNode::setOwner(Window owner) {
+  this->owner = owner;
+}
+
+int ClientNode::getX() const {
+  return this->x;
+}
+
+int ClientNode::getY() const {
+  return this->y;
+}
+
+void ClientNode::setX(int x) {
+  this->x = x;
+}
+
+void ClientNode::setY(int y) {
+  this->y = y;
+}
+
+void ClientNode::setHeight(int height) {
+  this->height = height;
+}
+
+void ClientNode::setWidth(int width) {
+  this->width = width;
+}
+
+const char* ClientNode::getClassName() const {
+  return this->className;
+}
+
+const char* ClientNode::getInstanceName() {
+  return this->instanceName;
+}
+
+IconNode *ClientNode::getIcon() const {
+  return this->icon;
+}
+
+void ClientNode::setIcon(IconNode *icon) {
+  this->icon = icon;
+}
+
+ColormapNode* ClientNode::getColormaps() const {
+  return this->colormaps;
+}
+
+Window ClientNode::getWindow() const {
+  return this->window;
+}
+
+Window ClientNode::getParent() const {
+  return this->parent;
+}
+
+const char* ClientNode::getName() const {
+  return this->name;
+}
+
+int ClientNode::getWidth() const {
+  return this->width;
+}
+
+int ClientNode::getHeight() const {
+  return this->height;
+}
+
+int ClientNode::getGravity() const {
+  return this->gravity;
+}
+
+MouseContextType ClientNode::getMouseContext() const {
+  return this->mouseContext;
+}
+
+void ClientNode::setMouseContext(MouseContextType context) {
+  this->mouseContext= context;
+}
+
+long int ClientNode::getSizeFlags() {
+  return this->sizeFlags;
+}
+
+void ClientNode::setController(void (*controller)(int wasDestroyed)) {
+  this->controller = controller;
+}
+
+void ClientNode::resetMaxFlags() {
+  this->maxFlags = MAX_NONE;
+}
+
+void ClientNode::setDelete() {
+  this->status |= STAT_DELETE;
+}
+
+void ClientNode::setTakeFocus() {
+  this->status |= STAT_TAKEFOCUS;
+}
+
+void ClientNode::setNoDelete() {
+  this->status &= ~STAT_DELETE;
+}
+
+void ClientNode::setNoTakeFocus() {
+  this->status &= ~STAT_TAKEFOCUS;
+}
+
+void ClientNode::setLayer(unsigned char layer) {
+  this->layer = layer;
+}
+
+void ClientNode::setDefaultLayer(unsigned char defaultLayer) {
+  this->defaultLayer = defaultLayer;
+}
+
+unsigned char ClientNode::getDefaultLayer() const {
+  return this->defaultLayer;
+}
+
+void ClientNode::clearMaxFlags() {
+  this->maxFlags = MAX_NONE;
+}
+
+void ClientNode::resetBorder() {
+  this->border = BORDER_DEFAULT;
+}
+
+void ClientNode::resetLayer() {
+  this->layer = LAYER_NORMAL;
+}
+
+void ClientNode::resetDefaultLayer() {
+  this->defaultLayer = LAYER_NORMAL;
+}
+
+void ClientNode::clearBorder() {
+  this->border = BORDER_NONE;
+}
+
+void ClientNode::clearStatus() {
+  this->status = STAT_NONE;
+}
+
+void ClientNode::setNotMapped() {
+  this->status &= ~STAT_MAPPED;
+}
+
+unsigned int ClientNode::getOpacity() {
+  return this->opacity;
+}
+
+unsigned short ClientNode::getDesktop() const {
+  return this->desktop;
+}
+
+void ClientNode::setShaped() {
+  this->status |= STAT_SHAPED;
+}
+
+void ClientNode::resetLayerToDefault() {
+  this->SetClientLayer(this->getDefaultLayer());
+  this->layer = this->defaultLayer;
+}
+
+void ClientNode::setDesktop(unsigned short desktop) {
+  this->desktop = desktop;
+}
+
+unsigned char ClientNode::getLayer() const {
+  return this->layer;
+}
+
+unsigned short ClientNode::getBorder() const {
+  return this->border;
+}
+
+unsigned char ClientNode::getMaxFlags() const {
+  return this->maxFlags;
+}
+
+bool ClientNode::isStatus(unsigned int flags) const {
+  return (this->status & flags);
+}
+
+bool ClientNode::isFullscreen() const {
+  return isStatus(STAT_FULLSCREEN);
+}
+
+bool ClientNode::isPosition() const {
+  return isStatus(STAT_POSITION);
+}
+
+bool ClientNode::isMapped() const {
+  return isStatus(STAT_MAPPED);
+}
+
+bool ClientNode::isShaded() const {
+  return isStatus(STAT_SHADED);
+}
+
+bool ClientNode::isMinimized() const {
+  return isStatus(STAT_MINIMIZED);
+}
+
+bool ClientNode::isShaped() const {
+  return isStatus(STAT_SHAPED);
+}
+
+bool ClientNode::isIgnoringProgramPosition() const {
+  return isStatus(STAT_PIGNORE);
+}
+
+bool ClientNode::isTiled() const {
+  return isStatus(STAT_TILED);
+}
+
+bool ClientNode::isCentered() const {
+  return isStatus(STAT_CENTERED);
+}
+
+bool ClientNode::isUrgent() const {
+  return isStatus(STAT_URGENT);
+}
+
+bool ClientNode::isDialogWindow() const {
+  return isStatus(STAT_WMDIALOG);
+}
+
+bool ClientNode::isHidden() const {
+  return isStatus(STAT_HIDDEN);
+}
+
+bool ClientNode::hasOpacity() const {
+  return isStatus(STAT_OPACITY);
+}
+
+bool ClientNode::isSticky() const {
+  return isStatus(STAT_STICKY);
+}
+
+bool ClientNode::isActive() const {
+  return isStatus(STAT_ACTIVE);
+}
+
+bool ClientNode::isFixed() const {
+  return isStatus(STAT_FIXED);
+}
+
+bool ClientNode::willIgnoreIncrementWhenMaximized() const {
+  return isStatus(STAT_IIGNORE);
+}
+
+bool ClientNode::canFocus() const {
+  return isStatus(STAT_CANFOCUS);
+}
+
+bool ClientNode::shouldTakeFocus() const {
+  return isStatus(STAT_TAKEFOCUS);
+}
+
+bool ClientNode::shouldDelete() const {
+  return isStatus(STAT_DELETE);
+}
+
+bool ClientNode::shouldFlash() const {
+  return isStatus(STAT_FLASH);
+}
+
+bool ClientNode::isNotUrgent() const {
+  return isStatus(STAT_NOTURGENT);
+}
+
+bool ClientNode::shouldSkipInTaskList() const {
+  return isStatus(STAT_NOLIST);
+}
+
+bool ClientNode::wasMinimizedToShowDesktop() const {
+  return isStatus(STAT_SDESKTOP);
+}
+
+bool ClientNode::isDragable() const {
+  return isStatus(STAT_DRAG);
+}
+
+bool ClientNode::isNotDraggable() const {
+  return isStatus(STAT_NODRAG);
+}
+
+bool ClientNode::shouldIgnoreSpecifiedList() const {
+  return isStatus(STAT_ILIST);
+}
+
+bool ClientNode::shouldIgnorePager() const {
+  return isStatus(STAT_IPAGER);
+}
+
+bool ClientNode::notFocusableIfMapped() const {
+  return isStatus(STAT_NOFOCUS);
+}
+
+bool ClientNode::shouldNotShowInPager() const {
+  return isStatus(STAT_NOPAGER);
+}
+
+bool ClientNode::isAeroSnapEnabled() const {
+  return isStatus(STAT_AEROSNAP);
+}
+
+void ClientNode::setActive() {
+  this->status |= STAT_ACTIVE;
+}
+
+void ClientNode::setNotActive() {
+  this->status &= ~STAT_ACTIVE;
+}
+
+void ClientNode::setMaxFlags(MaxFlags flags) {
+  this->maxFlags = flags;
+}
+
+void ClientNode::setOpacity(unsigned int opacity) {
+  this->opacity = opacity;
+}
+
+//TODO: Rename these methods to be better understood
+void ClientNode::setWMDialogStatus() {
+  this->status |= STAT_WMDIALOG;
+}
+
+void ClientNode::setSDesktopStatus() {
+  this->status |= STAT_SDESKTOP;
+}
+
+void ClientNode::setMapped() {
+  this->status |= STAT_MAPPED;
+}
+
+void ClientNode::setCanFocus() {
+  this->status |= STAT_CANFOCUS;
+}
+
+void ClientNode::setUrgent() {
+  this->status |= STAT_URGENT;
+}
+
+void ClientNode::setNoFlash() {
+  this->status &= ~STAT_FLASH;
+}
+
+void ClientNode::setShaded() {
+  this->status |= STAT_SHADED;
+}
+
+void ClientNode::setMinimized() {
+  this->status |= STAT_MINIMIZED;
+}
+
+void ClientNode::setNoPager() {
+  this->status |= STAT_NOPAGER;
+}
+
+void ClientNode::setNoFullscreen() {
+  this->status &= ~STAT_FULLSCREEN;
+}
+
+void ClientNode::setPositionFromConfig() {
+  this->status |= STAT_POSITION;
+}
+
+void ClientNode::setHasNoList() {
+  this->status ^= STAT_NOLIST;
+}
+
+void ClientNode::setNoShaded() {
+  this->status &= ~STAT_SHADED;
+}
+
+void ClientNode::setNoList() {
+  this->status |= STAT_NOLIST;
+}
+
+void ClientNode::setSticky() {
+  this->status |= STAT_STICKY;
+}
+
+void ClientNode::setNoSticky() {
+  this->status &= ~STAT_STICKY;
+}
+
+void ClientNode::setNoDrag() {
+  this->status |= STAT_NODRAG;
+}
+
+void ClientNode::setNoMinimized() {
+  this->status &= ~STAT_MINIMIZED;
+}
+
+void ClientNode::setNoSDesktop() {
+  this->status &= ~STAT_SDESKTOP;
+}
+
+void ClientNode::clearToNoList() {
+  this->status &= ~STAT_NOLIST;
+}
+
+void ClientNode::clearToNoPager() {
+  this->status &= ~STAT_NOPAGER;
+}
+
+void ClientNode::resetMappedState() {
+  this->status &= ~STAT_MAPPED;
+}
+
+void ClientNode::clearToSticky() {
+  this->status &= ~STAT_STICKY;
+}
+
+void ClientNode::setEdgeSnap() {
+  this->status |= STAT_AEROSNAP;
+}
+
+void ClientNode::setDrag() {
+  this->status |= STAT_DRAG;
+}
+
+void ClientNode::setFixed() {
+  this->status |= STAT_FIXED;
+}
+
+void ClientNode::setCurrentDesktop(unsigned int desktop) {
+  this->desktop = desktop;
+}
+
+void ClientNode::ignoreProgramList() {
+  this->status |= STAT_PIGNORE;
+}
+
+void ClientNode::ignoreProgramSpecificPager() {
+  this->status |= STAT_IPAGER;
+}
+
+void ClientNode::setFullscreen() {
+  this->status |= STAT_FULLSCREEN;
+}
+
+void ClientNode::setMaximized() {
+  this->status |= MAX_HORIZ | MAX_VERT;
+}
+
+void ClientNode::setCentered() {
+  this->status |= STAT_CENTERED;
+}
+
+void ClientNode::setFlash() {
+  this->status |= STAT_FLASH;
+}
+
+void ClientNode::setTiled() {
+  this->status |= STAT_TILED;
+}
+
+void ClientNode::setNotUrgent() {
+  this->status |= STAT_NOTURGENT;
+}
+
+void ClientNode::setTaskListSkipped() {
+  this->status |= STAT_NOLIST;
+}
+
+void ClientNode::setNoFocus() {
+  this->status |= STAT_NOFOCUS;
+}
+
+void ClientNode::setOpacityFixed() {
+  this->status |= STAT_OPACITY;
+}
+
+void ClientNode::ignoreProgramSpecificPosition() {
+  this->status |= STAT_PIGNORE;
+}
+
+void ClientNode::ignoreIncrementWhenMaximized() {
+  this->status |= STAT_IIGNORE;
+}
+
+void ClientNode::setBorderOutline() {
+  /**< Window has a border. */
+  this->border |= BORDER_OUTLINE;
+}
+
+void ClientNode::setBorderTitle() {
+  /**< Window has a title bar. */
+  this->border |= BORDER_TITLE;
+}
+
+void ClientNode::setBorderMin() {
+  /**< Window supports minimize. */
+  this->border |= BORDER_MIN;
+}
+
+void ClientNode::setBorderMax() {
+  /**< Window supports maximize. */
+  this->border |= BORDER_MAX;
+}
+
+void ClientNode::setBorderClose() {
+  /**< Window supports close. */
+  this->border |= BORDER_CLOSE;
+}
+
+void ClientNode::setBorderResize() {
+  /**< Window supports resizing. */
+  this->border |= BORDER_RESIZE;
+}
+
+void ClientNode::setBorderMove() {
+  /**< Window supports moving. */
+  this->border |= BORDER_MOVE;
+}
+
+void ClientNode::setBorderMaxVert() {
+  /**< Maximize vertically. */
+  this->border |= BORDER_MAX_V;
+}
+
+void ClientNode::setBorderMaxHoriz() {
+  /**< Maximize horizontally. */
+  this->border |= BORDER_MAX_H;
+}
+
+void ClientNode::setBorderShade() {
+  /**< Allow shading. */
+  this->border |= BORDER_SHADE;
+}
+
+void ClientNode::setBorderConstrain() {
+  /**< Constrain to the screen. */
+  this->border |= BORDER_CONSTRAIN;
+}
+
+void ClientNode::setBorderFullscreen() {
+  /**< Allow fullscreen. */
+  this->border |= BORDER_FULLSCREEN;
+}
+
+void ClientNode::setNoCanFocus() {
+  this->status &= ~STAT_CANFOCUS;
+}
+
+void ClientNode::setNoBorderOutline() {
+  /**< Window has a border. */
+  this->border &= ~BORDER_OUTLINE;
+}
+
+void ClientNode::setNoBorderTitle() {
+  /**< Window has a title bar. */
+  this->border &= ~BORDER_TITLE;
+}
+
+void ClientNode::setNoBorderMin() {
+  /**< Window supports minimize. */
+  this->border &= ~BORDER_MIN;
+}
+
+void ClientNode::setNoBorderMax() {
+  /**< Window supports maximize. */
+  this->border &= ~BORDER_MAX;
+}
+
+void ClientNode::setNoBorderClose() {
+  /**< Window supports close. */
+  this->border &= ~BORDER_CLOSE;
+}
+
+void ClientNode::setNoBorderResize() {
+  /**< Window supports resizing. */
+  this->border &= ~BORDER_RESIZE;
+}
+
+void ClientNode::setNoBorderMove() {
+  /**< Window supports moving. */
+  this->border &= ~BORDER_MOVE;
+}
+
+void ClientNode::setNoBorderMaxVert() {
+  /**< Maximize vertically. */
+  this->border &= ~BORDER_MAX_V;
+}
+
+void ClientNode::setNoBorderMaxHoriz() {
+  /**< Maximize horizontally. */
+  this->border &= ~BORDER_MAX_H;
+}
+
+void ClientNode::setNoBorderShade() {
+  /**< Allow shading. */
+  this->border &= ~BORDER_SHADE;
+}
+
+void ClientNode::setNoBorderConstrain() {
+  /**< Constrain to the screen. */
+  this->border &= ~BORDER_CONSTRAIN;
+}
+
+void ClientNode::setNoBorderFullscreen() {
+  /**< Allow fullscreen. */
+  this->border &= ~BORDER_FULLSCREEN;
+}
+
+void ClientNode::setNoUrgent() {
+  this->status &= ~STAT_URGENT;
+}
+
+void ClientNode::unsetNoPager() {
+  this->status &= ~STAT_NOPAGER;
+}
+
+void ClientNode::unsetSkippingInTaskList() {
+  this->status &= ~STAT_NOLIST;
+}
+
+void ClientNode::setNotHidden() {
+  this->status &= ~STAT_HIDDEN;
+}
+
+void ClientNode::setHidden() {
+  this->status |= STAT_HIDDEN;
+}

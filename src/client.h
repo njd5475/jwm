@@ -110,419 +110,389 @@ typedef unsigned char MaxFlags;
 
 /** Colormap window linked list. */
 typedef struct ColormapNode {
-	Window window; /**< A window containing a colormap. */
-	struct ColormapNode *next; /**< Next value in the linked list. */
+  Window window; /**< A window containing a colormap. */
+  struct ColormapNode *next; /**< Next value in the linked list. */
 } ColormapNode;
 
 /** The aspect ratio of a window. */
 typedef struct AspectRatio {
-	int minx; /**< The x component of the minimum aspect ratio. */
-	int miny; /**< The y component of the minimum aspect ratio. */
-	int maxx; /**< The x component of the maximum aspect ratio. */
-	int maxy; /**< The y component of the maximum aspect ratio. */
+  int minx; /**< The x component of the minimum aspect ratio. */
+  int miny; /**< The y component of the minimum aspect ratio. */
+  int maxx; /**< The x component of the maximum aspect ratio. */
+  int maxy; /**< The y component of the maximum aspect ratio. */
 } AspectRatio;
 
 /** Bounding box. */
 typedef struct BoundingBox {
-	int x; /**< x-coordinate of the bounding box. */
-	int y; /**< y-coordinate of the bounding box. */
-	int width; /**< Width of the bounding box. */
-	int height; /**< Height of the bounding box. */
+  int x; /**< x-coordinate of the bounding box. */
+  int y; /**< y-coordinate of the bounding box. */
+  int width; /**< Width of the bounding box. */
+  int height; /**< Height of the bounding box. */
 } BoundingBox;
 
 typedef struct Strut {
-	ClientNode *client;
-	BoundingBox box;
-	struct Strut *next;
+  ClientNode *client;
+  BoundingBox box;
+  struct Strut *next;
 } Strut;
 
 /** Struture to store information about a client window. */
 class ClientNode {
 private:
-	ClientNode(Window w, char alreadyMapped, char notOwner);
+  ClientNode(Window w, char alreadyMapped, char notOwner);
 protected:
-	virtual ~ClientNode();
+  virtual ~ClientNode();
 
-	static std::vector<ClientNode*> nodes;
-	Window window; /**< The client window. */
-	Window parent; /**< The frame window. */
+  static std::vector<ClientNode*> nodes;
+  Window window; /**< The client window. */
+  Window parent; /**< The frame window. */
 
-	Window owner; /**< The owner window (for transients). */
+  Window owner; /**< The owner window (for transients). */
 
-	int x, y; /**< The location of the window. */
-	int width; /**< The width of the window. */
-	int height; /**< The height of the window. */
-	int oldx; /**< The old x coordinate (for maximize). */
-	int oldy; /**< The old y coordinate (for maximize). */
-	int oldWidth; /**< The old width (for maximize). */
-	int oldHeight; /**< The old height (for maximize). */
+  int x, y; /**< The location of the window. */
+  int width; /**< The width of the window. */
+  int height; /**< The height of the window. */
+  int oldx; /**< The old x coordinate (for maximize). */
+  int oldy; /**< The old y coordinate (for maximize). */
+  int oldWidth; /**< The old width (for maximize). */
+  int oldHeight; /**< The old height (for maximize). */
 
-	long sizeFlags; /**< Size flags from XGetWMNormalHints. */
-	int baseWidth; /**< Base width for resizing. */
-	int baseHeight; /**< Base height for resizing. */
-	int minWidth; /**< Minimum width of this window. */
-	int minHeight; /**< Minimum height of this window. */
-	int maxWidth; /**< Maximum width of this window. */
-	int maxHeight; /**< Maximum height of this window. */
-	int xinc; /**< Resize x increment. */
-	int yinc; /**< Resize y increment. */
-	AspectRatio aspect; /**< Aspect ratio. */
-	int gravity; /**< Gravity for reparenting. */
+  long sizeFlags; /**< Size flags from XGetWMNormalHints. */
+  int baseWidth; /**< Base width for resizing. */
+  int baseHeight; /**< Base height for resizing. */
+  int minWidth; /**< Minimum width of this window. */
+  int minHeight; /**< Minimum height of this window. */
+  int maxWidth; /**< Maximum width of this window. */
+  int maxHeight; /**< Maximum height of this window. */
+  int xinc; /**< Resize x increment. */
+  int yinc; /**< Resize y increment. */
+  AspectRatio aspect; /**< Aspect ratio. */
+  int gravity; /**< Gravity for reparenting. */
 
-	Colormap cmap; /**< This window's colormap. */
-	ColormapNode *colormaps; /**< Colormaps assigned to this window. */
+  Colormap cmap; /**< This window's colormap. */
+  ColormapNode *colormaps; /**< Colormaps assigned to this window. */
 
-	char *name; /**< Name of this window for display. */
-	char *instanceName; /**< Name of this window for properties. */
-	char *className; /**< Name of the window class. */
+  char *name; /**< Name of this window for display. */
+  char *instanceName; /**< Name of this window for properties. */
+  char *className; /**< Name of the window class. */
 
-	MouseContextType mouseContext;
+  MouseContextType mouseContext;
 
-	struct IconNode *icon; /**< Icon assigned to this window. */
+  struct IconNode *icon; /**< Icon assigned to this window. */
 
-	/** Callback to stop move/resize. */
-	void (*controller)(int wasDestroyed);
+  /** Callback to stop move/resize. */
+  void (*controller)(int wasDestroyed);
 
 protected:
-	void saveBounds();
+  void saveBounds();
 public:
 
-	static char DoRemoveClientStrut(ClientNode *np);
-	static void InsertStrut(const BoundingBox *box, ClientNode *np);
-	/** Get the x and y deltas for gravitating a client.
-	 * @param np The client.
-	 * @param gravity The gravity to use.
-	 * @param x Location to store the x delta.
-	 * @param y Location to store the y delta.
-	 */
-	void GetGravityDelta(int gravity, int *x, int *y);
+  static char DoRemoveClientStrut(ClientNode *np);
+  static void InsertStrut(const BoundingBox *box, ClientNode *np);
 
-	/** Get the bounding box for the screen.
-	 * @param sp A pointer to the screen whose bounds to get.
-	 * @param box The bounding box for the screen.
-	 */
-	static void GetScreenBounds(const struct ScreenType *sp, BoundingBox *box);
+  /** Get the bounding box for the screen.
+   * @param sp A pointer to the screen whose bounds to get.
+   * @param box The bounding box for the screen.
+   */
+  static void GetScreenBounds(const struct ScreenType *sp, BoundingBox *box);
 
-	static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
-	static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
-	static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
+  static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
+  static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
+  static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
   static ClientNode *Create(Window w, char alreadyMapped, char notOwner);
+  /** Find a client by window or parent window.
+   * @param w The window.
+   * @return The client (NULL if not found).
+   */
+  static ClientNode *FindClient(Window w);
 
-	/** The number of clients (maintained in client.c). */
-	static unsigned int clientCount;
+  /** Find a client by window.
+   * @param w The window.
+   * @return The client (NULL if not found).
+   */
+  static ClientNode *FindClientByWindow(Window w);
 
-	void DrawBorder() {
-		if (!(this->isStatus(STAT_HIDDEN | STAT_MINIMIZED))) {
-			Border::DrawBorder(this);
-		}
-	}
-	Window getOwner() const {
-		return this->owner;
-	}
-	void setOwner(Window owner) {
-		this->owner = owner;
-	}
-	int getX() const {
-		return this->x;
-	}
+  /** Find a client by its parent window.
+   * @param p The parent window.
+   * @return The client (NULL if not found).
+   */
+  static ClientNode *FindClientByParent(Window p);
 
-	int getY() const {
-		return this->y;
-	}
-	void setX(int x) {
-		this->x = x;
-	}
-	void setY(int y) {
-		this->y = y;
-	}
-	void setHeight(int height) {
-		this->height = height;
-	}
-	void setWidth(int width) {
-		this->width = width;
-	}
+  /** Get the active client.
+   * @return The active client (NULL if no client is active).
+   */
+  static ClientNode *GetActiveClient(void);
 
-	int getBaseWidth() {return this->baseWidth;}
-	int getBaseHeight() {return this->baseHeight;}
-	int getMaxWidth() {return this->maxWidth;}
-	int getMaxHeight() {return this->maxHeight;}
-	int getMinWidth() {return this->minWidth;}
-	int getMinHeight() {return this->minHeight;}
-	int getYInc() {return this->yinc;}
-	int getXInc() {return this->xinc;}
+  /*@{*/
+  static void InitializeClients();
+  static void StartupClients(void);
+  static void ShutdownClients(void);
+  static void DestroyClients();
+  /** Set the keyboard focus back to the active client. */
+  static void RefocusClient(void);
 
-	AspectRatio getAspect() {return this->aspect;}
+  /** Place a client on the screen.
+   * @param np The client to place.
+   * @param alreadyMapped 1 if already mapped, 0 if unmapped.
+   */
+  static void PlaceClient(ClientNode *np, char alreadyMapped);
 
-	void (*getController())(int) {
-		return this->controller;
-	}
-	const char* getClassName() const {
-		return this->className;
-	}
-	const char* getInstanceName() {
-		return this->instanceName;
-	}
+  /** Send a message to a client.
+   * @param w The client window.
+   * @param type The type of message to send.
+   * @param message The message to send.
+   */
+  static void SendClientMessage(Window w, AtomType type, AtomType message);
 
-	IconNode *getIcon() const {
-		return this->icon;
-	}
-	void setIcon(IconNode *icon) {
-		this->icon = icon;
-	}
+  /** Update callback for clients with the urgency hint set. */
+  static void SignalUrgent(const struct TimeType *now, int x, int y, Window w,
+      void *data);
 
-	ColormapNode* getColormaps() const {
-		return this->colormaps;
-	}
+  /** The number of clients (maintained in client.c). */
+  static unsigned int clientCount;
 
-	Window getWindow() const {
-		return this->window;
-	}
+public:
 
-	Window getParent() const {
-		return this->parent;
-	}
+  void (*getController())(int) {
+    return this->controller;
+  }
 
-	const char* getName() const {
-		return this->name;
-	}
+  /** Get the x and y deltas for gravitating a client.
+   * @param np The client.
+   * @param gravity The gravity to use.
+   * @param x Location to store the x delta.
+   * @param y Location to store the y delta.
+   */
+  void GetGravityDelta(int gravity, int *x, int *y);
 
-	int getWidth() const {
-		return this->width;
-	}
+  void DrawBorder();
+  Window getOwner() const;
+  void setOwner(Window owner);
 
-	int getHeight() const {
-		return this->height;
-	}
+  int getX() const;
+  int getY() const;
 
-	int getGravity() const {
-		return this->gravity;
-	}
-	MouseContextType getMouseContext() const {
-		return this->mouseContext;
-	}
-	void setMouseContext(MouseContextType context) {
-		this->mouseContext= context;
-	}
-	long int getSizeFlags() {
-		return this->sizeFlags;
-	}
+  //TODO: Encapsulate size
+  void setX(int x);
+  void setY(int y);
+  void setHeight(int height);
+  void setWidth(int width);
 
-	void SetOpacity(unsigned int opacity, char force);
-	void _UpdateState();
-	void UpdateWindowState(char alreadyMapped);
-	void ReadWMColormaps();
-	void ReadWMNormalHints();
-	void ReadWMName();
-	void ReadWMClass();
-	void LoadIcon();
-	void StopMove(int doMove, int oldx, int oldy);
-	char MoveClient(int startx, int starty);
-	char MoveClientKeyboard();
-	void RestartMove(int *doMove);
-	void DoSnapScreen();
-	void DoSnapBorder();
-	void clearController();
-	void setController(void (*controller)(int wasDestroyed)) {
-		this->controller = controller;
-	}
-	void StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags);
+  int getBaseWidth() {return this->baseWidth;}
+  int getBaseHeight() {return this->baseHeight;}
+  int getMaxWidth() {return this->maxWidth;}
+  int getMaxHeight() {return this->maxHeight;}
+  int getMinWidth() {return this->minWidth;}
+  int getMinHeight() {return this->minHeight;}
+  int getYInc() {return this->yinc;}
+  int getXInc() {return this->xinc;}
 
-	void GravitateClient(char negate);
-	void PlaceMaximizedClient(MaxFlags flags);
+  AspectRatio getAspect() {return this->aspect;}
 
-	/** Place a maximized client on the screen.
-	 * @param np The client to place.
-	 * @param flags The type of maximization to perform.
-	 */
-	void PlaceMaximizedClient(ClientNode *np, MaxFlags flags);
+  const char* getClassName() const;
+  const char* getInstanceName();
 
-	void ConstrainPosition();
-	char ConstrainSize();
-	void CascadeClient(const BoundingBox *box);
-	char TileClient(const BoundingBox *box);
-	int TryTileClient(const BoundingBox *box, int x, int y);
-	void CenterClient(const BoundingBox *box);
-	void FixHeight();
-	void FixWidth();
-	void StopResize();
-	void ResizeClientKeyboard(MouseContextType context);
-	void ResizeClient(MouseContextType context, int startx, int starty);
-	void UpdateSize(const MouseContextType context, const int x, const int y, const int startx,
-			const int starty, const int oldx, const int oldy, const int oldw, const int oldh);
+  IconNode *getIcon() const;
+  void setIcon(IconNode *icon);
 
-	/** Find a client by window or parent window.
-	 * @param w The window.
-	 * @return The client (NULL if not found).
-	 */
-	static ClientNode *FindClient(Window w);
+  ColormapNode* getColormaps() const;
 
-	/** Find a client by window.
-	 * @param w The window.
-	 * @return The client (NULL if not found).
-	 */
-	static ClientNode *FindClientByWindow(Window w);
+  Window getWindow() const;
 
-	/** Find a client by its parent window.
-	 * @param p The parent window.
-	 * @return The client (NULL if not found).
-	 */
-	static ClientNode *FindClientByParent(Window p);
+  Window getParent() const;
+  const char* getName() const;
+  int getWidth() const;
+  int getHeight() const;
+  int getGravity() const;
+  MouseContextType getMouseContext() const;
+  void setMouseContext(MouseContextType context);
+  long int getSizeFlags();
 
-	/** Get the active client.
-	 * @return The active client (NULL if no client is active).
-	 */
-	static ClientNode *GetActiveClient(void);
+  void SetOpacity(unsigned int opacity, char force);
+  void _UpdateState();
+  void UpdateWindowState(char alreadyMapped);
+  void ReadWMColormaps();
+  void ReadWMNormalHints();
+  void ReadWMName();
+  void ReadWMClass();
+  void LoadIcon();
+  void StopMove(int doMove, int oldx, int oldy);
+  char MoveClient(int startx, int starty);
+  char MoveClientKeyboard();
+  void RestartMove(int *doMove);
+  void DoSnapScreen();
+  void DoSnapBorder();
+  void clearController();
+  void setController(void (*controller)(int wasDestroyed));
+  void StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags);
 
-	/*@{*/
-	static void InitializeClients();
-	static void StartupClients(void);
-	static void ShutdownClients(void);
-	static void DestroyClients();
-	/*@}*/
+  void GravitateClient(char negate);
+  void PlaceMaximizedClient(MaxFlags flags);
 
-	/** Add a window to management.
-	 * @param w The client window.
-	 * @param alreadyMapped 1 if the window is mapped, 0 if not.
-	 * @param notOwner 1 if JWM doesn't own this window, 0 if JWM is the owner.
-	 * @return The client window data.
-	 */
-	//static ClientNode *AddClientWindow(Window w, char alreadyMapped, char notOwner);
-	/** Remove a client from management.
-	 * @param np The client to remove.
-	 */
-	void RemoveClient();
+  /** Place a maximized client on the screen.
+   * @param np The client to place.
+   * @param flags The type of maximization to perform.
+   */
+  void PlaceMaximizedClient(ClientNode *np, MaxFlags flags);
 
-	/** Minimize a client.
-	 * @param np The client to minimize.
-	 * @param lower Set to lower the client in the stacking order.
-	 */
-	void MinimizeClient(char lower);
+  void ConstrainPosition();
+  char ConstrainSize();
+  void CascadeClient(const BoundingBox *box);
+  char TileClient(const BoundingBox *box);
+  int TryTileClient(const BoundingBox *box, int x, int y);
+  void CenterClient(const BoundingBox *box);
+  void FixHeight();
+  void FixWidth();
+  void StopResize();
+  void ResizeClientKeyboard(MouseContextType context);
+  void ResizeClient(MouseContextType context, int startx, int starty);
+  void UpdateSize(const MouseContextType context, const int x, const int y, const int startx,
+      const int starty, const int oldx, const int oldy, const int oldw, const int oldh);
 
-	/** Shade a client.
-	 * @param np The client to shade.
-	 */
-	void ShadeClient();
+  /*@}*/
 
-	/** Unshade a client.
-	 * @param np The client to unshade.
-	 */
-	void UnshadeClient();
+  /** Add a window to management.
+   * @param w The client window.
+   * @param alreadyMapped 1 if the window is mapped, 0 if not.
+   * @param notOwner 1 if JWM doesn't own this window, 0 if JWM is the owner.
+   * @return The client window data.
+   */
+  //static ClientNode *AddClientWindow(Window w, char alreadyMapped, char notOwner);
+  /** Remove a client from management.
+   * @param np The client to remove.
+   */
+  void RemoveClient();
 
-	/** Set a client's status to withdrawn.
-	 * A withdrawn client is a client that is not visible in any way to the
-	 * user. This may be a window that an application keeps around so that
-	 * it can be reused at a later time.
-	 * @param np The client whose status to change.
-	 */
-	void SetClientWithdrawn();
+  /** Minimize a client.
+   * @param np The client to minimize.
+   * @param lower Set to lower the client in the stacking order.
+   */
+  void MinimizeClient(char lower);
 
-	/** Restore a client from minimized state.
-	 * @param np The client to restore.
-	 * @param raise 1 to raise the client, 0 to leave stacking unchanged.
-	 */
-	void RestoreClient(char raise);
+  /** Shade a client.
+   * @param np The client to shade.
+   */
+  void ShadeClient();
 
-	/** Maximize a client.
-	 * @param np The client to maximize (NULL is allowed).
-	 * @param flags The type of maximization to perform.
-	 */
-	void MaximizeClient(MaxFlags flags);
+  /** Unshade a client.
+   * @param np The client to unshade.
+   */
+  void UnshadeClient();
 
-	/** Maximize a client using the default maximize settings.
-	 * @param np The client to maximize.
-	 */
-	void MaximizeClientDefault();
+  /** Set a client's status to withdrawn.
+   * A withdrawn client is a client that is not visible in any way to the
+   * user. This may be a window that an application keeps around so that
+   * it can be reused at a later time.
+   * @param np The client whose status to change.
+   */
+  void SetClientWithdrawn();
 
-	/** Set the full screen status of a client.
-	 * @param np The client.
-	 * @param fullScreen 1 to make full screen, 0 to make not full screen.
-	 */
-	void SetClientFullScreen(char fullScreen);
+  /** Restore a client from minimized state.
+   * @param np The client to restore.
+   * @param raise 1 to raise the client, 0 to leave stacking unchanged.
+   */
+  void RestoreClient(char raise);
 
-	/** Set the keyboard focus to a client.
-	 * @param np The client to focus.
-	 */
-	void FocusClient();
+  /** Maximize a client.
+   * @param np The client to maximize (NULL is allowed).
+   * @param flags The type of maximization to perform.
+   */
+  void MaximizeClient(MaxFlags flags);
 
-	/** Tell a client to exit.
-	 * @param np The client to delete.
-	 */
-	void DeleteClient();
+  /** Maximize a client using the default maximize settings.
+   * @param np The client to maximize.
+   */
+  void MaximizeClientDefault();
 
-	/** Force a client to exit.
-	 * @param np The client to kill.
-	 */
-	void KillClient();
+  /** Set the full screen status of a client.
+   * @param np The client.
+   * @param fullScreen 1 to make full screen, 0 to make not full screen.
+   */
+  void SetClientFullScreen(char fullScreen);
 
-	/** Raise a client to the top of its layer.
-	 * @param np The client to raise.
-	 */
-	void RaiseClient();
+  /** Set the keyboard focus to a client.
+   * @param np The client to focus.
+   */
+  void FocusClient();
 
-	/** Restack a client.
-	 * @param np The client to restack.
-	 * @param above A reference window (or None).
-	 * @param detail The stack mode (Above, Below, etc).
-	 */
-	void RestackClient(Window above, int detail);
+  /** Tell a client to exit.
+   * @param np The client to delete.
+   */
+  void DeleteClient();
 
-	/** Restack the clients.
-	 * This is used when a client is mapped so that the stacking order
-	 * remains consistent.
-	 */
-	static void RestackClients(void);
+  /** Force a client to exit.
+   * @param np The client to kill.
+   */
+  void KillClient();
 
-	/** Set the layer of a client.
-	 * @param np The client whose layer to set.
-	 * @param layer the layer to assign to the client.
-	 */
-	void SetClientLayer(unsigned int layer);
+  /** Raise a client to the top of its layer.
+   * @param np The client to raise.
+   */
+  void RaiseClient();
 
-	/** Set the desktop for a client.
-	 * @param np The client.
-	 * @param desktop The desktop to be assigned to the client.
-	 */
-	void SetClientDesktop(unsigned int desktop);
+  /** Restack a client.
+   * @param np The client to restack.
+   * @param above A reference window (or None).
+   * @param detail The stack mode (Above, Below, etc).
+   */
+  void RestackClient(Window above, int detail);
 
-	/** Set the sticky status of a client.
-	 * A sticky client will appear on all desktops.
-	 * @param np The client.
-	 * @param isSticky 1 to make the client sticky, 0 to make it not sticky.
-	 */
-	void SetClientSticky(char isSticky);
+  /** Restack the clients.
+   * This is used when a client is mapped so that the stacking order
+   * remains consistent.
+   */
+  static void RestackClients(void);
 
-	/** Hide a client.
-	 * This is used for changing desktops.
-	 * @param np The client to hide.
-	 */
-	void HideClient();
+  /** Set the layer of a client.
+   * @param np The client whose layer to set.
+   * @param layer the layer to assign to the client.
+   */
+  void SetClientLayer(unsigned int layer);
 
-	/** Show a client.
-	 * This is used for changing desktops.
-	 * @param np The client to show.
-	 */
-	void ShowClient();
+  /** Set the desktop for a client.
+   * @param np The client.
+   * @param desktop The desktop to be assigned to the client.
+   */
+  void SetClientDesktop(unsigned int desktop);
 
-	/** Update a client's colormap.
-	 * @param np The client.
-	 */
-	void UpdateClientColormap(Colormap cmap);
+  /** Set the sticky status of a client.
+   * A sticky client will appear on all desktops.
+   * @param np The client.
+   * @param isSticky 1 to make the client sticky, 0 to make it not sticky.
+   */
+  void SetClientSticky(char isSticky);
 
-	/** Reparent a client.
-	 * This will create a window for a frame (or destroy it) depending on
-	 * whether a client needs a frame.
-	 * @param np The client.
-	 */
-	void ReparentClient();
+  /** Hide a client.
+   * This is used for changing desktops.
+   * @param np The client to hide.
+   */
+  void HideClient();
 
-	/** Send a configure event to a client.
-	 * This will send updated location and size information to a client.
-	 * @param np The client to get the event.
-	 */
-	void SendConfigureEvent();
+  /** Show a client.
+   * This is used for changing desktops.
+   * @param np The client to show.
+   */
+  void ShowClient();
 
+  /** Update a client's colormap.
+   * @param np The client.
+   */
+  void UpdateClientColormap(Colormap cmap);
 
-	void MinimizeTransients(char lower);
+  /** Reparent a client.
+   * This will create a window for a frame (or destroy it) depending on
+   * whether a client needs a frame.
+   * @param np The client.
+   */
+  void ReparentClient();
+
+  /** Send a configure event to a client.
+   * This will send updated location and size information to a client.
+   * @param np The client to get the event.
+   */
+  void SendConfigureEvent();
+
+  void MinimizeTransients(char lower);
 private:
   unsigned int status; /**< Status bit mask. */
   unsigned int opacity; /**< Opacity (0 - 0xFFFFFFFF). */
@@ -533,472 +503,275 @@ private:
   unsigned char defaultLayer; /**< Default window layer. */
 
 public:
-  void resetMaxFlags() {
-    this->maxFlags = MAX_NONE;
-  }
-  void setDelete() {
-    this->status |= STAT_DELETE;
-  }
-  void setTakeFocus() {
-    this->status |= STAT_TAKEFOCUS;
-  }
-  void setNoDelete() {
-    this->status &= ~STAT_DELETE;
-  }
-  void setNoTakeFocus() {
-    this->status &= ~STAT_TAKEFOCUS;
-  }
-  void setLayer(unsigned char layer) {
-    this->layer = layer;
-  }
-  void setDefaultLayer(unsigned char defaultLayer) {
-    this->defaultLayer = defaultLayer;
-  }
-  unsigned char getDefaultLayer() const {
-    return this->defaultLayer;
-  }
-  void clearMaxFlags() {
-    this->maxFlags = MAX_NONE;
-  }
-  void resetBorder() {
-    this->border = BORDER_DEFAULT;
-  }
-  void resetLayer() {
-    this->layer = LAYER_NORMAL;
-  }
-  void resetDefaultLayer() {
-    this->defaultLayer = LAYER_NORMAL;
-  }
-  void clearBorder() {
-    this->border = BORDER_NONE;
-  }
-  void clearStatus() {
-    this->status = STAT_NONE;
-  }
+  void resetMaxFlags();
 
-  void setNotMapped() {
-    this->status &= ~STAT_MAPPED;
-  }
+  void setDelete();
 
-  unsigned int getOpacity() {
-    return this->opacity;
-  }
+  void setTakeFocus();
 
-  unsigned short getDesktop() const {
-    return this->desktop;
-  }
-  void setShaped() {
-    this->status |= STAT_SHAPED;
-  }
-  void resetLayerToDefault() {
-    this->SetClientLayer(this->getDefaultLayer());
-    this->layer = this->defaultLayer;
-  }
-  void setDesktop(unsigned short desktop) {
-    this->desktop = desktop;
-  }
-  unsigned char getLayer() const {
-    return this->layer;
-  }
+  void setNoDelete();
 
-  unsigned short getBorder() const {
-    return this->border;
-  }
+  void setNoTakeFocus();
+  void setLayer(unsigned char layer);
 
-  unsigned char getMaxFlags() const {
-    return this->maxFlags;
-  }
+  void setDefaultLayer(unsigned char defaultLayer);
 
-  bool isStatus(unsigned int flags) const {
-    return (this->status & flags);
-  }
-  bool isFullscreen() const {
-    return isStatus(STAT_FULLSCREEN);
-  }
-  bool isPosition() const {
-    return isStatus(STAT_POSITION);
-  }
-  bool isMapped() const {
-    return isStatus(STAT_MAPPED);
-  }
-  bool isShaded() const {
-    return isStatus(STAT_SHADED);
-  }
-  bool isMinimized() const {
-    return isStatus(STAT_MINIMIZED);
-  }
-  bool isShaped() const {
-    return isStatus(STAT_SHAPED);
-  }
-  bool isIgnoringProgramPosition() const {
-    return isStatus(STAT_PIGNORE);
-  }
-  bool isTiled() const {
-    return isStatus(STAT_TILED);
-  }
-  bool isCentered() const {
-    return isStatus(STAT_CENTERED);
-  }
-  bool isUrgent() const {
-    return isStatus(STAT_URGENT);
-  }
-  bool isDialogWindow() const {
-    return isStatus(STAT_WMDIALOG);
-  }
-  bool isHidden() const {
-    return isStatus(STAT_HIDDEN);
-  }
-  bool hasOpacity() const {
-    return isStatus(STAT_OPACITY);
-  }
-  bool isSticky() const {
-    return isStatus(STAT_STICKY);
-  }
-  bool isActive() const {
-    return isStatus(STAT_ACTIVE);
-  }
-  bool isFixed() const {
-    return isStatus(STAT_FIXED);
-  }
-  bool willIgnoreIncrementWhenMaximized() const {
-    return isStatus(STAT_IIGNORE);
-  }
-  bool canFocus() const {
-    return isStatus(STAT_CANFOCUS);
-  }
-  bool shouldTakeFocus() const {
-    return isStatus(STAT_TAKEFOCUS);
-  }
-  bool shouldDelete() const {
-    return isStatus(STAT_DELETE);
-  }
-  bool shouldFlash() const {
-    return isStatus(STAT_FLASH);
-  }
-  bool isNotUrgent() const {
-    return isStatus(STAT_NOTURGENT);
-  }
-  bool shouldSkipInTaskList() const {
-    return isStatus(STAT_NOLIST);
-  }
-  bool wasMinimizedToShowDesktop() const {
-    return isStatus(STAT_SDESKTOP);
-  }
-  bool isDragable() const {
-    return isStatus(STAT_DRAG);
-  }
-  bool isNotDraggable() const {
-    return isStatus(STAT_NODRAG);
-  }
-  bool shouldIgnoreSpecifiedList() const {
-    return isStatus(STAT_ILIST);
-  }
-  bool shouldIgnorePager() const {
-    return isStatus(STAT_IPAGER);
-  }
-  bool notFocusableIfMapped() const {
-    return isStatus(STAT_NOFOCUS);
-  }
-  bool shouldNotShowInPager() const {
-    return isStatus(STAT_NOPAGER);
-  }
-  bool isAeroSnapEnabled() const {
-    return isStatus(STAT_AEROSNAP);
-  }
+  unsigned char getDefaultLayer() const;
 
-  void setActive() {
-    this->status |= STAT_ACTIVE;
-  }
-  void setNotActive() {
-    this->status &= ~STAT_ACTIVE;
-  }
-  void setMaxFlags(MaxFlags flags) {
-    this->maxFlags = flags;
-  }
-  void setOpacity(unsigned int opacity) {
-    this->opacity = opacity;
-  }
+  void clearMaxFlags();
+
+  void resetBorder();
+
+  void resetLayer();
+
+  void resetDefaultLayer();
+
+  void clearBorder();
+
+  void clearStatus();
+
+  void setNotMapped();
+
+  unsigned int getOpacity();
+
+  unsigned short getDesktop() const;
+
+  void setShaped();
+
+  void resetLayerToDefault();
+
+  void setDesktop(unsigned short desktop);
+
+  unsigned char getLayer() const;
+
+  unsigned short getBorder() const;
+
+  unsigned char getMaxFlags() const;
+
+  bool isStatus(unsigned int flags) const;
+
+  bool isFullscreen() const;
+
+  bool isPosition() const;
+
+  bool isMapped() const;
+
+  bool isShaded() const;
+
+  bool isMinimized() const;
+
+  bool isShaped() const;
+
+  bool isIgnoringProgramPosition() const;
+  bool isTiled() const;
+
+  bool isCentered() const;
+
+  bool isUrgent() const;
+
+  bool isDialogWindow() const;
+
+  bool isHidden() const;
+
+  bool hasOpacity() const;
+
+  bool isSticky() const;
+
+  bool isActive() const;
+
+  bool isFixed() const;
+
+  bool willIgnoreIncrementWhenMaximized() const;
+
+  bool canFocus() const;
+
+  bool shouldTakeFocus() const;
+
+  bool shouldDelete() const;
+
+  bool shouldFlash() const;
+
+  bool isNotUrgent() const;
+
+  bool shouldSkipInTaskList() const;
+
+  bool wasMinimizedToShowDesktop() const;
+
+  bool isDragable() const;
+
+  bool isNotDraggable() const;
+
+  bool shouldIgnoreSpecifiedList() const;
+
+  bool shouldIgnorePager() const;
+
+  bool notFocusableIfMapped() const;
+
+  bool shouldNotShowInPager() const;
+
+  bool isAeroSnapEnabled() const;
+
+  void setActive();
+
+  void setNotActive();
+
+  void setMaxFlags(MaxFlags flags);
+
+  void setOpacity(unsigned int opacity);
 
   //TODO: Rename these methods to be better understood
-  void setWMDialogStatus() {
-    this->status |= STAT_WMDIALOG;
-  }
-  void setSDesktopStatus() {
-    this->status |= STAT_SDESKTOP;
-  }
+  void setWMDialogStatus();
 
-  void setMapped() {
-    this->status |= STAT_MAPPED;
-  }
-  void setCanFocus() {
-    this->status |= STAT_CANFOCUS;
-  }
-  void setUrgent() {
-    this->status |= STAT_URGENT;
-  }
-  void setNoFlash() {
-    this->status &= ~STAT_FLASH;
-  }
-  void setShaded() {
-    this->status |= STAT_SHADED;
-  }
-  void setMinimized() {
-    this->status |= STAT_MINIMIZED;
-  }
-  void setNoPager() {
-    this->status |= STAT_NOPAGER;
-  }
-  void setNoFullscreen() {
-    this->status &= ~STAT_FULLSCREEN;
-  }
-  void setPositionFromConfig() {
-    this->status |= STAT_POSITION;
-  }
-  void setHasNoList() {
-    this->status ^= STAT_NOLIST;
-  }
-  void setNoShaded() {
-    this->status &= ~STAT_SHADED;
-  }
-  void setNoList() {
-    this->status |= STAT_NOLIST;
-  }
-  void setSticky() {
-    this->status |= STAT_STICKY;
-  }
-  void setNoSticky() {
-    this->status &= ~STAT_STICKY;
-  }
-  void setNoDrag() {
-    this->status |= STAT_NODRAG;
-  }
-  void setNoMinimized() {
-    this->status &= ~STAT_MINIMIZED;
-  }
-  void setNoSDesktop() {
-    this->status &= ~STAT_SDESKTOP;
-  }
-  void clearToNoList() {
-    this->status &= ~STAT_NOLIST;
-  }
-  void clearToNoPager() {
-    this->status &= ~STAT_NOPAGER;
-  }
-  void resetMappedState() {
-    this->status &= ~STAT_MAPPED;
-  }
-  void clearToSticky() {
-    this->status &= ~STAT_STICKY;
-  }
-  void setEdgeSnap() {
-    this->status |= STAT_AEROSNAP;
-  }
-  void setDrag() {
-    this->status |= STAT_DRAG;
-  }
-  void setFixed() {
-    this->status |= STAT_FIXED;
-  }
-  void setCurrentDesktop(unsigned int desktop) {
-    this->desktop = desktop;
-  }
-  void ignoreProgramList() {
-    this->status |= STAT_PIGNORE;
-  }
-  void ignoreProgramSpecificPager() {
-    this->status |= STAT_IPAGER;
-  }
-  void setFullscreen() {
-    this->status |= STAT_FULLSCREEN;
-  }
-  void setMaximized() {
-    this->status |= MAX_HORIZ | MAX_VERT;
-  }
-  void setCentered() {
-    this->status |= STAT_CENTERED;
-  }
-  void setFlash() {
-    this->status |= STAT_FLASH;
-  }
-  void setTiled() {
-    this->status |= STAT_TILED;
-  }
-  void setNotUrgent() {
-    this->status |= STAT_NOTURGENT;
-  }
-  void setTaskListSkipped() {
-    this->status |= STAT_NOLIST;
-  }
-  void setNoFocus() {
-    this->status |= STAT_NOFOCUS;
-  }
-  void setOpacityFixed() {
-    this->status |= STAT_OPACITY;
-  }
-  void ignoreProgramSpecificPosition() {
-    this->status |= STAT_PIGNORE;
-  }
-  void ignoreIncrementWhenMaximized() {
-    this->status |= STAT_IIGNORE;
-  }
+  void setSDesktopStatus();
 
-  void setBorderOutline() {
-    /**< Window has a border. */
-    this->border |= BORDER_OUTLINE;
-  }
-  void setBorderTitle() {
-    /**< Window has a title bar. */
-    this->border |= BORDER_TITLE;
-  }
-  void setBorderMin() {
-    /**< Window supports minimize. */
-    this->border |= BORDER_MIN;
-  }
-  void setBorderMax() {
-    /**< Window supports maximize. */
-    this->border |= BORDER_MAX;
-  }
-  void setBorderClose() {
-    /**< Window supports close. */
-    this->border |= BORDER_CLOSE;
-  }
-  void setBorderResize() {
-    /**< Window supports resizing. */
-    this->border |= BORDER_RESIZE;
-  }
-  void setBorderMove() {
-    /**< Window supports moving. */
-    this->border |= BORDER_MOVE;
-  }
-  void setBorderMaxVert() {
-    /**< Maximize vertically. */
-    this->border |= BORDER_MAX_V;
-  }
-  void setBorderMaxHoriz() {
-    /**< Maximize horizontally. */
-    this->border |= BORDER_MAX_H;
-  }
-  void setBorderShade() {
-    /**< Allow shading. */
-    this->border |= BORDER_SHADE;
-  }
-  void setBorderConstrain() {
-    /**< Constrain to the screen. */
-    this->border |= BORDER_CONSTRAIN;
-  }
-  void setBorderFullscreen() {
-    /**< Allow fullscreen. */
-    this->border |= BORDER_FULLSCREEN;
-  }
+  void setMapped();
 
-  void setNoCanFocus() {
-    this->status &= ~STAT_CANFOCUS;
-  }
-  void setNoBorderOutline() {
-    /**< Window has a border. */
-    this->border &= ~BORDER_OUTLINE;
-  }
-  void setNoBorderTitle() {
-    /**< Window has a title bar. */
-    this->border &= ~BORDER_TITLE;
-  }
-  void setNoBorderMin() {
-    /**< Window supports minimize. */
-    this->border &= ~BORDER_MIN;
-  }
-  void setNoBorderMax() {
-    /**< Window supports maximize. */
-    this->border &= ~BORDER_MAX;
-  }
-  void setNoBorderClose() {
-    /**< Window supports close. */
-    this->border &= ~BORDER_CLOSE;
-  }
-  void setNoBorderResize() {
-    /**< Window supports resizing. */
-    this->border &= ~BORDER_RESIZE;
-  }
-  void setNoBorderMove() {
-    /**< Window supports moving. */
-    this->border &= ~BORDER_MOVE;
-  }
-  void setNoBorderMaxVert() {
-    /**< Maximize vertically. */
-    this->border &= ~BORDER_MAX_V;
-  }
-  void setNoBorderMaxHoriz() {
-    /**< Maximize horizontally. */
-    this->border &= ~BORDER_MAX_H;
-  }
-  void setNoBorderShade() {
-    /**< Allow shading. */
-    this->border &= ~BORDER_SHADE;
-  }
-  void setNoBorderConstrain() {
-    /**< Constrain to the screen. */
-    this->border &= ~BORDER_CONSTRAIN;
-  }
-  void setNoBorderFullscreen() {
-    /**< Allow fullscreen. */
-    this->border &= ~BORDER_FULLSCREEN;
-  }
+  void setCanFocus();
 
-  void setNoUrgent() {
-    this->status &= ~STAT_URGENT;
-  }
+  void setUrgent();
 
-  void unsetNoPager() {
-    this->status &= ~STAT_NOPAGER;
-  }
+  void setNoFlash();
 
-  void unsetSkippingInTaskList() {
-    this->status &= ~STAT_NOLIST;
-  }
+  void setShaded();
 
-  void setNotHidden() {
-    this->status &= ~STAT_HIDDEN;
-  }
+  void setMinimized();
 
-  void setHidden() {
-    this->status |= STAT_HIDDEN;
-  }
+  void setNoPager();
 
+  void setNoFullscreen();
 
-	//TODO: move all public static methods below
-public:
-	/** Set the keyboard focus back to the active client. */
-	static void RefocusClient(void);
+  void setPositionFromConfig();
 
-	/** Place a client on the screen.
-	 * @param np The client to place.
-	 * @param alreadyMapped 1 if already mapped, 0 if unmapped.
-	 */
-	static void PlaceClient(ClientNode *np, char alreadyMapped);
+  void setHasNoList();
 
-	/** Send a message to a client.
-	 * @param w The client window.
-	 * @param type The type of message to send.
-	 * @param message The message to send.
-	 */
-	static void SendClientMessage(Window w, AtomType type, AtomType message);
+  void setNoShaded();
 
-	/** Update callback for clients with the urgency hint set. */
-	static void SignalUrgent(const struct TimeType *now, int x, int y, Window w,
-			void *data);
+  void setNoList();
+
+  void setSticky();
+
+  void setNoSticky();
+
+  void setNoDrag();
+
+  void setNoMinimized();
+
+  void setNoSDesktop();
+
+  void clearToNoList();
+
+  void clearToNoPager();
+
+  void resetMappedState();
+
+  void clearToSticky();
+
+  void setEdgeSnap();
+
+  void setDrag();
+
+  void setFixed();
+
+  void setCurrentDesktop(unsigned int desktop);
+
+  void ignoreProgramList();
+
+  void ignoreProgramSpecificPager();
+
+  void setFullscreen();
+
+  void setMaximized();
+
+  void setCentered();
+
+  void setFlash();
+
+  void setTiled();
+  void setNotUrgent();
+
+  void setTaskListSkipped();
+
+  void setNoFocus();
+
+  void setOpacityFixed();
+
+  void ignoreProgramSpecificPosition();
+
+  void ignoreIncrementWhenMaximized();
+
+  void setBorderOutline();
+
+  void setBorderTitle();
+
+  void setBorderMin();
+
+  void setBorderMax();
+
+  void setBorderClose();
+
+  void setBorderResize();
+
+  void setBorderMove();
+
+  void setBorderMaxVert();
+
+  void setBorderMaxHoriz();
+
+  void setBorderShade();
+
+  void setBorderConstrain();
+
+  void setBorderFullscreen();
+
+  void setNoCanFocus();
+
+  void setNoBorderOutline();
+
+  void setNoBorderTitle();
+
+  void setNoBorderMin();
+
+  void setNoBorderMax();
+
+  void setNoBorderClose();
+
+  void setNoBorderResize();
+
+  void setNoBorderMove();
+  void setNoBorderMaxVert();
+
+  void setNoBorderMaxHoriz();
+
+  void setNoBorderShade();
+
+  void setNoBorderConstrain();
+
+  void setNoBorderFullscreen();
+
+  void setNoUrgent();
+
+  void unsetNoPager();
+
+  void unsetSkippingInTaskList();
+
+  void setNotHidden();
+
+  void setHidden();
+
 private:
 
-	static Strut *struts;
-	/* desktopCount x screenCount */
-	/* Note that we assume x and y are 0 based for all screens here. */
-	static int *cascadeOffsets;
+  static Strut *struts;
+  /* desktopCount x screenCount */
+  /* Note that we assume x and y are 0 based for all screens here. */
+  static int *cascadeOffsets;
 
-	static void LoadFocus(void);
-	void RestackTransients();
-	void RestoreTransients(char raise);
-	static void KillClientHandler(ClientNode *np);
-	void UnmapClient();
+  static void LoadFocus(void);
+  void RestackTransients();
+  void RestoreTransients(char raise);
+  static void KillClientHandler(ClientNode *np);
+  void UnmapClient();
 public:
-	static ClientNode *activeClient;
+  static ClientNode *activeClient;
 };
 
 #endif /* CLIENT_H */
