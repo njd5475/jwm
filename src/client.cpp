@@ -356,7 +356,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
     this->setBorderOutline();
     this->setBorderTitle();
     this->setBorderMove();
-    this->setWMDialogStatus();
+    this->setDialogWindowStatus();
     this->setSticky();
     this->setLayer(LAYER_ABOVE); //FIXME: can encapsulate this easily
     this->setDefaultLayer(LAYER_ABOVE); //FIXME: can encapsulate this easily
@@ -2683,7 +2683,7 @@ void ClientNode::setOpacity(unsigned int opacity) {
 }
 
 //TODO: Rename these methods to be better understood
-void ClientNode::setWMDialogStatus() {
+void ClientNode::setDialogWindowStatus() {
   this->status |= STAT_WMDIALOG;
 }
 

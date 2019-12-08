@@ -513,250 +513,143 @@ public:
 
   void setNoTakeFocus();
   void setLayer(unsigned char layer);
-
   void setDefaultLayer(unsigned char defaultLayer);
-
   unsigned char getDefaultLayer() const;
 
-  void clearMaxFlags();
-
   void resetBorder();
-
   void resetLayer();
-
   void resetDefaultLayer();
-
-  void clearBorder();
-
-  void clearStatus();
-
-  void setNotMapped();
-
-  unsigned int getOpacity();
-
-  unsigned short getDesktop() const;
-
-  void setShaped();
-
   void resetLayerToDefault();
 
+  void clearMaxFlags();
+  void clearBorder();
+  void clearStatus();
+  void clearToNoList();
+
+  unsigned int getOpacity();
+  unsigned short getDesktop() const;
+
+  void setNotMapped();
+  void setShaped();
   void setDesktop(unsigned short desktop);
 
   unsigned char getLayer() const;
-
   unsigned short getBorder() const;
-
   unsigned char getMaxFlags() const;
 
   bool isStatus(unsigned int flags) const;
-
   bool isFullscreen() const;
-
   bool isPosition() const;
-
   bool isMapped() const;
-
   bool isShaded() const;
-
   bool isMinimized() const;
-
   bool isShaped() const;
-
   bool isIgnoringProgramPosition() const;
   bool isTiled() const;
-
   bool isCentered() const;
-
   bool isUrgent() const;
-
   bool isDialogWindow() const;
-
   bool isHidden() const;
-
   bool hasOpacity() const;
-
   bool isSticky() const;
-
   bool isActive() const;
-
   bool isFixed() const;
 
   bool willIgnoreIncrementWhenMaximized() const;
-
   bool canFocus() const;
-
   bool shouldTakeFocus() const;
-
   bool shouldDelete() const;
-
   bool shouldFlash() const;
-
   bool isNotUrgent() const;
-
   bool shouldSkipInTaskList() const;
-
   bool wasMinimizedToShowDesktop() const;
-
   bool isDragable() const;
-
   bool isNotDraggable() const;
-
   bool shouldIgnoreSpecifiedList() const;
-
   bool shouldIgnorePager() const;
-
   bool notFocusableIfMapped() const;
-
   bool shouldNotShowInPager() const;
-
   bool isAeroSnapEnabled() const;
 
   void setActive();
-
   void setNotActive();
-
   void setMaxFlags(MaxFlags flags);
-
   void setOpacity(unsigned int opacity);
-
   //TODO: Rename these methods to be better understood
-  void setWMDialogStatus();
-
+  void setDialogWindowStatus();
   void setSDesktopStatus();
-
   void setMapped();
-
   void setCanFocus();
-
   void setUrgent();
-
   void setNoFlash();
-
   void setShaded();
-
   void setMinimized();
-
   void setNoPager();
-
   void setNoFullscreen();
-
   void setPositionFromConfig();
-
   void setHasNoList();
-
   void setNoShaded();
-
   void setNoList();
-
   void setSticky();
 
-  void setNoSticky();
-
-  void setNoDrag();
-
-  void setNoMinimized();
-
-  void setNoSDesktop();
-
-  void clearToNoList();
 
   void clearToNoPager();
-
   void resetMappedState();
-
   void clearToSticky();
 
+  void setNoSticky();
+  void setNoDrag();
+  void setNoMinimized();
+  void setNoSDesktop();
   void setEdgeSnap();
-
   void setDrag();
-
   void setFixed();
-
   void setCurrentDesktop(unsigned int desktop);
-
-  void ignoreProgramList();
-
-  void ignoreProgramSpecificPager();
-
   void setFullscreen();
-
   void setMaximized();
-
   void setCentered();
-
   void setFlash();
-
   void setTiled();
   void setNotUrgent();
-
   void setTaskListSkipped();
-
   void setNoFocus();
-
   void setOpacityFixed();
 
+  void ignoreProgramList();
+  void ignoreProgramSpecificPager();
   void ignoreProgramSpecificPosition();
-
   void ignoreIncrementWhenMaximized();
 
   void setBorderOutline();
-
   void setBorderTitle();
-
   void setBorderMin();
-
   void setBorderMax();
-
   void setBorderClose();
-
   void setBorderResize();
-
   void setBorderMove();
-
   void setBorderMaxVert();
-
   void setBorderMaxHoriz();
-
   void setBorderShade();
-
   void setBorderConstrain();
-
   void setBorderFullscreen();
-
   void setNoCanFocus();
-
   void setNoBorderOutline();
-
   void setNoBorderTitle();
-
   void setNoBorderMin();
-
   void setNoBorderMax();
-
   void setNoBorderClose();
-
   void setNoBorderResize();
-
   void setNoBorderMove();
   void setNoBorderMaxVert();
-
   void setNoBorderMaxHoriz();
-
   void setNoBorderShade();
-
   void setNoBorderConstrain();
-
   void setNoBorderFullscreen();
-
   void setNoUrgent();
-
-  void unsetNoPager();
-
-  void unsetSkippingInTaskList();
-
   void setNotHidden();
-
   void setHidden();
+  void unsetNoPager();
+  void unsetSkippingInTaskList();
 
 private:
 
