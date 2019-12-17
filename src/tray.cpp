@@ -204,6 +204,7 @@ Tray::~Tray() {
   for (it = components.begin(); it != components.end(); ++it) {
     Release(*it);
   }
+  components.clear();
 }
 
 /** Add a tray component to a tray. */

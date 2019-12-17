@@ -469,17 +469,17 @@ public:
   unsigned short getBorder() const;
   unsigned char getMaxFlags() const;
 
+  void setOpacity(unsigned int opacity);
+  void setLayer(unsigned char layer);
+  void setMaxFlags(MaxFlags flags);
   void setNotMapped();
   void setShaped();
   void setDelete();
   void setTakeFocus();
   void setNoDelete();
   void setNoTakeFocus();
-  void setLayer(unsigned char layer);
   void setActive();
   void setNotActive();
-  void setMaxFlags(MaxFlags flags);
-  void setOpacity(unsigned int opacity);
   //TODO: Rename these methods to be better understood
   void setDialogWindowStatus();
   void setSDesktopStatus();
@@ -546,17 +546,16 @@ public:
 private:
 
   static Strut *struts;
-  /* desktopCount x screenCount */
-  /* Note that we assume x and y are 0 based for all screens here. */
   static int *cascadeOffsets;
+  static ClientNode *activeClient;
 
   static void LoadFocus(void);
   static void KillClientHandler(ClientNode *np);
+
   void RestackTransients();
   void RestoreTransients(char raise);
   void UnmapClient();
-public:
-  static ClientNode *activeClient;
+
 };
 
 #endif /* CLIENT_H */

@@ -230,7 +230,7 @@ void Hints::ReadCurrentDesktop(void) {
 /** Read client hints.
  * This is called while the client is being added to management.
  */
-void Hints::ReadClientInfo(const ClientNode *np, char alreadyMapped) {
+void Hints::ReadClientInfo(ClientNode *np, char alreadyMapped) {
 
 	Status status;
 

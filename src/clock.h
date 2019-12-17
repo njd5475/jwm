@@ -13,12 +13,14 @@
 #include "timing.h"
 #include "TrayComponent.h"
 
+class Graphics;
+
 /** Structure to respresent a clock tray component. */
 class ClockType : public TrayComponent {
 public:
-  ClockType(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
-  virtual ~ClockType() {}
+  virtual ~ClockType();
 private:
+  ClockType(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
   char *format; /**< The time format to use. */
   char *zone; /**< The time zone to use (NULL = local). */
   //struct ActionNode *actions; /**< Actions */
@@ -30,13 +32,12 @@ private:
   TimeType mouseTime; /**< Time of the last mouse motion. */
 
   int userWidth; /**< User-specified clock width (or 0). */
-
-  struct ClockType *next; /**< Next clock in the list. */
+  Graphics *graphics;
 
   /** The default time format to use. */
   static const char *DEFAULT_FORMAT;
 
-  static ClockType *clocks;
+  static std::vector<ClockType*> clocks;
 
 public:
 
@@ -47,6 +48,7 @@ public:
   virtual void ProcessButtonRelease(int x, int y, int button);
   virtual void ProcessMotionEvent(int x, int y, int mask);
   virtual void Draw(Graphics *g);
+  virtual void Draw();
 
   void DrawClock(const TimeType *now);
 
@@ -65,7 +67,7 @@ public:
    * @param mask The mouse button mask.
    */
   static void AddClockAction(struct TrayComponent *cp, const char *action, int mask);
-
+  static ClockType *CreateClock(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
 };
 
 #endif /* CLOCK_H */

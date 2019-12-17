@@ -92,7 +92,6 @@ void Battery::Resize() {
   TrayComponent::Resize();
   Warning(_("Battery received a resize call, width: %d, height: %d"),
       this->getWidth(), this->getHeight());
-  TimeType now;
 
   if (this->getPixmap() != None) {
     Warning(_("Battery pixmap released!"));
@@ -136,7 +135,7 @@ void Battery::Draw() {
     return; //no change
   }
 
-  this->graphics->setForeground(COLOR_MENU_FG);
+  this->graphics->setForeground(COLOR_TRAYBUTTON_BG2);
   this->graphics->fillRectangle(0, 0, this->getWidth(), this->getHeight());
 
   static char buf[80];
@@ -159,8 +158,8 @@ void Battery::Draw() {
   //update battery level
   this->lastLevel = percentage;
 
-  JXCopyArea(display, this->getPixmap(), window, rootGC, 0, 0, this->getWidth(),
-      this->getHeight(), this->getX(), this->getY());
+  graphics->copy(this->getTray()->getWindow(), 0, 0, this->getWidth(), this->getHeight(),
+      this->getX(), this->getY());
 }
 
 int readAsInt(int fd) {

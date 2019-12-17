@@ -105,7 +105,7 @@ void TrayComponent::UpdateSpecificTray(const Tray *tp) {
 
 	/* If the tray is hidden, draw only the background. */
 	if (this->getPixmap() != None) {
-		JXCopyArea(display, this->getPixmap(), tp->getWindow(), rootGC, 0, 0, this->getWidth(), this->getHeight(), this->getX(),
+		JXCopyArea(display, this->getPixmap(), this->getTray()->getWindow(), rootGC, 0, 0, this->getWidth(), this->getHeight(), this->getX(),
 				this->getY());
 	}
 }

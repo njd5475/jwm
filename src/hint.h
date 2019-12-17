@@ -158,12 +158,12 @@ public:
 	 * @param np The client.
 	 * @param alreadyMapped Set if the client is already mapped.
 	 */
-	static void ReadClientInfo(const ClientNode *np, char alreadyMapped);
+	static void ReadClientInfo(ClientNode *np, char alreadyMapped);
 
 	/** Read a client's name.
 	 * @param np The client.
 	 */
-	static void ReadWMName(const ClientNode *np);
+	static void ReadWMName(ClientNode *np);
 
 	/** Read a client's class.
 	 * @param np The client.

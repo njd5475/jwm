@@ -1367,7 +1367,7 @@ void ParseClock(const TokenNode *tp, Tray *tray) {
 	width = findOrDefault(tp, WIDTH_ATTRIBUTE, 0);
 	height = findOrDefault(tp, HEIGHT_ATTRIBUTE, 0);
 
-	ClockType *clock = new ClockType(format, zone, width, height, tray, tray->getLastComponent());
+	ClockType *clock = ClockType::CreateClock(format, zone, width, height, tray, tray->getLastComponent());
 	ParseTrayComponentActions(tp, clock);
 	tray->AddTrayComponent(clock);
 
