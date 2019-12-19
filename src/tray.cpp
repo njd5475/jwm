@@ -83,8 +83,8 @@ void Tray::StartupTray(void) {
     Cursors::SetDefaultCursor(tp->window);
 
     /* Create and layout items on the tray. */
-    xoffset = TRAY_BORDER_SIZE;
-    yoffset = TRAY_BORDER_SIZE;
+    xoffset = 0;
+    yoffset = 0;
     std::vector<TrayComponent*>::iterator it;
     for (it = tp->components.begin(); it != tp->components.end(); ++it) {
       TrayComponent *cp = *it;
@@ -176,9 +176,9 @@ void Tray::DestroyTray(void) {
 /** Create an empty tray. */
 Tray::Tray() {
   this->requestedX = 0;
-  this->requestedY = -1;
+  this->requestedY = 0;
   this->x = 0;
-  this->y = -1;
+  this->y = 0;
   this->requestedWidth = 0;
   this->requestedHeight = 0;
   this->width = 0;
@@ -874,13 +874,13 @@ void Tray::ResizeTray() {
   this->LayoutTray(&variableSize, &variableRemainder);
 
   /* Reposition items on the tray. */
-  xoffset = TRAY_BORDER_SIZE;
-  yoffset = TRAY_BORDER_SIZE;
+  xoffset = 0;
+  yoffset = 0;
   std::vector<TrayComponent*>::iterator it;
   for (it = this->components.begin(); it != this->components.end(); ++it) {
-    TrayComponent *tc;
-    tc->SetLocation(xoffset, yoffset);
-    tc->SetScreenLocation(this->x + xoffset, this->y + yoffset);
+    TrayComponent *tc = *it;
+    //tc->SetLocation(xoffset, yoffset);
+    //tc->SetScreenLocation(this->x + xoffset, this->y + yoffset);
 
     if (this->layout == LAYOUT_HORIZONTAL) {
       height = this->height - TRAY_BORDER_SIZE * 2;

@@ -71,8 +71,8 @@ public:
 	void ComputeItemSize();
 	//static char ShouldFocusEntry(const BarItem *tp);
 	BarItem *GetEntry(int x, int y);
-	void Render();
 	void Draw(Graphics *g);
+	virtual void Draw();
 	void ShowClientList(TaskBar *bar, BarItem *tp);
 	static void RunTaskBarCommand(MenuAction *action, unsigned button);
 

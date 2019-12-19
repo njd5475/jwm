@@ -111,7 +111,6 @@ void ClockType::Resize() {
 }
 
 void ClockType::Draw() {
-  TrayComponent::Draw();
   TimeType now;
   GetCurrentTime(&now);
   this->DrawClock(&now);

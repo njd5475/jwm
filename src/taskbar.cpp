@@ -455,7 +455,7 @@ void TaskBar::UpdateTaskBar(void) {
       }
     }
     bar->ComputeItemSize();
-    bar->Render();
+    bar->Draw();
   }
 }
 
@@ -486,7 +486,7 @@ void TaskBar::SignalTaskbar(const TimeType *now, int x, int y, Window w,
 }
 
 /** Draw a specific task bar. */
-void TaskBar::Render() {
+void TaskBar::Draw() {
   char *displayName;
   Drawable drawable = this->getPixmap();
   bool border = false, fill = true;

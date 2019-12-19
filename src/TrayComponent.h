@@ -62,18 +62,13 @@ public:
 	int getRequestedWidth() const {return this->requestedWidth;}
 	int getRequestedHeight() const {return this->requestedHeight;}
 	Window getWindow() const {return this->window;}
-	void requestNewSize(int width, int height) {
-		this->requestedWidth = width;
-		this->requestedHeight = height;
-	}
+	void requestNewSize(int width, int height);
 
-	void SetLocation(int x, int y) {this->x=x;this->y=y;}
-	void SetScreenLocation(int x, int y) {this->screenx=x;this->screeny=y;}
+	void SetLocation(int x, int y);
+	void SetScreenLocation(int x, int y);
 	Tray *getTray() const {return this->tray;}
 	Pixmap getPixmap() const {return this->pixmap;}
-	void setPixmap(Pixmap pixmap) {
-		this->pixmap = pixmap;
-	}
+	void setPixmap(Pixmap pixmap);
 
 	/** Callback to destroy the component. */
 	virtual void Destroy() {}
@@ -109,9 +104,7 @@ public:
 		this->Create();
 	}
 
-	virtual void Draw() {
-	  Log("TrayComponent Draw called but not implemented");
-	}
+	virtual void Draw();
 
 	virtual void Create() = 0;
 
