@@ -214,9 +214,8 @@ void ClientList::StopWindowWalk(void) {
 }
 
 /** Focus the next client in the stacking order. */
-void ClientList::FocusNextStacked(ClientNode *np) {
+void ClientList::FocusNextStacked(ClientNode *client) {
 
-  ClientNode *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];

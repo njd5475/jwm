@@ -97,9 +97,7 @@ TrayButton::TrayButton(const char *iconName, const char *label,
 
   _RegisterCallback(settings.popupDelay / 2, SignalTrayButton, this);
 
-  this->setPixmap(
-      JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(),
-          rootDepth));
+  this->Create();
 }
 
 TrayButton::~TrayButton() {

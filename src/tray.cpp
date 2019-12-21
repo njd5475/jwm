@@ -132,10 +132,6 @@ void Tray::StartupTray(void) {
   _RequirePagerUpdate();
   _RequireTaskUpdate();
 
-  Dialogs::ShowConfirmDialog(NULL, handleConfirm,
-  _("Smile"),
-  _("Are you ok?"),
-  NULL);
 }
 
 void Tray::handleConfirm(ClientNode *np) {

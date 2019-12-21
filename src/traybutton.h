@@ -24,6 +24,8 @@ public:
 	static void StartupTrayButtons(void);
 	static void ShutdownTrayButtons() {}
 	static void DestroyTrayButtons(void);
+
+  static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);
 	/*@}*/
 
 	static TrayButton *Create(const char *iconName,
@@ -72,7 +74,6 @@ public:
 	virtual void ProcessMotionEvent(int x, int y, int mask);
 	virtual void ProcessButtonPress(int x, int y, int mask) {}
 	virtual void ProcessButtonRelease(int x, int y, int mask) {}
-	static void SignalTrayButton(const TimeType *now, int x, int y, Window w, void *data);
 
 private:
 	static std::vector<TrayButton*> buttons;

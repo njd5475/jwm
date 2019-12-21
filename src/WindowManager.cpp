@@ -143,6 +143,7 @@ void WindowManager::Startup(void) {
 	JXSync(display, True);
 	Grabs::UngrabServer();
 
+	ClientNode::StartupClients();
 	SwallowNode::StartupSwallow();
 
 	Tray::DrawTray();
@@ -156,9 +157,9 @@ void WindowManager::Startup(void) {
 	/* Run any startup commands. */
 	Commands::StartupCommands();
 
-	LogWindow::Add(30, 30, 300, 200);
+//	LogWindow::Add(30, 30, 300, 200);
 	LogWindow::StartupPortals();
-	LogWindow::DrawAll();
+//	LogWindow::DrawAll();
 
 	Flex::Create();
 }
@@ -180,6 +181,7 @@ void WindowManager::Shutdown(void) {
 	Binding::ShutdownBindings();
 	PagerType::ShutdownPager();
 	Roots::ShutdownRootMenu();
+	ClientNode::ShutdownClients();
 	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
 	Tray::ShutdownTray();
 	TrayButton::ShutdownTrayButtons();
