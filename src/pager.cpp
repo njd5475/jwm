@@ -72,6 +72,10 @@ void PagerType::Create() {
 
 /** Set the size of a pager tray component. */
 void PagerType::SetSize(int width, int height) {
+  width = this->getTray()->getWidth() * 0.15; // percentage of tray width
+  height = this->getTray()->getHeight(); // full height of tray
+
+  TrayComponent::SetSize(width, height);
 
   if (width) {
 
@@ -104,7 +108,7 @@ void PagerType::SetSize(int width, int height) {
     this->buffer = JXCreatePixmap(display, rootWindow, this->getWidth(),
         this->getHeight(), rootDepth);
     this->pixmap = this->buffer;
-    this->DrawPager();
+    this->Draw();
   }
 
   this->scalex = ((this->deskWidth - 2) << 16) / rootWidth;
@@ -121,6 +125,10 @@ int PagerType::GetPagerDesktop(int x, int y) {
   pagery = y / (this->deskHeight + 1);
 
   return pagery * settings.desktopWidth + pagerx;
+
+}
+
+void PagerType::ProcessButtonRelease(int x, int y, int mask) {
 
 }
 
@@ -414,7 +422,7 @@ void PagerType::PagerMoveController(int wasDestroyed) {
 }
 
 /** Draw a pager. */
-void PagerType::DrawPager() {
+void PagerType::Draw() {
   Pixmap buffer;
   int width, height;
   int deskWidth, deskHeight;
@@ -495,7 +503,7 @@ void PagerType::UpdatePager(void) {
   for (pp = pagers; pp; pp = pp->next) {
 
     /* Draw the pager. */
-    pp->DrawPager();
+    pp->Draw();
 
     /* Tell the tray to redraw. */
     pp->UpdateSpecificTray(pp->getTray());

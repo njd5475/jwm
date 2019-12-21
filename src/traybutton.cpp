@@ -105,10 +105,10 @@ TrayButton::TrayButton(const char *iconName, const char *label,
 TrayButton::~TrayButton() {
   _UnregisterCallback(SignalTrayButton, this);
   if (this->label) {
-    delete[](this->label);
+    delete[] (this->label);
   }
   if (this->iconName) {
-    delete[](this->iconName);
+    delete[] (this->iconName);
   }
   if (this->popup) {
     Release(this->popup);
@@ -176,9 +176,11 @@ void TrayButton::SetSize(int width, int height) {
     }
   }
 
-  this->width = width;
-  this->height = height;
+  this->width = 10;
+  this->height = getTray()->getHeight();
 
+  this->Destroy();
+  this->Create();
 }
 
 /** Resize a button tray component. */
@@ -186,10 +188,17 @@ void TrayButton::Resize() {
   TrayComponent::Resize();
 }
 
+void TrayButton::Create() {
+  this->setPixmap(
+      JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(),
+          rootDepth));
+}
+
 /** Destroy a button tray component. */
 void TrayButton::Destroy() {
   if (this->getPixmap() != None) {
     JXFreePixmap(display, this->getPixmap());
+    this->setPixmap(None);
   }
 }
 
@@ -197,14 +206,19 @@ void TrayButton::Draw(Graphics *g) {
 
 }
 
+void TrayButton::UpdateSpecificTray(const Tray *tp) {
+  TrayComponent::UpdateSpecificTray(tp);
+}
+
 /** Draw a tray button. */
 void TrayButton::Draw() {
   Tray::ClearTrayDrawable(this);
 
   DrawButton(this->wasGrabbed() ? BUTTON_TRAY_ACTIVE : BUTTON_TRAY,
-      ALIGN_CENTER, FONT_TASKLIST, this->label, true,
+  ALIGN_CENTER, FONT_TASKLIST, this->label, true,
       settings.trayDecorations == DECO_FLAT, getPixmap(), this->icon, getX(),
       getY(), getWidth(), getHeight(), 0, 0);
+
 }
 
 /** Process a motion event. */

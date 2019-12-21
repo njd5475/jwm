@@ -646,8 +646,8 @@ TrayComponent* Tray::GetTrayComponent(Tray *tp, int x, int y) {
   std::vector<TrayComponent*>::iterator it;
   for (it = tp->components.begin(); it != tp->components.end(); ++it) {
     cp = *it;
-    const int startx = xoffset;
-    const int starty = yoffset;
+    const int startx = cp->getScreenX();
+    const int starty = cp->getScreenY();
     const int width = cp->getWidth();
     const int height = cp->getHeight();
     if (x >= startx && x < startx + width) {
@@ -655,11 +655,7 @@ TrayComponent* Tray::GetTrayComponent(Tray *tp, int x, int y) {
         return cp;
       }
     }
-    if (tp->layout == LAYOUT_HORIZONTAL) {
-      xoffset += width;
-    } else {
-      yoffset += height;
-    }
+
   }
 
   return NULL;
@@ -720,8 +716,6 @@ void Tray::HandleTrayMotionNotify(Tray *tp, const XMotionEvent *event) {
 
 /** Draw all trays. */
 void Tray::DrawTray(void) {
-  Tray *tp;
-
   if (shouldExit) {
     return;
   }

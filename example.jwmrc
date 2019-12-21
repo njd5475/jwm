@@ -53,10 +53,8 @@
     <Tray x="0" y="0" autohide="off">
 
         <TrayButton icon="jwm-blue.svg">root:1</TrayButton>
-        <Spacer width="2"/>
         <TrayButton label="_">showdesktop</TrayButton>
-        <Spacer width="2"/>
-
+        
         <Pager labeled="true"/>
 
         <TaskList maxwidth="246"/>

@@ -16,10 +16,19 @@
 
 /** Structure to represent a pager tray component. */
 class PagerType : public TrayComponent {
+private: /* statics */
+
+  struct PagerType *next; /**< Next pager in the list. */
+  static PagerType *pagers;
+  static char shouldStopMove;
+  static void PagerMoveController(int wasDestroyed);
+  static void SignalPager(const TimeType *now, int x, int y, Window w, void *data);
+
 private:
 
   int deskWidth; /**< Width of a desktop. */
   int deskHeight; /**< Height of a desktop. */
+
   int scalex; /**< Horizontal scale factor (fixed point). */
   int scaley; /**< Vertical scale factor (fixed point). */
   char labeled; /**< Set to label the pager. */
@@ -29,45 +38,26 @@ private:
   TimeType mouseTime; /**< Timestamp of last mouse movement. */
   int mousex, mousey; /**< Coordinates of last mouse location. */
 
-  struct PagerType *next; /**< Next pager in the list. */
-
-  static PagerType *pagers;
-
-  static char shouldStopMove;
-
   void Create();
-
   void Draw(Graphics *g);
-
   void SetSize(int width, int height);
-
   int GetPagerDesktop(int x, int y);
 
   void ProcessButtonPress(int x, int y, int mask);
-
-  void ProcessButtonRelease(int x, int y, int mask) {}
-
+  void ProcessButtonRelease(int x, int y, int mask);
   void ProcessMotionEvent(int x, int y, int mask);
 
   void StartPagerMove(int x, int y);
-
   void StopPagerMove(ClientNode *np, int x, int y, int desktop, MaxFlags maxFlags);
-
-  static void PagerMoveController(int wasDestroyed);
-
-  void DrawPager();
 
   void DrawPagerClient(ClientNode *np);
 
-  static void SignalPager(const TimeType *now, int x, int y, Window w, void *data);
-
 public:
+  virtual void Draw();
+
   PagerType(char labelled, Tray *tray, TrayComponent *parent);
   virtual ~PagerType() {};
-  /** Create a pager tray component.
-   * @param labeled Set to label the pager.
-   * @return A new pager tray component.
-   */
+
   struct TrayComponent *CreatePager(char labeled);
   /*@{*/
   static void InitializePager() {}

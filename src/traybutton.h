@@ -61,12 +61,13 @@ private:
 
 public:
 
-	virtual void Create() {}
+	virtual void Create();
 	virtual void Destroy();
 	virtual void SetSize(int width, int height);
 	virtual void Resize();
 	virtual void Draw();
 	virtual void Draw(Graphics *g);
+	virtual void UpdateSpecificTray(const Tray *tp);
 
 	virtual void ProcessMotionEvent(int x, int y, int mask);
 	virtual void ProcessButtonPress(int x, int y, int mask) {}
