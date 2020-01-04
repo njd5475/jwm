@@ -115,64 +115,6 @@ TrayButton::~TrayButton() {
 
 /** Set the size of a button tray component. */
 void TrayButton::SetSize(int width, int height) {
-  TrayButton *bp;
-  int labelWidth, labelHeight;
-  int iconWidth, iconHeight;
-
-  bp = (TrayButton*) this;
-
-  if (bp->label) {
-    labelWidth = Fonts::GetStringWidth(FONT_TRAY, bp->label) + 6;
-    labelHeight = Fonts::GetStringHeight(FONT_TRAY) + 6;
-  } else {
-    labelWidth = 4;
-    labelHeight = 4;
-  }
-
-  if (bp->icon && bp->icon->width && bp->icon->height) {
-    /* With an icon. */
-    int ratio;
-
-    iconWidth = bp->icon->width;
-    iconHeight = bp->icon->height;
-
-    /* Fixed point with 16 bit fraction. */
-    ratio = (iconWidth << 16) / iconHeight;
-
-    if (width > 0) {
-
-      /* Compute height from width. */
-      iconWidth = width - labelWidth;
-      iconHeight = (iconWidth << 16) / ratio;
-      height = Max(labelHeight, iconHeight + 4);
-
-    } else if (height > 0) {
-
-      /* Compute width from height. */
-      iconHeight = height - 4;
-      iconWidth = (iconHeight * ratio) >> 16;
-      width = iconWidth + labelWidth;
-
-    } else {
-
-      /* Use best size. */
-      height = Max(labelHeight, iconHeight + 4);
-      iconWidth = ((height - 4) * ratio) >> 16;
-      width = iconWidth + labelWidth;
-
-    }
-
-  } else {
-    /* No icon. */
-    if (width > 0) {
-      height = labelHeight;
-    } else if (height > 0) {
-      width = labelWidth;
-    } else {
-      height = labelHeight;
-      width = labelWidth;
-    }
-  }
 
   this->width = 10;
   this->height = getTray()->getHeight();

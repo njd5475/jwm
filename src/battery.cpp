@@ -123,7 +123,7 @@ float QueryBatteryPercentage() {
 
 /** Update a Battery tray component. */
 void PollBattery(const TimeType *now, int x, int y, Window w, void *data) {
-
+  //Log("Polling battery state\n");
   ((Battery*) data)->Draw();
 }
 
@@ -155,6 +155,8 @@ void Battery::Draw() {
     this->getTray()->ResizeTray();
   }
 
+  this->graphics->setForeground(COLOR_MENU_ACTIVE_BG1);
+  this->graphics->drawRectangle(0, 0, this->getWidth()-1, this->getHeight()-1);
   //update battery level
   this->lastLevel = percentage;
 

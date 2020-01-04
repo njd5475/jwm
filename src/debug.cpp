@@ -7,6 +7,7 @@
  *
  */
 
+#include "logger.h"
 #include "debug.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -15,6 +16,7 @@
 /** Emit a message (if compiled with -DDEBUG). */
 void Debug(const char *str, ...)
 {
+    Log(str);
 #ifdef DEBUG
 
    va_list ap;

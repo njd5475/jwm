@@ -84,7 +84,7 @@ void TrayComponent::handlePressActions(int x, int y, int button) {
 
 int TrayComponent::getX() const {
   if (this->parent) {
-    return this->x + this->parent->getX();
+    return this->parent->getX() + this->parent->getWidth();
   }
 
   return this->x;
@@ -92,7 +92,7 @@ int TrayComponent::getX() const {
 
 int TrayComponent::getY() const {
   if (this->parent) {
-    return this->y + this->parent->getY();
+    return this->parent->getY();
   }
 
   return this->y;

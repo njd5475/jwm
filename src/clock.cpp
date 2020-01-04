@@ -190,7 +190,8 @@ void ClockType::DrawClock(const TimeType *now) {
     this->requestNewSize(strWidth, this->getRequestedHeight());
     this->getTray()->ResizeTray();
   }
-
+  this->graphics->setForeground(COLOR_MENU_ACTIVE_BG1);
+  this->graphics->drawRectangle(0, 0, this->getWidth()-1, this->getHeight()-1);
   graphics->copy(this->getTray()->getWindow(), 0, 0, this->getWidth(), this->getHeight(),
       this->getX(), this->getY());
 

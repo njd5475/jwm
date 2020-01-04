@@ -14,6 +14,10 @@
 
 class ClientNode;
 
+extern char shouldStopResize;
+
+void ResizeController(int wasDestroyed);
+
 /** Resize a client window.
  * @param np The client to resize.
  * @param context The mouse context.
