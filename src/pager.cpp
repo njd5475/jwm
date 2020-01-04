@@ -382,34 +382,6 @@ void PagerType::StartPagerMove(int x, int y) {
 
 }
 
-/** Stop an active pager move. */
-void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
-
-  int north, south, east, west;
-
-  Assert(this->controller);
-
-  /* Release grabs. */
-  (this->controller)(0);
-
-  this->x = x;
-  this->y = y;
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-  JXMoveWindow(display, this->parent, this->getX() - west,
-      this->getY() - north);
-  this->SendConfigureEvent();
-
-  /* Restore the maximized state of the client. */
-  if (maxFlags != MAX_NONE) {
-    this->MaximizeClient(maxFlags);
-  }
-
-  /* Redraw the pager. */
-  _RequirePagerUpdate();
-
-}
-
 char PagerType::shouldStopMove = 0;
 
 /** Client-terminated pager move. */

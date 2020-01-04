@@ -184,14 +184,6 @@ void Places::ReadClientStrut(ClientNode *np) {
 
 }
 
-/** Centered placement. */
-void ClientNode::CenterClient(const BoundingBox *box) {
-  this->x = box->x + (box->width / 2) - (this->width / 2);
-  this->y = box->y + (box->height / 2) - (this->height / 2);
-  this->ConstrainSize();
-  this->ConstrainPosition();
-}
-
 /** Compare two integers. */
 int Places::IntComparator(const void *a, const void *b) {
   const int ia = *(const int*) a;

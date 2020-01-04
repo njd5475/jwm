@@ -11,7 +11,17 @@
 #define MOVE_H
 
 #include "border.h"
+#include "timing.h"
 class ClientNode;
+
+extern char shouldStopMove;
+extern char atLeft;
+extern char atRight;
+extern char atBottom;
+extern char atTop;
+extern char atSideFirst;
+extern ClientNode *currentClient;
+extern TimeType moveTime;
 
 /** Move a client window.
  * @param np The client to move.
@@ -42,6 +52,14 @@ char CheckOverlapTopBottom(const RectangleType *a, const RectangleType *b);
 char CheckOverlapLeftRight(const RectangleType *a, const RectangleType *b);
 
 char ShouldSnap(ClientNode *np);
+
+void SignalMove(const TimeType *now, int x, int y, Window w, void *data);
+
+void UpdateDesktop(const TimeType *now);
+
+void DoSnap(ClientNode *np);
+
+void MoveController(int wasDestroyed);
 
 #endif /* MOVE_H */
 

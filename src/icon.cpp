@@ -303,7 +303,7 @@ IconNode* Icons::LoadNamedIcon(const char *name, char save,
 
 	/* Check for an absolute file name. */
 	if (name[0] == '/') {
-		ImageNode *image = LoadImage(name, 0, 0, 1);
+		ImageNode *image = Images::LoadImage(name, 0, 0, 1);
 		if (image) {
 			icon = CreateIcon(image);
 			icon->preserveAspect = preserveAspect;
@@ -311,7 +311,7 @@ IconNode* Icons::LoadNamedIcon(const char *name, char save,
 			if (save) {
 				InsertIcon(icon);
 			}
-			DestroyImage(image);
+			Images::DestroyImage(image);
 			return icon;
 		} else {
 			return &emptyIcon;
@@ -364,12 +364,12 @@ IconNode* LoadNamedIconHelper(const char *name, const char *path, char save,
 	/* Attempt to load the image. */
 	image = NULL;
 	if (hasExtension) {
-		image = LoadImage(temp, 0, 0, 1);
+		image = Images::LoadImage(temp, 0, 0, 1);
 	} else {
 		for (i = 0; i < EXTENSION_COUNT; i++) {
 			const unsigned len = strlen(ICON_EXTENSIONS[i]);
 			memcpy(&temp[pathLength + nameLength], ICON_EXTENSIONS[i], len + 1);
-			image = LoadImage(temp, 0, 0, 1);
+			image = Images::LoadImage(temp, 0, 0, 1);
 			if (image) {
 				break;
 			}
@@ -385,7 +385,7 @@ IconNode* LoadNamedIconHelper(const char *name, const char *path, char save,
 		if (save) {
 			InsertIcon(result);
 		}
-		DestroyImage(image);
+		Images::DestroyImage(image);
 		return result;
 	}
 
@@ -458,7 +458,7 @@ IconNode* Icons::GetDefaultIcon(void) {
 
 	/* Allocate image data. */
 	bytes = (width * height + 7) / 8;
-	image = CreateImage(width, height, 1);
+	image = Images::CreateImage(width, height, 1);
 	memset(image->data, 0, bytes);
 #ifdef USE_XRENDER
 	image->render = 0;
@@ -498,7 +498,7 @@ IconNode* Icons::GetDefaultIcon(void) {
 IconNode* CreateIconFromDrawable(Drawable d, Pixmap mask) {
 	ImageNode *image;
 
-	image = LoadImageFromDrawable(d, mask);
+	image = Images::LoadImageFromDrawable(d, mask);
 	if (image) {
 		IconNode *result = CreateIcon(image);
 		result->images = image;
@@ -515,7 +515,7 @@ ImageNode* GetBestImage(IconNode *icon, int rwidth, int rheight) {
 
 	/* If we don't have an image loaded, load one. */
 	if (icon->images == NULL) {
-		return LoadImage(icon->name, rwidth, rheight, icon->preserveAspect);
+		return Images::LoadImage(icon->name, rwidth, rheight, icon->preserveAspect);
 	}
 
 	/* Find the best image to use.
@@ -623,7 +623,7 @@ ScaledIconNode* GetScaledIcon(IconNode *icon, long fg, int rwidth,
 
 		/* Don't keep the image data around after creating the icon. */
 		if (icon->images == NULL) {
-			DestroyImage(imageNode);
+			Images::DestroyImage(imageNode);
 		}
 
 		return np;
@@ -716,7 +716,7 @@ ScaledIconNode* GetScaledIcon(IconNode *icon, long fg, int rwidth,
 	JXDestroyImage(image);
 
 	if (icon->images == NULL) {
-		DestroyImage(imageNode);
+		Images::DestroyImage(imageNode);
 	}
 
 	return np;
@@ -750,7 +750,7 @@ IconNode* CreateIconFromBinary(const unsigned long *input,
 			return result;
 		}
 
-		image = CreateImage(width, height, 0);
+		image = Images::CreateImage(width, height, 0);
 		if (result == NULL) {
 			result = CreateIcon(image);
 		}
@@ -821,7 +821,7 @@ void DoDestroyIcon(int index, IconNode *icon) {
 			icon->nodes = np->next;
 			Release(np);
 		}
-		DestroyImage(icon->images);
+		Images::DestroyImage(icon->images);
 		if (icon->name) {
 			delete[] icon->name;
 		}

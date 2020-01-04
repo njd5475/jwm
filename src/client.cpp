@@ -3389,3 +3389,445 @@ void ClientNode::FixHeight() {
     }
   }
 }
+
+
+/** Centered placement. */
+void ClientNode::CenterClient(const BoundingBox *box) {
+  this->x = box->x + (box->width / 2) - (this->width / 2);
+  this->y = box->y + (box->height / 2) - (this->height / 2);
+  this->ConstrainSize();
+  this->ConstrainPosition();
+}
+
+/** Stop an active pager move. */
+void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
+
+  int north, south, east, west;
+
+  Assert(this->controller);
+
+  /* Release grabs. */
+  (this->controller)(0);
+
+  this->x = x;
+  this->y = y;
+
+  Border::GetBorderSize(this, &north, &south, &east, &west);
+  JXMoveWindow(display, this->parent, this->getX() - west,
+      this->getY() - north);
+  this->SendConfigureEvent();
+
+  /* Restore the maximized state of the client. */
+  if (maxFlags != MAX_NONE) {
+    this->MaximizeClient(maxFlags);
+  }
+
+  /* Redraw the pager. */
+  _RequirePagerUpdate();
+
+}
+
+
+/** Move a client window. */
+char ClientNode::MoveClient(int startx, int starty) {
+  XEvent event;
+  const ScreenType *sp;
+  MaxFlags flags;
+  int oldx, oldy;
+  int doMove;
+  int north, south, east, west;
+  int height;
+
+  if (!(this->getBorder() & BORDER_MOVE)) {
+    return 0;
+  }
+  if (this->isFullscreen()) {
+    return 0;
+  }
+
+  if (!Cursors::GrabMouseForMove()) {
+    return 0;
+  }
+
+  _RegisterCallback(0, SignalMove, NULL);
+  this->controller = MoveController;
+  shouldStopMove = 0;
+
+  oldx = this->getX();
+  oldy = this->getY();
+
+  if (!(Cursors::GetMouseMask() & (Button1Mask | Button2Mask))) {
+    this->StopMove(0, oldx, oldy);
+    return 0;
+  }
+
+  Border::GetBorderSize(this, &north, &south, &east, &west);
+  startx -= west;
+  starty -= north;
+
+  currentClient = this;
+  atTop = atBottom = atLeft = atRight = atSideFirst = 0;
+  doMove = 0;
+  for (;;) {
+
+    _WaitForEvent(&event);
+
+    if (shouldStopMove) {
+      this->controller = NULL;
+      Cursors::SetDefaultCursor(this->parent);
+      _UnregisterCallback(SignalMove, NULL);
+      return doMove;
+    }
+
+    switch (event.type) {
+    case ButtonRelease:
+      if (event.xbutton.button == Button1 || event.xbutton.button == Button2) {
+        this->StopMove(doMove, oldx, oldy);
+        return doMove;
+      }
+      break;
+    case MotionNotify:
+
+      _DiscardMotionEvents(&event, this->getWindow());
+
+      this->x = event.xmotion.x_root - startx;
+      this->y = event.xmotion.y_root - starty;
+
+      /* Get the move time used for desktop switching. */
+      if (!(atLeft | atTop | atRight | atBottom)) {
+        if (event.xmotion.state & Mod1Mask) {
+          moveTime.seconds = 0;
+          moveTime.ms = 0;
+        } else {
+          GetCurrentTime(&moveTime);
+        }
+      }
+
+      /* Determine if we are at a border for desktop switching. */
+      sp = Screens::GetCurrentScreen(this->getX() + this->getWidth() / 2, this->getY() + this->getHeight() / 2);
+      atLeft = atTop = atRight = atBottom = 0;
+      if (event.xmotion.x_root <= sp->x) {
+        atLeft = 1;
+      } else if (event.xmotion.x_root >= sp->x + sp->width - 1) {
+        atRight = 1;
+      }
+      if (event.xmotion.y_root <= sp->y) {
+        atTop = 1;
+      } else if (event.xmotion.y_root >= sp->y + sp->height - 1) {
+        atBottom = 1;
+      }
+
+      flags = MAX_NONE;
+      if (event.xmotion.state & Mod1Mask) {
+        /* Switch desktops immediately if alt is pressed. */
+        if (atLeft | atRight | atTop | atBottom) {
+          TimeType now;
+          GetCurrentTime(&now);
+          UpdateDesktop(&now);
+        }
+      } else {
+        /* If alt is not pressed, snap to borders. */
+        if (this->isAeroSnapEnabled()) {
+          if (atTop & atLeft) {
+            if (atSideFirst) {
+              flags = MAX_TOP | MAX_LEFT;
+            } else {
+              flags = MAX_TOP | MAX_HORIZ;
+            }
+          } else if (atTop & atRight) {
+            if (atSideFirst) {
+              flags = MAX_TOP | MAX_RIGHT;
+            } else {
+              flags = MAX_TOP | MAX_HORIZ;
+            }
+          } else if (atBottom & atLeft) {
+            if (atSideFirst) {
+              flags = MAX_BOTTOM | MAX_LEFT;
+            } else {
+              flags = MAX_BOTTOM | MAX_HORIZ;
+            }
+          } else if (atBottom & atRight) {
+            if (atSideFirst) {
+              flags = MAX_BOTTOM | MAX_RIGHT;
+            } else {
+              flags = MAX_BOTTOM | MAX_HORIZ;
+            }
+          } else if (atLeft) {
+            flags = MAX_LEFT | MAX_VERT;
+            atSideFirst = 1;
+          } else if (atRight) {
+            flags = MAX_RIGHT | MAX_VERT;
+            atSideFirst = 1;
+          } else if (atTop | atBottom) {
+            flags = MAX_VERT | MAX_HORIZ;
+            atSideFirst = 0;
+          }
+          if (flags != this->getMaxFlags()) {
+            if (settings.moveMode == MOVE_OUTLINE) {
+              Outline::ClearOutline();
+            }
+            this->MaximizeClient(flags);
+          }
+          if (!this->getMaxFlags()) {
+            DoSnap(this);
+          }
+        } else {
+          DoSnap(this);
+        }
+      }
+
+      if (flags != MAX_NONE) {
+        this->RestartMove(&doMove);
+      } else if (!doMove && (abs(this->getX() - oldx) > MOVE_DELTA || abs(this->getY() - oldy) > MOVE_DELTA)) {
+
+        if (this->getMaxFlags()) {
+          this->MaximizeClient(MAX_NONE);
+        }
+
+        CreateMoveWindow(this);
+        doMove = 1;
+      }
+
+      if (doMove) {
+        if (settings.moveMode == MOVE_OUTLINE) {
+          Outline::ClearOutline();
+          height = north + south;
+          if (!(this->isShaded())) {
+            height += this->getHeight();
+          }
+          Outline::DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
+        } else {
+          if (this->getParent() != None) {
+            JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
+          } else {
+            JXMoveWindow(display, this->getWindow(), this->getX(), this->getY());
+          }
+          this->SendConfigureEvent();
+        }
+        UpdateMoveWindow(this);
+        _RequirePagerUpdate();
+      }
+
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+/** Move a client window (keyboard or menu initiated). */
+char ClientNode::MoveClientKeyboard() {
+  XEvent event;
+  int oldx, oldy;
+  int moved;
+  int height;
+  int north, south, east, west;
+  Window win;
+  if (!(this->getBorder() & BORDER_MOVE)) {
+    return 0;
+  }
+  if (this->isFullscreen()) {
+    return 0;
+  }
+
+  if (this->getMaxFlags() != MAX_NONE) {
+    this->MaximizeClient(MAX_NONE);
+  }
+
+  win = this->parent != None ? this->parent : this->window;
+  if (JUNLIKELY(JXGrabKeyboard(display, win, True, GrabModeAsync, GrabModeAsync, CurrentTime))) {
+    Debug("MoveClient: could not grab keyboard");
+    return 0;
+  }
+  if (!Cursors::GrabMouseForMove()) {
+    JXUngrabKeyboard(display, CurrentTime);
+    return 0;
+  }
+
+  Border::GetBorderSize(this, &north, &south, &east, &west);
+
+  oldx = this->getX();
+  oldy = this->getY();
+
+  _RegisterCallback(0, SignalMove, NULL);
+  this->controller = MoveController;
+  shouldStopMove = 0;
+
+  CreateMoveWindow(this);
+  UpdateMoveWindow(this);
+
+  Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
+  _DiscardMotionEvents(&event, this->window);
+
+  if (this->isShaded()) {
+    height = 0;
+  } else {
+    height = this->getHeight();
+  }
+  currentClient = this;
+
+  for (;;) {
+
+    _WaitForEvent(&event);
+
+    if (shouldStopMove) {
+      this->controller = NULL;
+      Cursors::SetDefaultCursor(this->parent);
+      _UnregisterCallback(SignalMove, NULL);
+      return 1;
+    }
+
+    moved = 0;
+
+    if (event.type == KeyPress) {
+      ActionType action;
+
+      _DiscardKeyEvents(&event, this->window);
+      action = Binding::GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
+      switch (action.action) {
+      case UP:
+        if (this->getY() + height > 0) {
+          this->y -= 10;
+        }
+        break;
+      case DOWN:
+        if (this->getY() < rootHeight) {
+          this->y += 10;
+        }
+        break;
+      case RIGHT:
+        if (this->getX() < rootWidth) {
+          this->x += 10;
+        }
+        break;
+      case LEFT:
+        if (this->getX() + this->getWidth() > 0) {
+          this->x -= 10;
+        }
+        break;
+      default:
+        this->StopMove(1, oldx, oldy);
+        return 1;
+      }
+
+      Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
+      _DiscardMotionEvents(&event, this->window);
+
+      moved = 1;
+
+    } else if (event.type == MotionNotify) {
+
+      _DiscardMotionEvents(&event, this->window);
+
+      this->x = event.xmotion.x;
+      this->y = event.xmotion.y;
+
+      moved = 1;
+
+    } else if (event.type == ButtonRelease) {
+      this->StopMove(1, oldx, oldy);
+      return 1;
+
+    }
+
+    if (moved) {
+
+      if (settings.moveMode == MOVE_OUTLINE) {
+        Outline::ClearOutline();
+        Outline::DrawOutline(this->getX() - west, this->getY() - west, this->getWidth() + west + east, height + north + west);
+      } else {
+        JXMoveWindow(display, win, this->getX() - west, this->getY() - north);
+        this->SendConfigureEvent();
+      }
+
+      UpdateMoveWindow(this);
+      _RequirePagerUpdate();
+
+    }
+
+  }
+
+}
+
+/** Stop move. */
+void ClientNode::StopMove(int doMove, int oldx, int oldy) {
+  int north, south, east, west;
+
+  Assert(this->controller);
+
+  (this->controller)(0);
+
+  this->controller = NULL;
+
+  Cursors::SetDefaultCursor(this->parent);
+  _UnregisterCallback(SignalMove, NULL);
+
+  if (!doMove) {
+    this->x = oldx;
+    this->y = oldy;
+    return;
+  }
+
+  Border::GetBorderSize(this, &north, &south, &east, &west);
+  if (this->parent != None) {
+    JXMoveWindow(display, this->parent, this->getX() - west, this->getY() - north);
+  } else {
+    JXMoveWindow(display, this->window, this->getX() - west, this->getY() - north);
+  }
+  this->SendConfigureEvent();
+}
+
+/** Restart a move. */
+void ClientNode::RestartMove(int *doMove) {
+  if (*doMove) {
+    int north, south, east, west;
+    *doMove = 0;
+    DestroyMoveWindow();
+    Border::GetBorderSize(this, &north, &south, &east, &west);
+    if (this->getParent() != None) {
+      JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
+    } else {
+      JXMoveWindow(display, this->getWindow(), this->getX() - west, this->getY() - north);
+    }
+    this->SendConfigureEvent();
+  }
+}
+
+/** Snap to the screen. */
+void ClientNode::DoSnapScreen() {
+
+  RectangleType client;
+  int screen;
+  const ScreenType *sp;
+  int screenCount;
+  int north, south, east, west;
+
+  GetClientRectangle(this, &client);
+
+  Border::GetBorderSize(this, &north, &south, &east, &west);
+
+  screenCount = Screens::GetScreenCount();
+  for (screen = 0; screen < screenCount; screen++) {
+
+    sp = Screens::GetScreen(screen);
+
+    if (abs(client.right - sp->width - sp->x) <= settings.snapDistance) {
+      this->x = sp->x + sp->width - west - this->getWidth();
+    }
+    if (abs(client.left - sp->x) <= settings.snapDistance) {
+      this->x = sp->x + east;
+    }
+    if (abs(client.bottom - sp->height - sp->y) <= settings.snapDistance) {
+      this->y = sp->y + sp->height - south;
+      if (!(this->isShaded())) {
+        this->y -= this->getHeight();
+      }
+    }
+    if (abs(client.top - sp->y) <= settings.snapDistance) {
+      this->y = north + sp->y;
+    }
+
+  }
+
+}
+
