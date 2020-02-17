@@ -831,7 +831,7 @@ char Hints::GetCardinalAtom(Window window, AtomType atom, unsigned long *value) 
 
 /** Set a cardinal atom. */
 void Hints::SetCardinalAtom(Window window, AtomType atom, unsigned long value) {
-	Assert(window != None);
+	//Assert(window != None);
 	JXChangeProperty(display, window, atoms[atom], XA_CARDINAL, 32, PropModeReplace, (unsigned char* )&value, 1);
 }
 

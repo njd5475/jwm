@@ -16,7 +16,6 @@
 /** Emit a message (if compiled with -DDEBUG). */
 void Debug(const char *str, ...)
 {
-    Log(str);
 #ifdef DEBUG
 
    va_list ap;

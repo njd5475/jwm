@@ -192,7 +192,7 @@ char SwallowNode::CheckSwallowMap(Window win) {
 	while (*npp) {
 
 		SwallowNode *np = *npp;
-		Assert(np->getTray()->window != None);
+		Assert(np->getTray()->getWindow() != None);
 
 		if (!strcmp(hint.res_name, np->name)) {
 

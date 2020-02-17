@@ -2159,8 +2159,6 @@ void ClientNode::ReadWMNormalHints() {
   XSizeHints hints;
   long temp;
 
-  Assert(np);
-
   if (!JXGetWMNormalHints(display, this->getWindow(), &hints, &temp)) {
     this->sizeFlags = 0;
   } else {

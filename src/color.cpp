@@ -408,7 +408,7 @@ void Colors::AllocateColor(ColorName type, XColor *c) {
 		JXAllocColor(display, rootColormap, c);
 		break;
 	}
-	Assert(c->pixel);
+	//Assert(c->pixel);
 	Colors::colors[type] = c->pixel;
 }
 

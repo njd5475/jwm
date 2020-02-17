@@ -342,7 +342,7 @@ void TaskBar::BarItem::focusGroup() {
       }
     }
   }
-  Assert(restoreCount <= clientCount);
+  Assert(restoreCount <= ClientNode::clientCount);
   for (i = restoreCount - 1; i >= 0; i--) {
     toRestore[i]->RestoreClient(1);
   }
