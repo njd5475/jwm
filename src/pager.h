@@ -18,8 +18,7 @@
 class PagerType : public TrayComponent {
 private: /* statics */
 
-  struct PagerType *next; /**< Next pager in the list. */
-  static PagerType *pagers;
+  static std::vector<PagerType*> pagers;
   static char shouldStopMove;
   static void PagerMoveController(int wasDestroyed);
   static void SignalPager(const TimeType *now, int x, int y, Window w, void *data);
@@ -54,11 +53,13 @@ private:
 
 public:
   virtual void Draw();
+  virtual ~PagerType();
 
+private:
   PagerType(char labelled, Tray *tray, TrayComponent *parent);
-  virtual ~PagerType() {};
 
-  struct TrayComponent *CreatePager(char labeled);
+public:
+  static TrayComponent *CreatePager(char labeled, Tray * tray, TrayComponent *parent);
   /*@{*/
   static void InitializePager() {}
   static void StartupPager() {}

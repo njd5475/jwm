@@ -23,6 +23,7 @@ public:
 	void free();
 	void line(int x1, int y1, int x2, int y2);
 	void point(int x, int y);
+	Pixmap getPixmap();
 	void copy(Drawable dest, int srcX, int srcY, int width, int height, int destX, int destY);
 	void setForeground(unsigned short index);
 	void drawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill, bool border, struct IconNode *icon, int x, int y, int width, int height, int xoffset, int yoffset);

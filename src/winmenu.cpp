@@ -197,7 +197,7 @@ void ChooseWindow(MenuAction *action) {
 
   for (;;) {
 
-    _WaitForEvent(&event);
+    Events::_WaitForEvent(&event);
 
     if (event.type == ButtonPress) {
       if (event.xbutton.button == Button1) {

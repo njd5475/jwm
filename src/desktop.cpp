@@ -172,8 +172,8 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 	Hints::SetCardinalAtom(rootWindow, ATOM_NET_CURRENT_DESKTOP, currentDesktop);
 	Hints::SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP, showing[currentDesktop]);
 
-	_RequireRestack();
-	_RequireTaskUpdate();
+	Events::_RequireRestack();
+	Events::_RequireTaskUpdate();
 
 	DesktopEnvironment::DefaultEnvironment()->LoadBackground(desktop);
 
@@ -265,8 +265,8 @@ void Desktops::_ShowDesktop(void) {
 			}
 		}
 	}
-	_RequireRestack();
-	_RequireTaskUpdate();
+	Events::_RequireRestack();
+	Events::_RequireTaskUpdate();
 	JXSync(display, True);
 
 	if (showing[currentDesktop]) {

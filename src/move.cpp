@@ -276,16 +276,16 @@ void UpdateDesktop(const TimeType *now) {
   currentClient->setHidden();
   if (atLeft && DesktopEnvironment::DefaultEnvironment()->LeftDesktop()) {
     currentClient->SetClientDesktop(currentDesktop);
-    _RequireRestack();
+    Events::_RequireRestack();
   } else if (atRight && DesktopEnvironment::DefaultEnvironment()->RightDesktop()) {
     currentClient->SetClientDesktop(currentDesktop);
-    _RequireRestack();
+    Events::_RequireRestack();
   } else if (atTop && DesktopEnvironment::DefaultEnvironment()->AboveDesktop()) {
     currentClient->SetClientDesktop(currentDesktop);
-    _RequireRestack();
+    Events::_RequireRestack();
   } else if (atBottom && DesktopEnvironment::DefaultEnvironment()->BelowDesktop()) {
     currentClient->SetClientDesktop(currentDesktop);
-    _RequireRestack();
+    Events::_RequireRestack();
   }
   currentClient->setNotHidden();
 }

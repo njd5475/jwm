@@ -241,7 +241,7 @@ void ClientList::FocusNextStacked(ClientNode *client) {
   }
 
   /* No client to focus. */
-  JXSetInputFocus(display, rootWindow, RevertToParent, eventTime);
+  JXSetInputFocus(display, rootWindow, RevertToParent, Events::eventTime);
 
 }
 
@@ -274,6 +274,8 @@ void ClientList::Shutdown() {
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
+      client->setDelete();
+      client->DeleteClient();
       client->RemoveClient();
     }
   }

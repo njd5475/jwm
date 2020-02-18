@@ -73,7 +73,7 @@ void TrayButton::DestroyTrayButtons(void) {
   while (!buttons.empty()) {
     it = buttons.begin();
     bp = (*it);
-    Release(bp);
+    delete bp;
     buttons.erase(it);
   }
 }
@@ -95,13 +95,13 @@ TrayButton::TrayButton(const char *iconName, const char *label,
   this->mousex = -settings.doubleClickDelta;
   this->mousey = -settings.doubleClickDelta;
 
-  _RegisterCallback(settings.popupDelay / 2, SignalTrayButton, this);
+  Events::_RegisterCallback(settings.popupDelay / 2, SignalTrayButton, this);
 
   this->Create();
 }
 
 TrayButton::~TrayButton() {
-  _UnregisterCallback(SignalTrayButton, this);
+  Events::_UnregisterCallback(SignalTrayButton, this);
   if (this->label) {
     delete[] (this->label);
   }

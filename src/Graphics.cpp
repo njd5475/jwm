@@ -47,6 +47,10 @@ void Graphics::setForeground(unsigned short index) {
 	JXSetForeground(_display, context, Colors::lookupColor(index));
 }
 
+Pixmap Graphics::getPixmap() {
+  return this->surface;
+}
+
 void Graphics::drawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill,
 		bool border, struct IconNode *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
 	DrawButton(type, alignment, font, text, fill, border, this->surface, icon, x, y, width, height, xoffset, yoffset);

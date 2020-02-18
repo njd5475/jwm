@@ -20,6 +20,7 @@
 class Spacer : public TrayComponent {
 public:
   Spacer(int width, int height, Tray *tray, TrayComponent *parent);
+  virtual ~Spacer() {}
 
   void Create();
   void Destroy();

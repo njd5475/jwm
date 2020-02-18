@@ -21,6 +21,7 @@ private:
 
 private:
   ColorName color;
+  Window window;
 
 public:
   static Flex* Create();

@@ -7,25 +7,35 @@
  *
  */
 
-#include "jwm.h"
 #include "taskbar.h"
-#include "tray.h"
-#include "timing.h"
-#include "main.h"
+
+#include <stddef.h>
+#include <X11/X.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iterator>
+#include <utility>
+
+#include "button.h"
 #include "client.h"
 #include "clientlist.h"
-#include "color.h"
-#include "popup.h"
-#include "button.h"
 #include "cursor.h"
+#include "debug.h"
+#include "DesktopEnvironment.h"
+#include "event.h"
+#include "font.h"
 #include "icon.h"
-#include "error.h"
-#include "winmenu.h"
+#include "jwm.h"
+#include "jxlib.h"
+#include "main.h"
+#include "menu.h"
+#include "misc.h"
+#include "popup.h"
 #include "screen.h"
 #include "settings.h"
-#include "event.h"
-#include "misc.h"
-#include "DesktopEnvironment.h"
+#include "timing.h"
+#include "winmenu.h"
 
 using namespace std;
 using ::TaskBar;
@@ -92,7 +102,7 @@ TaskBar::TaskBar(Tray *tray, TrayComponent *parent) :
       this->getHeight(), rootDepth);
   this->buffer = this->pixmap;
   Tray::ClearTrayDrawable(this);
-  _RegisterCallback(settings.popupDelay / 2, SignalTaskbar, this);
+  Events::_RegisterCallback(settings.popupDelay / 2, SignalTaskbar, this);
 }
 
 void TaskBar::Create() {
@@ -401,7 +411,7 @@ void TaskBar::AddClientToTaskBar(ClientNode *np) {
     taskEntries[tp->getClassName()] = tp;
   }
 
-  _RequireTaskUpdate();
+  Events::_RequireTaskUpdate();
   UpdateNetClientList();
 
 }
@@ -418,7 +428,7 @@ void TaskBar::RemoveClientFromTaskBar(ClientNode *np) {
         taskEntries.erase(entry.first);
         Release(tp);
       }
-      _RequireTaskUpdate();
+      Events::_RequireTaskUpdate();
       UpdateNetClientList();
       return;
     }
@@ -943,6 +953,5 @@ TaskBar::BarItem::BarItem(ClientNode *atLeastOne) {
 }
 
 TaskBar::BarItem::~BarItem() {
-
 }
 

@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <map>
+#include "menu.h"
 #include "tray.h"
 #include "TrayComponent.h"
 

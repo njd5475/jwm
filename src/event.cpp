@@ -37,104 +37,16 @@
 
 #define MIN_TIME_DELTA 50
 
-Time eventTime = CurrentTime;
+Time Events::eventTime = CurrentTime;
 
-typedef struct CallbackNode {
-  TimeType last;
-  int freq;
-  SignalCallback callback;
-  void *data;
-  struct CallbackNode *next;
-} CallbackNode;
+std::vector<CallbackNode*> Events::callbacks;
 
-static CallbackNode *callbacks = NULL;
-
-static char restack_pending = 0;
-static char task_update_pending = 0;
-static char pager_update_pending = 0;
-
-static void _Signal(void);
-
-static void _ProcessBinding(MouseContextType context, ClientNode *np,
-    unsigned state, int code, int x, int y);
-
-static void _HandleConfigureRequest(const XConfigureRequestEvent *event);
-static char _HandleConfigureNotify(const XConfigureEvent *event);
-static char _HandleExpose(const XExposeEvent *event);
-static char _HandlePropertyNotify(const XPropertyEvent *event);
-static void _HandleClientMessage(const XClientMessageEvent *event);
-static void _HandleColormapChange(const XColormapEvent *event);
-static char _HandleDestroyNotify(const XDestroyWindowEvent *event);
-static void _HandleMapRequest(const XMapEvent *event);
-static void _HandleUnmapNotify(const XUnmapEvent *event);
-static void _HandleButtonEvent(const XButtonEvent *event);
-static void _ToggleMaximized(ClientNode *np, MaxFlags flags);
-static void _HandleKeyPress(const XKeyEvent *event);
-static void _HandleKeyRelease(const XKeyEvent *event);
-static void _HandleEnterNotify(const XCrossingEvent *event);
-static void _HandleMotionNotify(const XMotionEvent *event);
-static char _HandleSelectionClear(const XSelectionClearEvent *event);
-
-static void _HandleNetMoveResize(const XClientMessageEvent *event,
-    ClientNode *np);
-static void HandleNetWMMoveResize(const XClientMessageEvent *evnet,
-    ClientNode *np);
-static void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np);
-static void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np);
-static void _HandleFrameExtentsRequest(const XClientMessageEvent *event);
-static void _DiscardEnterEvents();
-
-#ifdef USE_SHAPE
-static void _HandleShapeEvent(const XShapeEvent *event);
-#endif
-
-//char *eventNames[] =
-//		"Unknown Event";
-//		case ConfigureRequest:
-//			eventName = "ConfigureRequest";
-//		case MapRequest:
-//			eventName = "MapRequest";
-//		case PropertyNotify:
-//			eventName = "PropertyNotify";
-//		case ClientMessage:
-//			eventName = "ClientMessage";
-//		case UnmapNotify:
-//			eventName = "UnmapNotify";
-//		case Expose:
-//			eventName = "Expose";
-//		case ColormapNotify:
-//			eventName = "ColormapNotify";
-//		case DestroyNotify:
-//			eventName = "DestroyNotify";
-//		case SelectionClear:
-//			eventName = "SelectionClear";
-//		case ResizeRequest:
-//			eventName = "ResizeRequest";
-//		case MotionNotify:
-//			eventName = "MotionNotify";
-//		case ButtonPress:
-//				eventName = "ButtonPress";
-//		case ButtonRelease:
-//				eventName = "ButtonRelease";
-//		case EnterNotify:
-//			eventName = "EnterNotify";
-//		case LeaveNotify:
-//			eventName = "LeaveNotify";
-//		case ReparentNotify:
-//			eventName = "ReparentNotify";
-//		case ConfigureNotify:
-//			eventName = "ConfigureNotify";
-//		case CreateNotify:
-//		case MapNotify:
-//		case GraphicsExpose:
-//		case NoExpose:
-//CreateNotify eventName = "CreateNotify";
-//MapNotify eventName = "MapNotify";
-//GraphicsExpose eventName = "GraphicsExpose";
-//NoExpose eventName = "NoExpose";
+char Events::restack_pending = 0;
+char Events::task_update_pending = 0;
+char Events::pager_update_pending = 0;
 
 /** Wait for an event and process it. */
-char _WaitForEvent(XEvent *event) {
+char Events::_WaitForEvent(XEvent *event) {
   struct timeval timeout;
   CallbackNode *cp;
   fd_set fds;
@@ -150,7 +62,7 @@ char _WaitForEvent(XEvent *event) {
 
   /* Compute how long we should sleep. */
   sleepTime = 10 * 1000; /* 10 seconds. */
-  for (cp = callbacks; cp; cp = cp->next) {
+  for (auto cp : callbacks) {
     if (cp->freq > 0 && cp->freq < sleepTime) {
       sleepTime = cp->freq;
     }
@@ -321,10 +233,9 @@ char _WaitForEvent(XEvent *event) {
 }
 
 /** Wake up components that need to run at certain times. */
-void _Signal(void) {
+void Events::_Signal(void) {
   static TimeType last = ZERO_TIME;
 
-  CallbackNode *cp;
   TimeType now;
   Window w;
   int x,
@@ -353,7 +264,7 @@ void _Signal(void) {
   last = now;
 
   Cursors::GetMousePosition(&x, &y, &w);
-  for (cp = callbacks; cp; cp = cp->next) {
+  for (auto cp : callbacks) {
     if (cp->freq == 0 || GetTimeDifference(&now, &cp->last) >= cp->freq) {
       cp->last = now;
       (cp->callback)(&now, x, y, w, cp->data);
@@ -362,7 +273,7 @@ void _Signal(void) {
 }
 
 /** Process an event. */
-void _ProcessEvent(XEvent *event) {
+void Events::_ProcessEvent(XEvent *event) {
   switch (event->type) {
   case ButtonPress:
   case ButtonRelease:
@@ -395,7 +306,7 @@ void _ProcessEvent(XEvent *event) {
 }
 
 /** Discard button events for the specified windows. */
-void _DiscardButtonEvents() {
+void Events::_DiscardButtonEvents() {
   XEvent event;
   JXSync(display, False);
   while (JXCheckMaskEvent(display, ButtonPressMask | ButtonReleaseMask, &event)) {
@@ -404,7 +315,7 @@ void _DiscardButtonEvents() {
 }
 
 /** Discard motion events for the specified window. */
-void _DiscardMotionEvents(XEvent *event, Window w) {
+void Events::_DiscardMotionEvents(XEvent *event, Window w) {
   XEvent temp;
   JXSync(display, False);
   while (JXCheckTypedEvent(display, MotionNotify, &temp)) {
@@ -418,7 +329,7 @@ void _DiscardMotionEvents(XEvent *event, Window w) {
 }
 
 /** Discard key events for the specified window. */
-void _DiscardKeyEvents(XEvent *event, Window w) {
+void Events::_DiscardKeyEvents(XEvent *event, Window w) {
   JXSync(display, False);
   while (JXCheckTypedWindowEvent(display, w, KeyPress, event)) {
     _UpdateTime(event);
@@ -426,7 +337,7 @@ void _DiscardKeyEvents(XEvent *event, Window w) {
 }
 
 /** Discard enter notify events. */
-void _DiscardEnterEvents() {
+void Events::_DiscardEnterEvents() {
   XEvent event;
   JXSync(display, False);
   while (JXCheckMaskEvent(display, EnterWindowMask, &event)) {
@@ -437,7 +348,7 @@ void _DiscardEnterEvents() {
 }
 
 /** Process a selection clear event. */
-char _HandleSelectionClear(const XSelectionClearEvent *event) {
+char Events::_HandleSelectionClear(const XSelectionClearEvent *event) {
   if (event->selection == managerSelection) {
     /* Lost WM selection. */
     shouldExit = 1;
@@ -448,7 +359,7 @@ char _HandleSelectionClear(const XSelectionClearEvent *event) {
 }
 
 /** Process a button event. */
-void _HandleButtonEvent(const XButtonEvent *event) {
+void Events::_HandleButtonEvent(const XButtonEvent *event) {
   Log("Handling a button event\n");
   static Time lastClickTime = 0;
   static int lastX = 0, lastY = 0;
@@ -507,10 +418,8 @@ void _HandleButtonEvent(const XButtonEvent *event) {
     const unsigned int mask = event->state & ~Binding::lockMask;
     np = ClientNode::FindClientByWindow(event->window);
     if (np) {
-      const char move_resize =
-          (np->isDragable())
-              || ((mask == settings.moveMask)
-                  && !(np->isNotDraggable()));
+      const char move_resize = (np->isDragable())
+          || ((mask == settings.moveMask) && !(np->isNotDraggable()));
       switch (event->button) {
       case Button1:
       case Button2:
@@ -546,7 +455,7 @@ void _HandleButtonEvent(const XButtonEvent *event) {
 }
 
 /** Toggle maximized state. */
-void _ToggleMaximized(ClientNode *np, MaxFlags flags) {
+void Events::_ToggleMaximized(ClientNode *np, MaxFlags flags) {
   if (np) {
     if (np->getMaxFlags() == flags) {
       np->MaximizeClient(MAX_NONE);
@@ -557,8 +466,8 @@ void _ToggleMaximized(ClientNode *np, MaxFlags flags) {
 }
 
 /** Process a key or mouse binding. */
-void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
-    int code, int x, int y) {
+void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
+    unsigned state, int code, int x, int y) {
   const ActionType key = Binding::GetKey(context, state, code);
   const char keyAction = context == MC_NONE;
   switch (key.action) {
@@ -708,8 +617,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
         ShowWindowMenu(np, np->getX(), np->getY(), 1);
       } else {
         const unsigned bsize =
-            (np->getBorder() & BORDER_OUTLINE) ?
-                settings.borderWidth : 0;
+            (np->getBorder() & BORDER_OUTLINE) ? settings.borderWidth : 0;
         const unsigned titleHeight = Border::GetTitleHeight();
         const int mx = np->getX() + x - bsize;
         const int my = np->getY() + y - titleHeight - bsize;
@@ -782,7 +690,7 @@ void _ProcessBinding(MouseContextType context, ClientNode *np, unsigned state,
 }
 
 /** Process a key press event. */
-void _HandleKeyPress(const XKeyEvent *event) {
+void Events::_HandleKeyPress(const XKeyEvent *event) {
   ClientNode *np;
   Cursors::SetMousePosition(event->x_root, event->y_root, event->window);
   np = ClientNode::GetActiveClient();
@@ -790,7 +698,7 @@ void _HandleKeyPress(const XKeyEvent *event) {
 }
 
 /** Handle a key release event. */
-void _HandleKeyRelease(const XKeyEvent *event) {
+void Events::_HandleKeyRelease(const XKeyEvent *event) {
   const ActionType key = Binding::GetKey(MC_NONE, event->state, event->keycode);
   if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV
       && key.action != PREVSTACK) {
@@ -799,7 +707,7 @@ void _HandleKeyRelease(const XKeyEvent *event) {
 }
 
 /** Process a configure request. */
-void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
+void Events::_HandleConfigureRequest(const XConfigureRequestEvent *event) {
   Places *np;
 
   if (DesktopEnvironment::DefaultEnvironment()->HandleDockConfigureRequest(
@@ -940,7 +848,7 @@ void _HandleConfigureRequest(const XConfigureRequestEvent *event) {
 }
 
 /** Process a configure notify event. */
-char _HandleConfigureNotify(const XConfigureEvent *event) {
+char Events::_HandleConfigureNotify(const XConfigureEvent *event) {
   if (event->window != rootWindow) {
     return 0;
   }
@@ -954,7 +862,7 @@ char _HandleConfigureNotify(const XConfigureEvent *event) {
 }
 
 /** Process an enter notify event. */
-void _HandleEnterNotify(const XCrossingEvent *event) {
+void Events::_HandleEnterNotify(const XCrossingEvent *event) {
   ClientNode *np;
   Cursor cur;
   np = ClientNode::FindClient(event->window);
@@ -977,7 +885,7 @@ void _HandleEnterNotify(const XCrossingEvent *event) {
 }
 
 /** Handle an expose event. */
-char _HandleExpose(const XExposeEvent *event) {
+char Events::_HandleExpose(const XExposeEvent *event) {
   ClientNode *np;
   np = ClientNode::FindClientByParent(event->window);
   if (np) {
@@ -1005,7 +913,7 @@ char _HandleExpose(const XExposeEvent *event) {
 }
 
 /** Handle a property notify event. */
-char _HandlePropertyNotify(const XPropertyEvent *event) {
+char Events::_HandlePropertyNotify(const XPropertyEvent *event) {
   ClientNode *np = ClientNode::FindClientByWindow(event->window);
   if (np) {
     char changed = 0;
@@ -1081,7 +989,7 @@ char _HandlePropertyNotify(const XPropertyEvent *event) {
 }
 
 /** Handle a client message. */
-void _HandleClientMessage(const XClientMessageEvent *event) {
+void Events::_HandleClientMessage(const XClientMessageEvent *event) {
 
   ClientNode *np;
 #ifdef DEBUG
@@ -1196,8 +1104,8 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
   } else {
 #ifdef DEBUG
     atomName = JXGetAtomName(display, event->message_type);
-    Debug("ClientMessage to unknown window (0x%x): %s",
-        event->window, atomName);
+    Debug("ClientMessage to unknown window (0x%x): %s", event->window,
+        atomName);
     JXFree(atomName);
 #endif
   }
@@ -1205,7 +1113,8 @@ void _HandleClientMessage(const XClientMessageEvent *event) {
 }
 
 /** Handle a _NET_MOVERESIZE_WINDOW request. */
-void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
+void Events::_HandleNetMoveResize(const XClientMessageEvent *event,
+    ClientNode *np) {
 
   long flags;
   int gravity;
@@ -1290,7 +1199,8 @@ void _HandleNetMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 }
 
 /** Handle a _NET_WM_MOVERESIZE request. */
-void HandleNetWMMoveResize(const XClientMessageEvent *event, ClientNode *np) {
+void Events::HandleNetWMMoveResize(const XClientMessageEvent *event,
+    ClientNode *np) {
 
   long x = event->data.l[0] - np->getX();
   long y = event->data.l[1] - np->getY();
@@ -1347,14 +1257,16 @@ void HandleNetWMMoveResize(const XClientMessageEvent *event, ClientNode *np) {
 }
 
 /** Handle a _NET_RESTACK_WINDOW request. */
-void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np) {
+void Events::_HandleNetRestack(const XClientMessageEvent *event,
+    ClientNode *np) {
   const Window sibling = event->data.l[1];
   const int detail = event->data.l[2];
   np->RestackClient(sibling, detail);
 }
 
 /** Handle a _NET_WM_STATE request. */
-void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
+void Events::_HandleNetWMState(const XClientMessageEvent *event,
+    ClientNode *np) {
 
   unsigned int x;
   MaxFlags maxFlags;
@@ -1539,12 +1451,12 @@ void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np) {
 }
 
 /** Handle a _NET_REQUEST_FRAME_EXTENTS request. */
-void _HandleFrameExtentsRequest(const XClientMessageEvent *event) {
-  Hints::WriteFrameExtents(event->window, (const ClientNode*)&event->data);
+void Events::_HandleFrameExtentsRequest(const XClientMessageEvent *event) {
+  Hints::WriteFrameExtents(event->window, (const ClientNode*) &event->data);
 }
 
 /** Handle a motion notify event. */
-void _HandleMotionNotify(const XMotionEvent *event) {
+void Events::_HandleMotionNotify(const XMotionEvent *event) {
 
   ClientNode *np;
   Cursor cur;
@@ -1568,7 +1480,7 @@ void _HandleMotionNotify(const XMotionEvent *event) {
 
 /** Handle a shape event. */
 #ifdef USE_SHAPE
-void _HandleShapeEvent(const XShapeEvent *event) {
+void Events::_HandleShapeEvent(const XShapeEvent *event) {
   ClientNode *np;
   np = ClientNode::FindClientByWindow(event->window);
   if (np) {
@@ -1579,7 +1491,7 @@ void _HandleShapeEvent(const XShapeEvent *event) {
 #endif /* USE_SHAPE */
 
 /** Handle a colormap event. */
-void _HandleColormapChange(const XColormapEvent *event) {
+void Events::_HandleColormapChange(const XColormapEvent *event) {
   ClientNode *np;
   if (event->c_new == True) {
     np = ClientNode::FindClientByWindow(event->window);
@@ -1590,7 +1502,7 @@ void _HandleColormapChange(const XColormapEvent *event) {
 }
 
 /** Handle a map request. */
-void _HandleMapRequest(const XMapEvent *event) {
+void Events::_HandleMapRequest(const XMapEvent *event) {
   ClientNode *np;
   Assert(event);
   if (SwallowNode::CheckSwallowMap(event->window)) {
@@ -1632,7 +1544,7 @@ void _HandleMapRequest(const XMapEvent *event) {
 }
 
 /** Handle an unmap notify event. */
-void _HandleUnmapNotify(const XUnmapEvent *event) {
+void Events::_HandleUnmapNotify(const XUnmapEvent *event) {
   ClientNode *np;
   XEvent e;
 
@@ -1677,7 +1589,7 @@ void _HandleUnmapNotify(const XUnmapEvent *event) {
 }
 
 /** Handle a destroy notify event. */
-char _HandleDestroyNotify(const XDestroyWindowEvent *event) {
+char Events::_HandleDestroyNotify(const XDestroyWindowEvent *event) {
   ClientNode *np;
   np = ClientNode::FindClientByWindow(event->window);
   if (np) {
@@ -1693,7 +1605,7 @@ char _HandleDestroyNotify(const XDestroyWindowEvent *event) {
 }
 
 /** Update the last event time. */
-void _UpdateTime(const XEvent *event) {
+void Events::_UpdateTime(const XEvent *event) {
   Time t = CurrentTime;
   Assert(event);
   switch (event->type) {
@@ -1735,7 +1647,7 @@ void _UpdateTime(const XEvent *event) {
 }
 
 /** Register a callback. */
-void _RegisterCallback(int freq, SignalCallback callback, void *data) {
+void Events::_RegisterCallback(int freq, SignalCallback callback, void *data) {
   Logger::Log("Logging callback\n");
   CallbackNode *cp = new CallbackNode;
   cp->last.seconds = 0;
@@ -1743,35 +1655,35 @@ void _RegisterCallback(int freq, SignalCallback callback, void *data) {
   cp->freq = freq;
   cp->callback = callback;
   cp->data = data;
-  cp->next = callbacks;
-  callbacks = cp;
+  callbacks.push_back(cp);
 }
 
 /** Unregister a callback. */
-void _UnregisterCallback(SignalCallback callback, void *data) {
-  CallbackNode **cp;
-  for (cp = &callbacks; *cp; cp = &(*cp)->next) {
-    if ((*cp)->callback == callback && (*cp)->data == data) {
-      CallbackNode *temp = *cp;
-      *cp = (*cp)->next;
-      Release(temp);
+void Events::_UnregisterCallback(SignalCallback callback, void *data) {
+  std::vector<CallbackNode*>::iterator it;
+  for (it = callbacks.begin(); it != callbacks.end(); ++it) {
+    CallbackNode *cn = (*it);
+    if (cn->callback == callback && cn->data == data) {
+      callbacks.erase(it);
+      delete cn;
       return;
     }
+
   }
-  Assert(0);
+
 }
 
 /** Restack clients before waiting for an event. */
-void _RequireRestack() {
+void Events::_RequireRestack() {
   restack_pending = 1;
 }
 
 /** Update the task bar before waiting for an event. */
-void _RequireTaskUpdate() {
+void Events::_RequireTaskUpdate() {
   task_update_pending = 1;
 }
 
 /** Update the pager before waiting for an event. */
-void _RequirePagerUpdate() {
+void Events::_RequirePagerUpdate() {
   pager_update_pending = 1;
 }

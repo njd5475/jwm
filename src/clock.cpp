@@ -72,7 +72,7 @@ ClockType::ClockType(const char *format, const char *zone, int width,
   }
   this->requestedHeight = height;
 
-  _RegisterCallback(Min(900, settings.popupDelay / 2), SignalClock, this);
+  Events::_RegisterCallback(Min(900, settings.popupDelay / 2), SignalClock, this);
 }
 
 ClockType::~ClockType() {
@@ -82,7 +82,7 @@ ClockType::~ClockType() {
   if (this->zone) {
     Release(this->zone);
   }
-  _UnregisterCallback(SignalClock, this);
+  Events::_UnregisterCallback(SignalClock, this);
 }
 
 /** Initialize a clock tray component. */

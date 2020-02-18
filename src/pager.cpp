@@ -22,32 +22,27 @@
 #include "settings.h"
 #include "DesktopEnvironment.h"
 
+std::vector<PagerType*> PagerType::pagers;
+
 /** Shutdown the pager. */
 void PagerType::ShutdownPager(void) {
-  PagerType *pp;
-  for (pp = pagers; pp; pp = pp->next) {
+  for (auto pp : pagers) {
     JXFreePixmap(display, pp->buffer);
   }
 }
 
-PagerType *PagerType::pagers = NULL;
-
 /** Release pager data. */
 void PagerType::DestroyPager(void) {
-  PagerType *pp;
-  while (pagers) {
-    _UnregisterCallback(SignalPager, pagers);
-    pp = pagers->next;
-    Release(pagers);
-    pagers = pp;
+  for(auto pp : pagers) {
+    Events::_UnregisterCallback(SignalPager, pp);
+    delete pp;
   }
+  pagers.clear();
 }
 
 /** Create a new pager tray component. */
 PagerType::PagerType(char labeled, Tray *tray, TrayComponent *parent) :
     TrayComponent(tray, parent) {
-  this->next = pagers;
-  pagers = this;
   this->labeled = labeled;
   this->mousex = -settings.doubleClickDelta;
   this->mousey = -settings.doubleClickDelta;
@@ -55,7 +50,12 @@ PagerType::PagerType(char labeled, Tray *tray, TrayComponent *parent) :
   this->mouseTime.ms = 0;
   this->buffer = None;
 
-  _RegisterCallback(settings.popupDelay / 2, SignalPager, this);
+  Events::_RegisterCallback(settings.popupDelay / 2, SignalPager, this);
+}
+
+PagerType::~PagerType() {
+  Logger::Log("Destroying PagerType\n");
+  this->getTray()->RemoveTrayComponent(this);
 }
 
 /** Initialize a pager tray component. */
@@ -308,7 +308,7 @@ void PagerType::StartPagerMove(int x, int y) {
 
   for (;;) {
 
-    _WaitForEvent(&event);
+    Events::_WaitForEvent(&event);
 
     if (shouldStopMove) {
       np->clearController();
@@ -370,7 +370,7 @@ void PagerType::StartPagerMove(int x, int y) {
       JXMoveWindow(display, np->getParent(), np->getX() - west,
           np->getY() - north);
       np->SendConfigureEvent();
-      _RequirePagerUpdate();
+      Events::_RequirePagerUpdate();
 
       break;
 
@@ -472,7 +472,7 @@ void PagerType::UpdatePager(void) {
     return;
   }
 
-  for (pp = pagers; pp; pp = pp->next) {
+  for(auto pp : pagers) {
 
     /* Draw the pager. */
     pp->Draw();
@@ -586,3 +586,9 @@ void PagerType::DrawPagerClient(ClientNode *np) {
 
 }
 
+
+TrayComponent *PagerType::CreatePager(char labeled, Tray * tray, TrayComponent *parent) {
+  PagerType *pager = new PagerType(labeled, tray, parent);
+  pagers.push_back(pager);
+  return pager;
+}

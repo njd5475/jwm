@@ -129,8 +129,8 @@ void Tray::StartupTray(void) {
     JXMapWindow(display, tp->window);
   }
 
-  _RequirePagerUpdate();
-  _RequireTaskUpdate();
+  Events::_RequirePagerUpdate();
+  Events::_RequireTaskUpdate();
 
 }
 
@@ -194,11 +194,12 @@ Tray::Tray() {
 
 Tray::~Tray() {
   if (autoHide != THIDE_OFF) {
-    _UnregisterCallback(SignalTray, this);
+    Events::_UnregisterCallback(SignalTray, this);
   }
   std::vector<TrayComponent*>::iterator it;
   for (it = components.begin(); it != components.end(); ++it) {
-    Release(*it);
+    TrayComponent *tc = *it;
+    delete tc;
   }
   components.clear();
 }
@@ -231,6 +232,8 @@ bool Tray::RemoveTrayComponent(TrayComponent *cp) {
   }
   if (found) {
     this->components.erase(it);
+  }else{
+    Logger::Log("Could not find component in tray to remove\n");
   }
   return found;
 }
@@ -664,7 +667,7 @@ void Tray::HandleTrayButtonPress(Tray *tp, const XButtonEvent *event) {
     const int x = event->x - cp->getX();
     const int y = event->y - cp->getY();
     const int mask = event->button;
-    _DiscardButtonEvents();
+    Events::_DiscardButtonEvents();
     cp->ProcessButtonPress(x, y, mask);
   } else {
     Log("Could not find a component at location\n");
@@ -746,7 +749,7 @@ void Tray::DrawSpecificTray() {
     JXDrawLine(display, this->window, rootGC, this->width - 1, 0,
         this->width - 1, this->height - 1);
   } else {
-    JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_DOWN));
+    JXSetForeground(display, rootGC, Colors::lookupColor(COLOR_TRAY_UP));
     JXDrawRectangle(display, this->window, rootGC, 0, 0, this->width - 1,
         this->height - 1);
   }
@@ -771,7 +774,7 @@ void Tray::LowerTrays(void) {
   for (it = trays.begin(); it != trays.end(); ++it) {
     (*it)->autoHide &= ~THIDE_RAISED;
   }
-  _RequireRestack();
+  Events::_RequireRestack();
 }
 
 /** Layout tray components on a tray. */
@@ -910,7 +913,7 @@ void Tray::ResizeTray() {
   JXMoveResizeWindow(display, this->window, this->x, this->y, this->width,
       this->height);
 
-  _RequireTaskUpdate();
+  Events::_RequireTaskUpdate();
   this->DrawSpecificTray();
 
   if (this->hidden) {
@@ -936,14 +939,14 @@ void Tray::ClearTrayDrawable(const TrayComponent *cp) {
 /** Determine if a tray should autohide. */
 void Tray::SetAutoHideTray(TrayAutoHideType autohide, unsigned timeout_ms) {
   if (JUNLIKELY(this->autoHide != THIDE_OFF)) {
-    _UnregisterCallback(Tray::SignalTray, this);
+    Events::_UnregisterCallback(Tray::SignalTray, this);
   }
 
   this->autoHide = autohide;
   this->autoHideDelay = timeout_ms;
 
   if (autohide != THIDE_OFF) {
-    _RegisterCallback(timeout_ms, Tray::SignalTray, this);
+    Events::_RegisterCallback(timeout_ms, Tray::SignalTray, this);
   }
 }
 

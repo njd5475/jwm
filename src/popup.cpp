@@ -43,12 +43,12 @@ static void SignalPopup(const TimeType *now, int x, int y, Window w,
 void Popups::StartupPopup(void) {
 	popup.text = NULL;
 	popup.window = None;
-	_RegisterCallback(100, SignalPopup, NULL);
+	Events::_RegisterCallback(100, SignalPopup, NULL);
 }
 
 /** Shutdown popups. */
 void Popups::ShutdownPopup(void) {
-	_UnregisterCallback(SignalPopup, NULL);
+  Events::_UnregisterCallback(SignalPopup, NULL);
 	if (popup.text) {
 		Release(popup.text);
 		Release(popup.lines);

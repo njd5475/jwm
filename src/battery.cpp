@@ -76,7 +76,7 @@ Battery::Battery(int width, int height, Tray *tray, TrayComponent *parent) :
       JXCreatePixmap(display, rootWindow, width, height, rootDepth));
   this->graphics = Graphics::wrap(this->getPixmap(), rootGC, display);
 
-  _RegisterCallback(900, PollBattery, this);
+  Events::_RegisterCallback(900, PollBattery, this);
 }
 
 Battery::~Battery() {

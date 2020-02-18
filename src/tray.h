@@ -11,6 +11,7 @@
 #define TRAY_H
 
 #include <vector>
+#include "menu.h"
 #include "hint.h"
 #include "timing.h"
 

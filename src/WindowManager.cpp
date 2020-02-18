@@ -137,7 +137,7 @@ void WindowManager::Startup(void) {
 	Hints::ReadCurrentDesktop();
 	JXFlush(display);
 
-	_RequireRestack();
+	Events::_RequireRestack();
 
 	/* Allow clients to do their thing. */
 	JXSync(display, True);
@@ -199,8 +199,7 @@ void WindowManager::Shutdown(void) {
 	Screens::ShutdownScreens();
 	Setting::ShutdownSettings();
 
-	Commands::ShutdownCommands();
-
+  Commands::ShutdownCommands();
 }
 
 /** Clean up memory.
@@ -430,8 +429,8 @@ void WindowManager::EventLoop(void) {
 
 	/* Loop processing events until it's time to exit. */
 	while (JLIKELY(!shouldExit)) {
-		if (JLIKELY(_WaitForEvent(&event))) {
-			_ProcessEvent(&event);
+		if (JLIKELY(Events::_WaitForEvent(&event))) {
+		  Events::_ProcessEvent(&event);
 		}
 	}
 
@@ -449,8 +448,8 @@ void WindowManager::EventLoop(void) {
 				}
 			}
 		}
-		if (_WaitForEvent(&event)) {
-			_ProcessEvent(&event);
+		if (Events::_WaitForEvent(&event)) {
+		  Events::_ProcessEvent(&event);
 		}
 	}
 

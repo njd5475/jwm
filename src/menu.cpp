@@ -179,9 +179,9 @@ char Menus::ShowMenu(Menu *menu, RunMenuCommandType runner, int x, int y, char k
 		return 0;
 	}
 
-	_RegisterCallback(settings.popupDelay, MenuCallback, menu);
+	Events::_RegisterCallback(settings.popupDelay, MenuCallback, menu);
 	ShowSubmenu(menu, NULL, runner, x, y, keyboard);
-	_UnregisterCallback(MenuCallback, menu);
+	Events::_UnregisterCallback(MenuCallback, menu);
 	UnpatchMenu(menu);
 
 	JXUngrabKeyboard(display, CurrentTime);
@@ -342,7 +342,7 @@ char Menus::MenuLoop(Menu *menu, RunMenuCommandType runner) {
 
 	for (;;) {
 
-		_WaitForEvent(&event);
+	  Events::_WaitForEvent(&event);
 
 		switch (event.type) {
 		case Expose:
@@ -582,7 +582,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu, RunMenuCommandType runner, XEv
 	if (event->type == MotionNotify) {
 
 		Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root, event->xmotion.window);
-		_DiscardMotionEvents(event, menu->window);
+		Events::_DiscardMotionEvents(event, menu->window);
 
 		x = event->xmotion.x_root - menu->x;
 		y = event->xmotion.y_root - menu->y;

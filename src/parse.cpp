@@ -1230,7 +1230,8 @@ void ParsePager(const TokenNode *tp, Tray *tray) {
 	if (temp && !strcmp(temp, TRUE_VALUE)) {
 		labeled = 1;
 	}
-	tray->AddTrayComponent(new PagerType(labeled, tray, tray->getLastComponent()));
+	PagerType *pager = PagerType::CreatePager(labeled, tray, tray->getLastComponent());
+	tray->AddTrayComponent(pager);
 
 }
 

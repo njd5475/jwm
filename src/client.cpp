@@ -75,8 +75,8 @@ void ClientNode::StartupClients(void) {
 
   LoadFocus();
 
-  _RequireTaskUpdate();
-  _RequirePagerUpdate();
+  Events::_RequireTaskUpdate();
+  Events::_RequirePagerUpdate();
 
   const unsigned titleHeight = Border::GetTitleHeight();
   int count;
@@ -236,7 +236,7 @@ ClientNode::~ClientNode() {
   }
 
   if (this->isUrgent()) {
-    _UnregisterCallback(SignalUrgent, this);
+    Events::_UnregisterCallback(SignalUrgent, this);
   }
 
   /* Make sure this client isn't active */
@@ -248,7 +248,7 @@ ClientNode::~ClientNode() {
     /* Must be the last client. */
     Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, None);
     activeClient = NULL;
-    JXSetInputFocus(display, rootWindow, RevertToParent, eventTime);
+    JXSetInputFocus(display, rootWindow, RevertToParent, Events::eventTime);
 
   }
 
@@ -274,6 +274,11 @@ ClientNode::~ClientNode() {
     JXRemoveFromSaveSet(display, this->window);
   }
 
+  int res = JXKillClient(display, this->window);
+  if(res) {
+    Logger::Log("Error: Could not kill client");
+  }
+
   /* Destroy the parent */
   if (this->parent) {
     JXDestroyWindow(display, this->parent);
@@ -284,10 +289,6 @@ ClientNode::~ClientNode() {
   }
   if (this->className) {
     JXFree(this->className);
-  }
-
-  if (this->window != window) {
-
   }
 
   TaskBar::RemoveClientFromTaskBar(this);
@@ -301,7 +302,7 @@ ClientNode::~ClientNode() {
 
   Icons::DestroyIcon(this->getIcon());
 
-  _RequireRestack();
+  Events::_RequireRestack();
 
   if (this->name) {
     delete[] this->name;
@@ -435,7 +436,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
   }
 
   if (this->isUrgent()) {
-    _RegisterCallback(URGENCY_DELAY, SignalUrgent, this);
+    Events::_RegisterCallback(URGENCY_DELAY, SignalUrgent, this);
   }
 
   /* Update task bars. */
@@ -470,8 +471,8 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 /** Minimize a client window and all of its transients. */
 void ClientNode::MinimizeClient(char lower) {
   this->MinimizeTransients(lower);
-  _RequireRestack();
-  _RequireTaskUpdate();
+  Events::_RequireRestack();
+  Events::_RequireTaskUpdate();
 }
 
 /** Minimize all transients as well as the specified client. */
@@ -560,7 +561,7 @@ void ClientNode::ShadeClient() {
 
   Hints::WriteState(this);
   Border::ResetBorder(this);
-  _RequirePagerUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -579,7 +580,7 @@ void ClientNode::UnshadeClient() {
   Hints::WriteState(this);
   Border::ResetBorder(this);
   RefocusClient();
-  _RequirePagerUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -609,8 +610,8 @@ void ClientNode::sendToBackground() {
   this->setNoSDesktop();
 
   Hints::WriteState(this);
-  _RequireTaskUpdate();
-  _RequirePagerUpdate();
+  Events::_RequireTaskUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -664,8 +665,8 @@ void ClientNode::RestoreClient(char raise) {
     DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(this->getDesktop());
   }
   this->RestoreTransients(raise);
-  _RequireRestack();
-  _RequireTaskUpdate();
+  Events::_RequireRestack();
+  Events::_RequireTaskUpdate();
 }
 
 /** Update window state information. */
@@ -678,11 +679,11 @@ void ClientNode::_UpdateState() {
 
   /* Read the state (and new layer). */
   if (this->isUrgent()) {
-    _UnregisterCallback(ClientNode::SignalUrgent, this);
+    Events::_UnregisterCallback(ClientNode::SignalUrgent, this);
   }
   Hints::ReadWindowState(this, this->getWindow(), alreadyMapped);
   if (this->isUrgent()) {
-    _RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, this);
+    Events::_RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, this);
   }
 
   /* We don't handle mapping the window, so restore its mapped state. */
@@ -754,7 +755,7 @@ void ClientNode::SetClientLayer(unsigned int layer) {
     }
 
     ClientList::ChangeLayer(this, layer);
-    _RequireRestack();
+    Events::_RequireRestack();
   }
 }
 
@@ -836,8 +837,8 @@ void ClientNode::SetClientDesktop(unsigned int desktop) {
       Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, tp->getDesktop());
 
     }
-    _RequirePagerUpdate();
-    _RequireTaskUpdate();
+    Events::_RequirePagerUpdate();
+    Events::_RequireTaskUpdate();
   }
 
 }
@@ -920,7 +921,7 @@ void ClientNode::MaximizeClient(MaxFlags flags) {
   Border::ResetBorder(this);
   Border::DrawBorder(this);
   this->SendConfigureEvent();
-  _RequirePagerUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -1220,7 +1221,7 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
 
   Hints::WriteState(this);
   this->SendConfigureEvent();
-  _RequireRestack();
+  Events::_RequireRestack();
 
 }
 
@@ -1521,8 +1522,8 @@ void ClientNode::keyboardFocus() {
     }
 
     Border::DrawBorder(this);
-    _RequirePagerUpdate();
-    _RequireTaskUpdate();
+    Events::_RequirePagerUpdate();
+    Events::_RequireTaskUpdate();
   }
 
   if (this->isMapped()) {
@@ -1530,13 +1531,13 @@ void ClientNode::keyboardFocus() {
     Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, this->window);
     Hints::WriteNetState(this);
     if (this->canFocus()) {
-      JXSetInputFocus(display, this->window, RevertToParent, eventTime);
+      JXSetInputFocus(display, this->window, RevertToParent, Events::eventTime);
     }
     if (this->shouldTakeFocus()) {
       SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_TAKE_FOCUS);
     }
   } else {
-    JXSetInputFocus(display, rootWindow, RevertToParent, eventTime);
+    JXSetInputFocus(display, rootWindow, RevertToParent, Events::eventTime);
   }
 
 }
@@ -1577,8 +1578,8 @@ void ClientNode::KillClient() {
 
 /** Place transients on top of the owner. */
 void ClientNode::RestackTransients() {
-  ClientNode *tp;
-  unsigned int layer;
+//  ClientNode *tp;
+//  unsigned int layer;
 
   /* TODO: Place any transient windows on top of the owner */
 //	for (layer = 0; layer < LAYER_COUNT; layer++) {
@@ -1617,7 +1618,7 @@ void ClientNode::RaiseClient() {
   ClientList::BringToTopOfLayer(this);
 
   this->RestackTransients();
-  _RequireRestack();
+  Events::_RequireRestack();
 
 }
 
@@ -1651,7 +1652,7 @@ void ClientNode::RestackClient(Window above, int detail) {
   }
 
   this->RestackTransients();
-  _RequireRestack();
+  Events::_RequireRestack();
 
 }
 
@@ -1733,7 +1734,7 @@ void ClientNode::RestackClients(void) {
 
   ReleaseStack(stack);
   TaskBar::UpdateNetClientList();
-  _RequirePagerUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -1749,7 +1750,7 @@ void ClientNode::SendClientMessage(Window w, AtomType type, AtomType message) {
   event.xclient.message_type = Hints::atoms[type];
   event.xclient.format = 32;
   event.xclient.data.l[0] = Hints::atoms[message];
-  event.xclient.data.l[1] = eventTime;
+  event.xclient.data.l[1] = Events::eventTime;
 
   status = JXSendEvent(display, w, False, 0, &event);
   if (JUNLIKELY(status == False)) {
@@ -2026,8 +2027,8 @@ void ClientNode::SignalUrgent(const TimeType *now, int x, int y, Window w,
     np->setFlash();
   }
   Border::DrawBorder(np);
-  _RequireTaskUpdate();
-  _RequirePagerUpdate();
+  Events::_RequireTaskUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -2043,7 +2044,7 @@ void ClientNode::UnmapClient() {
     /* Discard the unmap event so we don't process it later. */
     JXSync(display, False);
     if (JXCheckTypedWindowEvent(display, this->getWindow(), UnmapNotify, &e)) {
-      _UpdateTime(&e);
+      Events::_UpdateTime(&e);
     }
   }
 }
@@ -2295,7 +2296,7 @@ void ClientNode::DoSnapBorder() {
 
     /* Check client windows. */
     std::vector<ClientNode*> clients = ClientList::GetList();
-    for (int i = 0; i < clients.size(); ++i) {
+    for (unsigned int i = 0; i < clients.size(); ++i) {
       tp = clients[i];
       if (tp == this || !ShouldSnap(tp)) {
         continue;
@@ -3110,7 +3111,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
 
   for (;;) {
 
-    _WaitForEvent(&event);
+    Events::_WaitForEvent(&event);
 
     if (shouldStopResize) {
       this->controller = NULL;
@@ -3127,7 +3128,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
     case MotionNotify:
 
       Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
-      _DiscardMotionEvents(&event, this->window);
+      Events::_DiscardMotionEvents(&event, this->window);
 
       this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx, starty, oldx, oldy, oldw, oldh);
 
@@ -3153,7 +3154,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
           this->SendConfigureEvent();
         }
 
-        _RequirePagerUpdate();
+        Events::_RequirePagerUpdate();
 
       }
 
@@ -3233,11 +3234,11 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
     startx = this->x + this->width / 2;
   }
   Cursors::MoveMouse(rootWindow, startx, starty);
-  _DiscardMotionEvents(&event, this->window);
+  Events::_DiscardMotionEvents(&event, this->window);
 
   for (;;) {
 
-    _WaitForEvent(&event);
+    Events::_WaitForEvent(&event);
 
     if (shouldStopResize) {
       this->controller = NULL;
@@ -3249,7 +3250,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
       int deltay = 0;
       ActionType action;
 
-      _DiscardKeyEvents(&event, this->window);
+      Events::_DiscardKeyEvents(&event, this->window);
       action = Binding::GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
       switch (action.action) {
       case UP:
@@ -3297,7 +3298,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
     } else if (event.type == MotionNotify) {
 
       Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
-      _DiscardMotionEvents(&event, this->window);
+      Events::_DiscardMotionEvents(&event, this->window);
 
       this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx, starty, oldx, oldy, oldw, oldh);
 
@@ -3327,7 +3328,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
         this->SendConfigureEvent();
       }
 
-      _RequirePagerUpdate();
+      Events::_RequirePagerUpdate();
 
     }
 
@@ -3421,7 +3422,7 @@ void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
   }
 
   /* Redraw the pager. */
-  _RequirePagerUpdate();
+  Events::_RequirePagerUpdate();
 
 }
 
@@ -3447,7 +3448,7 @@ char ClientNode::MoveClient(int startx, int starty) {
     return 0;
   }
 
-  _RegisterCallback(0, SignalMove, NULL);
+  Events::_RegisterCallback(0, SignalMove, NULL);
   this->controller = MoveController;
   shouldStopMove = 0;
 
@@ -3468,12 +3469,12 @@ char ClientNode::MoveClient(int startx, int starty) {
   doMove = 0;
   for (;;) {
 
-    _WaitForEvent(&event);
+    Events::_WaitForEvent(&event);
 
     if (shouldStopMove) {
       this->controller = NULL;
       Cursors::SetDefaultCursor(this->parent);
-      _UnregisterCallback(SignalMove, NULL);
+      Events::_UnregisterCallback(SignalMove, NULL);
       return doMove;
     }
 
@@ -3486,7 +3487,7 @@ char ClientNode::MoveClient(int startx, int starty) {
       break;
     case MotionNotify:
 
-      _DiscardMotionEvents(&event, this->getWindow());
+      Events::_DiscardMotionEvents(&event, this->getWindow());
 
       this->x = event.xmotion.x_root - startx;
       this->y = event.xmotion.y_root - starty;
@@ -3603,7 +3604,7 @@ char ClientNode::MoveClient(int startx, int starty) {
           this->SendConfigureEvent();
         }
         UpdateMoveWindow(this);
-        _RequirePagerUpdate();
+        Events::_RequirePagerUpdate();
       }
 
       break;
@@ -3647,7 +3648,7 @@ char ClientNode::MoveClientKeyboard() {
   oldx = this->getX();
   oldy = this->getY();
 
-  _RegisterCallback(0, SignalMove, NULL);
+  Events::_RegisterCallback(0, SignalMove, NULL);
   this->controller = MoveController;
   shouldStopMove = 0;
 
@@ -3655,7 +3656,7 @@ char ClientNode::MoveClientKeyboard() {
   UpdateMoveWindow(this);
 
   Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
-  _DiscardMotionEvents(&event, this->window);
+  Events::_DiscardMotionEvents(&event, this->window);
 
   if (this->isShaded()) {
     height = 0;
@@ -3666,12 +3667,12 @@ char ClientNode::MoveClientKeyboard() {
 
   for (;;) {
 
-    _WaitForEvent(&event);
+    Events::_WaitForEvent(&event);
 
     if (shouldStopMove) {
       this->controller = NULL;
       Cursors::SetDefaultCursor(this->parent);
-      _UnregisterCallback(SignalMove, NULL);
+      Events::_UnregisterCallback(SignalMove, NULL);
       return 1;
     }
 
@@ -3680,7 +3681,7 @@ char ClientNode::MoveClientKeyboard() {
     if (event.type == KeyPress) {
       ActionType action;
 
-      _DiscardKeyEvents(&event, this->window);
+      Events::_DiscardKeyEvents(&event, this->window);
       action = Binding::GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
       switch (action.action) {
       case UP:
@@ -3709,13 +3710,13 @@ char ClientNode::MoveClientKeyboard() {
       }
 
       Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
-      _DiscardMotionEvents(&event, this->window);
+      Events::_DiscardMotionEvents(&event, this->window);
 
       moved = 1;
 
     } else if (event.type == MotionNotify) {
 
-      _DiscardMotionEvents(&event, this->window);
+      Events::_DiscardMotionEvents(&event, this->window);
 
       this->x = event.xmotion.x;
       this->y = event.xmotion.y;
@@ -3739,7 +3740,7 @@ char ClientNode::MoveClientKeyboard() {
       }
 
       UpdateMoveWindow(this);
-      _RequirePagerUpdate();
+      Events::_RequirePagerUpdate();
 
     }
 
@@ -3758,7 +3759,7 @@ void ClientNode::StopMove(int doMove, int oldx, int oldy) {
   this->controller = NULL;
 
   Cursors::SetDefaultCursor(this->parent);
-  _UnregisterCallback(SignalMove, NULL);
+  Events::_UnregisterCallback(SignalMove, NULL);
 
   if (!doMove) {
     this->x = oldx;

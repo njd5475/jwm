@@ -39,7 +39,11 @@ void Commands::ShutdownCommands(void) {
   }
 
   for (auto pid : pids) {
-    kill(pid, SIGKILL);
+    int ret = kill(pid, SIGKILL);
+    char buf[80];
+    sprintf(buf, "\nKilling pid=%d returned=%d\n", pid, ret);
+    Logger::Log(buf);
+
   }
   pids.clear();
 }
@@ -118,6 +122,9 @@ void Commands::RunCommand(const char *command) {
     exit(EXIT_SUCCESS);
   } else if (pid != -1) {
     //store pid
+    char buf[80];
+    sprintf(buf, "\nLaunched pid=%d\n", pid);
+    Logger::Log(buf);
     pids.push_back(pid);
   } else {
     //error
