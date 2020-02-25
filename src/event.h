@@ -12,6 +12,8 @@
 
 #include <vector>
 #include "timing.h"
+#include "KeyEventHandler.h"
+#include "AbstractAction.h"
 
 typedef unsigned char MouseContextType;
 
@@ -31,6 +33,8 @@ typedef struct CallbackNode {
 
 class Events {
 public:
+
+  static void Bind(KeyEventHandler *handler, Actions action);
 
   /** Last event time. */
   static Time eventTime;

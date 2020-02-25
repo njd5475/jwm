@@ -465,6 +465,10 @@ void Events::_ToggleMaximized(ClientNode *np, MaxFlags flags) {
   }
 }
 
+void Events::Bind(KeyEventHandler *handler, Actions action) {
+  Logger::Log("Events::Bind not implemented");
+}
+
 /** Process a key or mouse binding. */
 void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     unsigned state, int code, int x, int y) {

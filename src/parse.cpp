@@ -31,6 +31,8 @@
 #include "border.h"
 #include "binding.h"
 #include "DesktopEnvironment.h"
+#include "Token.h"
+#include "logger.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -98,6 +100,7 @@ static const char *TRUE_VALUE = "true";
 
 static const char *const CONFIG_FILES[] = { "$XDG_CONFIG_HOME/jwm/jwmrc", "$HOME/.config/jwm/jwmrc", "$HOME/.jwmrc",
 SYSTEM_CONFIG };
+static const char *const NEW_CONFIG_FILES[] = { "$XDG_CONFIG_HOME/nwm/nwmrc", "$HOME/.config/nwm/nwm", "$HOME/.nwmrc" };
 static const unsigned CONFIG_FILE_COUNT = ARRAY_LENGTH(CONFIG_FILES);
 
 static char ParseFile(const char *fileName, int depth);
@@ -194,6 +197,15 @@ void Parser::ParseConfig(const char *fileName) {
 		}
 	}
 	Binding::ValidateKeys();
+
+	static const unsigned int NEW_CONFIG_FILE_COUNT = ARRAY_LENGTH(NEW_CONFIG_FILES);
+	for(unsigned i = 0; i < NEW_CONFIG_FILE_COUNT; ++i) {
+	  const char *configFile = NEW_CONFIG_FILES[i];
+	  JObject *obj = NicksConfigParser::parse(configFile);
+	  if(obj) {
+	    vLog("Could not parse config file %s\n", configFile);
+	  }
+	}
 }
 
 /**

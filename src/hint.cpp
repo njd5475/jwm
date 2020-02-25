@@ -465,8 +465,8 @@ void Hints::ReadWindowState(ClientNode *result, Window win, char alreadyMapped) 
 	result->setDesktop(currentDesktop);
 	result->setOpacity(UINT_MAX);
 
-	Hints::ReadWMProtocols(win, result);
-	Hints::ReadWMHints(win, result, alreadyMapped);
+	ReadWMProtocols(win, result);
+	ReadWMHints(win, result, alreadyMapped);
 	ReadWMState(win, result);
 	ReadMotifHints(win, result);
 	unsigned int readOpacity;
@@ -622,10 +622,11 @@ void Hints::ReadWMProtocols(Window w, ClientNode *state) {
 
 	state->setNoTakeFocus();
 	state->setNoDelete();
-	status = JXGetWindowProperty(display, w, atoms[ATOM_WM_PROTOCOLS], 0, 32, False, XA_ATOM, &realType, &realFormat,
-			&count, &extra, &temp);
+	status = JXGetWindowProperty(display, w, atoms[ATOM_WM_PROTOCOLS],
+	    0, 32, False, XA_ATOM,
+	    &realType, &realFormat, &count, &extra, &temp);
 	p = (Atom*) temp;
-	if (status != Success || realFormat == 0 || !p) {
+	if (JUNLIKELY(status != Success || realFormat == 0 || !p)) {
 		return;
 	}
 
@@ -652,10 +653,10 @@ bool Hints::IsDeleteAtomSet(Window w) {
 
   Assert(w != None);
 
-  status = JXGetWindowProperty(display, w, atoms[ATOM_WM_PROTOCOLS], 0, 32, False, XA_ATOM, &realType, &realFormat,
-      &count, &extra, &temp);
+  status = JXGetWindowProperty(display, w, atoms[ATOM_WM_PROTOCOLS], 0, 2, False, XA_ATOM, &realType, &realFormat,
+      &count, &extra, (unsigned char** )&temp);
   p = (Atom*) temp;
-  if (status != Success || realFormat == 0 || !p) {
+  if (JUNLIKELY(status != Success || realFormat == 0 || !p)) {
     return false;
   }
 

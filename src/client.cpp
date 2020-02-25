@@ -277,11 +277,18 @@ ClientNode::~ClientNode() {
   int res = JXKillClient(display, this->window);
   if(res) {
     Logger::Log("Error: Could not kill client");
+
   }
 
   /* Destroy the parent */
   if (this->parent) {
     JXDestroyWindow(display, this->parent);
+    this->parent = None;
+  }
+
+  if(this->window) {
+    JXDestroyWindow(display, this->window);
+    this->window = 0;
   }
 
   if (this->instanceName) {

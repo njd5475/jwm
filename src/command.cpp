@@ -39,7 +39,7 @@ void Commands::ShutdownCommands(void) {
   }
 
   for (auto pid : pids) {
-    int ret = kill(pid, SIGKILL);
+    int ret = kill(pid, SIGTERM);
     char buf[80];
     sprintf(buf, "\nKilling pid=%d returned=%d\n", pid, ret);
     Logger::Log(buf);

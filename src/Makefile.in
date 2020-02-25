@@ -15,7 +15,8 @@ OBJECTS = action.o background.o binding.o border.o button.o client.o \
    timing.o tray.o traybutton.o winmenu.o battery.o AbstractAction.o \
    DesktopEnvironment.o DockComponent.o DesktopComponent.o \
    BackgroundComponent.o Component.o logger.o WindowManager.o \
-   LogWindow.o Graphics.o TrayComponent.o Flex.o
+   LogWindow.o Graphics.o TrayComponent.o Flex.o KeyEventHandler.o Token.o \
+   json.o fnv.o
 
 EXE = jwm
 
