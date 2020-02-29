@@ -166,7 +166,6 @@ static void ParseActive(const TokenNode *tp, ColorName fg, ColorName bg1,
     ColorName bg2, ColorName up, ColorName down);
 static void ParsePagerStyle(const TokenNode *tp);
 static void ParseClockStyle(const TokenNode *tp);
-static void ParseMenuStyle(const TokenNode *tp);
 static void ParsePopupStyle(const TokenNode *tp);
 
 /* Feel. */
