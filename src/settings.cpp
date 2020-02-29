@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "misc.h"
 
+//TODO: Encapsulate this object.
 Settings settings;
 
 static const MouseContextType DEFAULT_TITLE_BAR_LAYOUT[TBC_COUNT] = {

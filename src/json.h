@@ -79,6 +79,7 @@ JObject* jsonDeleteKey(JObject *obj, const char *key);
 JArray* jsonAddArrayItem(JArray *arr, JArrayItem *item);
 JArray* jsonAddArrayItemObject(JArray *arr, JObject *obj);
 
+
 #define NO_DUP 0
 #define DUP 1
 
@@ -95,13 +96,17 @@ float jsonFloat(const JObject *obj, const char *keys);
 double jsonDouble(const JObject *obj, const char *keys);
 char* jsonString(const JObject *obj, const char *keys);
 char jsonBool(const JObject *obj, const char *keys);
-void** jsonArray(const JObject *obj, const char *keys);
+JArray* jsonArray(const JObject *obj, const char *keys);
 char* jsonBoolArray(const JObject *obj, const char *keys);
 int** jsonIntArray(const JObject *obj, const char *keys);
 float** jsonFoatArray(const JObject *obj, const char *keys);
 double** jsonDoubleArray(const JObject *obj, const char *keys);
 char** jsonStringArray(const JObject *obj, const char *keys);
 JObject* jsonObject(const JObject *obj, const char *keys);
+
+JArray *jsonArray(JItemValue *value);
+JArrayItem **jsonArrayItemList(JArray *array);
+JObject **jsonArrayKeyFilter(JArray* array, const char* key, unsigned *size);
 
 void jsonPrintObject(const FILE *io, const JObject *obj);
 void jsonPrintEntry(const FILE *io, unsigned char type, JItemValue *value,

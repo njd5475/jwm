@@ -84,7 +84,7 @@ private:
   unsigned _indentLevel;
   unsigned _escapeSequenceCount;
 public:
-  static JObject* parse(const char *file);
+  static JItemValue parse(const char *file);
 private:
   static std::map<const char*, NicksConfigParser> parsers;
 

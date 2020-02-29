@@ -22,6 +22,7 @@ typedef enum {
 	FONT_CLOCK,
 	FONT_TASKLIST,
 	FONT_TRAYBUTTON,
+	FONT_NOOP,
 	FONT_COUNT
 } FontType;
 

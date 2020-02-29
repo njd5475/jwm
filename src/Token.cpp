@@ -200,18 +200,18 @@ NicksConfigParser::~NicksConfigParser() {
 
 }
 
-JObject* NicksConfigParser::parse(const char *wildcardname) {
+JItemValue NicksConfigParser::parse(const char *wildcardname) {
 
   Tokenizer tokenizer = Tokenizer::create(wildcardname);
   if (!tokenizer.isValid()) {
-    return NULL;
+    return JItemValue { 0 };
   }
   NicksConfigParser parser(tokenizer);
 
   vLog("How big is a token class %d\n", sizeof(Token));
   JItemValue root = parser.rootObject();
   jsonPrintEntry(stdout, VAL_MIXED_ARRAY, &root);
-
+  return root;
 }
 
 JItemValue NicksConfigParser::rootObject() {

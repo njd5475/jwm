@@ -481,7 +481,13 @@ char* jsonBoolArray(const JObject *obj, const char* keys) {
   return NULL;
 }
 
-void** jsonArray(const JObject* obj, const char* keys) {
+JArray* jsonArray(const JObject* obj, const char* keys) {
+  short type;
+  JItemValue value = jsonGet(obj, keys, &type);
+  if(value.array_val && (type == VAL_MIXED_ARRAY || type == VAL_OBJ_ARRAY || type == VAL_INT_ARRAY ||
+      type == VAL_DOUBLE_ARRAY || type == VAL_FLOAT_ARRAY || type == VAL_BOOL_ARRAY)) {
+    return value.array_val;
+  }
   return NULL;
 }
 
@@ -499,6 +505,52 @@ double** jsonDoubleArray(const JObject* obj, const char* keys) {
 
 char** jsonStringArray(const JObject* obj, const char* keys) {
   return NULL;
+}
+
+JArray *jsonArray(JItemValue *value) {
+  return value->array_val;
+}
+
+JArrayItem **jsonArrayItemList(JArray *array) {
+  return array->_internal.vItems;
+}
+
+JObject **jsonArrayKeyFilter(JArray* array, const char *key, unsigned *size) {
+  JArrayItem **items = jsonArrayItemList(array);
+  JObject** toRet = NULL;
+  JObject* found[256];
+  memset(&found, 0, sizeof(JObject*)*256);
+  int count = 0;
+  unsigned totalFound = 0;
+  for (int i = 0; i < array->count; ++i) {
+    JArrayItem *item = items[i];
+    if (item->type == VAL_OBJ) {
+      JObject *toEval = item->value.object_val;
+      if(jsonObject(toEval, key)) {
+        found[count] = toEval;
+        ++count;
+        if(count >= 256) {
+          if(!toRet) {
+            delete[] toRet;
+          }
+          toRet = (JObject**)malloc(sizeof(JObject*)*count);
+          memcpy(toRet, &found, sizeof(JObject*));
+          memset(&found, 0, sizeof(JObject*)*count);
+          totalFound += count;
+          count = 0;
+        }
+      }
+    }
+  }
+  if(!toRet) {
+    delete[] toRet;
+  }
+  toRet = (JObject**)malloc(sizeof(JObject*)*count);
+  memcpy(toRet, &found, sizeof(JObject*));
+  memset(&found, 0, sizeof(JObject*)*count);
+  totalFound += count;
+  *size = count;
+  return toRet;
 }
 
 JObject* jsonObject(const JObject* obj, const char* keys) {
