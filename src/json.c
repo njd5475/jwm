@@ -507,10 +507,6 @@ char** jsonStringArray(const JObject* obj, const char* keys) {
   return NULL;
 }
 
-JArray *jsonArray(JItemValue *value) {
-  return value->array_val;
-}
-
 JArrayItem **jsonArrayItemList(JArray *array) {
   return array->_internal.vItems;
 }

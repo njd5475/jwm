@@ -135,6 +135,7 @@ JWM_PKGCONFIG([use_pkgconfig_freetype2], [freetype2])
 JWM_PKGCONFIG([use_pkgconfig_xft], [xft])
 JWM_PKGCONFIG([use_pkgconfig_xrender], [xrender])
 JWM_PKGCONFIG([use_pkgconfig_fribidi], [fribidi])
+JWM_PKGCONFIG([use_pkgconfig_inotifytools], [inotifytools])
 
 ############################################################################
 # Check if confirm dialogs should be used.
@@ -490,7 +491,7 @@ fi
 # Check if support for Xinerama was requested and available.
 ############################################################################
 AC_ARG_ENABLE(xinerama,
-   AC_HELP_STRING([--disable-xinerama], [disable Xinerama support]) )
+   AC_HELP_STRING ([--disable-xinerama], [disable Xinerama support]) )
 if test "$enable_xinerama" != "no"; then
    AC_CHECK_LIB(Xinerama, XineramaQueryExtension,
       [ LDFLAGS="$LDFLAGS -lXinerama"
@@ -498,6 +499,21 @@ if test "$enable_xinerama" != "no"; then
         AC_DEFINE(USE_XINERAMA, 1, [Define to enable Xinerama]) ],
       [ enable_xinerama="no"
         AC_MSG_WARN([unable to use Xinerama]) ])
+fi
+
+############################################################################
+# Check if support for inotifytools was requested and available.
+############################################################################
+AC_ARG_ENABLE(inotify,
+    AS_HELP_STRING([--disable-inotifytools], [disable Linux inotifytools kernel support]) )
+
+if test "$enable_inotifytools" != "no"; then
+	AC_CHECK_LIB(inotifytools, inotifytools_watch_file,
+	 [ LDFLAGS="$LDFLAGS -linotifytools"
+	   enable_inotifytools="yes"
+	   AC_DEFINE(USE_INOTIFYTOOLS, 1, [Define to enable inotifytools]) ],
+	 [ enable_inotifytools="no"
+	   AC_MSG_WARN([unable to use Inotify]) ])
 fi
 
 ############################################################################
@@ -599,20 +615,20 @@ echo "Link flags:    $LDFLAGS"
 echo
 echo "Options"
 echo
-echo "    Confirm:  $enable_confirm"
-echo "    Icon:     $enable_icons"
-echo "    Cairo:    $enable_cairo"
-echo "    RSVG:     $enable_rsvg"
-echo "    PNG:      $enable_png"
-echo "    JPEG:     $enable_jpeg"
-echo "    XBM:      $enable_xbm"
-echo "    XPM:      $enable_xpm"
-echo "    XFT:      $enable_xft"
-echo "    XRender:  $enable_xrender"
-echo "    FriBidi:  $enable_fribidi"
-echo "    Shape:    $enable_shape"
-echo "    Xmu:      $enable_xmu"
-echo "    Xinerama: $enable_xinerama"
-echo "    Debug:    $enable_debug"
-echo
-
+echo "    Confirm:  		$enable_confirm"
+echo "    Icon:     		$enable_icons"
+echo "    Cairo:    		$enable_cairo"
+echo "    RSVG:     		$enable_rsvg"
+echo "    PNG:      		$enable_png"
+echo "    JPEG:     		$enable_jpeg"
+echo "    XBM:      		$enable_xbm"
+echo "    XPM:      		$enable_xpm"
+echo "    XFT:      		$enable_xft"
+echo "    XRender:  		$enable_xrender"
+echo "    FriBidi:  		$enable_fribidi"
+echo "    Shape:    		$enable_shape"
+echo "    Xmu:      		$enable_xmu"
+echo "    Xinerama: 		$enable_xinerama"
+echo "    inotifytools: 	$enable_inotifytools"
+echo "    Debug:    		$enable_debug"
+echo ""

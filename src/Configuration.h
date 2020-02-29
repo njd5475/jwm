@@ -45,6 +45,7 @@ public:
       ColorName bg2, ColorName fg, ColorName up, ColorName down,
       OpacityType otype);
   static void loadStyle(JObject* object, Configuration::StyleColors colors);
+  static void loadWindowSettings(JObject* object);
 
 private:
   Configuration(JArray *configurations);

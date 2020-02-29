@@ -104,7 +104,6 @@ double** jsonDoubleArray(const JObject *obj, const char *keys);
 char** jsonStringArray(const JObject *obj, const char *keys);
 JObject* jsonObject(const JObject *obj, const char *keys);
 
-JArray *jsonArray(JItemValue *value);
 JArrayItem **jsonArrayItemList(JArray *array);
 JObject **jsonArrayKeyFilter(JArray* array, const char* key, unsigned *size);
 

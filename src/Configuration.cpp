@@ -61,15 +61,45 @@ void Configuration::loadConfig() {
             COLOR_TITLE_DOWN, ACTIVE_CLIENT, { COLOR_TITLE_ACTIVE_BG1,
               COLOR_TITLE_ACTIVE_BG2, COLOR_TITLE_ACTIVE_FG,
               COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN } });
+        Configuration::loadWindowSettings(windowStyle);
       }
     }
   }
   _loaded = true;
 }
 
-void Configuration::loadStyle(JObject *object, StyleColors colors) {
-  jsonPrintObject(stdout, object);
+void Configuration::loadWindowSettings(JObject* window) {
+  const char* align = jsonString(window, "align");
+  const char* borderWidth = jsonString(window, "width");
+  const char* titleHeight = jsonString(window, "height");
+  const char* corner = jsonString(window, "corner");
+  const char* inactiveClientOpacity = jsonString(window, "opacity");
 
+  if(borderWidth) {
+    settings.borderWidth = atoi(borderWidth);
+  }
+
+  if(titleHeight) {
+    settings.titleHeight = atoi(titleHeight);
+  }
+
+  if(corner) {
+    settings.cornerRadius = atoi(corner);
+  }
+
+  settings.titleTextAlignment = ALIGN_LEFT;
+  if(align) {
+    if(strcmp(align, "right") == 0) {
+      settings.titleTextAlignment = ALIGN_RIGHT;
+    }else if(!strcmp(align, "center") == 0) {
+      settings.titleTextAlignment = ALIGN_CENTER;
+    }else if(!strcmp(align, "left") == 0) {
+      settings.titleTextAlignment = ALIGN_LEFT;
+    }
+  }
+}
+
+void Configuration::loadStyle(JObject *object, StyleColors colors) {
   loadStyle(object, colors.font, colors.bg, colors.bg2, colors.fg, colors.up,
       colors.down, colors.opacityType);
 
@@ -94,6 +124,7 @@ void Configuration::loadStyle(JObject *object, FontType f, ColorName bg,
   const char *background = jsonString(object, "background");
   const char *opacityString = jsonString(object, "opacity");
   const char *outline = jsonString(object, "outline");
+  const char *decorations = jsonString(object, "decorations");
 
   if (font) {
     Fonts::SetFont(FONT_MENU, font);
@@ -129,6 +160,23 @@ void Configuration::loadStyle(JObject *object, FontType f, ColorName bg,
       settings.activeClientOpacity = opacity;
     } else if (otype == INACTIVE_CLIENT) {
       settings.inactiveClientOpacity = opacity;
+    }
+  }
+
+  if (decorations) {
+    DecorationsType dType = DECO_UNSET;
+    if(strcmp(decorations, "motif") == 0) {
+      dType = DECO_MOTIF;
+    }else if(strcmp(decorations, "flat") == 0) {
+      dType = DECO_FLAT;
+    }
+
+    if (otype == TRAY) {
+      settings.trayDecorations = dType;
+    } else if (otype == MENU) {
+      settings.menuDecorations = dType;
+    } else if (otype == ACTIVE_CLIENT || otype == INACTIVE_CLIENT) {
+      settings.windowDecorations = dType;
     }
   }
 }

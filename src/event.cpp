@@ -35,6 +35,11 @@
 #include "LogWindow.h"
 #include "Flex.h"
 
+#ifdef USE_INOTIFYTOOLS
+#include <inotifytools/inotify.h>
+#include <inotifytools/inotifytools.h>
+#endif
+
 #define MIN_TIME_DELTA 50
 
 Time Events::eventTime = CurrentTime;
@@ -78,6 +83,16 @@ char Events::_WaitForEvent(XEvent *event) {
       if (select(fd + 1, &fds, NULL, NULL, &timeout) <= 0) {
         _Signal();
       }
+
+
+#ifdef USE_INOTIFYTOOLS
+      inotify_event* event = inotifytools_next_event(0);
+      if(event != NULL) {
+        Log("We received an event from inotify\n");
+        Roots::Restart();
+      }
+#endif
+
       if (JUNLIKELY(shouldExit)) {
         return 0;
       }

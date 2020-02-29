@@ -90,7 +90,10 @@ Token::TYPE Token::getType() {
 }
 
 //################## Tokenizer ##########################
-
+#ifdef USE_INOTIFYTOOLS
+#include <inotifytools/inotify.h>
+#include <inotifytools/inotifytools.h>
+#endif
 Tokenizer::Tokenizer(FILE *file) :
     _file(file), _eof(false), _position(0), _lastReadCount(0), _theToken(
         Token(_charBuffer)), _nextToken(false) {
@@ -135,6 +138,20 @@ Tokenizer Tokenizer::create(const char *wildcardname) {
     fprintf(stderr, "Could not stat file '%s'\n", filename);
     return NULL;
   }
+
+#ifdef USE_INOTIFYTOOLS
+      int res = inotifytools_initialize();
+      if(!res) {
+        Log("Could not start inotifytools");
+      }
+      //setup inotify watch
+      res = inotifytools_watch_file(filename, IN_MODIFY | IN_CREATE );
+      if(!res) {
+        vLog("Could not watch file %s\n", filename);
+      }else{
+        vLog("WARNING: watching %s for changes\n", filename);
+      }
+#endif
 
   size_t bufSize = std::min(BUFFER_SIZEL, tmpStat.st_size);
 

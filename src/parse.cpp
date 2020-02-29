@@ -158,8 +158,6 @@ static void ParseGroupOption(const TokenNode *tp, struct GroupType *group,
     const char *option);
 
 /* Style. */
-static void ParseWindowStyle(const TokenNode *tp);
-static void ParseActiveWindowStyle(const TokenNode *tp);
 static void ParseTrayStyle(const TokenNode *tp, FontType font,
     ColorName baseColor);
 static void ParseActive(const TokenNode *tp, ColorName fg, ColorName bg1,
@@ -908,79 +906,6 @@ AlignmentType ParseTextAlignment(const TokenNode *tp) {
   }
 
   return ALIGN_LEFT;
-}
-
-/** Parse window style. */
-void ParseWindowStyle(const TokenNode *tp) {
-  const TokenNode *np;
-
-  ParseDecorations(tp, &settings.windowDecorations);
-  for (np = tp->subnodeHead; np; np = np->next) {
-    switch (np->type) {
-    case TOK_FONT:
-      Fonts::SetFont(FONT_BORDER, np->value);
-      settings.titleTextAlignment = ParseTextAlignment(np);
-      break;
-    case TOK_WIDTH:
-      settings.borderWidth = ParseUnsigned(np, np->value);
-      break;
-    case TOK_HEIGHT:
-      settings.titleHeight = ParseUnsigned(np, np->value);
-      break;
-    case TOK_CORNER:
-      settings.cornerRadius = ParseUnsigned(np, np->value);
-      break;
-    case TOK_ACTIVE:
-      ParseActiveWindowStyle(np);
-      break;
-    case TOK_FOREGROUND:
-      Colors::SetColor(COLOR_TITLE_FG, np->value);
-      break;
-    case TOK_BACKGROUND:
-      ParseGradient(np->value, COLOR_TITLE_BG1, COLOR_TITLE_BG2);
-      break;
-    case TOK_OUTLINE:
-      ParseGradient(np->value, COLOR_TITLE_DOWN, COLOR_TITLE_UP);
-      break;
-    case TOK_OPACITY:
-      settings.inactiveClientOpacity = ParseOpacity(tp, np->value);
-      break;
-    default:
-      InvalidTag(np, TOK_WINDOWSTYLE);
-      break;
-    }
-  }
-}
-
-/** Parse active window style information. */
-void ParseActiveWindowStyle(const TokenNode *tp) {
-
-  const TokenNode *np;
-
-  Assert(tp);
-
-  for (np = tp->subnodeHead; np; np = np->next) {
-    switch (np->type) {
-    case TOK_FOREGROUND:
-      Colors::SetColor(COLOR_TITLE_ACTIVE_FG, np->value);
-      break;
-    case TOK_BACKGROUND:
-      ParseGradient(np->value,
-      COLOR_TITLE_ACTIVE_BG1, COLOR_TITLE_ACTIVE_BG2);
-      break;
-    case TOK_OUTLINE:
-      ParseGradient(np->value, COLOR_TITLE_ACTIVE_DOWN,
-      COLOR_TITLE_ACTIVE_UP);
-      break;
-    case TOK_OPACITY:
-      settings.activeClientOpacity = ParseOpacity(np, np->value);
-      break;
-    default:
-      InvalidTag(np, TOK_ACTIVE);
-      break;
-    }
-  }
-
 }
 
 /** Parse an include. */
