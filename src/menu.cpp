@@ -337,6 +337,8 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
     x = event->xmotion.x_root - menu->getX();
     y = event->xmotion.y_root - menu->getY();
     subwindow = event->xmotion.subwindow;
+    menu->mouseEvent(x + menu->getX(), y + menu->getY(), TimeType {0});
+    menu->Draw();
 
   } else if (event->type == ButtonPress) {
 
@@ -635,7 +637,7 @@ void MenuItem::Draw(Graphics *graphics, bool active, unsigned offset,
     if (this->_parent && this->_parent->getMouseX() > -1
         && this->_parent->getMouseY() > -1) {
       int mx = _parent->getMouseX() - _parent->getX(), my = _parent->getMouseY() - _parent->getY();
-      active = my > offset && my < offset + getHeight();
+      active = my > offset && my < offset + getHeight() && mx > 0 && mx < width;
     }
 
     Log("MenuItem draw\n");
@@ -956,7 +958,9 @@ int Menu::getMouseY() const {
 void Menu::mouseEvent(int x, int y, TimeType now) {
   this->_mousex = x;
   this->_mousey = y;
-  this->_lastTime = now;
+  if(now.ms > 0) {
+    this->_lastTime = now;
+  }
 
 //TODO: Change the selected component automatically
   vLog("Menu received mouse event [%d, %d]\n", x, y);
