@@ -158,13 +158,9 @@ static void ParseGroupOption(const TokenNode *tp, struct GroupType *group,
     const char *option);
 
 /* Style. */
-static void ParseTrayStyle(const TokenNode *tp, FontType font,
-    ColorName baseColor);
 static void ParseActive(const TokenNode *tp, ColorName fg, ColorName bg1,
     ColorName bg2, ColorName up, ColorName down);
-static void ParsePagerStyle(const TokenNode *tp);
 static void ParseClockStyle(const TokenNode *tp);
-static void ParsePopupStyle(const TokenNode *tp);
 
 /* Feel. */
 static ActionType ParseAction(const char *str, const char **command);
@@ -326,12 +322,6 @@ void Parse(const TokenNode *start, int depth) {
         case TOK_MOVEMODE:
           ParseMoveMode(tp);
           break;
-        case TOK_PAGERSTYLE:
-          ParsePagerStyle(tp);
-          break;
-        case TOK_POPUPSTYLE:
-          ParsePopupStyle(tp);
-          break;
         case TOK_RESIZEMODE:
           ParseResizeMode(tp);
           break;
@@ -352,15 +342,6 @@ void Parse(const TokenNode *start, int depth) {
           break;
         case TOK_TRAY:
           ParseTray(tp);
-          break;
-        case TOK_TRAYSTYLE:
-          ParseTrayStyle(tp, FONT_TRAY, COLOR_TRAY_FG);
-          break;
-        case TOK_TASKLISTSTYLE:
-          ParseTrayStyle(tp, FONT_TASKLIST, COLOR_TASKLIST_FG);
-          break;
-        case TOK_TRAYBUTTONSTYLE:
-          ParseTrayStyle(tp, FONT_TRAYBUTTON, COLOR_TRAYBUTTON_FG);
           break;
         case TOK_CLOCKSTYLE:
           ParseClockStyle(tp);
@@ -458,15 +439,12 @@ Menu* ParseMenu(const TokenNode *start) {
 
   menu = Menus::CreateMenu();
 
-  menu->itemHeight = findOrDefault(start, HEIGHT_ATTRIBUTE, 0);
-
   value = findOrDefault(start, LABELED_ATTRIBUTE, DEFAULT_TITLE);
 
-  if (strcmp(value, TRUE_VALUE)) {
-    menu->label = NULL;
-  }
+//  if (strcmp(value, TRUE_VALUE)) {
+//    menu->_label = NULL;
+//  }
 
-  menu->items = NULL;
   ParseMenuItem(start->subnodeHead, menu, NULL);
 
   return menu;
@@ -484,19 +462,20 @@ void ParseRootMenu(const TokenNode *start) {
   onroot = findOrDefault(start, ONROOT_ATTRIBUTE, (char*) "123");
 
   value = FindAttribute(start->attributes, DYNAMIC_ATTRIBUTE);
-  menu->dynamic = CopyString(value);
-  menu->timeout_ms = ParseTimeout(start);
+//  menu->_dynamic = CopyString(value);
+//  menu->_timeout_ms = ParseTimeout(start);
 
   Roots::SetRootMenu(onroot, menu);
 }
 
 /** Insert a new menu item into a menu. */
 MenuItem* InsertMenuItem(MenuItem *last) {
-  MenuItem *item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-  if (last) {
-    last->next = item;
-  }
-  return item;
+//  MenuItem *item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
+//  if (last) {
+//    last->next = item;
+//  }
+//  return item;
+  return NULL;
 }
 
 /** Parse a menu item. */
@@ -507,112 +486,108 @@ MenuItem* ParseMenuItem(const TokenNode *start, Menu *menu, MenuItem *last) {
 
   Assert(menu);
 
-  menu->offsets = NULL;
   while (start) {
     switch (start->type) {
-    case TOK_DYNAMIC:
-
-      last = InsertMenuItem(last);
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-      last->name = CopyString(value);
-
-      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
-      last->iconName = CopyString(value);
-
-      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
-      last->tooltip = CopyString(value);
-
-      last->action.type = MA_DYNAMIC;
-      last->action.str = CopyString(start->value);
-      last->action.timeout_ms = ParseTimeout(start);
-
-      value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);
-      if (value) {
-        last->action.value = ParseUnsigned(start, value);
-      } else {
-        last->action.value = menu->itemHeight;
-      }
-
-      break;
-    case TOK_MENU:
-
-      last = InsertMenuItem(last);
-      last->type = MENU_ITEM_SUBMENU;
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-      last->name = CopyString(value);
-
-      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
-      last->iconName = CopyString(value);
-
-      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
-      last->tooltip = CopyString(value);
-
-      last->submenu = Menus::CreateMenu();
-      child = last->submenu;
-
-      value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);
-      if (value) {
-        child->itemHeight = ParseUnsigned(start, value);
-      } else {
-        child->itemHeight = menu->itemHeight;
-      }
-
-      value = FindAttribute(start->attributes, LABELED_ATTRIBUTE);
-      if (value && !strcmp(value, TRUE_VALUE)) {
-        if (last->name) {
-          child->label = CopyString(last->name);
-        } else {
-          child->label = CopyString(DEFAULT_TITLE);
-        }
-      } else {
-        child->label = NULL;
-      }
-
-      last->submenu->items = NULL;
-      ParseMenuItem(start->subnodeHead, last->submenu, NULL);
-
-      break;
-    case TOK_PROGRAM:
-
-      last = InsertMenuItem(last);
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-      if (value) {
-        last->name = CopyString(value);
-      } else if (start->value) {
-        last->name = CopyString(start->value);
-      }
-
-      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
-      last->tooltip = CopyString(value);
-
-      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
-      last->iconName = CopyString(value);
-
-      last->action.type = MA_EXECUTE;
-      last->action.str = CopyString(start->value);
-
-      break;
-    case TOK_SEPARATOR:
-
-      last = InsertMenuItem(last);
-      last->type = MENU_ITEM_SEPARATOR;
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      break;
+//    case TOK_DYNAMIC:
+//
+//      last = InsertMenuItem(last);
+//
+//      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
+//      last->name = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
+//      last->iconName = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
+//      last->tooltip = CopyString(value);
+//
+//      last->action.type = MA_DYNAMIC;
+//      last->action.str = CopyString(start->value);
+//      last->action.timeout_ms = ParseTimeout(start);
+//
+//      value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);
+//      if (value) {
+//        last->action.value = ParseUnsigned(start, value);
+//      } else {
+//        last->action.value = menu->_itemHeight;
+//      }
+//
+//      break;
+//    case TOK_MENU:
+//
+//      last = InsertMenuItem(last);
+//      last->type = MENU_ITEM_SUBMENU;
+//      if (!menu->items) {
+//        menu->items = last;
+//      }
+//
+//      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
+//      last->name = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
+//      last->iconName = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
+//      last->tooltip = CopyString(value);
+//
+//      last->submenu = Menus::CreateMenu();
+//      child = last->submenu;
+//
+//      value = FindAttribute(start->attributes, HEIGHT_ATTRIBUTE);
+//      if (value) {
+//        child->_itemHeight = ParseUnsigned(start, value);
+//      } else {
+//        child->_itemHeight = menu->_itemHeight;
+//      }
+//
+//      value = FindAttribute(start->attributes, LABELED_ATTRIBUTE);
+//      if (value && !strcmp(value, TRUE_VALUE)) {
+//        if (last->name) {
+//          child->_label = CopyString(last->name);
+//        } else {
+//          child->_label = CopyString(DEFAULT_TITLE);
+//        }
+//      } else {
+//        child->_label = NULL;
+//      }
+//
+//      last->submenu->items = NULL;
+//      ParseMenuItem(start->subnodeHead, last->submenu, NULL);
+//
+//      break;
+//    case TOK_PROGRAM:
+//
+//      last = InsertMenuItem(last);
+//      if (!menu->items) {
+//        menu->items = last;
+//      }
+//
+//      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
+//      if (value) {
+//        last->name = CopyString(value);
+//      } else if (start->value) {
+//        last->name = CopyString(start->value);
+//      }
+//
+//      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
+//      last->tooltip = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
+//      last->iconName = CopyString(value);
+//
+//      last->action.type = MA_EXECUTE;
+//      last->action.str = CopyString(start->value);
+//
+//      break;
+//    case TOK_SEPARATOR:
+//
+//      last = InsertMenuItem(last);
+//      last->type = MENU_ITEM_SEPARATOR;
+//      if (!menu->items) {
+//        menu->items = last;
+//      }
+//
+//      break;
     case TOK_INCLUDE:
       last = ParseMenuInclude(start, menu, last);
       break;
@@ -627,107 +602,107 @@ MenuItem* ParseMenuItem(const TokenNode *start, Menu *menu, MenuItem *last) {
     case TOK_CLOSE:
     case TOK_SENDTO:
 
-      last = InsertMenuItem(last);
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-      if (!value) {
-        value = GetTokenName(start);
-      }
-      last->name = CopyString(value);
-
-      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
-      last->tooltip = CopyString(value);
-
-      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
-      last->iconName = CopyString(value);
-
-      switch (start->type) {
-      case TOK_DESKTOPS:
-        last->action.type = MA_DESKTOP_MENU;
-        break;
-      case TOK_STICK:
-        last->action.type = MA_STICK;
-        break;
-      case TOK_MAXIMIZE:
-        last->action.type = MA_MAXIMIZE;
-        break;
-      case TOK_MINIMIZE:
-        last->action.type = MA_MINIMIZE;
-        break;
-      case TOK_SHADE:
-        last->action.type = MA_SHADE;
-        break;
-      case TOK_MOVE:
-        last->action.type = MA_MOVE;
-        break;
-      case TOK_RESIZE:
-        last->action.type = MA_RESIZE;
-        break;
-      case TOK_KILL:
-        last->action.type = MA_KILL;
-        break;
-      case TOK_CLOSE:
-        last->action.type = MA_CLOSE;
-        break;
-      case TOK_SENDTO:
-        last->action.type = MA_SENDTO_MENU;
-        break;
-      default:
-        break;
-      }
+//      last = InsertMenuItem(last);
+//      if (!menu->items) {
+//        menu->items = last;
+//      }
+//
+//      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
+//      if (!value) {
+//        value = GetTokenName(start);
+//      }
+//      last->name = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
+//      last->tooltip = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
+//      last->iconName = CopyString(value);
+//
+//      switch (start->type) {
+//      case TOK_DESKTOPS:
+//        last->action.type = MA_DESKTOP_MENU;
+//        break;
+//      case TOK_STICK:
+//        last->action.type = MA_STICK;
+//        break;
+//      case TOK_MAXIMIZE:
+//        last->action.type = MA_MAXIMIZE;
+//        break;
+//      case TOK_MINIMIZE:
+//        last->action.type = MA_MINIMIZE;
+//        break;
+//      case TOK_SHADE:
+//        last->action.type = MA_SHADE;
+//        break;
+//      case TOK_MOVE:
+//        last->action.type = MA_MOVE;
+//        break;
+//      case TOK_RESIZE:
+//        last->action.type = MA_RESIZE;
+//        break;
+//      case TOK_KILL:
+//        last->action.type = MA_KILL;
+//        break;
+//      case TOK_CLOSE:
+//        last->action.type = MA_CLOSE;
+//        break;
+//      case TOK_SENDTO:
+//        last->action.type = MA_SENDTO_MENU;
+//        break;
+//      default:
+//        break;
+//      }
 
       break;
     case TOK_EXIT:
 
-      last = InsertMenuItem(last);
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      value = findOrDefault(start, LABEL_ATTRIBUTE, GetTokenName(start));
-      last->name = CopyString(value);
-
-      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
-      last->tooltip = CopyString(value);
-
-      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
-      last->iconName = CopyString(value);
-
-      last->action.type = MA_EXIT;
-      last->action.str = CopyString(start->value);
-      value = FindAttribute(start->attributes, CONFIRM_ATTRIBUTE);
-      if (value && !strcmp(value, FALSE_VALUE)) {
-        last->action.value = 0;
-      } else {
-        last->action.value = 1;
-      }
-
-      break;
+//      last = InsertMenuItem(last);
+//      if (!menu->items) {
+//        menu->items = last;
+//      }
+//
+//      value = findOrDefault(start, LABEL_ATTRIBUTE, GetTokenName(start));
+//      last->name = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
+//      last->tooltip = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
+//      last->iconName = CopyString(value);
+//
+//      last->action.type = MA_EXIT;
+//      last->action.str = CopyString(start->value);
+//      value = FindAttribute(start->attributes, CONFIRM_ATTRIBUTE);
+//      if (value && !strcmp(value, FALSE_VALUE)) {
+//        last->action.value = 0;
+//      } else {
+//        last->action.value = 1;
+//      }
+//
+//      break;
     case TOK_RESTART:
-
-      last = InsertMenuItem(last);
-      if (!menu->items) {
-        menu->items = last;
-      }
-
-      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
-      if (!value) {
-        value = GetTokenName(start);
-      }
-      last->name = CopyString(value);
-
-      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
-      last->tooltip = CopyString(value);
-
-      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
-      last->iconName = CopyString(value);
-
-      last->action.type = MA_RESTART;
-
-      break;
+//
+//      last = InsertMenuItem(last);
+//      if (!menu->items) {
+//        menu->items = last;
+//      }
+//
+//      value = FindAttribute(start->attributes, LABEL_ATTRIBUTE);
+//      if (!value) {
+//        value = GetTokenName(start);
+//      }
+//      last->name = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, TOOLTIP_ATTRIBUTE);
+//      last->tooltip = CopyString(value);
+//
+//      value = FindAttribute(start->attributes, ICON_ATTRIBUTE);
+//      last->iconName = CopyString(value);
+//
+//      last->action.type = MA_RESTART;
+//
+//      break;
     default:
       InvalidTag(start, TOK_MENU);
       break;

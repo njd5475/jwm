@@ -484,8 +484,8 @@ char* jsonBoolArray(const JObject *obj, const char* keys) {
 JArray* jsonArray(const JObject* obj, const char* keys) {
   short type;
   JItemValue value = jsonGet(obj, keys, &type);
-  if(value.array_val && (type == VAL_MIXED_ARRAY || type == VAL_OBJ_ARRAY || type == VAL_INT_ARRAY ||
-      type == VAL_DOUBLE_ARRAY || type == VAL_FLOAT_ARRAY || type == VAL_BOOL_ARRAY)) {
+  char isArray = (type == VAL_MIXED_ARRAY || type == VAL_OBJ_ARRAY || type == VAL_INT_ARRAY || type == VAL_DOUBLE_ARRAY || type == VAL_FLOAT_ARRAY || type == VAL_BOOL_ARRAY);
+  if(isArray) {
     return value.array_val;
   }
   return NULL;

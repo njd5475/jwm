@@ -373,7 +373,7 @@ void TaskBar::ProcessMotionEvent(int x, int y, int mask) {
 }
 
 /** Run a menu action. */
-void TaskBar::RunTaskBarCommand(MenuAction *action, unsigned button) {
+void TaskBar::RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button) {
   if (action->type & MA_GROUP_MASK) {
     BarItem *tp = (BarItem*) action->context;
     tp->RunTaskBarCommand(action, button);
@@ -803,61 +803,50 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
 
     menu = Menus::CreateMenu();
 
-    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-    item->name = CopyString(_("Close"));
-    item->action.type = MA_CLOSE | MA_GROUP_MASK;
-    item->action.context = this;
-    item->next = menu->items;
-    menu->items = item;
+    item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, "Close", NULL, NULL);
+    item->setAction(MA_CLOSE | MA_GROUP_MASK, this, 0);
+    menu->addItem(item);
 
-    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-    item->name = CopyString(_("Minimize"));
-    item->action.type = MA_MINIMIZE | MA_GROUP_MASK;
-    item->action.context = this;
-    item->next = menu->items;
-    menu->items = item;
+    item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, "Minimize", NULL, NULL);
+    item->setAction(MA_MINIMIZE | MA_GROUP_MASK, this, 0);
+    menu->addItem(item);
 
-    item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
-    item->name = CopyString(_("Restore"));
-    item->action.type = MA_RESTORE | MA_GROUP_MASK;
-    item->action.context = bar;
-    item->next = menu->items;
-    menu->items = item;
+    item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, "Restore", NULL, NULL);
+    item->setAction(MA_RESTORE | MA_GROUP_MASK, bar, 0);
+    menu->addItem(item);
 
-    item = Menus::CreateMenuItem(MENU_ITEM_SUBMENU);
-    item->name = CopyString(_("Send To"));
-    item->action.type = MA_SENDTO_MENU | MA_GROUP_MASK;
-    item->action.context = this;
-    item->next = menu->items;
-    menu->items = item;
+    item = Menus::CreateMenuItem(menu, MENU_ITEM_SUBMENU, "Send To", NULL , NULL);
+    item->setAction(MA_SENDTO_MENU | MA_GROUP_MASK, this, 0);
+    menu->addItem(item);
 
     /* Load the separator and group actions. */
-    item = Menus::CreateMenuItem(MENU_ITEM_SEPARATOR);
-    item->next = menu->items;
-    menu->items = item;
+    item = Menus::CreateMenuItem(menu, MENU_ITEM_SEPARATOR, NULL, NULL, NULL);
+    menu->addItem(item);
 
     /* Load the clients into the menu. */
     for (auto client : this->shouldFocus()) {
-      item = Menus::CreateMenuItem(MENU_ITEM_NORMAL);
+      char* name;
       if (client->isMinimized()) {
         size_t len = 0;
         if (client->getName()) {
           len = strlen(client->getName());
         }
-        item->name = new char[len + 3];
-        item->name[0] = '[';
-        memcpy(&item->name[1], client->getName(), len);
-        item->name[len + 1] = ']';
-        item->name[len + 2] = 0;
+        name = new char[len + 3];
+        name[0] = '[';
+        memcpy(&name[1], client->getName(), len);
+        name[len + 1] = ']';
+        name[len + 2] = 0;
       } else {
-        item->name = CopyString(client->getName());
+        name = CopyString(client->getName());
       }
-      item->icon =
-          client->getIcon() ? client->getIcon() : Icons::GetDefaultIcon();
-      item->action.type = MA_EXECUTE;
-      item->action.context = client;
-      item->next = menu->items;
-      menu->items = item;
+      IconNode* node = (client->getIcon() ? client->getIcon() : Icons::GetDefaultIcon());
+      char* iconName = NULL;
+      if(node) {
+        iconName = node->name;
+      }
+      item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, name, iconName, NULL);
+      item->setAction(MA_EXECUTE, client, 0);
+      menu->addItem(item);
     }
   } else {
     /* Not grouping clients. */
@@ -874,9 +863,9 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
       y = bar->getScreenY() + bar->getHeight();
     } else {
       /* Top of the screen: menus go down. */
-      y = bar->getScreenY() - menu->height;
+      y = bar->getScreenY() - menu->getHeight();
     }
-    x -= menu->width / 2;
+    x -= menu->getWidth() / 2;
     x = Max(x, sp->x);
   } else {
     if (bar->getScreenX() + bar->getWidth() / 2 < sp->x + sp->width / 2) {
@@ -884,9 +873,9 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
       x = bar->getScreenX() + bar->getWidth();
     } else {
       /* Right side: menus go left. */
-      x = bar->getScreenX() - menu->width;
+      x = bar->getScreenX() - menu->getWidth();
     }
-    y -= menu->height / 2;
+    y -= menu->getHeight() / 2;
     y = Max(y, sp->y);
   }
 
@@ -923,7 +912,7 @@ bool TaskBar::BarItem::RemoveClient(ClientNode *np) {
   return false;
 }
 
-void TaskBar::BarItem::RunTaskBarCommand(MenuAction *action, unsigned button) {
+void TaskBar::BarItem::RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button) {
   for (auto client : clients) {
     if (!ClientList::ShouldFocus(client, 0)) {
       continue;

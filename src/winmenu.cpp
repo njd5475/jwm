@@ -120,17 +120,11 @@ Menu *CreateWindowMenu(ClientNode *np) {
 /** Create a window layer submenu. */
 void CreateWindowLayerMenu(Menu *menu, ClientNode *np) {
 
-  Menu *submenu;
-  MenuItem *item;
+  MenuItem *item = Menus::CreateMenuItem(menu, MENU_ITEM_SUBMENU, "Layer", NULL, NULL);
+  item->setAction(MA_NONE, NULL, 0);
+  menu->addItem(item);
 
-  item = Menus::CreateMenuItem(MENU_ITEM_SUBMENU);
-  item->name = CopyString(_("Layer"));
-  item->action.type = MA_NONE;
-  item->next = menu->items;
-  menu->items = item;
-
-  submenu = Menus::CreateMenu();
-  item->submenu = submenu;
+  Menu* submenu = item->CreateSubMenu();
 
   if (np->getLayer() == LAYER_ABOVE) {
     AddWindowMenuItem(submenu, _("[Above]"), MA_LAYER, np, LAYER_ABOVE);
@@ -166,27 +160,20 @@ void CreateWindowSendToMenu(Menu *menu, ClientNode *np) {
   AddWindowMenuItem(menu, _("Send To"), MA_NONE, np, 0);
 
   /* Now the first item in the menu is for the desktop list. */
-  menu->items->submenu = environment->CreateDesktopMenu(mask, np);
+  //TODO: fix this menu->items->submenu = environment->CreateDesktopMenu(mask, np);
 
 }
 
 /** Add an item to the current window menu. */
 void AddWindowMenuItem(Menu *menu, const char *name, MenuActionType type, ClientNode *np, int value) {
 
-  MenuItem *item;
-
-  item = Menus::CreateMenuItem(name ? MENU_ITEM_NORMAL : MENU_ITEM_SEPARATOR);
-  item->name = CopyString(name);
-  item->action.type = type;
-  item->action.context = np;
-  item->action.value = value;
-  item->next = menu->items;
-  menu->items = item;
-
+  MenuItem* item = Menus::CreateMenuItem(menu, name ? MENU_ITEM_NORMAL : MENU_ITEM_SEPARATOR, name, NULL, NULL);
+  item->setAction(type, np, value);
+  menu->addItem(item);
 }
 
 /** Select a window for performing an action. */
-void ChooseWindow(MenuAction *action) {
+void ChooseWindow(MenuItem::MenuAction *action) {
 
   XEvent event;
   ClientNode *np;
@@ -219,7 +206,7 @@ void ChooseWindow(MenuAction *action) {
 }
 
 /** Window menu action callback. */
-void RunWindowCommand(MenuAction *action, unsigned button) {
+void RunWindowCommand(MenuItem::MenuAction *action, unsigned button) {
   ClientNode *client = (ClientNode*) action->context;
   switch (action->type) {
   case MA_STICK:

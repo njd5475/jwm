@@ -27,7 +27,7 @@ static Menu *rootMenu[ROOT_MENU_COUNT];
 
 static void ExitHandler(ClientNode *np);
 
-static void RunRootCommand(MenuAction *action, unsigned button);
+static void RunRootCommand(MenuItem::MenuAction *action, unsigned button);
 
 /** Initialize root menu data. */
 void Roots::InitializeRootMenu(void) {
@@ -166,8 +166,8 @@ void Roots::GetRootMenuSize(int index, int *width, int *height) {
 		*height = 0;
 		return;
 	}
-	*width = rootMenu[index]->width;
-	*height = rootMenu[index]->height;
+	*width = rootMenu[index]->getWidth();
+	*height = rootMenu[index]->getHeight();
 
 }
 
@@ -180,16 +180,16 @@ char Roots::ShowRootMenu(int index, int x, int y, char keyboard) {
 	if (menuShown) {
 		return 1;
 	}
-	if (rootMenu[index]->dynamic) {
-		Menu *menu = rootMenu[index];
-		menu = Parser::ParseDynamicMenu(menu->timeout_ms, menu->dynamic);
-		if (menu) {
-			Menus::InitializeMenu(menu);
-			Menus::ShowMenu(menu, RunRootCommand, x, y, keyboard);
-			Menus::DestroyMenu(menu);
-			return 1;
-		}
-	}
+//	if (rootMenu[index]->_dynamic) {
+//		Menu *menu = rootMenu[index];
+//		menu = Parser::ParseDynamicMenu(menu->_timeout_ms, menu->_dynamic);
+//		if (menu) {
+//			Menus::InitializeMenu(menu);
+//			Menus::ShowMenu(menu, RunRootCommand, x, y, keyboard);
+//			Menus::DestroyMenu(menu);
+//			return 1;
+//		}
+//	}
 	Menus::ShowMenu(rootMenu[index], RunRootCommand, x, y, keyboard);
 	return 1;
 }
@@ -231,7 +231,7 @@ void Roots::ReloadMenu(void) {
 }
 
 /** Root menu callback. */
-void RunRootCommand(MenuAction *action, unsigned button) {
+void RunRootCommand(MenuItem::MenuAction *action, unsigned button) {
 
 	switch (action->type) {
 	case MA_EXECUTE:

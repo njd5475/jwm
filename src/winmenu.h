@@ -12,7 +12,7 @@
 
 #include "menu.h"
 
-struct ClientNode;
+class ClientNode;
 
 /** Create a window menu. */
 Menu *CreateWindowMenu(struct ClientNode *np);
@@ -28,9 +28,9 @@ void ShowWindowMenu(struct ClientNode *np, int x, int y, char keyboard);
 /** Grab the mouse to select a window.
  * @param action The action to perform when a window is selected.
  */
-void ChooseWindow(MenuAction *action);
+void ChooseWindow(MenuItem::MenuAction *action);
 
 /** Run a menu action for selected client. */
-void RunWindowCommand(MenuAction *action, unsigned button);
+void RunWindowCommand(MenuItem::MenuAction *action, unsigned button);
 
 #endif /* WINMENU_H */

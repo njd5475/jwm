@@ -9,6 +9,10 @@
 #define SRC_CONFIGURATION_H_
 
 #include <vector>
+
+#include "color.h"
+#include "font.h"
+#include "menu.h"
 #include "json.h"
 
 class Configuration {
@@ -17,7 +21,7 @@ public:
   void loadConfig();
   bool isConfigLoaded();
 
-  enum OpacityType {TRAY, MENU, ACTIVE_CLIENT, INACTIVE_CLIENT, UNKNOWN};
+  enum OpacityType {TRAY, MENU, TASKLIST, POPUP, PAGER, TRAYBUTTON, ACTIVE_CLIENT, INACTIVE_CLIENT, UNKNOWN};
 
   struct ActiveColors {
     ColorName bg;
@@ -46,6 +50,8 @@ public:
       OpacityType otype);
   static void loadStyle(JObject* object, Configuration::StyleColors colors);
   static void loadWindowSettings(JObject* object);
+  static Menu *loadMenu(JObject *menuObject, Menu* menu = NULL);
+  static MenuItem *loadMenuItem(Menu* menu, MenuItemType type, JObject *item);
 
 private:
   Configuration(JArray *configurations);
