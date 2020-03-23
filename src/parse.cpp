@@ -307,9 +307,6 @@ void Parse(const TokenNode *start, int depth) {
         case TOK_GROUP:
           ParseGroup(tp);
           break;
-        case TOK_ICONPATH:
-          IconNode::AddIconPath(tp->value);
-          break;
         case TOK_INCLUDE:
           ParseInclude(tp, depth);
           break;

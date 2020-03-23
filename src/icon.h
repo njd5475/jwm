@@ -91,7 +91,7 @@ public:
    * This adds a path to the list of icon search paths.
    * @param path The icon path to add.
    */
-  static void AddIconPath(char *path);
+  static void AddIconPath(const char *path);
 
   /** Load an icon for a client.
    * @param np The client.

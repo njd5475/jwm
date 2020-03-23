@@ -14,6 +14,7 @@
 #include "Configuration.h"
 #include "menu.h"
 #include "root.h"
+#include "icon.h"
 
 using namespace std;
 
@@ -46,6 +47,13 @@ void Configuration::loadConfig() {
     JArrayItem *item = arrayItems[i];
     if (item->type == VAL_OBJ) {
       JObject *itemObj = item->value.object_val;
+
+      JObject *iconPath = jsonObject(itemObj, "IconPath");
+      if(iconPath) {
+        const char *path = jsonString(iconPath, "path");
+        IconNode::AddIconPath(path);
+      }
+
       JObject *menuStyle = jsonObject(itemObj, "MenuStyle");
       if (menuStyle) {
         Configuration::loadStyle(menuStyle, (StyleColors ) { FONT_MENU,

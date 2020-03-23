@@ -101,11 +101,13 @@ void IconNode::DestroyIcons(void) {
 }
 
 /** Add an icon search path. */
-void IconNode::AddIconPath(char *path) {
-  if (!path) {
+void IconNode::AddIconPath(const char *cpath) {
+  if (!cpath) {
     return;
   }
 
+  char path[strlen(cpath)];
+  memcpy(path, cpath, strlen(cpath)* sizeof(char));
   Trim(path);
 
   int length = strlen(path);
