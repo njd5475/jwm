@@ -18,7 +18,7 @@
 
 struct MenuAction;
 class ClientNode;
-struct IconNode;
+class Icon;
 struct TimeType;
 
 class TaskBar : public TrayComponent {
@@ -58,7 +58,7 @@ private:
 	  std::vector<ClientNode*> shouldFocus();
 	  const char* getClassName();
 	  const char* getName();
-	  IconNode *getIcon();
+	  Icon *getIcon();
 	  void ShowClientList(TaskBar *bar);
 	  void RunTaskBarCommand(MenuItem::MenuAction* action, unsigned button);
 	private:

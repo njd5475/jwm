@@ -18,7 +18,7 @@
 
 /** Draw a button. */
 void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill, bool border,
-		Drawable drawable, struct Icon *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
+		Drawable drawable, Icon *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
 
 	ColorName fg;
 	long bg1, bg2;

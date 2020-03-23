@@ -17,7 +17,7 @@
 
 #include "Graphics.h"
 //class Graphics;
-struct IconNode;
+class Icon;
 
 struct ScreenType;
 
@@ -105,7 +105,7 @@ private:
 
   /** An icon for this menu item.
    * This field is handled by menu.c if iconName is set. */
-  IconNode *_icon; /**< Icon to display. */
+  Icon *_icon; /**< Icon to display. */
 
   MenuAction _action; /**< Action to take if selected (or NULL). */
 };

@@ -13,7 +13,7 @@
 #include "font.h"
 #include "settings.h"
 
-struct IconNode;
+class Icon;
 
 /** Button types. */
 typedef unsigned char ButtonType;
@@ -29,7 +29,7 @@ typedef unsigned char ButtonType;
  * @param bp The button to draw.
  */
 void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill,
-		bool border, Drawable drawable, struct IconNode *icon, int x, int y, int width, int height,
+		bool border, Drawable drawable, Icon *icon, int x, int y, int width, int height,
 		int xoffset, int yoffset);
 
 #endif /* BUTTON_H */
