@@ -14,6 +14,9 @@
 #include "error.h"
 #include "color.h"
 #include "misc.h"
+#include "icon.h"
+
+std::vector<ImageNode*> ImageNode::images;
 
 typedef ImageNode* (*ImageLoader)(const char *fileName, int rwidth, int rheight,
     char preserveAspect);
@@ -24,27 +27,27 @@ static const struct {
   ImageLoader loader;
 } IMAGE_LOADERS[] = {
 #ifdef USE_PNG
-    { ".png", Images::LoadPNGImage },
+    { ".png", ImageNode::LoadPNGImage },
 #endif
 #ifdef USE_JPEG
-    { ".jpg", Images::LoadJPEGImage }, { ".jpeg", Images::LoadJPEGImage },
+    { ".jpg", ImageNode::LoadJPEGImage }, { ".jpeg", ImageNode::LoadJPEGImage },
 #endif
 #ifdef USE_CAIRO
 #ifdef USE_RSVG
-    { ".svg", Images::LoadSVGImage },
+    { ".svg", ImageNode::LoadSVGImage },
 #endif
 #endif
 #ifdef USE_XPM
-    { ".xpm", Images::LoadXPMImage },
+    { ".xpm", ImageNode::LoadXPMImage },
 #endif
 #ifdef USE_XBM
-    { ".xbm", Images::LoadXBMImage },
+    { ".xbm", ImageNode::LoadXBMImage },
 #endif
     };
 static const unsigned IMAGE_LOADER_COUNT = ARRAY_LENGTH(IMAGE_LOADERS);
 
 /** Load an image from the specified file. */
-ImageNode* Images::LoadImage(const char *fileName, int rwidth, int rheight,
+ImageNode* ImageNode::LoadImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
   unsigned i;
   unsigned name_length;
@@ -101,7 +104,7 @@ ImageNode* Images::LoadImage(const char *fileName, int rwidth, int rheight,
 
 /** Load an image from a pixmap. */
 #ifdef USE_ICONS
-ImageNode* Images::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
+ImageNode* ImageNode::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
   ImageNode *result = NULL;
   XImage *mask_image = NULL;
   XImage *icon_image = NULL;
@@ -119,7 +122,7 @@ ImageNode* Images::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
     mask_image = JXGetImage(display, mask, 0, 0, width, height, 1, ZPixmap);
   }
   if (icon_image) {
-    result = Images::CreateImageFromXImages(icon_image, mask_image);
+    result = ImageNode::CreateImageFromXImages(icon_image, mask_image);
     JXDestroyImage(icon_image);
   }
   if (mask_image) {
@@ -134,7 +137,7 @@ ImageNode* Images::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
  * the issues surrounding longjmp and local variables.
  */
 #ifdef USE_PNG
-ImageNode* Images::LoadPNGImage(const char *fileName, int rwidth, int rheight,
+ImageNode* ImageNode::LoadPNGImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
 
   static ImageNode *result;
@@ -186,7 +189,7 @@ ImageNode* Images::LoadPNGImage(const char *fileName, int rwidth, int rheight,
     if (rows) {
       ReleaseStack(rows);
     }
-    Images::DestroyImage(result);
+    ImageNode::DestroyImage(result);
     Warning(_("error reading PNG image: %s"), fileName);
     return NULL;
   }
@@ -213,8 +216,8 @@ ImageNode* Images::LoadPNGImage(const char *fileName, int rwidth, int rheight,
   png_read_info(pngData, pngInfo);
 
   png_get_IHDR(pngData, pngInfo, &width, &height, &bitDepth, &colorType, NULL,
-      NULL, NULL);
-  result = Images::CreateImage(width, height, 0);
+  NULL, NULL);
+  result = ImageNode::CreateImage(width, height, 0);
 
   png_set_expand(pngData);
 
@@ -264,11 +267,11 @@ typedef struct {
   jmp_buf jbuffer;
 } JPEGErrorStruct;
 
-void Images::JPEGErrorHandler(j_common_ptr cinfo) {
+void ImageNode::JPEGErrorHandler(j_common_ptr cinfo) {
   JPEGErrorStruct *es = (JPEGErrorStruct*) cinfo->err;
   longjmp(es->jbuffer, 1);
 }
-ImageNode* Images::LoadJPEGImage(const char *fileName, int rwidth, int rheight,
+ImageNode* ImageNode::LoadJPEGImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
   static ImageNode *result;
   static struct jpeg_decompress_struct cinfo;
@@ -371,7 +374,7 @@ ImageNode* Images::LoadJPEGImage(const char *fileName, int rwidth, int rheight,
 
 #ifdef USE_CAIRO
 #ifdef USE_RSVG
-ImageNode* Images::LoadSVGImage(const char *fileName, int rwidth, int rheight,
+ImageNode* ImageNode::LoadSVGImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
 
 #if !GLIB_CHECK_VERSION(2, 35, 0)
@@ -461,7 +464,7 @@ ImageNode* Images::LoadSVGImage(const char *fileName, int rwidth, int rheight,
 
 /** Load an XPM image from the specified file. */
 #ifdef USE_XPM
-ImageNode* Images::LoadXPMImage(const char *fileName, int rwidth, int rheight,
+ImageNode* ImageNode::LoadXPMImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
 
   ImageNode *result = NULL;
@@ -474,8 +477,8 @@ ImageNode* Images::LoadXPMImage(const char *fileName, int rwidth, int rheight,
   Assert(fileName);
 
   attr.valuemask = XpmAllocColor | XpmFreeColors | XpmColorClosure;
-  attr.alloc_color = Images::AllocateColor;
-  attr.free_colors = Images::FreeColors;
+  attr.alloc_color = ImageNode::AllocateColor;
+  attr.free_colors = ImageNode::FreeColors;
   attr.color_closure = NULL;
   rc = XpmReadFileToImage(display, (char*) fileName, &image, &shape, &attr);
   if (rc == XpmSuccess) {
@@ -493,7 +496,7 @@ ImageNode* Images::LoadXPMImage(const char *fileName, int rwidth, int rheight,
 
 /** Load an XBM image from the specified file. */
 #ifdef USE_XBM
-ImageNode* Images::LoadXBMImage(const char *fileName, int rwidth, int rheight,
+ImageNode* ImageNode::LoadXBMImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
   ImageNode *result = NULL;
   unsigned char *data;
@@ -515,7 +518,7 @@ ImageNode* Images::LoadXBMImage(const char *fileName, int rwidth, int rheight,
 /** Create an image from XImages giving color and shape information. */
 #ifdef USE_ICONS
 #define HASH_SIZE 16
-ImageNode* Images::CreateImageFromXImages(XImage *image, XImage *shape) {
+ImageNode* ImageNode::CreateImageFromXImages(XImage *image, XImage *shape) {
   XColor colors[HASH_SIZE];
   ImageNode *result;
   unsigned char *dest;
@@ -551,40 +554,115 @@ ImageNode* Images::CreateImageFromXImages(XImage *image, XImage *shape) {
 #undef HASH_SIZE
 #endif /* USE_ICONS */
 
-ImageNode* Images::CreateImage(unsigned width, unsigned height, char bitmap) {
+ImageNode::ImageNode(unsigned width, unsigned height, bool bitmap) {
   unsigned image_size;
   if (bitmap) {
     image_size = (width * height + 7) / 8;
   } else {
     image_size = 4 * width * height;
   }
-  ImageNode *image = new ImageNode;
-  image->data = new unsigned char[image_size];
-  image->next = NULL;
-  image->bitmap = bitmap;
-  image->width = width;
-  image->height = height;
+  this->data = new unsigned char[image_size];
+  this->bitmap = bitmap;
+  this->width = width;
+  this->height = height;
 #ifdef USE_XRENDER
-  image->render = haveRender;
+  this->render = haveRender;
 #endif
-  return image;
+
+  memset(this->data, 0, image_size * sizeof(unsigned char));
+#ifdef USE_XRENDER
+  this->render = 0;
+#endif
+
+  /* Allocate the icon node. */
+  IconNode *result = IconNode::CreateIcon(this, true, "DefaultName");
+
+  /* Draw the icon. */
+  int y = 0, border = 0, x = 0;
+  for (y = border; y < height - border; y++) {
+    const unsigned pixel_left = y * width + border;
+    const unsigned pixel_right = y * width + width - 1 - border;
+    const unsigned offset_left = pixel_left / 8;
+    const unsigned mask_left = 1 << (pixel_left % 8);
+    const unsigned offset_right = pixel_right / 8;
+    const unsigned mask_right = 1 << (pixel_right % 8);
+    this->data[offset_left] |= mask_left;
+    this->data[offset_right] |= mask_right;
+  }
+  for (x = border; x < width - border; x++) {
+    const unsigned pixel_top = x + border * width;
+    const unsigned pixel_bottom = x + width * (height - 1 - border);
+    const unsigned offset_top = pixel_top / 8;
+    const unsigned mask_top = 1 << (pixel_top % 8);
+    const unsigned offset_bottom = pixel_bottom / 8;
+    const unsigned mask_bottom = 1 << (pixel_bottom % 8);
+    this->data[offset_top] |= mask_top;
+    this->data[offset_bottom] |= mask_bottom;
+  }
+}
+
+ImageNode::~ImageNode() {
+
+}
+
+void ImageNode::CopyFrom(const unsigned long *input, unsigned offset) {
+
+  /* Note: the data types here might be of different sizes. */
+  offset += 2;
+  for (unsigned x = 0; x < width * height; x++) {
+    *this->data++ = (input[offset] >> 24) & 0xFF;
+    *this->data++ = (input[offset] >> 16) & 0xFF;
+    *this->data++ = (input[offset] >> 8) & 0xFF;
+    *this->data++ = (input[offset] >> 0) & 0xFF;
+    offset += 1;
+  }
+}
+
+int ImageNode::getWidth() const {
+  return width;
+}
+
+int ImageNode::getHeight() const {
+  return height;
+}
+
+bool ImageNode::isBitmap() const {
+  return bitmap;
+}
+
+const unsigned char* ImageNode::getData() {
+  return this->data;
+}
+
+#ifdef USE_XRENDER
+bool ImageNode::getRender() const {
+  return this->render;
+}
+#endif
+
+ImageNode* ImageNode::CreateImage(unsigned width, unsigned height, char bitmap) {
+  return new ImageNode(width, height, bitmap);
 }
 
 /** Destroy an image node. */
-void Images::DestroyImage(ImageNode *image) {
-  while (image) {
-    ImageNode *next = image->next;
-    if (image->data) {
-      delete[] image->data;
+bool ImageNode::DestroyImage(ImageNode *image) {
+  bool found = false;
+  std::vector<ImageNode*>::iterator it;
+  for (it = images.begin(); it != images.end(); ++it) {
+    if ((*it) == image) {
+      found = true;
+      break;
     }
-    Release(image);
-    image = next;
   }
+  if (found) {
+    images.erase(it);
+  }
+  return found;
 }
 
 /** Callback to allocate a color for libxpm. */
 #ifdef USE_XPM
-int Images::AllocateColor(Display *d, Colormap cmap, char *name, XColor *c,
+int ImageNode::AllocateColor(Display *d, Colormap cmap, char *name, XColor *c,
     void *closure) {
   if (name) {
     if (!JXParseColor(d, cmap, name, c)) {
@@ -601,7 +679,7 @@ int Images::AllocateColor(Display *d, Colormap cmap, char *name, XColor *c,
  * We don't need to do anything here since color.c takes care of this.
  */
 #ifdef USE_XPM
-int Images::FreeColors(Display *d, Colormap cmap, Pixel *pixels, int n,
+int ImageNode::FreeColors(Display *d, Colormap cmap, Pixel *pixels, int n,
     void *closure) {
   return 1;
 }

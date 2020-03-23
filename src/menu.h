@@ -114,7 +114,6 @@ private:
 class Menu {
 public:
 
-
   Menu();
   virtual ~Menu();
 
@@ -122,15 +121,12 @@ public:
   void freeGraphics();
   void addItem(MenuItem *item);
   void addSeparator();
-  void setActiveItem(int index);
-  MenuItem *getItem(int index);
+  MenuItem *getItemAt(int x, int y);
   bool valid() const;
   int getItemHeight() const;
   Window getWindow();
   Menu* getParent();
   int getItemCount();
-  int getCurrentIndex();
-  int getLastIndex();
   int getParentOffset();
   TimeType getLastTime();
   int getOffset(int index);
@@ -140,12 +136,7 @@ public:
   int getMouseY() const;
   int getHeight() const;
   int getWidth() const;
-  void clearSelection();
-  void nextIndex();
   void removeTemporaryItems();
-  void SetLastIndex();
-  void UpdateSelected(int y);
-  MenuItem* getCurrentItem();
   void mouseEvent(int x, int y, const TimeType now);
   void UpdatePosition(int x, int y, char keyboard);
   const struct ScreenType* getScreen();
@@ -162,9 +153,6 @@ private:
   Graphics *_graphics;
   int _x; /**< The x-coordinate of the menu. */
   int _y; /**< The y-coordinate of the menu. */
-  int _currentIndex; /**< The current menu selection. */
-  int _lastIndex; /**< The last menu selection. */
-  unsigned int _itemCount; /**< Number of menu items (excluding separators). */
   int _parentOffset; /**< y-offset of this menu wrt the parent. */
   int _textOffset; /**< x-offset of text in the menu. */
   Menu* _parent; /**< The parent menu (or NULL). */
@@ -205,7 +193,7 @@ public:
    * @param menu The menu to destroy.
    */
   static void DestroyMenu(Menu *menu);
-  static int GetMenuIndex(Menu *menu, int index);
+  static int GetMenuIndex(Menu *menu, int x, int y);
 private:
   static char ShowSubmenu(Menu *menu, Menu *parent,
       MenuItem::RunMenuCommandType runner,
@@ -225,11 +213,7 @@ private:
       XEvent *event);
 
   static void UpdateMenu(Menu *menu, int x, int y);
-  static void DrawMenuItem(Menu *menu, MenuItem *item, int index);
-  static MenuItem *GetMenuItem(Menu *menu, int index);
-  static int GetNextMenuIndex(Menu *menu);
-  static int GetPreviousMenuIndex(Menu *menu);
-  static void SetPosition(Menu *tp, int index);
+  static MenuItem *GetMenuItem(Menu *menu, int x, int y);
   static char IsMenuValid(const Menu *menu);
 
   static std::vector<Menu*> menus;

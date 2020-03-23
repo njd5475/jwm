@@ -127,7 +127,6 @@ char Menus::ShowSubmenu(Menu *menu, Menu *parent,
   char status;
 
 //  PatchMenu(menu);
-//  menu->getParent() = parent;
   MapMenu(menu, x, y, keyboard);
 
   menuShown += 1;
@@ -252,12 +251,8 @@ char Menus::MenuLoop(Menu *menu, MenuItem::RunMenuCommandType runner) {
         }
       }
 
-      if (menu->getParent() && menu->getCurrentIndex() < 0) {
-        ip = GetMenuItem(menu->getParent(),
-            menu->getParent()->getCurrentIndex());
-      } else {
-        ip = GetMenuItem(menu, menu->getCurrentIndex());
-      }
+      ip = menu->getItemAt(event.xbutton.x, event.xbutton.y);
+
       if (ip != NULL) {
         if (ip->isNormal()) {
           HideMenu(menu);
@@ -327,7 +322,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
   Window subwindow;
   int x, y;
 
-  vLog("Menus received motion update [%d, %d]\n", x , y);
+  vLog("Menus received motion update [%d, %d]\n", x, y);
   if (event->type == MotionNotify) {
 
     Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
@@ -337,79 +332,43 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
     x = event->xmotion.x_root - menu->getX();
     y = event->xmotion.y_root - menu->getY();
     subwindow = event->xmotion.subwindow;
-    menu->mouseEvent(x + menu->getX(), y + menu->getY(), TimeType {0});
+    menu->mouseEvent(x + menu->getX(), y + menu->getY(), TimeType { 0 });
     menu->Draw();
 
   } else if (event->type == ButtonPress) {
 
-    if (menu->getCurrentIndex() >= 0 || !menu->getParent()) {
-      tp = menu;
-    } else {
-      tp = menu->getParent();
-    }
-
-    y = -1;
-    if (event->xbutton.button == Button4) {
-      y = GetPreviousMenuIndex(tp);
-    } else if (event->xbutton.button == Button5) {
-      y = GetNextMenuIndex(tp);
-    }
-
-    if (y >= 0) {
-      SetPosition(tp, y);
-    }
+//    if (event->xbutton.button == Button4) {  y = GetPreviousMenuIndex(tp);
+//    } else if (event->xbutton.button == Button5) {  y = GetNextMenuIndex(tp);
 
     return MENU_NOSELECTION;
 
   } else if (event->type == KeyPress) {
-    ActionType action;
-
-    if (menu->getCurrentIndex() >= 0 || !menu->getParent()) {
-      tp = menu;
-    } else {
-      tp = menu->getParent();
-    }
-
-    y = -1;
-    action = Binding::GetKey(MC_NONE, event->xkey.state, event->xkey.keycode);
-    switch (action.action) {
-    case UP:
-      y = GetPreviousMenuIndex(tp);
-      break;
-    case DOWN:
-      y = GetNextMenuIndex(tp);
-      break;
-    case RIGHT:
-      tp = menu;
-      y = 0;
-      break;
-    case LEFT:
-      if (tp->getParent()) {
-        tp = tp->getParent();
-        if (tp->getCurrentIndex() >= 0) {
-          y = tp->getCurrentIndex();
-        } else {
-          y = 0;
-        }
-      }
-      break;
-    case ESC:
-      return MENU_SUBSELECT;
-    case ENTER:
-      ip = GetMenuItem(tp, tp->getCurrentIndex());
-      if (ip != NULL) {
-        HideMenu(menu);
-        (runner)(ip->getAction(), 0);
-      }
-      return MENU_SUBSELECT;
-    default:
-      break;
-    }
-
-    if (y >= 0) {
-      SetPosition(tp, y);
-    }
-
+//    ActionType action;
+//
+//    y = -1;
+//    action = Binding::GetKey(MC_NONE, event->xkey.state, event->xkey.keycode);
+//    switch (action.action) {
+//    case UP:y = GetPreviousMenuIndex(tp);break;
+//    case DOWN:y = GetNextMenuIndex(tp);break;
+//    case RIGHT: tp = menu; y = 0;break;
+//    case LEFT: // move to parent if there is a parent
+//    case ESC: return MENU_SUBSELECT;
+//    case ENTER:
+//      //ip = GetMenuItem(tp, tp->getCurrentIndex());
+//
+//      if (ip != NULL) {
+//        HideMenu(menu);
+//        (runner)(ip->getAction(), 0); //call it
+//      }
+//      return MENU_SUBSELECT;
+//    default:
+//      break;
+//    }
+//
+//    if (y >= 0) {
+//      SetPosition(tp, y);
+//    }
+//
     return MENU_NOSELECTION;
 
   } else {
@@ -419,7 +378,7 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
 
   /* Update the selection on the current menu */
   if (x > 0 && y > 0 && x < menu->getWidth() && y < menu->getHeight()) {
-    menu->UpdateSelected(y);
+    //menu->UpdateSelected(y);
   } else if (menu->getParent() && subwindow != menu->getParent()->getWindow()) {
 
     /* Leave if over a menu window. */
@@ -428,7 +387,6 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
         return MENU_LEAVE;
       }
     }
-    menu->clearSelection();
 
   } else {
 
@@ -437,59 +395,10 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
     if (tp && subwindow == tp->getWindow()) {
       if (y < menu->getParentOffset()
           || y > tp->getItemHeight() + menu->getParentOffset()) {
-        return MENU_LEAVE;
+        return MENU_LEAVE; //passing instuctions to the caller
       }
     }
 
-    menu->clearSelection();
-
-  }
-
-  /* Move the menu if needed. */
-  if (menu->getHeight() > menu->getScreen()->height
-      && menu->getCurrentIndex() >= 0) {
-
-    /* If near the top, shift down. */
-    if (y + menu->getY() <= 0) {
-      if (menu->getCurrentIndex() > 0) {
-        menu->clearSelection();
-        SetPosition(menu, menu->getCurrentIndex());
-      }
-    }
-
-    /* If near the bottom, shift up. */
-    if (y + menu->getY() + menu->getItemHeight() / 2
-        >= menu->getScreen()->y + menu->getScreen()->height) {
-      if (menu->getCurrentIndex() + 1 < menu->getItemCount()) {
-        menu->nextIndex();
-        SetPosition(menu, menu->getCurrentIndex());
-      }
-    }
-
-  }
-
-  if (menu->getLastIndex() != menu->getCurrentIndex()) {
-    //UpdateMenu(menu, x, y);
-    menu->SetLastIndex();
-  }
-
-  /* If the selected item is a submenu, show it. */
-  ip = GetMenuItem(menu, menu->getCurrentIndex());
-  if (ip && IsMenuValid(ip->getSubMenu())) {
-    const int x = menu->getX() + menu->getWidth()
-        - (settings.menuDecorations == DECO_MOTIF ? 0 : 1);
-    const int y = menu->getY() + menu->getOffset(menu->getCurrentIndex()) - 1;
-    if (ShowSubmenu(ip->getSubMenu(), menu, runner, x, y, 0)) {
-
-      /* Item selected; destroy the menu tree. */
-      return MENU_SUBSELECT;
-
-    } else {
-
-      /* No selection made. */
-      UpdateMenu(menu, x, y);
-
-    }
   }
 
   return MENU_NOSELECTION;
@@ -500,83 +409,6 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
 void Menus::UpdateMenu(Menu *menu, int x, int y) {
   menu->UpdatePosition(x, y, 0);
   menu->Draw();
-}
-
-/** Get the next item in the menu. */
-int Menus::GetNextMenuIndex(Menu *menu) {
-  MenuItem *item;
-  int x;
-
-  /* Move to the next non-separator in the menu. */
-  for (x = menu->getCurrentIndex() + 1; x < menu->getItemCount(); x++) {
-    item = GetMenuItem(menu, x);
-    if (item->isSeparator()) {
-      return x;
-    }
-  }
-
-  /* Wrap around. */
-  for (x = 0; x < menu->getCurrentIndex(); x++) {
-    item = GetMenuItem(menu, x);
-    if (item->isSeparator()) {
-      return x;
-    }
-  }
-
-  /* Nothing in the menu, stay at the current location. */
-  return menu->getCurrentIndex();
-}
-
-/** Get the previous item in the menu. */
-int Menus::GetPreviousMenuIndex(Menu *menu) {
-  MenuItem *item;
-  int x;
-
-  /* Move to the previous non-separator in the menu. */
-  for (x = menu->getCurrentIndex() - 1; x >= 0; x--) {
-    item = GetMenuItem(menu, x);
-    if (item->isSeparator()) {
-      return x;
-    }
-  }
-
-  /* Wrap around. */
-  for (x = menu->getItemCount() - 1; x > menu->getCurrentIndex(); x--) {
-    item = GetMenuItem(menu, x);
-    if (item->isSeparator()) {
-      return x;
-    }
-  }
-
-  /* Nothing in the menu. */
-  return menu->getCurrentIndex();
-}
-
-/** Get the item in the menu given a y-coordinate. */
-int Menus::GetMenuIndex(Menu *menu, int y) {
-
-  int x;
-
-  if (y < menu->getOffset(0)) {
-    return -1;
-  }
-  for (x = 0; x < menu->getItemCount() - 1; x++) {
-    if (y >= menu->getOffset(x) && y < menu->getOffset(x + 1)) {
-      return x;
-    }
-  }
-  return x;
-
-}
-
-/** Get the menu item associated with an index. */
-MenuItem* Menus::GetMenuItem(Menu *menu, int index) {
-  return menu->getItem(index);
-}
-
-/** Set the active menu item. */
-void Menus::SetPosition(Menu *tp, int index) {
-  tp->setActiveItem(index);
 }
 
 /** Determine if a menu is valid (and can be shown). */
@@ -592,9 +424,12 @@ MenuItem::MenuItem(Menu *parent, const char *name, MenuItemType type,
     _name(name ? strdup(name) : NULL), _type(type), _tooltip(
         tooltip ? strdup(tooltip) : NULL), _iconName(
         iconName ? strdup(iconName) : NULL), _submenu(
-    NULL), _parent(parent) {
+    NULL),  _icon(NULL), _parent(parent) {
   if (_iconName) {
-    _icon = Icons::LoadNamedIcon(_iconName, 1, 1);
+    _icon = IconNode::LoadNamedIcon(_iconName, 1, 1);
+    if(!_icon) {
+      vLog("Could not load icon %s\n", _iconName);
+    }
   }
 }
 
@@ -636,11 +471,10 @@ void MenuItem::Draw(Graphics *graphics, bool active, unsigned offset,
 
     if (this->_parent && this->_parent->getMouseX() > -1
         && this->_parent->getMouseY() > -1) {
-      int mx = _parent->getMouseX() - _parent->getX(), my = _parent->getMouseY() - _parent->getY();
+      int mx = _parent->getMouseX() - _parent->getX(), my = _parent->getMouseY()
+          - _parent->getY();
       active = my > offset && my < offset + getHeight() && mx > 0 && mx < width;
     }
-
-    Log("MenuItem draw\n");
 
     if (active) {
       type = BUTTON_MENU_ACTIVE;
@@ -750,10 +584,8 @@ void MenuItem::removeTemporaryItems() {
 }
 
 Menu::Menu() :
-    _x(0), _y(0), _timeout_ms(DEFAULT_TIMEOUT_MS), _currentIndex(0), _mousex(
-        -1), _mousey(-1), _label(0), _dynamic(0), _graphics(NULL), _window(0), _itemCount(
-        0), _parentOffset(0), _lastIndex(0), _parent(
-    NULL), _textOffset(0) {
+    _x(0), _y(0), _timeout_ms(DEFAULT_TIMEOUT_MS), _mousex(-1), _mousey(-1), _label(
+        0), _dynamic(0), _graphics(NULL), _window(0), _parentOffset(0), _parent(NULL), _textOffset(0) {
 
 }
 
@@ -842,39 +674,6 @@ void Menu::freeGraphics() {
   _graphics->free();
 }
 
-void Menu::setActiveItem(int index) {
-  int y = getOffset(index) + getItemHeight() / 2;
-  if (getHeight() > getScreen()->height) {
-    // if the menu is off the bottom of the screen adjust the y so that it is within the screen bounds
-    int updated = 0;
-    while (y + getY() < getItemHeight() / 2) {
-      _y += getItemHeight();
-      updated = getItemHeight();
-    }
-    while (y + getY() >= getScreen()->y + getScreen()->height) {
-      _y -= getItemHeight();
-      updated = -getItemHeight();
-    }
-    if (updated) {
-      JXMoveWindow(display, getWindow(), getX(), getY());
-      y += updated;
-    }
-
-  }
-
-  /* We need to do this twice so the event gets registered
-   * on the submenu if one exists. */
-  Cursors::MoveMouse(getWindow(), getItemHeight() / 2, y);
-  Cursors::MoveMouse(getWindow(), getItemHeight() / 2, y);
-}
-
-MenuItem* Menu::getItem(int index) {
-  if (index < 0 && index >= items.size()) {
-    return NULL;
-  }
-  return items.at(index);
-}
-
 int Menu::getX() const {
   return _x;
 }
@@ -905,28 +704,12 @@ int Menu::getHeight() const {
   return height;
 }
 
-MenuItem* Menu::getCurrentItem() {
-  if (_currentIndex >= items.size() || _currentIndex < 0) {
-    _currentIndex = 0;
-  }
-
-  if (items.size() == 0) {
-    this->addItem(new MenuItem(this, NULL, MENU_ITEM_SEPARATOR, NULL, NULL));
-  }
-
-  return items[_currentIndex];
-}
-
 TimeType Menu::getLastTime() {
   return _lastTime;
 }
 
 int Menu::getItemCount() {
   return items.size();
-}
-
-int Menu::getCurrentIndex() {
-  return _currentIndex;
 }
 
 int Menu::getOffset(int index) {
@@ -943,8 +726,20 @@ Menu* Menu::getParent() {
   return _parent;
 }
 
-int Menu::getLastIndex() {
-  return _lastIndex;
+MenuItem* Menu::getItemAt(int x, int y) {
+  if (x < this->getX() || x > this->getX() + this->getWidth()) {
+    return NULL;
+  }
+
+  int curY = this->getY();
+  for (auto item : items) {
+    curY += item->getHeight();
+    if (y < curY) {
+      return item;
+    }
+  }
+
+  return NULL;
 }
 
 int Menu::getMouseX() const {
@@ -958,7 +753,7 @@ int Menu::getMouseY() const {
 void Menu::mouseEvent(int x, int y, TimeType now) {
   this->_mousex = x;
   this->_mousey = y;
-  if(now.ms > 0) {
+  if (now.ms > 0) {
     this->_lastTime = now;
   }
 
@@ -1024,19 +819,6 @@ void Menu::UpdatePosition(int x, int y, char keyboard) {
 
   JXMapRaised(display, getWindow());
 
-  if (keyboard && getItemCount() != 0) {
-    const int y = getOffset(0) + getItemHeight() / 2;
-    _lastIndex = 0;
-    _currentIndex = 0;
-    Cursors::MoveMouse(getWindow(), getItemHeight() / 2, y);
-  } else {
-    _lastIndex = -1;
-    _currentIndex = -1;
-  }
-}
-
-void Menu::clearSelection() {
-  _currentIndex = -1;
 }
 
 void Menu::removeTemporaryItems() {
@@ -1045,21 +827,6 @@ void Menu::removeTemporaryItems() {
   }
 }
 
-void Menu::nextIndex() {
-  ++_currentIndex;
-  if (_currentIndex >= items.size()) {
-    _currentIndex = items.size() - 1;
-  }
-}
-
-void Menu::SetLastIndex() {
-  _lastIndex = _currentIndex;
-}
-
 int Menu::getParentOffset() {
   return _parentOffset;
-}
-
-void Menu::UpdateSelected(int y) {
-  _currentIndex = Menus::GetMenuIndex(this, y);
 }

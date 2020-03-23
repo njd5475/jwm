@@ -37,7 +37,7 @@ void Border::start(void) {
 
 	for (i = 0; i < BI_COUNT; i++) {
 		if (buttonNames[i]) {
-			buttonIcons[i] = Icons::LoadNamedIcon(buttonNames[i], 1, 1);
+			buttonIcons[i] = IconNode::LoadNamedIcon(buttonNames[i], 1, 1);
 			Release(buttonNames[i]);
 			buttonNames[i] = NULL;
 		} else {
@@ -47,7 +47,7 @@ void Border::start(void) {
 
 	/* Always load a menu icon for windows without one. */
 	if (buttonIcons[BI_MENU] == NULL) {
-		buttonIcons[BI_MENU] = Icons::GetDefaultIcon();
+		buttonIcons[BI_MENU] = IconNode::GetDefaultIcon();
 	}
 }
 
@@ -890,7 +890,7 @@ char Border::DrawBorderIcon(BorderIconType t, unsigned xoffset,
 	if (buttonIcons[t]) {
 #ifdef USE_ICONS
 		const unsigned titleHeight = GetTitleHeight();
-		Icons::PutIcon(buttonIcons[t], canvas, fg, xoffset + 2, yoffset + 2,
+		ScaledIconNode::PutIcon(buttonIcons[t], canvas, fg, xoffset + 2, yoffset + 2,
 				titleHeight - 4, titleHeight - 4);
 #endif
 		return 1;
@@ -1084,7 +1084,7 @@ void Border::DrawIconButton(const ClientNode *np, int x, int y, Pixmap canvas,
 	const int iconSize = GetBorderIconSize();
 	const int titleHeight = GetTitleHeight();
 	IconNode *icon = np->getIcon() ? np->getIcon() : buttonIcons[BI_MENU];
-	Icons::PutIcon(icon, canvas, fg, x + (titleHeight - iconSize) / 2,
+	ScaledIconNode::PutIcon(icon, canvas, fg, x + (titleHeight - iconSize) / 2,
 			y + (titleHeight - iconSize) / 2, iconSize, iconSize);
 #endif
 }

@@ -127,11 +127,11 @@ void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const c
 	iconWidth = 0;
 	iconHeight = 0;
 	if (icon) {
-		if (icon == &Icons::emptyIcon) {
-			iconWidth = Min(width - 4, height - 4);
+		if (icon == &IconNode::emptyIcon) {
+			iconWidth = Max(Min(width - 4, height - 4), 16);
 			iconHeight = iconWidth;
 		} else {
-			const int ratio = (icon->width << 16) / icon->height;
+			const int ratio = (icon->getWidth() << 16) / Max(icon->getHeight(), 16);
 			int maxIconWidth = width - 4;
 			if (text) {
 				/* Showing text, keep the icon square. */
@@ -173,7 +173,7 @@ void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const c
 	/* Display the icon. */
 	if (icon) {
 		yoffset = (height - iconHeight + 1) / 2;
-		Icons::PutIcon(icon, drawable, Colors::lookupColor(fg), x + xoffset, y + yoffset, iconWidth, iconHeight);
+		ScaledIconNode::PutIcon(icon, drawable, Colors::lookupColor(fg), x + xoffset, y + yoffset, iconWidth, iconHeight);
 		xoffset += iconWidth + 2;
 	}
 

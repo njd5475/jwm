@@ -41,14 +41,14 @@ void TrayButton::StartupTrayButtons(void) {
       bp->requestNewSize(0, 0);
     }
     if (bp->iconName) {
-      bp->icon = Icons::LoadNamedIcon(bp->iconName, 1, 1);
+      bp->icon = IconNode::LoadNamedIcon(bp->iconName, 1, 1);
       if (JLIKELY(bp->icon)) {
         int rWidth = 0, rHeight = 0;
-        rWidth = bp->getRequestedWidth() + bp->icon->width + 4;
+        rWidth = bp->getRequestedWidth() + bp->icon->getWidth() + 4;
         if (bp->label) {
           rWidth = rWidth - 2;
         }
-        rHeight = Max(bp->icon->height + 4, bp->getRequestedHeight());
+        rHeight = Max(bp->icon->getHeight() + 4, bp->getRequestedHeight());
         bp->requestNewSize(rWidth, rHeight);
       } else {
         Warning(_("could not load tray icon: \"%s\""), bp->iconName);

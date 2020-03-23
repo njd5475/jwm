@@ -536,7 +536,7 @@ void TaskBar::Draw() {
     unsigned clientCount = client->activeCount();
     type = BUTTON_TASK;
     if (!client->getIcon()) {
-      icon = Icons::GetDefaultIcon();
+      icon = IconNode::GetDefaultIcon();
     } else {
       icon = client->getIcon();
     }
@@ -839,10 +839,10 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
       } else {
         name = CopyString(client->getName());
       }
-      IconNode* node = (client->getIcon() ? client->getIcon() : Icons::GetDefaultIcon());
+      IconNode* node = (client->getIcon() ? client->getIcon() : IconNode::GetDefaultIcon());
       char* iconName = NULL;
       if(node) {
-        iconName = node->name;
+        iconName = node->getName();
       }
       item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, name, iconName, NULL);
       item->setAction(MA_EXECUTE, client, 0);

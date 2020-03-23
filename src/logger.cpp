@@ -49,6 +49,7 @@ void Logger::Close() {
 	std::vector<FILE*>::iterator it;
 	for (it = files.begin(); it != files.end(); ++it) {
 		fclose((*it));
+		files.erase(it);
 	}
 }
 
