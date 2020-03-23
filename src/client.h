@@ -180,7 +180,7 @@ protected:
 
   MouseContextType mouseContext;
 
-  struct IconNode *icon; /**< Icon assigned to this window. */
+  struct Icon *icon; /**< Icon assigned to this window. */
 
   /** Callback to stop move/resize. */
   void (*controller)(int wasDestroyed);
@@ -270,8 +270,8 @@ public:
   const char* getClassName() const;
   const char* getInstanceName();
 
-  IconNode *getIcon() const;
-  void setIcon(IconNode *icon);
+  Icon *getIcon() const;
+  void setIcon(Icon *icon);
 
   ColormapNode* getColormaps() const;
 

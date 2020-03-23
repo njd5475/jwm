@@ -426,7 +426,7 @@ MenuItem::MenuItem(Menu *parent, const char *name, MenuItemType type,
         iconName ? strdup(iconName) : NULL), _submenu(
     NULL),  _icon(NULL), _parent(parent) {
   if (_iconName) {
-    _icon = IconNode::LoadNamedIcon(_iconName, 1, 1);
+    _icon = Icon::LoadNamedIcon(_iconName, 1, 1);
     if(!_icon) {
       vLog("Could not load icon %s\n", _iconName);
     }

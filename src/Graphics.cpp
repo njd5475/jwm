@@ -52,7 +52,7 @@ Pixmap Graphics::getPixmap() {
 }
 
 void Graphics::drawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill,
-		bool border, struct IconNode *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
+		bool border, struct Icon *icon, int x, int y, int width, int height, int xoffset, int yoffset) {
 	DrawButton(type, alignment, font, text, fill, border, this->surface, icon, x, y, width, height, xoffset, yoffset);
 }
 

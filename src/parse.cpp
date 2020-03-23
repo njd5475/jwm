@@ -359,7 +359,7 @@ void Parse(const TokenNode *start, int depth) {
           Border::SetBorderIcon(BI_MENU, tp->value);
           break;
         case TOK_DEFAULTICON:
-          IconNode::SetDefaultIcon(tp->value);
+          Icon::SetDefaultIcon(tp->value);
           break;
         case TOK_TITLEBUTTONORDER:
           Setting::SetTitleButtonOrder(tp->value);

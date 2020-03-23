@@ -51,7 +51,7 @@ void Configuration::loadConfig() {
       JObject *iconPath = jsonObject(itemObj, "IconPath");
       if(iconPath) {
         const char *path = jsonString(iconPath, "path");
-        IconNode::AddIconPath(path);
+        Icon::AddIconPath(path);
       }
 
       JObject *menuStyle = jsonObject(itemObj, "MenuStyle");

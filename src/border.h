@@ -100,7 +100,7 @@ public:
 
 private:
   static char *buttonNames[BI_COUNT];
-  static IconNode *buttonIcons[BI_COUNT];
+  static Icon *buttonIcons[BI_COUNT];
 
   static char IsContextEnabled(MouseContextType context, const ClientNode *np);
   static void DrawBorderHelper(const ClientNode *np);

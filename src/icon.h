@@ -17,22 +17,22 @@ class ClientNode;
 class Image;
 
 /** Structure to hold an icon. */
-class IconNode {
+class Icon {
 public:
-  IconNode(Image* image, bool preserveAspect, const char* name);
-  virtual ~IconNode();
+  Icon(Image* image, bool preserveAspect, const char* name);
+  virtual ~Icon();
 
   /** Static funtions */
-  static IconNode* CreateIcon(Image *image, bool preserveAspect, const char* name);
+  static Icon* CreateIcon(Image *image, bool preserveAspect, const char* name);
 
   /** Destroy an icon.
    * @param icon The icon to destroy.
    */
-  static bool DestroyIcon(IconNode *icon);
+  static bool DestroyIcon(Icon *icon);
 
-  static Image* GetBestImage(IconNode *icon, int rwidth, int rheight);
+  static Image* GetBestImage(Icon *icon, int rwidth, int rheight);
 
-  static IconNode emptyIcon;
+  static Icon emptyIcon;
 
   int getWidth();
   int getHeight();
@@ -59,20 +59,20 @@ private:
 #endif
 
 private:
-  static IconNode* FindIcon(const char *name);
+  static Icon* FindIcon(const char *name);
 
-  static std::vector<IconNode*> images;
+  static std::vector<Icon*> images;
   static std::vector<std::string> iconPaths;
 
   static const unsigned EXTENSION_COUNT;
   static const unsigned MAX_EXTENSION_LENGTH;
 
-  static IconNode* ReadNetWMIcon(Window win);
-  static IconNode* ReadWMHintIcon(Window win);
-  static IconNode* CreateIconFromDrawable(Drawable d, Pixmap mask);
-  static IconNode* CreateIconFromBinary(const unsigned long *data,
+  static Icon* ReadNetWMIcon(Window win);
+  static Icon* ReadWMHintIcon(Window win);
+  static Icon* CreateIconFromDrawable(Drawable d, Pixmap mask);
+  static Icon* CreateIconFromBinary(const unsigned long *data,
       unsigned int length);
-  static IconNode* LoadNamedIconHelper(const char *name, const char *path,
+  static Icon* LoadNamedIconHelper(const char *name, const char *path,
       char save, char preserveAspect);
 
   static char iconSizeSet;
@@ -104,19 +104,19 @@ public:
    * @param preserveAspect Set to preserve the aspect ratio when scaling.
    * @return A pointer to the icon (NULL if not found).
    */
-  static IconNode *LoadNamedIcon(const char *name, char save, char preserveAspect);
+  static Icon *LoadNamedIcon(const char *name, char save, char preserveAspect);
 
   /** Load the default icon.
    * @return The default icon.
    */
-  static IconNode *GetDefaultIcon(void);
+  static Icon *GetDefaultIcon(void);
 
   /** Set the default icon. */
   static void SetDefaultIcon(const char *name);
 };
 
 /** Structure to hold a scaled icon. */
-class ScaledIconNode : public IconNode {
+class ScaledIconNode : public Icon {
 
 public:
   ScaledIconNode(Image* image, bool preserveAspect, const char* name);
@@ -134,10 +134,10 @@ public:
    * @param width The width of the icon to display.
    * @param height The height of the icon to display.
    */
-  static void PutIcon(IconNode *icon, Drawable d,
+  static void PutIcon(Icon *icon, Drawable d,
       long fg, int x, int y, int width, int height);
 
-  static ScaledIconNode* GetScaledIcon(IconNode *icon, long fg, int rwidth, int rheight);
+  static ScaledIconNode* GetScaledIcon(Icon *icon, long fg, int rwidth, int rheight);
 
   /** Put a scaled icon.
    * @param image The image to display.
@@ -149,7 +149,7 @@ public:
    * @param height The height of the icon.
    * @return 1 if the icon was successfully rendered, 0 otherwise.
    */
-  static void PutScaledRenderIcon(IconNode *image,
+  static void PutScaledRenderIcon(Icon *image,
       ScaledIconNode *node,
       Drawable d, int x, int y, int width, int height);
 

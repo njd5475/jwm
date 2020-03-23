@@ -967,7 +967,7 @@ char Events::_HandlePropertyNotify(const XPropertyEvent *event) {
       } else if (event->atom == Hints::atoms[ATOM_WM_PROTOCOLS]) {
         Hints::ReadWMProtocols(np->getWindow(), np);
       } else if (event->atom == Hints::atoms[ATOM_NET_WM_ICON]) {
-        IconNode::LoadIcon(np);
+        Icon::LoadIcon(np);
         changed = 1;
       } else if (event->atom == Hints::atoms[ATOM_NET_WM_NAME]) {
         Hints::ReadWMName(np);

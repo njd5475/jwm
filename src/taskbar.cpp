@@ -501,7 +501,7 @@ void TaskBar::Draw() {
   Drawable drawable = this->getPixmap();
   bool border = false, fill = true;
   int x, y, width, height, xoffset, yoffset;
-  IconNode *icon = NULL;
+  Icon *icon = NULL;
   const char *text = NULL;
   AlignmentType alignment = ALIGN_CENTER;
   FontType font = FONT_TASKLIST;
@@ -536,7 +536,7 @@ void TaskBar::Draw() {
     unsigned clientCount = client->activeCount();
     type = BUTTON_TASK;
     if (!client->getIcon()) {
-      icon = IconNode::GetDefaultIcon();
+      icon = Icon::GetDefaultIcon();
     } else {
       icon = client->getIcon();
     }
@@ -839,7 +839,7 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
       } else {
         name = CopyString(client->getName());
       }
-      IconNode* node = (client->getIcon() ? client->getIcon() : IconNode::GetDefaultIcon());
+      Icon* node = (client->getIcon() ? client->getIcon() : Icon::GetDefaultIcon());
       char* iconName = NULL;
       if(node) {
         iconName = node->getName();
@@ -893,7 +893,7 @@ const char* TaskBar::BarItem::getName() {
   return (*clients.begin())->getName();
 }
 
-IconNode* TaskBar::BarItem::getIcon() {
+Icon* TaskBar::BarItem::getIcon() {
   return (*clients.begin())->getIcon();
 }
 

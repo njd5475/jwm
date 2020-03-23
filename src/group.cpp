@@ -277,8 +277,8 @@ void ApplyGroup(const GroupType *gp, ClientNode *np) {
 			}
 			break;
 		case OPTION_ICON:
-			IconNode::DestroyIcon(np->getIcon());
-			np->setIcon(IconNode::LoadNamedIcon(lp->str, 1, 1));
+			Icon::DestroyIcon(np->getIcon());
+			np->setIcon(Icon::LoadNamedIcon(lp->str, 1, 1));
 			break;
 		case OPTION_PIGNORE:
 			np->ignoreProgramSpecificPosition();

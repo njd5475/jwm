@@ -271,12 +271,12 @@ void LoadGradientBackground(BackgroundNode *bp) {
 /** Load an image background. */
 void LoadImageBackground(BackgroundNode *bp) {
 
-	IconNode *ip;
+	Icon *ip;
 	int width, height;
 
 	/* Load the icon. */
 	ExpandPath(&bp->value);
-	ip = IconNode::LoadNamedIcon(bp->value, 0, bp->type == BACKGROUND_SCALE);
+	ip = Icon::LoadNamedIcon(bp->value, 0, bp->type == BACKGROUND_SCALE);
 	if (JUNLIKELY(!ip || ip->getWidth() == 0)) {
 		bp->pixmap = None;
 		Warning(_("background image not found: \"%s\""), bp->value);
@@ -303,6 +303,6 @@ void LoadImageBackground(BackgroundNode *bp) {
 	ScaledIconNode::PutIcon(ip, bp->pixmap, 0, 0, 0, width, height);
 
 	/* We don't need the icon anymore. */
-	IconNode::DestroyIcon(ip);
+	Icon::DestroyIcon(ip);
 
 }

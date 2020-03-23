@@ -575,7 +575,7 @@ Image::Image(unsigned width, unsigned height, bool bitmap) {
 #endif
 
   /* Allocate the icon node. */
-  IconNode *result = IconNode::CreateIcon(this, true, "DefaultName");
+  Icon *result = Icon::CreateIcon(this, true, "DefaultName");
 
   /* Draw the icon. */
   int y = 0, border = 0, x = 0;

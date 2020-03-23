@@ -307,7 +307,7 @@ ClientNode::~ClientNode() {
     this->colormaps = cp;
   }
 
-  IconNode::DestroyIcon(this->getIcon());
+  Icon::DestroyIcon(this->getIcon());
 
   Events::_RequireRestack();
 
@@ -376,7 +376,7 @@ ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
 
   Groups::ApplyGroups(this);
   if (this->icon == NULL) {
-    IconNode::LoadIcon(this);
+    Icon::LoadIcon(this);
   }
 
   /* We now know the layer, so insert */
@@ -2403,11 +2403,11 @@ const char* ClientNode::getInstanceName() {
   return this->instanceName;
 }
 
-IconNode *ClientNode::getIcon() const {
+Icon *ClientNode::getIcon() const {
   return this->icon;
 }
 
-void ClientNode::setIcon(IconNode *icon) {
+void ClientNode::setIcon(Icon *icon) {
   this->icon = icon;
 }
 

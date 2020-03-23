@@ -83,7 +83,7 @@ void WindowManager::Initialize(void) {
 	ILog(Fonts::InitializeFonts);
 	ILog(Groups::InitializeGroups);
 	ILog(Hints::InitializeHints);
-	ILog(IconNode::InitializeIcons);
+	ILog(Icon::InitializeIcons);
 	ILog(PagerType::InitializePager);
 	ILog(Places::InitializePlacement);
 	ILog(Popups::InitializePopup);
@@ -113,7 +113,7 @@ void WindowManager::Startup(void) {
 	Groups::StartupGroups();
 	Colors::StartupColors();
 	Fonts::StartupFonts();
-	IconNode::StartupIcons();
+	Icon::StartupIcons();
 	Cursors::StartupCursors();
 
 	PagerType::StartupPager();
@@ -188,7 +188,7 @@ void WindowManager::Shutdown(void) {
 	TaskBar::ShutdownTaskBar();
 	ClockType::ShutdownClock();
 	Battery::ShutdownBattery();
-	IconNode::ShutdownIcons();
+	Icon::ShutdownIcons();
 	Cursors::ShutdownCursors();
 	Fonts::ShutdownFonts();
 	Colors::ShutdownColors();
@@ -219,7 +219,7 @@ void WindowManager::Destroy(void) {
 	Fonts::DestroyFonts();
 	Groups::DestroyGroups();
 	Hints::DestroyHints();
-	IconNode::DestroyIcons();
+	Icon::DestroyIcons();
 	Binding::DestroyBindings();
 	PagerType::DestroyPager();
 	Places::DestroyPlacement();

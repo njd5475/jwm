@@ -472,7 +472,7 @@ void DrawButtons(void) {
 	int x = dialog->okx;
 	int y = dialog->buttony;
 	int xoffset = 0, yoffset = 0;
-	IconNode *icon = NULL;
+	Icon *icon = NULL;
 	DrawButton(type, alignment, font, text, true, border, drawable, icon, x, y, width, height, xoffset, yoffset);
 
 	type = BUTTON_MENU;

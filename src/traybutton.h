@@ -12,7 +12,7 @@
 
 #include <vector>
 #include "timing.h"
-class IconNode;
+class Icon;
 
 #include "TrayComponent.h"
 
@@ -55,7 +55,7 @@ private:
 	char *label;
 	char *popup;
 	char *iconName;
-	IconNode *icon;
+	Icon *icon;
 
 	int mousex;
 	int mousey;

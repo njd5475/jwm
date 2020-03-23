@@ -18,12 +18,12 @@
 #include "settings.h"
 #include "border.h"
 
-std::vector<IconNode*> IconNode::images;
-std::vector<std::string> IconNode::iconPaths;
+std::vector<Icon*> Icon::images;
+std::vector<std::string> Icon::iconPaths;
 
-GC IconNode::iconGC;
+GC Icon::iconGC;
 
-IconNode IconNode::emptyIcon(new Image(1, 1, true), true, "EmptyIcon");
+Icon Icon::emptyIcon(new Image(1, 1, true), true, "EmptyIcon");
 
 #ifdef USE_ICONS
 
@@ -46,18 +46,18 @@ const char *ICON_EXTENSIONS[] = { "",
 #endif
     };
 
-const unsigned IconNode::EXTENSION_COUNT = ARRAY_LENGTH(ICON_EXTENSIONS);
+const unsigned Icon::EXTENSION_COUNT = ARRAY_LENGTH(ICON_EXTENSIONS);
 
-const unsigned IconNode::MAX_EXTENSION_LENGTH = 5;
+const unsigned Icon::MAX_EXTENSION_LENGTH = 5;
 
-char IconNode::iconSizeSet = 0;
+char Icon::iconSizeSet = 0;
 
-char *IconNode::defaultIconName = "DefaultIconName";
+char *Icon::defaultIconName = "DefaultIconName";
 
 /** Initialize icon data.
  * This must be initialized before parsing the configuration.
  */
-void IconNode::InitializeIcons(void) {
+void Icon::InitializeIcons(void) {
   unsigned int x;
   memset(&emptyIcon, 0, sizeof(emptyIcon));
   iconSizeSet = 0;
@@ -65,7 +65,7 @@ void IconNode::InitializeIcons(void) {
 }
 
 /** Startup icon support. */
-void IconNode::StartupIcons(void) {
+void Icon::StartupIcons(void) {
   XGCValues gcValues;
   XIconSize iconSize;
   unsigned long gcMask;
@@ -83,7 +83,7 @@ void IconNode::StartupIcons(void) {
 }
 
 /** Shutdown icon support. */
-void IconNode::ShutdownIcons(void) {
+void Icon::ShutdownIcons(void) {
   for (auto icon : images) {
     delete icon;
   }
@@ -92,7 +92,7 @@ void IconNode::ShutdownIcons(void) {
 }
 
 /** Destroy icon data. */
-void IconNode::DestroyIcons(void) {
+void Icon::DestroyIcons(void) {
 
   if (defaultIconName) {
     Release(defaultIconName);
@@ -101,7 +101,7 @@ void IconNode::DestroyIcons(void) {
 }
 
 /** Add an icon search path. */
-void IconNode::AddIconPath(const char *cpath) {
+void Icon::AddIconPath(const char *cpath) {
   if (!cpath) {
     return;
   }
@@ -126,7 +126,7 @@ void IconNode::AddIconPath(const char *cpath) {
 }
 
 /** Draw an icon. */
-void ScaledIconNode::PutIcon(IconNode *icon, Drawable d, long fg, int x, int y,
+void ScaledIconNode::PutIcon(Icon *icon, Drawable d, long fg, int x, int y,
     int width, int height) {
   ScaledIconNode *node;
 
@@ -177,7 +177,7 @@ void ScaledIconNode::PutIcon(IconNode *icon, Drawable d, long fg, int x, int y,
 }
 
 /** Draw a scaled icon. */
-void ScaledIconNode::PutScaledRenderIcon(IconNode *icon, ScaledIconNode *node,
+void ScaledIconNode::PutScaledRenderIcon(Icon *icon, ScaledIconNode *node,
     Drawable d, int x, int y, int width, int height) {
 
 #ifdef USE_XRENDER
@@ -353,10 +353,10 @@ ScaledIconNode* ScaledIconNode::CreateScaledRenderIcon(Image *image,
 }
 
 /** Load the icon for a client. */
-void IconNode::LoadIcon(ClientNode *np) {
-  IconNode *ico = np->getIcon();
+void Icon::LoadIcon(ClientNode *np) {
+  Icon *ico = np->getIcon();
   /* If client already has an icon, destroy it first. */
-  IconNode::DestroyIcon(ico);
+  Icon::DestroyIcon(ico);
   ico = NULL;
 
   /* Attempt to read _NET_WM_ICON for an icon. */
@@ -389,7 +389,7 @@ void IconNode::LoadIcon(ClientNode *np) {
 
   /* Attempt to read an icon based on the window name. */
   if (np->getInstanceName()) {
-    ico = IconNode::LoadNamedIcon(np->getInstanceName(), 1, 1);
+    ico = Icon::LoadNamedIcon(np->getInstanceName(), 1, 1);
     if (ico) {
       np->setIcon(ico);
       return;
@@ -398,10 +398,10 @@ void IconNode::LoadIcon(ClientNode *np) {
 }
 
 /** Load an icon from a file. */
-IconNode* IconNode::LoadNamedIcon(const char *name, char save,
+Icon* Icon::LoadNamedIcon(const char *name, char save,
     char preserveAspect) {
 
-  IconNode *icon;
+  Icon *icon;
 
   Assert(name);
 
@@ -420,7 +420,7 @@ IconNode* IconNode::LoadNamedIcon(const char *name, char save,
   if (name[0] == '/') {
     Image *image = Image::LoadImage(name, 0, 0, 1);
     if (image) {
-      icon = IconNode::CreateIcon(image, preserveAspect, name);
+      icon = Icon::CreateIcon(image, preserveAspect, name);
       Image::DestroyImage(image);
       return icon;
     } else {
@@ -441,7 +441,7 @@ IconNode* IconNode::LoadNamedIcon(const char *name, char save,
 }
 
 /** Helper for loading icons by name. */
-IconNode* IconNode::LoadNamedIconHelper(const char *name, const char *path,
+Icon* Icon::LoadNamedIconHelper(const char *name, const char *path,
     char save, char preserveAspect) {
   Image *image;
   char *temp;
@@ -489,7 +489,7 @@ IconNode* IconNode::LoadNamedIconHelper(const char *name, const char *path,
 
   /* Create the icon if we were able to load the image. */
   if (image) {
-    IconNode *result = IconNode::CreateIcon(image, preserveAspect, temp);
+    Icon *result = Icon::CreateIcon(image, preserveAspect, temp);
     Image::DestroyImage(image);
     return result;
   }
@@ -498,9 +498,9 @@ IconNode* IconNode::LoadNamedIconHelper(const char *name, const char *path,
 }
 
 /** Read the icon property from a client. */
-IconNode* IconNode::ReadNetWMIcon(Window win) {
+Icon* Icon::ReadNetWMIcon(Window win) {
   static const long MAX_LENGTH = 1 << 20;
-  IconNode *icon = NULL;
+  Icon *icon = NULL;
   unsigned long count;
   int status;
   unsigned long extra;
@@ -518,8 +518,8 @@ IconNode* IconNode::ReadNetWMIcon(Window win) {
 }
 
 /** Read the icon WMHint property from a client. */
-IconNode* IconNode::ReadWMHintIcon(Window win) {
-  IconNode *icon = NULL;
+Icon* Icon::ReadWMHintIcon(Window win) {
+  Icon *icon = NULL;
   XWMHints *hints = JXGetWMHints(display, win);
   if (hints) {
     Drawable d = None;
@@ -539,13 +539,13 @@ IconNode* IconNode::ReadWMHintIcon(Window win) {
 }
 
 /** Create an icon from XPM image data. */
-IconNode* IconNode::GetDefaultIcon(void) {
+Icon* Icon::GetDefaultIcon(void) {
   static const char *const name = "default";
   const unsigned width = 8;
   const unsigned height = 8;
   const unsigned border = 1;
   Image *image;
-  IconNode *result;
+  Icon *result;
   unsigned bytes;
   unsigned x, y;
 
@@ -568,12 +568,12 @@ IconNode* IconNode::GetDefaultIcon(void) {
   return result;
 }
 
-IconNode* IconNode::CreateIconFromDrawable(Drawable d, Pixmap mask) {
+Icon* Icon::CreateIconFromDrawable(Drawable d, Pixmap mask) {
   Image *image;
 
   image = Image::LoadImageFromDrawable(d, mask);
   if (image) {
-    IconNode *result = IconNode::CreateIcon(image, true, "FromDrawable");
+    Icon *result = Icon::CreateIcon(image, true, "FromDrawable");
     return result;
   } else {
     return NULL;
@@ -581,7 +581,7 @@ IconNode* IconNode::CreateIconFromDrawable(Drawable d, Pixmap mask) {
 }
 
 /** Get the best image for the requested size. */
-Image* IconNode::GetBestImage(IconNode *icon, int rwidth, int rheight) {
+Image* Icon::GetBestImage(Icon *icon, int rwidth, int rheight) {
   Image *best;
   Image *ip;
 
@@ -631,7 +631,7 @@ Image* IconNode::GetBestImage(IconNode *icon, int rwidth, int rheight) {
 std::vector<ScaledIconNode*> ScaledIconNode::nodes;
 
 /** Get a scaled icon. */
-ScaledIconNode* ScaledIconNode::GetScaledIcon(IconNode *icon, long fg,
+ScaledIconNode* ScaledIconNode::GetScaledIcon(Icon *icon, long fg,
     int rwidth, int rheight) {
 
   XColor color;
@@ -688,7 +688,7 @@ ScaledIconNode* ScaledIconNode::GetScaledIcon(IconNode *icon, long fg,
   }
 
   /* Need to load the image. */
-  imageNode = IconNode::GetBestImage(icon, nwidth, nheight);
+  imageNode = Icon::GetBestImage(icon, nwidth, nheight);
   if (JUNLIKELY(!imageNode)) {
     return NULL;
   }
@@ -798,9 +798,9 @@ ScaledIconNode* ScaledIconNode::GetScaledIcon(IconNode *icon, long fg,
 }
 
 /** Create an icon from binary data (as specified via window properties). */
-IconNode* IconNode::CreateIconFromBinary(const unsigned long *input,
+Icon* Icon::CreateIconFromBinary(const unsigned long *input,
     unsigned int length) {
-  IconNode *result = NULL;
+  Icon *result = NULL;
   unsigned int offset = 0;
 
   if (!input) {
@@ -826,7 +826,7 @@ IconNode* IconNode::CreateIconFromBinary(const unsigned long *input,
 
     image = Image::CreateImage(width, height, 0);
     if (result == NULL) {
-      result = IconNode::CreateIcon(image, false, "");
+      result = Icon::CreateIcon(image, false, "");
     }
     image->CopyFrom(input, offset);
 
@@ -837,7 +837,7 @@ IconNode* IconNode::CreateIconFromBinary(const unsigned long *input,
   return result;
 }
 
-IconNode::IconNode(Image *image, bool preserveAspect, const char *name) :
+Icon::Icon(Image *image, bool preserveAspect, const char *name) :
     name(CopyString(name)), preserveAspect(preserveAspect), width(
         image->getWidth()), height(image->getHeight()), bitmap(
         image->isBitmap()), image(image) {
@@ -848,60 +848,60 @@ IconNode::IconNode(Image *image, bool preserveAspect, const char *name) :
   this->transient = 1;
 }
 
-IconNode::~IconNode() {
+Icon::~Icon() {
   Image::DestroyImage(this->image);
   if (this->getName()) {
     delete[] this->getName();
   }
 }
 
-int IconNode::getWidth() {
+int Icon::getWidth() {
   return width;
 }
 
-int IconNode::getHeight() {
+int Icon::getHeight() {
   return height;
 }
 
-const char* IconNode::getName() {
+const char* Icon::getName() {
   return name;
 }
 
-Image* IconNode::getImage() const {
+Image* Icon::getImage() const {
   return image;
 }
 
-bool IconNode::isBitmap() const {
+bool Icon::isBitmap() const {
   return bitmap;
 }
 
 #ifdef USE_XRENDER
-bool IconNode::useRender() const {
+bool Icon::useRender() const {
   return render;
 }
 #endif
 
-bool IconNode::isAspectPreserved() {
+bool Icon::isAspectPreserved() {
   return preserveAspect;
 }
 
 /** Create an empty icon node. */
-IconNode* IconNode::CreateIcon(Image *image, bool preserveAspect,
+Icon* Icon::CreateIcon(Image *image, bool preserveAspect,
     const char *name) {
-  IconNode *icon = new IconNode(image, preserveAspect, name);
+  Icon *icon = new Icon(image, preserveAspect, name);
   images.push_back(icon);
   return icon;
 }
 
 ScaledIconNode::ScaledIconNode(Image *image, bool preserveAspect,
     const char *name, int newWidth, int newHeight) :
-    IconNode(image, preserveAspect, name) {
+    Icon(image, preserveAspect, name) {
 
 }
 
 ScaledIconNode::ScaledIconNode(Image *image, bool preserveAspect,
     const char *name) :
-    IconNode(image, preserveAspect, name), fg(0), mask(0), image(0) {
+    Icon(image, preserveAspect, name), fg(0), mask(0), image(0) {
 
 }
 
@@ -924,9 +924,9 @@ ScaledIconNode::~ScaledIconNode() {
 }
 
 /** Destroy an icon. */
-bool IconNode::DestroyIcon(IconNode *icon) {
+bool Icon::DestroyIcon(Icon *icon) {
   bool found = false;
-  std::vector<IconNode*>::iterator it;
+  std::vector<Icon*>::iterator it;
   for (it = images.begin(); it != images.end(); ++it) {
     if ((*it) == icon) {
       found = true;
@@ -942,7 +942,7 @@ bool IconNode::DestroyIcon(IconNode *icon) {
 }
 
 /** Find a icon in the icon hash table. */
-IconNode* IconNode::FindIcon(const char *name) {
+Icon* Icon::FindIcon(const char *name) {
   for (auto icon : images) {
     if (!strcmp(icon->getName(), name)) {
       return icon;
@@ -953,7 +953,7 @@ IconNode* IconNode::FindIcon(const char *name) {
 }
 
 /** Set the name of the default icon. */
-void IconNode::SetDefaultIcon(const char *name) {
+void Icon::SetDefaultIcon(const char *name) {
   if (defaultIconName) {
     Release(defaultIconName);
   }
