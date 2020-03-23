@@ -16,9 +16,9 @@
 #include "misc.h"
 #include "icon.h"
 
-std::vector<ImageNode*> ImageNode::images;
+std::vector<Image*> Image::images;
 
-typedef ImageNode* (*ImageLoader)(const char *fileName, int rwidth, int rheight,
+typedef Image* (*ImageLoader)(const char *fileName, int rwidth, int rheight,
     char preserveAspect);
 
 /* File extension to image loader mapping. */
@@ -27,31 +27,31 @@ static const struct {
   ImageLoader loader;
 } IMAGE_LOADERS[] = {
 #ifdef USE_PNG
-    { ".png", ImageNode::LoadPNGImage },
+    { ".png", Image::LoadPNGImage },
 #endif
 #ifdef USE_JPEG
-    { ".jpg", ImageNode::LoadJPEGImage }, { ".jpeg", ImageNode::LoadJPEGImage },
+    { ".jpg", Image::LoadJPEGImage }, { ".jpeg", Image::LoadJPEGImage },
 #endif
 #ifdef USE_CAIRO
 #ifdef USE_RSVG
-    { ".svg", ImageNode::LoadSVGImage },
+    { ".svg", Image::LoadSVGImage },
 #endif
 #endif
 #ifdef USE_XPM
-    { ".xpm", ImageNode::LoadXPMImage },
+    { ".xpm", Image::LoadXPMImage },
 #endif
 #ifdef USE_XBM
-    { ".xbm", ImageNode::LoadXBMImage },
+    { ".xbm", Image::LoadXBMImage },
 #endif
     };
 static const unsigned IMAGE_LOADER_COUNT = ARRAY_LENGTH(IMAGE_LOADERS);
 
 /** Load an image from the specified file. */
-ImageNode* ImageNode::LoadImage(const char *fileName, int rwidth, int rheight,
+Image* Image::LoadImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
   unsigned i;
   unsigned name_length;
-  ImageNode *result = NULL;
+  Image *result = NULL;
 
   /* Make sure we have a reasonable file name. */
   if (!fileName) {
@@ -104,8 +104,8 @@ ImageNode* ImageNode::LoadImage(const char *fileName, int rwidth, int rheight,
 
 /** Load an image from a pixmap. */
 #ifdef USE_ICONS
-ImageNode* ImageNode::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
-  ImageNode *result = NULL;
+Image* Image::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
+  Image *result = NULL;
   XImage *mask_image = NULL;
   XImage *icon_image = NULL;
   Window rwindow;
@@ -122,7 +122,7 @@ ImageNode* ImageNode::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
     mask_image = JXGetImage(display, mask, 0, 0, width, height, 1, ZPixmap);
   }
   if (icon_image) {
-    result = ImageNode::CreateImageFromXImages(icon_image, mask_image);
+    result = Image::CreateImageFromXImages(icon_image, mask_image);
     JXDestroyImage(icon_image);
   }
   if (mask_image) {
@@ -137,10 +137,10 @@ ImageNode* ImageNode::LoadImageFromDrawable(Drawable pmap, Pixmap mask) {
  * the issues surrounding longjmp and local variables.
  */
 #ifdef USE_PNG
-ImageNode* ImageNode::LoadPNGImage(const char *fileName, int rwidth, int rheight,
+Image* Image::LoadPNGImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
 
-  static ImageNode *result;
+  static Image *result;
   static FILE *fd;
   static unsigned char **rows;
   static png_structp pngData;
@@ -189,7 +189,7 @@ ImageNode* ImageNode::LoadPNGImage(const char *fileName, int rwidth, int rheight
     if (rows) {
       ReleaseStack(rows);
     }
-    ImageNode::DestroyImage(result);
+    Image::DestroyImage(result);
     Warning(_("error reading PNG image: %s"), fileName);
     return NULL;
   }
@@ -217,7 +217,7 @@ ImageNode* ImageNode::LoadPNGImage(const char *fileName, int rwidth, int rheight
 
   png_get_IHDR(pngData, pngInfo, &width, &height, &bitDepth, &colorType, NULL,
   NULL, NULL);
-  result = ImageNode::CreateImage(width, height, 0);
+  result = Image::CreateImage(width, height, 0);
 
   png_set_expand(pngData);
 
@@ -267,13 +267,13 @@ typedef struct {
   jmp_buf jbuffer;
 } JPEGErrorStruct;
 
-void ImageNode::JPEGErrorHandler(j_common_ptr cinfo) {
+void Image::JPEGErrorHandler(j_common_ptr cinfo) {
   JPEGErrorStruct *es = (JPEGErrorStruct*) cinfo->err;
   longjmp(es->jbuffer, 1);
 }
-ImageNode* ImageNode::LoadJPEGImage(const char *fileName, int rwidth, int rheight,
+Image* Image::LoadJPEGImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
-  static ImageNode *result;
+  static Image *result;
   static struct jpeg_decompress_struct cinfo;
   static FILE *fd;
   static JSAMPARRAY buffer;
@@ -374,13 +374,13 @@ ImageNode* ImageNode::LoadJPEGImage(const char *fileName, int rwidth, int rheigh
 
 #ifdef USE_CAIRO
 #ifdef USE_RSVG
-ImageNode* ImageNode::LoadSVGImage(const char *fileName, int rwidth, int rheight,
+Image* Image::LoadSVGImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
 
 #if !GLIB_CHECK_VERSION(2, 35, 0)
    static char initialized = 0;
 #endif
-  ImageNode *result = NULL;
+  Image *result = NULL;
   RsvgHandle *rh;
   RsvgDimensionData dim;
   GError *e;
@@ -464,10 +464,10 @@ ImageNode* ImageNode::LoadSVGImage(const char *fileName, int rwidth, int rheight
 
 /** Load an XPM image from the specified file. */
 #ifdef USE_XPM
-ImageNode* ImageNode::LoadXPMImage(const char *fileName, int rwidth, int rheight,
+Image* Image::LoadXPMImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
 
-  ImageNode *result = NULL;
+  Image *result = NULL;
 
   XpmAttributes attr;
   XImage *image;
@@ -477,8 +477,8 @@ ImageNode* ImageNode::LoadXPMImage(const char *fileName, int rwidth, int rheight
   Assert(fileName);
 
   attr.valuemask = XpmAllocColor | XpmFreeColors | XpmColorClosure;
-  attr.alloc_color = ImageNode::AllocateColor;
-  attr.free_colors = ImageNode::FreeColors;
+  attr.alloc_color = Image::AllocateColor;
+  attr.free_colors = Image::FreeColors;
   attr.color_closure = NULL;
   rc = XpmReadFileToImage(display, (char*) fileName, &image, &shape, &attr);
   if (rc == XpmSuccess) {
@@ -496,9 +496,9 @@ ImageNode* ImageNode::LoadXPMImage(const char *fileName, int rwidth, int rheight
 
 /** Load an XBM image from the specified file. */
 #ifdef USE_XBM
-ImageNode* ImageNode::LoadXBMImage(const char *fileName, int rwidth, int rheight,
+Image* Image::LoadXBMImage(const char *fileName, int rwidth, int rheight,
     char preserveAspect) {
-  ImageNode *result = NULL;
+  Image *result = NULL;
   unsigned char *data;
   unsigned width, height;
   int xhot, yhot;
@@ -518,9 +518,9 @@ ImageNode* ImageNode::LoadXBMImage(const char *fileName, int rwidth, int rheight
 /** Create an image from XImages giving color and shape information. */
 #ifdef USE_ICONS
 #define HASH_SIZE 16
-ImageNode* ImageNode::CreateImageFromXImages(XImage *image, XImage *shape) {
+Image* Image::CreateImageFromXImages(XImage *image, XImage *shape) {
   XColor colors[HASH_SIZE];
-  ImageNode *result;
+  Image *result;
   unsigned char *dest;
   int x, y;
 
@@ -554,7 +554,7 @@ ImageNode* ImageNode::CreateImageFromXImages(XImage *image, XImage *shape) {
 #undef HASH_SIZE
 #endif /* USE_ICONS */
 
-ImageNode::ImageNode(unsigned width, unsigned height, bool bitmap) {
+Image::Image(unsigned width, unsigned height, bool bitmap) {
   unsigned image_size;
   if (bitmap) {
     image_size = (width * height + 7) / 8;
@@ -601,11 +601,11 @@ ImageNode::ImageNode(unsigned width, unsigned height, bool bitmap) {
   }
 }
 
-ImageNode::~ImageNode() {
+Image::~Image() {
 
 }
 
-void ImageNode::CopyFrom(const unsigned long *input, unsigned offset) {
+void Image::CopyFrom(const unsigned long *input, unsigned offset) {
 
   /* Note: the data types here might be of different sizes. */
   offset += 2;
@@ -618,36 +618,36 @@ void ImageNode::CopyFrom(const unsigned long *input, unsigned offset) {
   }
 }
 
-int ImageNode::getWidth() const {
+int Image::getWidth() const {
   return width;
 }
 
-int ImageNode::getHeight() const {
+int Image::getHeight() const {
   return height;
 }
 
-bool ImageNode::isBitmap() const {
+bool Image::isBitmap() const {
   return bitmap;
 }
 
-const unsigned char* ImageNode::getData() {
+const unsigned char* Image::getData() {
   return this->data;
 }
 
 #ifdef USE_XRENDER
-bool ImageNode::getRender() const {
+bool Image::getRender() const {
   return this->render;
 }
 #endif
 
-ImageNode* ImageNode::CreateImage(unsigned width, unsigned height, char bitmap) {
-  return new ImageNode(width, height, bitmap);
+Image* Image::CreateImage(unsigned width, unsigned height, char bitmap) {
+  return new Image(width, height, bitmap);
 }
 
 /** Destroy an image node. */
-bool ImageNode::DestroyImage(ImageNode *image) {
+bool Image::DestroyImage(Image *image) {
   bool found = false;
-  std::vector<ImageNode*>::iterator it;
+  std::vector<Image*>::iterator it;
   for (it = images.begin(); it != images.end(); ++it) {
     if ((*it) == image) {
       found = true;
@@ -662,7 +662,7 @@ bool ImageNode::DestroyImage(ImageNode *image) {
 
 /** Callback to allocate a color for libxpm. */
 #ifdef USE_XPM
-int ImageNode::AllocateColor(Display *d, Colormap cmap, char *name, XColor *c,
+int Image::AllocateColor(Display *d, Colormap cmap, char *name, XColor *c,
     void *closure) {
   if (name) {
     if (!JXParseColor(d, cmap, name, c)) {
@@ -679,7 +679,7 @@ int ImageNode::AllocateColor(Display *d, Colormap cmap, char *name, XColor *c,
  * We don't need to do anything here since color.c takes care of this.
  */
 #ifdef USE_XPM
-int ImageNode::FreeColors(Display *d, Colormap cmap, Pixel *pixels, int n,
+int Image::FreeColors(Display *d, Colormap cmap, Pixel *pixels, int n,
     void *closure) {
   return 1;
 }

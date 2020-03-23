@@ -14,29 +14,29 @@
 #include <string>
 
 class ClientNode;
-class ImageNode;
+class Image;
 
 /** Structure to hold an icon. */
 class IconNode {
 public:
-  IconNode(ImageNode* image, bool preserveAspect, const char* name);
+  IconNode(Image* image, bool preserveAspect, const char* name);
   virtual ~IconNode();
 
   /** Static funtions */
-  static IconNode* CreateIcon(ImageNode *image, bool preserveAspect, const char* name);
+  static IconNode* CreateIcon(Image *image, bool preserveAspect, const char* name);
 
   /** Destroy an icon.
    * @param icon The icon to destroy.
    */
   static bool DestroyIcon(IconNode *icon);
 
-  static ImageNode* GetBestImage(IconNode *icon, int rwidth, int rheight);
+  static Image* GetBestImage(IconNode *icon, int rwidth, int rheight);
 
   static IconNode emptyIcon;
 
   int getWidth();
   int getHeight();
-  ImageNode* getImage() const;
+  Image* getImage() const;
   const char* getName();
   bool isAspectPreserved();
   bool isBitmap() const;
@@ -45,7 +45,7 @@ public:
 #endif
 
 private:
-  ImageNode* image;
+  Image* image;
   const char *name; /**< The name of the icon. */
   int width; /**< Natural width. */
   int height; /**< Natural height. */
@@ -119,8 +119,8 @@ public:
 class ScaledIconNode : public IconNode {
 
 public:
-  ScaledIconNode(ImageNode* image, bool preserveAspect, const char* name);
-  ScaledIconNode(ImageNode* image, bool preserveAspect, const char* name, int newWidth, int newHeight);
+  ScaledIconNode(Image* image, bool preserveAspect, const char* name);
+  ScaledIconNode(Image* image, bool preserveAspect, const char* name, int newWidth, int newHeight);
   virtual ~ScaledIconNode();
 
   /** Render an icon.
@@ -158,7 +158,7 @@ public:
    * @param fg The foreground color (for bitmaps).
    * @return The scaled icon.
    */
-  static ScaledIconNode *CreateScaledRenderIcon(ImageNode *image, long fg);
+  static ScaledIconNode *CreateScaledRenderIcon(Image *image, long fg);
 private:
 
   static std::vector<ScaledIconNode*> nodes; /**< Scaled icons. */

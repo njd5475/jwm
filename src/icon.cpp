@@ -23,7 +23,7 @@ std::vector<std::string> IconNode::iconPaths;
 
 GC IconNode::iconGC;
 
-IconNode IconNode::emptyIcon(new ImageNode(1, 1, true), true, "EmptyIcon");
+IconNode IconNode::emptyIcon(new Image(1, 1, true), true, "EmptyIcon");
 
 #ifdef USE_ICONS
 
@@ -241,7 +241,7 @@ void ScaledIconNode::PutScaledRenderIcon(IconNode *icon, ScaledIconNode *node,
 }
 
 /** Create a scaled icon. */
-ScaledIconNode* ScaledIconNode::CreateScaledRenderIcon(ImageNode *image,
+ScaledIconNode* ScaledIconNode::CreateScaledRenderIcon(Image *image,
     long fg) {
 
   ScaledIconNode *result = NULL;
@@ -418,10 +418,10 @@ IconNode* IconNode::LoadNamedIcon(const char *name, char save,
 
   /* Check for an absolute file name. */
   if (name[0] == '/') {
-    ImageNode *image = ImageNode::LoadImage(name, 0, 0, 1);
+    Image *image = Image::LoadImage(name, 0, 0, 1);
     if (image) {
       icon = IconNode::CreateIcon(image, preserveAspect, name);
-      ImageNode::DestroyImage(image);
+      Image::DestroyImage(image);
       return icon;
     } else {
       return &emptyIcon;
@@ -443,7 +443,7 @@ IconNode* IconNode::LoadNamedIcon(const char *name, char save,
 /** Helper for loading icons by name. */
 IconNode* IconNode::LoadNamedIconHelper(const char *name, const char *path,
     char save, char preserveAspect) {
-  ImageNode *image;
+  Image *image;
   char *temp;
   const unsigned nameLength = strlen(name);
   const unsigned pathLength = strlen(path);
@@ -474,12 +474,12 @@ IconNode* IconNode::LoadNamedIconHelper(const char *name, const char *path,
   /* Attempt to load the image. */
   image = NULL;
   if (hasExtension) {
-    image = ImageNode::LoadImage(temp, 0, 0, 1);
+    image = Image::LoadImage(temp, 0, 0, 1);
   } else {
     for (i = 0; i < EXTENSION_COUNT; i++) {
       const unsigned len = strlen(ICON_EXTENSIONS[i]);
       memcpy(&temp[pathLength + nameLength], ICON_EXTENSIONS[i], len + 1);
-      image = ImageNode::LoadImage(temp, 0, 0, 1);
+      image = Image::LoadImage(temp, 0, 0, 1);
       if (image) {
         break;
       }
@@ -490,7 +490,7 @@ IconNode* IconNode::LoadNamedIconHelper(const char *name, const char *path,
   /* Create the icon if we were able to load the image. */
   if (image) {
     IconNode *result = IconNode::CreateIcon(image, preserveAspect, temp);
-    ImageNode::DestroyImage(image);
+    Image::DestroyImage(image);
     return result;
   }
 
@@ -544,7 +544,7 @@ IconNode* IconNode::GetDefaultIcon(void) {
   const unsigned width = 8;
   const unsigned height = 8;
   const unsigned border = 1;
-  ImageNode *image;
+  Image *image;
   IconNode *result;
   unsigned bytes;
   unsigned x, y;
@@ -563,15 +563,15 @@ IconNode* IconNode::GetDefaultIcon(void) {
 
   /* Allocate image data. */
   bytes = (width * height + 7) / 8;
-  image = ImageNode::CreateImage(width, height, 1);
+  image = Image::CreateImage(width, height, 1);
 
   return result;
 }
 
 IconNode* IconNode::CreateIconFromDrawable(Drawable d, Pixmap mask) {
-  ImageNode *image;
+  Image *image;
 
-  image = ImageNode::LoadImageFromDrawable(d, mask);
+  image = Image::LoadImageFromDrawable(d, mask);
   if (image) {
     IconNode *result = IconNode::CreateIcon(image, true, "FromDrawable");
     return result;
@@ -581,13 +581,13 @@ IconNode* IconNode::CreateIconFromDrawable(Drawable d, Pixmap mask) {
 }
 
 /** Get the best image for the requested size. */
-ImageNode* IconNode::GetBestImage(IconNode *icon, int rwidth, int rheight) {
-  ImageNode *best;
-  ImageNode *ip;
+Image* IconNode::GetBestImage(IconNode *icon, int rwidth, int rheight) {
+  Image *best;
+  Image *ip;
 
   /* If we don't have an image loaded, load one. */
   if (icon->images.empty()) {
-    return ImageNode::LoadImage(icon->getName(), rwidth, rheight,
+    return Image::LoadImage(icon->getName(), rwidth, rheight,
         icon->isAspectPreserved());
   }
 
@@ -637,7 +637,7 @@ ScaledIconNode* ScaledIconNode::GetScaledIcon(IconNode *icon, long fg,
   XColor color;
   XImage *image;
   XPoint *points;
-  ImageNode *imageNode;
+  Image *imageNode;
   ScaledIconNode *np;
   GC maskGC;
   int x, y;
@@ -812,7 +812,7 @@ IconNode* IconNode::CreateIconFromBinary(const unsigned long *input,
     const unsigned width = input[offset + 0];
     const unsigned height = input[offset + 1];
     const unsigned char *data;
-    ImageNode *image;
+    Image *image;
     unsigned x;
 
     if (JUNLIKELY(width * height + 2 > length - offset)) {
@@ -824,7 +824,7 @@ IconNode* IconNode::CreateIconFromBinary(const unsigned long *input,
       return result;
     }
 
-    image = ImageNode::CreateImage(width, height, 0);
+    image = Image::CreateImage(width, height, 0);
     if (result == NULL) {
       result = IconNode::CreateIcon(image, false, "");
     }
@@ -837,7 +837,7 @@ IconNode* IconNode::CreateIconFromBinary(const unsigned long *input,
   return result;
 }
 
-IconNode::IconNode(ImageNode *image, bool preserveAspect, const char *name) :
+IconNode::IconNode(Image *image, bool preserveAspect, const char *name) :
     name(CopyString(name)), preserveAspect(preserveAspect), width(
         image->getWidth()), height(image->getHeight()), bitmap(
         image->isBitmap()), image(image) {
@@ -849,7 +849,7 @@ IconNode::IconNode(ImageNode *image, bool preserveAspect, const char *name) :
 }
 
 IconNode::~IconNode() {
-  ImageNode::DestroyImage(this->image);
+  Image::DestroyImage(this->image);
   if (this->getName()) {
     delete[] this->getName();
   }
@@ -867,7 +867,7 @@ const char* IconNode::getName() {
   return name;
 }
 
-ImageNode* IconNode::getImage() const {
+Image* IconNode::getImage() const {
   return image;
 }
 
@@ -886,20 +886,20 @@ bool IconNode::isAspectPreserved() {
 }
 
 /** Create an empty icon node. */
-IconNode* IconNode::CreateIcon(ImageNode *image, bool preserveAspect,
+IconNode* IconNode::CreateIcon(Image *image, bool preserveAspect,
     const char *name) {
   IconNode *icon = new IconNode(image, preserveAspect, name);
   images.push_back(icon);
   return icon;
 }
 
-ScaledIconNode::ScaledIconNode(ImageNode *image, bool preserveAspect,
+ScaledIconNode::ScaledIconNode(Image *image, bool preserveAspect,
     const char *name, int newWidth, int newHeight) :
     IconNode(image, preserveAspect, name) {
 
 }
 
-ScaledIconNode::ScaledIconNode(ImageNode *image, bool preserveAspect,
+ScaledIconNode::ScaledIconNode(Image *image, bool preserveAspect,
     const char *name) :
     IconNode(image, preserveAspect, name), fg(0), mask(0), image(0) {
 
