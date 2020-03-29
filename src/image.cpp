@@ -605,9 +605,10 @@ Image::~Image() {
 
 }
 
-void Image::CopyFrom(const unsigned long *input, unsigned offset) {
+unsigned Image::CopyFrom(const unsigned long *input, unsigned offset) {
 
   /* Note: the data types here might be of different sizes. */
+  unsigned originalOffset = offset;
   offset += 2;
   for (unsigned x = 0; x < width * height; x++) {
     *this->data++ = (input[offset] >> 24) & 0xFF;
@@ -616,6 +617,7 @@ void Image::CopyFrom(const unsigned long *input, unsigned offset) {
     *this->data++ = (input[offset] >> 0) & 0xFF;
     offset += 1;
   }
+  return offset - originalOffset;
 }
 
 int Image::getWidth() const {

@@ -5,18 +5,28 @@
  *      Author: nick
  */
 
-#include <string>
-#include <sstream>
-#include <stdlib.h>
-#include "logger.h"
-#include "settings.h"
-#include "font.h"
 #include "Configuration.h"
-#include "menu.h"
-#include "root.h"
+
+#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <sstream>
+#include <string>
+
 #include "icon.h"
+#include "root.h"
+#include "settings.h"
 
 using namespace std;
+
+Builder::Builder(Configuration *cfg) :
+    _cfg(cfg) {
+
+}
+
+Builder::~Builder() {
+
+}
 
 vector<string> split(const char *str) {
   stringstream strstream(str);
@@ -41,7 +51,18 @@ Configuration::~Configuration() {
   // TODO Auto-generated destructor stub
 }
 
+void Configuration::saveConfig(FILE *output) {
+  Saver saver(this, output);
+  processConfigs(saver);
+}
+
 void Configuration::loadConfig() {
+  Loader builder(this);
+  this->processConfigs(builder);
+  _loaded = true;
+}
+
+void Configuration::processConfigs(Builder &builder) {
   JArrayItem **arrayItems = _configs->_internal.vItems;
   for (int i = 0; i < _configs->count; ++i) {
     JArrayItem *item = arrayItems[i];
@@ -49,106 +70,54 @@ void Configuration::loadConfig() {
       JObject *itemObj = item->value.object_val;
 
       JObject *iconPath = jsonObject(itemObj, "IconPath");
-      if(iconPath) {
-        const char *path = jsonString(iconPath, "path");
-        Icon::AddIconPath(path);
+      if (iconPath) {
+        builder.buildIconPath(iconPath);
       }
 
       JObject *menuStyle = jsonObject(itemObj, "MenuStyle");
       if (menuStyle) {
-        Configuration::loadStyle(menuStyle, (StyleColors ) { FONT_MENU,
-            COLOR_MENU_BG, COLOR_MENU_BG,
-            COLOR_MENU_FG,
-            COLOR_MENU_UP, COLOR_MENU_DOWN, MENU, {
-            COLOR_MENU_ACTIVE_BG1, COLOR_MENU_ACTIVE_BG2,
-            COLOR_MENU_ACTIVE_FG, COLOR_MENU_ACTIVE_UP,
-            COLOR_MENU_ACTIVE_DOWN } });
+        builder.buildMenuStyle(menuStyle);
       }
 
       JObject *windowStyle = jsonObject(itemObj, "WindowStyle");
       if (windowStyle) {
-        Configuration::loadStyle(windowStyle, (StyleColors ) { FONT_BORDER,
-            COLOR_TITLE_BG1,
-            COLOR_TITLE_BG2, COLOR_TITLE_FG, COLOR_TITLE_UP,
-            COLOR_TITLE_DOWN, ACTIVE_CLIENT, { COLOR_TITLE_ACTIVE_BG1,
-            COLOR_TITLE_ACTIVE_BG2, COLOR_TITLE_ACTIVE_FG,
-            COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN } });
-        Configuration::loadWindowSettings(windowStyle);
+        builder.buildWindowStyle(windowStyle);
       }
 
       JObject *trayStyle = jsonObject(itemObj, "TrayStyle");
       if (trayStyle) {
-        Configuration::loadStyle(trayStyle, (StyleColors ) { FONT_TRAY,
-            COLOR_TRAY_BG1, COLOR_TRAY_BG2,
-            COLOR_TRAY_FG, COLOR_TRAY_UP, COLOR_TRAY_DOWN, TRAY, {
-            COLOR_TRAY_ACTIVE_BG1, COLOR_TRAY_ACTIVE_BG2,
-            COLOR_TRAY_ACTIVE_FG, COLOR_TRAY_ACTIVE_UP,
-            COLOR_TRAY_ACTIVE_DOWN } });
+        builder.buildTrayStyle(trayStyle);
       }
 
       JObject *taskListStyle = jsonObject(itemObj, "TaskListStyle");
       if (taskListStyle) {
-        Configuration::loadStyle(taskListStyle, (StyleColors ) { FONT_TASKLIST,
-            COLOR_TASKLIST_BG1, COLOR_TASKLIST_BG2,
-            COLOR_TASKLIST_FG, COLOR_TASKLIST_UP, COLOR_TASKLIST_DOWN, TASKLIST,
-                {
-                COLOR_TASKLIST_ACTIVE_BG1, COLOR_TASKLIST_ACTIVE_BG2,
-                COLOR_TASKLIST_ACTIVE_FG, COLOR_TASKLIST_ACTIVE_UP,
-                COLOR_TASKLIST_ACTIVE_DOWN } });
+        builder.buildTaskListStyle(taskListStyle);
       }
 
       JObject *pagerStyle = jsonObject(itemObj, "PagerStyle");
       if (pagerStyle) {
-        Configuration::loadStyle(pagerStyle, (StyleColors ) { FONT_PAGER,
-            COLOR_PAGER_BG, COLOR_PAGER_BG,
-            COLOR_PAGER_FG, COLOR_PAGER_BG, COLOR_PAGER_BG, PAGER, {
-            COLOR_PAGER_ACTIVE_BG, COLOR_PAGER_ACTIVE_BG,
-            COLOR_PAGER_ACTIVE_FG, COLOR_PAGER_ACTIVE_BG,
-            COLOR_PAGER_ACTIVE_BG } });
+        builder.buildPagerStyle(pagerStyle);
       }
 
       JObject *popupStyle = jsonObject(itemObj, "PopupStyle");
       if (popupStyle) {
-        Configuration::loadStyle(popupStyle, (StyleColors ) { FONT_POPUP,
-            COLOR_POPUP_BG, COLOR_POPUP_BG,
-            COLOR_POPUP_FG, COLOR_POPUP_BG, COLOR_POPUP_BG, POPUP, {
-            COLOR_COUNT, COLOR_COUNT,
-            COLOR_COUNT, COLOR_COUNT,
-            COLOR_COUNT } });
+        builder.buildPopupStyle(popupStyle);
       }
 
       JObject *trayButtonStyle = jsonObject(itemObj, "TrayButtonStyle");
       if (trayButtonStyle) {
-        Configuration::loadStyle(trayButtonStyle, (StyleColors ) {
-                FONT_TRAYBUTTON,
-                COLOR_TRAYBUTTON_BG1, COLOR_TRAYBUTTON_BG2,
-                COLOR_TRAYBUTTON_FG, COLOR_TRAYBUTTON_UP, COLOR_TRAYBUTTON_DOWN,
-                TRAYBUTTON, {
-                COLOR_TRAYBUTTON_ACTIVE_BG1, COLOR_TRAYBUTTON_ACTIVE_BG2,
-                COLOR_TRAYBUTTON_ACTIVE_FG, COLOR_TRAYBUTTON_ACTIVE_UP,
-                COLOR_TRAYBUTTON_ACTIVE_DOWN } });
+        builder.buildTrayButtonStyle(trayButtonStyle);
       }
 
       JObject *rootMenu = jsonObject(itemObj, "RootMenu");
       if (rootMenu) {
-        Menu *menu = Configuration::loadMenu(rootMenu);
-        if (!menu) {
-
-        }
-
-        const char *onroot = jsonString(rootMenu, "onroot");
-        if (!onroot) {
-          onroot = "123";
-        }
-
-        Roots::SetRootMenu(onroot, menu);
+        builder.buildRootMenu(rootMenu);
       }
     }
   }
-  _loaded = true;
 }
 
-Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu = NULL) {
+Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu) {
   JArray *children = jsonArray(menuObject, "children");
 
   if (menu == NULL) {
@@ -180,7 +149,7 @@ Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu = NULL) {
         JObject *restart = jsonObject(item, "Restart");
         if (restart) {
           MenuItem *restartItem = new MenuItem(menu, "Restart", MENU_ITEM_NORMAL,
-              NULL, NULL);
+          NULL, NULL);
           restartItem->setAction(MA_RESTART, NULL, 1);
           menu->addItem(restartItem);
         }
@@ -188,7 +157,7 @@ Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu = NULL) {
         JObject *exit = jsonObject(item, "Exit");
         if (exit) {
           MenuItem *exitItem = new MenuItem(menu, "Exit", MENU_ITEM_NORMAL,
-              NULL, NULL);
+          NULL, NULL);
           exitItem->setAction(MA_EXIT, NULL, 1);
           menu->addItem(exitItem);
         }
@@ -198,8 +167,7 @@ Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu = NULL) {
   return menu;
 }
 
-MenuItem* Configuration::loadMenuItem(Menu *menu, MenuItemType type,
-    JObject *item) {
+MenuItem* Configuration::loadMenuItem(Menu *menu, MenuItemType type, JObject *item) {
 
   const char *icon = jsonString(item, "icon");
   const char *label = jsonString(item, "label");
@@ -247,8 +215,7 @@ void Configuration::loadWindowSettings(JObject *window) {
 }
 
 void Configuration::loadStyle(JObject *object, StyleColors colors) {
-  loadStyle(object, colors.font, colors.bg, colors.bg2, colors.fg, colors.up,
-      colors.down, colors.opacityType);
+  loadStyle(object, colors.font, colors.bg, colors.bg2, colors.fg, colors.up, colors.down, colors.opacityType);
 
   JArray *children = jsonArray(object, "children");
 
@@ -258,15 +225,12 @@ void Configuration::loadStyle(JObject *object, StyleColors colors) {
     JObject *active = NULL;
     for (unsigned i = 0; i < size; ++i) {
       active = jsonObject(actives[i], "active");
-      loadStyle(active, FONT_NOOP, colors.active.bg, colors.active.bg2,
-          colors.active.fg, colors.active.up, colors.active.down, UNKNOWN);
+      loadStyle(active, FONT_NOOP, colors.active.bg, colors.active.bg2, colors.active.fg, colors.active.up, colors.active.down, UNKNOWN);
     }
   }
 }
 
-void Configuration::loadStyle(JObject *object, FontType f, ColorName bg,
-    ColorName bg2, ColorName fg, ColorName up, ColorName down,
-    OpacityType otype) {
+void Configuration::loadStyle(JObject *object, FontType f, ColorName bg, ColorName bg2, ColorName fg, ColorName up, ColorName down, OpacityType otype) {
 
   const char *font = jsonString(object, "font");
   const char *foreground = jsonString(object, "foreground");
@@ -332,6 +296,10 @@ void Configuration::loadStyle(JObject *object, FontType f, ColorName bg,
   }
 }
 
+void Configuration::write(FILE *output) {
+
+}
+
 bool Configuration::isConfigLoaded() {
   return _loaded;
 }
@@ -340,4 +308,284 @@ void Configuration::load(JArray *configs) {
   Configuration *cfg = new Configuration(configs);
   configurations.push_back(cfg);
   cfg->loadConfig();
+}
+
+void Configuration::saveConfigs(FILE *output) {
+  for (auto config : configurations) {
+    config->saveConfig(output);
+  }
+}
+
+Loader::Loader(Configuration *cfg) :
+    Builder(cfg) {
+
+}
+
+Loader::~Loader() {
+
+}
+
+void Loader::buildIconPath(JObject *iconPath) {
+  const char *path = jsonString(iconPath, "path");
+
+  Icon::AddIconPath(path);
+}
+
+void Loader::buildMenuStyle(JObject *menuStyle) {
+  Configuration::loadStyle(menuStyle, (Configuration::StyleColors ) { FONT_MENU,
+      COLOR_MENU_BG, COLOR_MENU_BG,
+      COLOR_MENU_FG,
+      COLOR_MENU_UP, COLOR_MENU_DOWN, Configuration::MENU, {
+      COLOR_MENU_ACTIVE_BG1, COLOR_MENU_ACTIVE_BG2,
+      COLOR_MENU_ACTIVE_FG, COLOR_MENU_ACTIVE_UP,
+      COLOR_MENU_ACTIVE_DOWN } });
+}
+
+void Loader::buildTaskListStyle(JObject *taskListStyle) {
+  Configuration::loadStyle(taskListStyle, (Configuration::StyleColors ) { FONT_TASKLIST,
+      COLOR_TASKLIST_BG1, COLOR_TASKLIST_BG2,
+      COLOR_TASKLIST_FG, COLOR_TASKLIST_UP, COLOR_TASKLIST_DOWN, Configuration::TASKLIST, {
+      COLOR_TASKLIST_ACTIVE_BG1, COLOR_TASKLIST_ACTIVE_BG2,
+      COLOR_TASKLIST_ACTIVE_FG, COLOR_TASKLIST_ACTIVE_UP,
+      COLOR_TASKLIST_ACTIVE_DOWN } });
+}
+
+void Loader::buildPagerStyle(JObject *pagerStyle) {
+  Configuration::loadStyle(pagerStyle, (Configuration::StyleColors ) { FONT_PAGER,
+      COLOR_PAGER_BG, COLOR_PAGER_BG,
+      COLOR_PAGER_FG, COLOR_PAGER_BG, COLOR_PAGER_BG, Configuration::PAGER, {
+      COLOR_PAGER_ACTIVE_BG, COLOR_PAGER_ACTIVE_BG,
+      COLOR_PAGER_ACTIVE_FG, COLOR_PAGER_ACTIVE_BG,
+      COLOR_PAGER_ACTIVE_BG } });
+}
+
+void Loader::buildPopupStyle(JObject *popupStyle) {
+  Configuration::loadStyle(popupStyle, (Configuration::StyleColors ) { FONT_POPUP,
+      COLOR_POPUP_BG, COLOR_POPUP_BG,
+      COLOR_POPUP_FG, COLOR_POPUP_BG, COLOR_POPUP_BG, Configuration::POPUP, {
+      COLOR_COUNT, COLOR_COUNT,
+      COLOR_COUNT, COLOR_COUNT,
+      COLOR_COUNT } });
+}
+
+void Loader::buildTrayStyle(JObject *trayStyle) {
+  Configuration::loadStyle(trayStyle, (Configuration::StyleColors ) { FONT_TRAY,
+      COLOR_TRAY_BG1, COLOR_TRAY_BG2,
+      COLOR_TRAY_FG, COLOR_TRAY_UP, COLOR_TRAY_DOWN, Configuration::TRAY, {
+      COLOR_TRAY_ACTIVE_BG1, COLOR_TRAY_ACTIVE_BG2,
+      COLOR_TRAY_ACTIVE_FG, COLOR_TRAY_ACTIVE_UP,
+      COLOR_TRAY_ACTIVE_DOWN } });
+}
+
+void Loader::buildTrayButtonStyle(JObject *trayButtonStyle) {
+  Configuration::loadStyle(trayButtonStyle, (Configuration::StyleColors ) { FONT_TRAYBUTTON,
+      COLOR_TRAYBUTTON_BG1, COLOR_TRAYBUTTON_BG2,
+      COLOR_TRAYBUTTON_FG, COLOR_TRAYBUTTON_UP, COLOR_TRAYBUTTON_DOWN, Configuration::TRAYBUTTON, {
+      COLOR_TRAYBUTTON_ACTIVE_BG1, COLOR_TRAYBUTTON_ACTIVE_BG2,
+      COLOR_TRAYBUTTON_ACTIVE_FG, COLOR_TRAYBUTTON_ACTIVE_UP,
+      COLOR_TRAYBUTTON_ACTIVE_DOWN } });
+}
+
+void Loader::buildRootMenu(JObject *rootMenu) {
+  Menu *menu = Configuration::loadMenu(rootMenu);
+  if (!menu) {
+
+  }
+
+  const char *onroot = jsonString(rootMenu, "onroot");
+  if (!onroot) {
+    onroot = "123";
+  }
+
+  Roots::SetRootMenu(onroot, menu);
+}
+
+void Loader::buildWindowStyle(JObject *windowStyle) {
+  Configuration::loadStyle(windowStyle, (Configuration::StyleColors ) { FONT_BORDER,
+      COLOR_TITLE_BG1,
+      COLOR_TITLE_BG2, COLOR_TITLE_FG, COLOR_TITLE_UP,
+      COLOR_TITLE_DOWN, Configuration::ACTIVE_CLIENT, { COLOR_TITLE_ACTIVE_BG1,
+      COLOR_TITLE_ACTIVE_BG2, COLOR_TITLE_ACTIVE_FG,
+      COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN } });
+  Configuration::loadWindowSettings(windowStyle);
+}
+
+Saver::Saver(Configuration *cfg, FILE *output) :
+    _output(output), Builder(cfg), TABS(4) {
+
+}
+
+Saver::~Saver() {
+
+}
+
+void Saver::buildIconPath(JObject *iconPath) {
+  const char *path = jsonString(iconPath, "path");
+  //TODO: replace spaces with escape characters
+  write("IconPath");
+  write("path", path);
+  write("\n");
+}
+
+void Saver::write(const char *str) {
+  fprintf(_output, str);
+}
+
+void Saver::write(const char *key, const char *value) {
+  if (strchr(value, ' ')) {
+    fprintf(_output, " %s='%s'", key, value);
+  } else {
+    fprintf(_output, " %s=%s", key, value);
+  }
+}
+
+void Saver::buildMenuStyle(JObject *object) {
+  buildStyle(0, "Menu", object);
+}
+
+void Saver::buildMenus(unsigned indent, const char *elementName, JObject *object) {
+  this->buildMenuItem(indent, elementName, object);
+  JArray *children = jsonArray(object, "children");
+
+  if (children) {
+    ++indent;
+    for (int i = 0; i < children->count; ++i) {
+      JArrayItem *val = children->_internal.vItems[i];
+      if (val->type == VAL_OBJ) {
+        JObject *item = val->value.object_val;
+
+        JObject *program = jsonObject(item, "Program");
+        if (program) {
+          buildMenuItem(indent, "Program", program);
+        }
+
+        JObject *submenu = jsonObject(item, "Menu");
+        if (submenu) {
+          buildMenus(indent, "Menu", submenu);
+        }
+
+        JObject *separator = jsonObject(item, "Separator");
+        if (separator) {
+          for (unsigned i = 0; i < indent; ++i) {
+            fprintf(_output, "  ");
+          }
+          buildMenuItem(indent, "Separator", separator);
+        }
+
+        JObject *restart = jsonObject(item, "Restart");
+        if (restart) {
+          buildMenuItem(indent, "Restart", restart);
+        }
+
+        JObject *exit = jsonObject(item, "Exit");
+        if (exit) {
+          buildMenuItem(indent, "Exit", exit);
+        }
+      }
+    }
+  }
+}
+
+void Saver::writeIndent(unsigned indent) {
+  for (unsigned i = 0; i < indent*TABS; ++i) {
+    write(" ");
+  }
+}
+
+void Saver::buildMenuItem(int indent, const char *type, JObject *itemObj) {
+  this->writeIndent(indent);
+  const char *icon = jsonString(itemObj, "icon");
+  const char *label = jsonString(itemObj, "label");
+  const char *tooltip = jsonString(itemObj, "tooltip");
+  const char *exec = jsonString(itemObj, "exec");
+
+  fprintf(_output, "%s", type);
+
+  if (icon) {
+    write("icon", icon);
+  }
+
+  if (label) {
+    write("label", label);
+  }
+
+  if (tooltip) {
+    write("tooltip", tooltip);
+  }
+
+  if (exec) {
+    write("exec", exec);
+  }
+
+  write("\n");
+}
+
+void Saver::buildTaskListStyle(JObject *object) {
+  this->buildStyle("TaskListStyle", object);
+}
+
+void Saver::buildPagerStyle(JObject *object) {
+  this->buildStyle("PagerStyle", object);
+}
+
+void Saver::buildPopupStyle(JObject *object) {
+  this->buildStyle("PopupStyle", object);
+}
+
+void Saver::buildTrayStyle(JObject *object) {
+  this->buildStyle("TrayStyle", object);
+}
+
+void Saver::buildTrayButtonStyle(JObject *object) {
+  this->buildStyle("TrayButtonStyle", object);
+}
+
+void Saver::buildRootMenu(JObject *object) {
+  this->buildMenus(0, "RootMenu", object);
+}
+
+void Saver::buildWindowStyle(JObject *object) {
+  this->buildStyle("WindowStyle", object);
+}
+
+void Saver::buildStyle(const char *styleName, JObject *object) {
+  this->buildStyle(0, styleName, object);
+}
+
+void Saver::buildStyle(unsigned indent, const char *styleName, JObject *object) {
+  this->write("\n");
+  this->writeIndent(indent);
+  fprintf(_output, "%s", styleName);
+  const char *font = jsonString(object, "font");
+  const char *foreground = jsonString(object, "foreground");
+  const char *background = jsonString(object, "background");
+  const char *opacityString = jsonString(object, "opacity");
+  const char *outline = jsonString(object, "outline");
+  const char *decorations = jsonString(object, "decorations");
+
+  if (font) {
+    write("font", font);
+  }
+
+  if (foreground) {
+    write("foreground", foreground);
+  }
+
+  if (background) {
+    write("background", background);
+  }
+
+  if (outline) {
+    write("outline", outline);
+  }
+
+  if (opacityString) {
+    write("opacity", opacityString);
+  }
+
+  if (decorations) {
+    write("decorations", decorations);
+  }
+
+  write("\n");
 }

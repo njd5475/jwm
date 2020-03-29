@@ -828,7 +828,7 @@ Icon* Icon::CreateIconFromBinary(const unsigned long *input,
     if (result == NULL) {
       result = Icon::CreateIcon(image, false, "");
     }
-    image->CopyFrom(input, offset);
+    offset += image->CopyFrom(input, offset);
 
     /* Don't insert this icon into the hash since it is transient. */
 
@@ -838,7 +838,7 @@ Icon* Icon::CreateIconFromBinary(const unsigned long *input,
 }
 
 Icon::Icon(Image *image, bool preserveAspect, const char *name) :
-    name(CopyString(name)), preserveAspect(preserveAspect), width(
+    name(name ? CopyString(name) : NULL), preserveAspect(preserveAspect), width(
         image->getWidth()), height(image->getHeight()), bitmap(
         image->isBitmap()), image(image) {
 #ifdef USE_XRENDER
@@ -944,7 +944,7 @@ bool Icon::DestroyIcon(Icon *icon) {
 /** Find a icon in the icon hash table. */
 Icon* Icon::FindIcon(const char *name) {
   for (auto icon : images) {
-    if (!strcmp(icon->getName(), name)) {
+    if (icon->getName() && !strcmp(icon->getName(), name)) {
       return icon;
     }
   }

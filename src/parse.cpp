@@ -225,6 +225,8 @@ void Parser::ParseConfig(const char *fileName) {
       vLog("Could not parse config file %s\n", configFile);
     } else {
       Configuration::load(config.array_val);
+
+      Configuration::saveConfigs(stdout);
     }
   }
 }

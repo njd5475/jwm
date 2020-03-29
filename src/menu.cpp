@@ -469,6 +469,10 @@ void MenuItem::Draw(Graphics *graphics, bool active, unsigned offset,
     ButtonType type = BUTTON_LABEL;
     ColorName fg = COLOR_MENU_FG;
 
+    if(_icon == NULL && _iconName) {
+      _icon = Icon::LoadNamedIcon(_iconName, 1, 1);
+    }
+
     if (this->_parent && this->_parent->getMouseX() > -1
         && this->_parent->getMouseY() > -1) {
       int mx = _parent->getMouseX() - _parent->getX(), my = _parent->getMouseY()
@@ -632,6 +636,7 @@ Window Menu::getWindow() {
 }
 
 void Menu::Draw() {
+
   if (_graphics == NULL) {
     this->UpdatePosition(_x, _y, 0);
   }

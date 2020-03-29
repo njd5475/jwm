@@ -40,7 +40,7 @@ public:
   int getHeight() const;
   bool isBitmap() const;
   const unsigned char* getData();
-  void CopyFrom(const unsigned long* input, unsigned offset);
+  unsigned CopyFrom(const unsigned long* input, unsigned offset);
 #ifdef USE_XRENDER
   bool getRender() const;
 #endif

@@ -507,6 +507,17 @@ char** jsonStringArray(const JObject* obj, const char* keys) {
   return NULL;
 }
 
+const char** jsonKeys(const JObject *obj, unsigned *size) {
+  const char** keys = malloc(sizeof(const char*)*obj->size);
+  size = obj->size;
+  unsigned left = obj->size;
+  for(unsigned e = 0; e < obj->_arraySize; ++e) {
+    keys[left--] = obj->entries[e]->name;
+  }
+
+  return keys;
+}
+
 JArrayItem **jsonArrayItemList(JArray *array) {
   return array->_internal.vItems;
 }
