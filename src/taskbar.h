@@ -26,6 +26,9 @@ private:
 	TaskBar(Tray *tray, TrayComponent *parent);
 public:
 	virtual ~TaskBar();
+	/**
+	 * Does not add itself to the tray. You must call addTrayComponent
+	 */
 	static TaskBar *Create(Tray *tray, TrayComponent *parent);
 
 private:

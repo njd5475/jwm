@@ -166,8 +166,8 @@ void DesktopEnvironment::SetDesktopName(int num, const char* name) {
 	Desktops::_SetDesktopName(num, name);
 }
 
-void DesktopEnvironment::SetBackground(int id, const char* file, char* const name) {
-  Backgrounds::_SetBackground(id, file, name);
+void DesktopEnvironment::SetBackground(int id, const char* file, char* const value) {
+  Backgrounds::_SetBackground(id, file, value);
 }
 
 TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayComponent *parent) {

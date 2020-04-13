@@ -15,6 +15,7 @@
 #include "menu.h"
 #include "json.h"
 
+class Tray;
 class Configuration;
 
 class Builder {
@@ -28,8 +29,12 @@ public:
   virtual void buildPagerStyle(JObject* jobj) = 0;
   virtual void buildPopupStyle(JObject* jobj) = 0;
   virtual void buildTrayStyle(JObject* jobj) = 0;
+  virtual void buildTray(JObject  *jobj) = 0;
+  virtual void buildGroup(JObject *jobj) = 0;
+  virtual void buildDesktops(JObject *jobj) = 0;
   virtual void buildTrayButtonStyle(JObject* jobj) = 0;
   virtual void buildRootMenu(JObject* jobj) = 0;
+  virtual void buildClockStyle(JObject* jobj) = 0;
   virtual void buildWindowStyle(JObject* jobj) = 0;
 
 protected:
@@ -99,7 +104,11 @@ public:
   virtual void buildPagerStyle(JObject* jobj);
   virtual void buildPopupStyle(JObject* jobj);
   virtual void buildTrayStyle(JObject* jobj);
+  virtual void buildTray(JObject  *jobj);
+  virtual void buildDesktops(JObject *jobj);
+  virtual void buildGroup(JObject *jobj);
   virtual void buildTrayButtonStyle(JObject* jobj);
+  virtual void buildClockStyle(JObject* jobj);
   virtual void buildRootMenu(JObject* jobj);
   virtual void buildWindowStyle(JObject* jobj);
   virtual void buildStyle(const char* styleName, JObject* jobj);
@@ -124,10 +133,22 @@ public:
   virtual void buildTaskListStyle(JObject* jobj);
   virtual void buildPagerStyle(JObject* jobj);
   virtual void buildPopupStyle(JObject* jobj);
+  virtual void buildClockStyle(JObject* jobj);
   virtual void buildTrayStyle(JObject* jobj);
+  virtual void buildTray(JObject  *jobj);
+  virtual void buildDesktops(JObject *jobj);
+  virtual void buildGroup(JObject *jobj);
   virtual void buildTrayButtonStyle(JObject* jobj);
   virtual void buildRootMenu(JObject* jobj);
   virtual void buildWindowStyle(JObject* jobj);
+
+  void buildTrayButton(Tray *tray, JObject *trayButton);
+  void buildPager(Tray *tray, JObject *pager);
+  void buildTaskList(Tray *tray, JObject* taskList);
+  void buildBattery(Tray *tray, JObject* battery);
+  void buildDock(Tray *tray, JObject* dock);
+  void buildClock(Tray *tray, JObject* clock);
+
 };
 
 #endif /* SRC_CONFIGURATION_H_ */

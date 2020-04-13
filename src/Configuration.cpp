@@ -16,6 +16,14 @@
 #include "icon.h"
 #include "root.h"
 #include "settings.h"
+#include "DesktopEnvironment.h"
+#include "tray.h"
+#include "traybutton.h"
+#include "taskbar.h"
+#include "pager.h"
+#include "battery.h"
+#include "dock.h"
+#include "clock.h"
 
 using namespace std;
 
@@ -104,9 +112,29 @@ void Configuration::processConfigs(Builder &builder) {
         builder.buildPopupStyle(popupStyle);
       }
 
+      JObject *clockStyle = jsonObject(itemObj, "ClockStyle");
+      if (clockStyle) {
+        builder.buildClockStyle(clockStyle);
+      }
+
       JObject *trayButtonStyle = jsonObject(itemObj, "TrayButtonStyle");
       if (trayButtonStyle) {
         builder.buildTrayButtonStyle(trayButtonStyle);
+      }
+
+      JObject *group = jsonObject(itemObj, "Group");
+      if (group) {
+        builder.buildGroup(group);
+      }
+
+      JObject *tray = jsonObject(itemObj, "Tray");
+      if (tray) {
+        builder.buildTray(tray);
+      }
+
+      JObject *desktops = jsonObject(itemObj, "Desktops");
+      if (desktops) {
+        builder.buildDesktops(desktops);
       }
 
       JObject *rootMenu = jsonObject(itemObj, "RootMenu");
@@ -148,7 +176,8 @@ Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu) {
 
         JObject *restart = jsonObject(item, "Restart");
         if (restart) {
-          MenuItem *restartItem = new MenuItem(menu, "Restart", MENU_ITEM_NORMAL,
+          MenuItem *restartItem = new MenuItem(menu, "Restart",
+          MENU_ITEM_NORMAL,
           NULL, NULL);
           restartItem->setAction(MA_RESTART, NULL, 1);
           menu->addItem(restartItem);
@@ -156,7 +185,8 @@ Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu) {
 
         JObject *exit = jsonObject(item, "Exit");
         if (exit) {
-          MenuItem *exitItem = new MenuItem(menu, "Exit", MENU_ITEM_NORMAL,
+          MenuItem *exitItem = new MenuItem(menu, "Exit",
+          MENU_ITEM_NORMAL,
           NULL, NULL);
           exitItem->setAction(MA_EXIT, NULL, 1);
           menu->addItem(exitItem);
@@ -167,7 +197,8 @@ Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu) {
   return menu;
 }
 
-MenuItem* Configuration::loadMenuItem(Menu *menu, MenuItemType type, JObject *item) {
+MenuItem* Configuration::loadMenuItem(Menu *menu, MenuItemType type,
+    JObject *item) {
 
   const char *icon = jsonString(item, "icon");
   const char *label = jsonString(item, "label");
@@ -215,7 +246,8 @@ void Configuration::loadWindowSettings(JObject *window) {
 }
 
 void Configuration::loadStyle(JObject *object, StyleColors colors) {
-  loadStyle(object, colors.font, colors.bg, colors.bg2, colors.fg, colors.up, colors.down, colors.opacityType);
+  loadStyle(object, colors.font, colors.bg, colors.bg2, colors.fg, colors.up,
+      colors.down, colors.opacityType);
 
   JArray *children = jsonArray(object, "children");
 
@@ -225,12 +257,15 @@ void Configuration::loadStyle(JObject *object, StyleColors colors) {
     JObject *active = NULL;
     for (unsigned i = 0; i < size; ++i) {
       active = jsonObject(actives[i], "active");
-      loadStyle(active, FONT_NOOP, colors.active.bg, colors.active.bg2, colors.active.fg, colors.active.up, colors.active.down, UNKNOWN);
+      loadStyle(active, FONT_NOOP, colors.active.bg, colors.active.bg2,
+          colors.active.fg, colors.active.up, colors.active.down, UNKNOWN);
     }
   }
 }
 
-void Configuration::loadStyle(JObject *object, FontType f, ColorName bg, ColorName bg2, ColorName fg, ColorName up, ColorName down, OpacityType otype) {
+void Configuration::loadStyle(JObject *object, FontType f, ColorName bg,
+    ColorName bg2, ColorName fg, ColorName up, ColorName down,
+    OpacityType otype) {
 
   const char *font = jsonString(object, "font");
   const char *foreground = jsonString(object, "foreground");
@@ -342,30 +377,36 @@ void Loader::buildMenuStyle(JObject *menuStyle) {
 }
 
 void Loader::buildTaskListStyle(JObject *taskListStyle) {
-  Configuration::loadStyle(taskListStyle, (Configuration::StyleColors ) { FONT_TASKLIST,
-      COLOR_TASKLIST_BG1, COLOR_TASKLIST_BG2,
-      COLOR_TASKLIST_FG, COLOR_TASKLIST_UP, COLOR_TASKLIST_DOWN, Configuration::TASKLIST, {
-      COLOR_TASKLIST_ACTIVE_BG1, COLOR_TASKLIST_ACTIVE_BG2,
-      COLOR_TASKLIST_ACTIVE_FG, COLOR_TASKLIST_ACTIVE_UP,
-      COLOR_TASKLIST_ACTIVE_DOWN } });
+  Configuration::loadStyle(taskListStyle, (Configuration::StyleColors ) {
+          FONT_TASKLIST,
+          COLOR_TASKLIST_BG1, COLOR_TASKLIST_BG2,
+          COLOR_TASKLIST_FG, COLOR_TASKLIST_UP, COLOR_TASKLIST_DOWN,
+          Configuration::TASKLIST, {
+          COLOR_TASKLIST_ACTIVE_BG1, COLOR_TASKLIST_ACTIVE_BG2,
+          COLOR_TASKLIST_ACTIVE_FG, COLOR_TASKLIST_ACTIVE_UP,
+          COLOR_TASKLIST_ACTIVE_DOWN } });
 }
 
 void Loader::buildPagerStyle(JObject *pagerStyle) {
-  Configuration::loadStyle(pagerStyle, (Configuration::StyleColors ) { FONT_PAGER,
-      COLOR_PAGER_BG, COLOR_PAGER_BG,
-      COLOR_PAGER_FG, COLOR_PAGER_BG, COLOR_PAGER_BG, Configuration::PAGER, {
-      COLOR_PAGER_ACTIVE_BG, COLOR_PAGER_ACTIVE_BG,
-      COLOR_PAGER_ACTIVE_FG, COLOR_PAGER_ACTIVE_BG,
-      COLOR_PAGER_ACTIVE_BG } });
+  Configuration::loadStyle(pagerStyle, (Configuration::StyleColors ) {
+          FONT_PAGER,
+          COLOR_PAGER_BG, COLOR_PAGER_BG,
+          COLOR_PAGER_FG, COLOR_PAGER_BG, COLOR_PAGER_BG, Configuration::PAGER,
+          {
+          COLOR_PAGER_ACTIVE_BG, COLOR_PAGER_ACTIVE_BG,
+          COLOR_PAGER_ACTIVE_FG, COLOR_PAGER_ACTIVE_BG,
+          COLOR_PAGER_ACTIVE_BG } });
 }
 
 void Loader::buildPopupStyle(JObject *popupStyle) {
-  Configuration::loadStyle(popupStyle, (Configuration::StyleColors ) { FONT_POPUP,
-      COLOR_POPUP_BG, COLOR_POPUP_BG,
-      COLOR_POPUP_FG, COLOR_POPUP_BG, COLOR_POPUP_BG, Configuration::POPUP, {
-      COLOR_COUNT, COLOR_COUNT,
-      COLOR_COUNT, COLOR_COUNT,
-      COLOR_COUNT } });
+  Configuration::loadStyle(popupStyle, (Configuration::StyleColors ) {
+          FONT_POPUP,
+          COLOR_POPUP_BG, COLOR_POPUP_BG,
+          COLOR_POPUP_FG, COLOR_POPUP_BG, COLOR_POPUP_BG, Configuration::POPUP,
+          {
+          COLOR_COUNT, COLOR_COUNT,
+          COLOR_COUNT, COLOR_COUNT,
+          COLOR_COUNT } });
 }
 
 void Loader::buildTrayStyle(JObject *trayStyle) {
@@ -378,12 +419,25 @@ void Loader::buildTrayStyle(JObject *trayStyle) {
 }
 
 void Loader::buildTrayButtonStyle(JObject *trayButtonStyle) {
-  Configuration::loadStyle(trayButtonStyle, (Configuration::StyleColors ) { FONT_TRAYBUTTON,
-      COLOR_TRAYBUTTON_BG1, COLOR_TRAYBUTTON_BG2,
-      COLOR_TRAYBUTTON_FG, COLOR_TRAYBUTTON_UP, COLOR_TRAYBUTTON_DOWN, Configuration::TRAYBUTTON, {
-      COLOR_TRAYBUTTON_ACTIVE_BG1, COLOR_TRAYBUTTON_ACTIVE_BG2,
-      COLOR_TRAYBUTTON_ACTIVE_FG, COLOR_TRAYBUTTON_ACTIVE_UP,
-      COLOR_TRAYBUTTON_ACTIVE_DOWN } });
+  Configuration::loadStyle(trayButtonStyle, (Configuration::StyleColors ) {
+          FONT_TRAYBUTTON,
+          COLOR_TRAYBUTTON_BG1, COLOR_TRAYBUTTON_BG2,
+          COLOR_TRAYBUTTON_FG, COLOR_TRAYBUTTON_UP,
+          COLOR_TRAYBUTTON_DOWN, Configuration::TRAYBUTTON, {
+          COLOR_TRAYBUTTON_ACTIVE_BG1, COLOR_TRAYBUTTON_ACTIVE_BG2,
+          COLOR_TRAYBUTTON_ACTIVE_FG, COLOR_TRAYBUTTON_ACTIVE_UP,
+          COLOR_TRAYBUTTON_ACTIVE_DOWN } });
+}
+
+void Loader::buildClockStyle(JObject *clockStyle) {
+  Configuration::loadStyle(clockStyle, (Configuration::StyleColors ) {
+          FONT_CLOCK,
+          COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
+          COLOR_CLOCK_FG, COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
+          Configuration::TRAYBUTTON, {
+          COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
+          COLOR_CLOCK_FG, COLOR_CLOCK_BG1,
+          COLOR_CLOCK_BG1 } });
 }
 
 void Loader::buildRootMenu(JObject *rootMenu) {
@@ -401,13 +455,195 @@ void Loader::buildRootMenu(JObject *rootMenu) {
 }
 
 void Loader::buildWindowStyle(JObject *windowStyle) {
-  Configuration::loadStyle(windowStyle, (Configuration::StyleColors ) { FONT_BORDER,
-      COLOR_TITLE_BG1,
-      COLOR_TITLE_BG2, COLOR_TITLE_FG, COLOR_TITLE_UP,
-      COLOR_TITLE_DOWN, Configuration::ACTIVE_CLIENT, { COLOR_TITLE_ACTIVE_BG1,
-      COLOR_TITLE_ACTIVE_BG2, COLOR_TITLE_ACTIVE_FG,
-      COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN } });
+  Configuration::loadStyle(windowStyle, (Configuration::StyleColors ) {
+          FONT_BORDER,
+          COLOR_TITLE_BG1,
+          COLOR_TITLE_BG2, COLOR_TITLE_FG, COLOR_TITLE_UP,
+          COLOR_TITLE_DOWN, Configuration::ACTIVE_CLIENT, {
+          COLOR_TITLE_ACTIVE_BG1,
+          COLOR_TITLE_ACTIVE_BG2, COLOR_TITLE_ACTIVE_FG,
+          COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN } });
   Configuration::loadWindowSettings(windowStyle);
+}
+
+void Loader::buildTray(JObject *jobj) {
+  const char *strX = jsonString(jobj, "x");
+  const char *strY = jsonString(jobj, "y");
+  const char *strWidth = jsonString(jobj, "width");
+  const char *strHeight = jsonString(jobj, "height");
+  const char *strAutohide = jsonString(jobj, "autohide");
+  const char *strDelay = jsonString(jobj, "delay");
+  bool autohide = false;
+  float delay = 0.5f;
+
+  Tray *tray = Tray::Create();
+
+  if (!strX) {
+    strX = "0";
+  }
+
+  if (!strY) {
+    strY = "0";
+  }
+
+  if (strAutohide) {
+    autohide = !strcmp(strAutohide, "off");
+  }
+
+  if (strDelay) {
+    delay = atof(strDelay);
+  }
+
+  if (strWidth) {
+    tray->SetTrayWidth(strWidth);
+  }
+
+  if (strHeight) {
+    tray->SetTrayHeight(strHeight);
+  }
+  tray->SetAutoHideTray(autohide ? THIDE_ON : THIDE_OFF, delay);
+  tray->SetTrayX(strX);
+  tray->SetTrayY(strY);
+
+  // process children after default properties
+  JArray *children = jsonArray(jobj, "children");
+  if (children) {
+    for (int i = 0; i < children->count; ++i) {
+      JArrayItem *val = children->_internal.vItems[i];
+      if (val->type == VAL_OBJ) {
+        JObject *item = val->value.object_val;
+
+        JObject *trayButton = jsonObject(item, "TrayButton");
+        if (trayButton) {
+          buildTrayButton(tray, trayButton);
+        }
+
+        JObject *pager = jsonObject(item, "Pager");
+        if (pager) {
+          buildPager(tray, pager);
+        }
+
+        JObject *taskList = jsonObject(item, "TaskList");
+        if (taskList) {
+          buildTaskList(tray, taskList);
+        }
+
+        JObject *battery = jsonObject(item, "Battery");
+        if (battery) {
+          buildBattery(tray, battery);
+        }
+
+        JObject *dock = jsonObject(item, "Dock");
+        if (dock) {
+          buildDock(tray, dock);
+        }
+
+        JObject *clock = jsonObject(item, "Clock");
+        if (clock) {
+          buildClock(tray, clock);
+        }
+      }
+    }
+  }
+
+}
+
+void Loader::buildTrayButton(Tray *tray, JObject *trayButton) {
+  const char* label = jsonString(trayButton, "label");
+  const char* icon = jsonString(trayButton, "icon");
+  const char* popup = jsonString(trayButton, "popup");
+  const char* strWidth = jsonString(trayButton, "width");
+  const char* strHeight = jsonString(trayButton, "height");
+  const char* action = jsonString(trayButton, "action");
+
+  unsigned width = 0, height = 0;
+
+  if(strWidth) {
+    width = atoi(strWidth);
+  }
+
+  if(strHeight) {
+    height = atoi(strHeight);
+  }
+
+  TrayButton *button = TrayButton::Create(label, icon, popup, width, height, tray, tray->getLastComponent());
+
+  if(action) {
+    const int default_mask = (1 << 1) | (1 << 2) | (1 << 3); // button mask default is any clicked
+    button->addAction(action, default_mask);
+  }
+
+  tray->AddTrayComponent(button);
+}
+
+void Loader::buildPager(Tray *tray, JObject *pager) {
+  const char *strLabeled = jsonString(pager, "labeled");
+  char labeled = 0;
+  if(strLabeled) {
+    labeled = !strcmp(strLabeled, "false");
+  }
+
+  PagerType *pagerType = PagerType::CreatePager(labeled ? 1 : 0, tray, tray->getLastComponent());
+
+  tray->AddTrayComponent(pagerType);
+}
+
+void Loader::buildTaskList(Tray *tray, JObject* taskList) {
+  const char* strMaxWidth = jsonString(taskList, "maxwidth");
+  unsigned maxWidth = 0;
+
+  if(strMaxWidth) {
+    maxWidth = atoi(strMaxWidth);
+  }
+  TaskBar *taskBar = TaskBar::Create(tray, tray->getLastComponent());
+  taskBar->SetMaxTaskBarItemWidth(maxWidth);
+
+  tray->AddTrayComponent(taskBar);
+}
+
+void Loader::buildBattery(Tray *tray, JObject* battery) {
+  tray->AddTrayComponent(new Battery(0, 0, tray, tray->getLastComponent()));
+}
+
+void Loader::buildDock(Tray *tray, JObject* dock) {
+  DockType *dockType = DockType::Create(0, tray, tray->getLastComponent());
+  tray->AddTrayComponent(dockType);
+}
+
+void Loader::buildClock(Tray *tray, JObject* clock) {
+  const char* format = jsonString(clock, "format");
+  const char* zone = jsonString(clock, "zone");
+
+  ClockType *clockType = ClockType::CreateClock(format, zone ? zone : "UTC", 0, 9, tray, tray->getLastComponent());
+  tray->AddTrayComponent(clockType);
+}
+
+void Loader::buildGroup(JObject *jobj) {
+
+}
+
+void Loader::buildDesktops(JObject *jobj) {
+  const char *strWidth = jsonString(jobj, "width");
+  const char *strHeight = jsonString(jobj, "height");
+  char *strBackground = jsonString(jobj, "background");
+
+  unsigned width = 4, height = 1;
+
+  if (strWidth) {
+    width = atoi(strWidth);
+  }
+
+  if (strHeight) {
+    height = atoi(strHeight);
+  }
+
+  settings.desktopHeight = height;
+  settings.desktopWidth = width;
+
+  if (strBackground) {
+    DesktopEnvironment::DefaultEnvironment()->SetBackground(0, NULL,
+        strBackground);
+  }
 }
 
 Saver::Saver(Configuration *cfg, FILE *output) :
@@ -443,7 +679,8 @@ void Saver::buildMenuStyle(JObject *object) {
   buildStyle(0, "Menu", object);
 }
 
-void Saver::buildMenus(unsigned indent, const char *elementName, JObject *object) {
+void Saver::buildMenus(unsigned indent, const char *elementName,
+    JObject *object) {
   this->buildMenuItem(indent, elementName, object);
   JArray *children = jsonArray(object, "children");
 
@@ -487,7 +724,7 @@ void Saver::buildMenus(unsigned indent, const char *elementName, JObject *object
 }
 
 void Saver::writeIndent(unsigned indent) {
-  for (unsigned i = 0; i < indent*TABS; ++i) {
+  for (unsigned i = 0; i < indent * TABS; ++i) {
     write(" ");
   }
 }
@@ -552,7 +789,12 @@ void Saver::buildStyle(const char *styleName, JObject *object) {
   this->buildStyle(0, styleName, object);
 }
 
-void Saver::buildStyle(unsigned indent, const char *styleName, JObject *object) {
+void Saver::buildClockStyle(JObject *object) {
+  this->buildStyle(0, "ClockStyle", object);
+}
+
+void Saver::buildStyle(unsigned indent, const char *styleName,
+    JObject *object) {
   this->write("\n");
   this->writeIndent(indent);
   fprintf(_output, "%s", styleName);
@@ -588,4 +830,16 @@ void Saver::buildStyle(unsigned indent, const char *styleName, JObject *object) 
   }
 
   write("\n");
+}
+
+void Saver::buildTray(JObject *jobj) {
+
+}
+
+void Saver::buildGroup(JObject *jobj) {
+
+}
+
+void Saver::buildDesktops(JObject *jobj) {
+
 }

@@ -38,7 +38,7 @@ public:
   virtual bool AboveDesktop();
   virtual bool BelowDesktop();
   virtual void SetDesktopName(int num, const char* name);
-  virtual void SetBackground(int id, const char* file, char* const name);
+  virtual void SetBackground(int id, const char* file, char* const value);
   virtual TrayComponent* CreateDock(int dockId, Tray *tray, TrayComponent *parent);
   virtual Menu* CreateDesktopMenu(int desktop, void* mem);
   virtual Menu* CreateSendtoMenu(int desktop, void* mem);
