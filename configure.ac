@@ -136,6 +136,35 @@ JWM_PKGCONFIG([use_pkgconfig_xft], [xft])
 JWM_PKGCONFIG([use_pkgconfig_xrender], [xrender])
 JWM_PKGCONFIG([use_pkgconfig_fribidi], [fribidi])
 JWM_PKGCONFIG([use_pkgconfig_inotifytools], [inotifytools])
+JWM_PKGCONFIG([use_pkgconfig_dbus], [dbus-1])
+
+
+############################################################################
+# Check if D-Bus support was requested and available.
+############################################################################
+AC_ARG_ENABLE(dbus-1,
+   AC_HELP_STRING([--disable-dbus], [disable DBUS integration]) )
+if test "$enable_dbus" != "no" ; then
+   if test "$use_pkgconfig_dbus" = "yes" ; then
+      DBUS_CFLAGS=`$PKGCONFIG --cflags dbus-1`
+      DBUS_LDFLAGS=`$PKGCONFIG --libs dbus-1`
+      enable_dbus="yes"
+   else
+      DBUS_CFLAGS=""
+      DBUS_LDFLAGS="-lpng -lz -lm"
+      AC_CHECK_LIB(dbus, dbus_connection_open,
+         [ enable_dbus="yes" ],
+         [ enable_dbus="no"
+           AC_MSG_WARN([unable to use libdbus, DBUS support disabled]) ],
+         [ $DBUS_LDFLAGS ])
+   fi
+   if test "$enable_dbus" = "yes" ; then
+      CFLAGS="$CFLAGS $DBUS_CFLAGS"
+      LDFLAGS="$LDFLAGS $DBUS_LDFLAGS"
+      AC_DEFINE(USE_DBUS, 1, [Define to use libdbus])
+   fi
+fi
+
 
 ############################################################################
 # Check if confirm dialogs should be used.
@@ -616,6 +645,7 @@ echo
 echo "Options"
 echo
 echo "    Confirm:  		$enable_confirm"
+echo "    D-Bus:            $enable_dbus"
 echo "    Icon:     		$enable_icons"
 echo "    Cairo:    		$enable_cairo"
 echo "    RSVG:     		$enable_rsvg"
@@ -631,4 +661,4 @@ echo "    Xmu:      		$enable_xmu"
 echo "    Xinerama: 		$enable_xinerama"
 echo "    inotifytools: 	$enable_inotifytools"
 echo "    Debug:    		$enable_debug"
-echo ""
+echo "--------------------------------------------"

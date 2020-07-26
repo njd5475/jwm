@@ -20,6 +20,7 @@ the following libraries:
  - libXft for anti-aliased and true type fonts.
  - libXinerama for multiple head support.
  - libXpm for XPM icons and backgrounds.
+ - libdbus for D-Bus integration
 
 Installation
 ------------------------------------------------------------------------------
