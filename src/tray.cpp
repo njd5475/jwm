@@ -146,27 +146,16 @@ Tray* Tray::Create() {
 
 /** Shutdown trays. */
 void Tray::ShutdownTray(void) {
-  std::vector<Tray*>::iterator trayIt;
-  for (trayIt = trays.begin(); trayIt != trays.end(); ++trayIt) {
-    std::vector<TrayComponent*>::iterator it;
-    Tray *tray = *trayIt;
-    for (it = tray->components.begin(); it != tray->components.end(); ++it) {
-      TrayComponent *comp = (*it);
-      comp->Destroy();
-    }
+  for (auto tray : trays) {
     JXDestroyWindow(display, tray->window);
+    delete tray;
   }
+  trays.clear();
 }
 
 /** Destroy tray data. */
 void Tray::DestroyTray(void) {
 
-  std::vector<Tray*>::iterator it;
-  for (it = trays.begin(); it != trays.end(); ++it) {
-    Tray *tray = *it;
-    delete tray;
-  }
-  trays.clear();
 }
 
 /** Create an empty tray. */
@@ -196,9 +185,9 @@ Tray::~Tray() {
   if (autoHide != THIDE_OFF) {
     Events::_UnregisterCallback(SignalTray, this);
   }
-  std::vector<TrayComponent*>::iterator it;
-  for (it = components.begin(); it != components.end(); ++it) {
-    TrayComponent *tc = *it;
+  std::vector<TrayComponent*> toDelete = this->components;
+  for (auto tc : toDelete) {
+    tc->Destroy();
     delete tc;
   }
   components.clear();
@@ -206,18 +195,10 @@ Tray::~Tray() {
 
 /** Add a tray component to a tray. */
 void Tray::AddTrayComponent(TrayComponent *cp) {
+  if (!cp)
+    return;
+
   cp->SetParent(this);
-  bool found = false;
-  std::vector<TrayComponent*>::iterator it;
-  for (it = components.begin(); it != components.end(); ++it) {
-    if ((*it) == cp) {
-      found = true;
-      break;
-    }
-  }
-  if (found) {
-    this->components.erase(it);
-  }
   this->components.push_back(cp);
 }
 
@@ -232,7 +213,7 @@ bool Tray::RemoveTrayComponent(TrayComponent *cp) {
   }
   if (found) {
     this->components.erase(it);
-  }else{
+  } else {
     Logger::Log("Could not find component in tray to remove\n");
   }
   return found;

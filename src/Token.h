@@ -71,7 +71,7 @@ private:
   JItemValue rootObject();
   JObject *object(JObject *parent, unsigned tabCount = 0);
   JArray *children(JObject *parent, unsigned tabCount = 0);
-  void whitespace(bool includeNewLine = false);
+  void whitespace(bool includeNewLine = false, bool consumeCommentLines = false);
   void consume(bool allowPound = false);
   void getNextToken(bool allowPound = false);
   const char* identifier();

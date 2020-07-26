@@ -14,6 +14,7 @@
 #include "font.h"
 #include "menu.h"
 #include "json.h"
+#include "AbstractAction.h"
 
 class Tray;
 class Configuration;
@@ -36,6 +37,8 @@ public:
   virtual void buildRootMenu(JObject* jobj) = 0;
   virtual void buildClockStyle(JObject* jobj) = 0;
   virtual void buildWindowStyle(JObject* jobj) = 0;
+  virtual void buildKey(JObject* jobj) = 0;
+  virtual void buildMouse(JObject* jobj) = 0;
 
 protected:
   Configuration* _cfg;
@@ -114,9 +117,20 @@ public:
   virtual void buildStyle(const char* styleName, JObject* jobj);
   virtual void buildStyle(unsigned indent, const char* styleName, JObject* jobj);
   virtual void buildMenuItem(int indent, const char* type, JObject *itemObj);
+  virtual void buildKey(JObject* jobj);
+  virtual void buildMouse(JObject* jobj);
+
   virtual void write(const char* str);
   virtual void write(const char* key, const char* value);
   virtual void writeIndent(unsigned indent);
+  virtual void write(JObject *obj, const char *key);
+
+  void buildTrayButton(unsigned indent, JObject *trayButton);
+  void buildPager(unsigned indent, JObject *pager);
+  void buildTaskList(unsigned indent, JObject* taskList);
+  void buildBattery(unsigned indent, JObject* battery);
+  void buildDock(unsigned indent, JObject* dock);
+  void buildClock(unsigned indent, JObject* clock);
 
 private:
   FILE* _output;
@@ -141,6 +155,8 @@ public:
   virtual void buildTrayButtonStyle(JObject* jobj);
   virtual void buildRootMenu(JObject* jobj);
   virtual void buildWindowStyle(JObject* jobj);
+  virtual void buildKey(JObject* jobj);
+  virtual void buildMouse(JObject* jobj);
 
   void buildTrayButton(Tray *tray, JObject *trayButton);
   void buildPager(Tray *tray, JObject *pager);
@@ -148,6 +164,8 @@ public:
   void buildBattery(Tray *tray, JObject* battery);
   void buildDock(Tray *tray, JObject* dock);
   void buildClock(Tray *tray, JObject* clock);
+  Actions convertToAction(const char* action);
+  int convertToMouseContext(const char* context);
 
 };
 

@@ -34,7 +34,7 @@ public:
 			unsigned int width,
 			unsigned int height, Tray *tray, TrayComponent *parent);
 
-private:
+public:
 	/** Create a tray button component.
 	 * @param iconName The name of the icon to use for the button.
 	 * @param label The label to use for the button.

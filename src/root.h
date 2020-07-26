@@ -56,7 +56,7 @@ public:
 	 * @param keyboard Set if this request came from a key binding.
 	 * @return 1 if a menu was displayed, 0 if not.
 	 */
-	static char ShowRootMenu(int index, int x, int y, char keyboard);
+	static char ShowRootMenu(int index, int x, int y);
 
 	/** Restart the window manager. */
 	static void Restart(void);

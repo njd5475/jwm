@@ -36,9 +36,9 @@ void ActionNode::ProcessActionPress(struct TrayComponent *cp, int x, int y,
 	int mwidth, mheight;
 	int menu;
 
-	if (JUNLIKELY(menuShown)) {
-		return;
-	}
+//	if (JUNLIKELY(menuShown)) {
+//		return;
+//	}
 	if (x < -1 || x > cp->getWidth()) {
 		return;
 	}
@@ -106,7 +106,7 @@ void ActionNode::ProcessActionPress(struct TrayComponent *cp, int x, int y,
 	cp->Redraw();
 	cp->UpdateSpecificTray(cp->getTray());
 
-	if (Roots::ShowRootMenu(menu, x, y, 0)) {
+	if (Roots::ShowRootMenu(menu, x, y)) {
 		cp->ungrab();
 		cp->Redraw();
 		cp->UpdateSpecificTray(cp->getTray());
@@ -118,9 +118,9 @@ void ActionNode::ProcessActionRelease(struct TrayComponent *cp, int x,
 		int y, int button) {
 	const int mask = 1 << button;
 
-	if (JUNLIKELY(menuShown)) {
-		return;
-	}
+//	if (JUNLIKELY(menuShown)) {
+//		return;
+//	}
 
 	cp->ungrab();
 	cp->Redraw();

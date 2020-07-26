@@ -172,7 +172,7 @@ void Roots::GetRootMenuSize(int index, int *width, int *height) {
 }
 
 /** Show a root menu. */
-char Roots::ShowRootMenu(int index, int x, int y, char keyboard) {
+char Roots::ShowRootMenu(int index, int x, int y) {
 	Log("Should show root menu\n");
 	if (!rootMenu[index]) {
 		return 0;
@@ -190,7 +190,7 @@ char Roots::ShowRootMenu(int index, int x, int y, char keyboard) {
 //			return 1;
 //		}
 //	}
-	Menus::ShowMenu(rootMenu[index], RunRootCommand, x, y, keyboard);
+	Menus::ShowMenu(rootMenu[index], RunRootCommand, x, y);
 	return 1;
 }
 

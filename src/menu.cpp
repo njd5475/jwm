@@ -59,58 +59,17 @@ void Menus::InitializeMenu(Menu *menu) {
 
 /** Show a menu. */
 char Menus::ShowMenu(Menu *menu, MenuItem::RunMenuCommandType runner, int x,
-    int y, char keyboard) {
+    int y) {
   Log("Should show the menu\n");
-  /* Don't show the menu if there isn't anything to show. */
-  if (JUNLIKELY(!IsMenuValid(menu))) {
-    /* Return 1 if there is an invalid menu.
-     * This allows empty root menus to be defined to disable
-     * scrolling on the root window.
-     */
-    return menu ? 1 : 0;
-  }
-  if (JUNLIKELY(shouldExit)) {
-    return 0;
-  }
 
-  if (x < 0 && y < 0) {
-    Window w;
-    Cursors::GetMousePosition(&x, &y, &w);
-    x -= menu->getItemHeight() / 2;
-    y -= menu->getItemHeight() / 2 + menu->getOffset(0);
-  }
-
-  if (!Cursors::GrabMouse(rootWindow)) {
-    return 0;
-  }
-  if (JXGrabKeyboard(display, rootWindow, False, GrabModeAsync,
-      GrabModeAsync, CurrentTime) != GrabSuccess) {
-    JXUngrabPointer(display, CurrentTime);
-    return 0;
-  }
-
-  Events::_RegisterCallback(settings.popupDelay, MenuCallback, menu);
-  ShowSubmenu(menu, NULL, runner, x, y, keyboard);
-  Events::_UnregisterCallback(MenuCallback, menu);
-  UnpatchMenu(menu);
-
-  JXUngrabKeyboard(display, CurrentTime);
-  JXUngrabPointer(display, CurrentTime);
-  ClientNode::RefocusClient();
-
-  if (shouldReload) {
-    Roots::ReloadMenu();
-  }
+  menu->Show(runner, x, y);
 
   return 1;
 }
 
 /** Hide a menu. */
 void Menus::HideMenu(Menu *menu) {
-  Menu *mp;
-  for (mp = menu; mp; mp = mp->getParent()) {
-    JXUnmapWindow(display, mp->getWindow());
-  }
+  menu->Hide();
 }
 
 /** Destroy a menu. */
@@ -121,23 +80,9 @@ void Menus::DestroyMenu(Menu *menu) {
 }
 
 /** Show a submenu. */
-char Menus::ShowSubmenu(Menu *menu, Menu *parent,
-    MenuItem::RunMenuCommandType runner, int x, int y, char keyboard) {
-
-  char status;
-
-//  PatchMenu(menu);
-  MapMenu(menu, x, y, keyboard);
-
-  menuShown += 1;
-  status = MenuLoop(menu, runner);
-  menuShown -= 1;
-
-  JXDestroyWindow(display, menu->getWindow());
-  menu->freeGraphics();
-
-  return status;
-
+bool Menus::ShowSubmenu(Menu *menu, Menu *parent,
+    MenuItem::RunMenuCommandType runner, int x, int y) {
+  return menu->ShowSubMenu(runner, x, y);
 }
 
 /** Prepare a menu to be shown. */
@@ -187,97 +132,7 @@ void Menus::UnpatchMenu(Menu *menu) {
  */
 char Menus::MenuLoop(Menu *menu, MenuItem::RunMenuCommandType runner) {
 
-  XEvent event;
-  MenuItem *ip;
-  Window pressw;
-  int pressx, pressy;
-  char hadMotion;
 
-  hadMotion = 0;
-
-  Cursors::GetMousePosition(&pressx, &pressy, &pressw);
-
-  for (;;) {
-
-    Events::_WaitForEvent(&event);
-
-    switch (event.type) {
-    case Expose:
-      if (event.xexpose.count == 0) {
-        Menu *mp = menu;
-        while (mp) {
-          if (mp->getWindow() == event.xexpose.window) {
-            DrawMenu(mp);
-            break;
-          }
-          mp = mp->getParent();
-        }
-      }
-      break;
-
-    case ButtonPress:
-
-      pressx = -100;
-      pressy = -100;
-
-    case KeyPress:
-    case MotionNotify:
-      hadMotion = 1;
-      switch (UpdateMotion(menu, runner, &event)) {
-      case MENU_NOSELECTION: /* no selection */
-        break;
-      case MENU_LEAVE: /* mouse left the menu */
-        JXPutBackEvent(display, &event);
-        return 0;
-      case MENU_SUBSELECT: /* selection made */
-        return 1;
-      }
-      break;
-
-    case ButtonRelease:
-
-      if (event.xbutton.button == Button4) {
-        break;
-      }
-      if (event.xbutton.button == Button5) {
-        break;
-      }
-      if (!hadMotion) {
-        break;
-      }
-      if (abs(event.xbutton.x_root - pressx) < settings.doubleClickDelta) {
-        if (abs(event.xbutton.y_root - pressy) < settings.doubleClickDelta) {
-          break;
-        }
-      }
-
-      ip = menu->getItemAt(event.xbutton.x, event.xbutton.y);
-
-      if (ip != NULL) {
-        if (ip->isNormal()) {
-          HideMenu(menu);
-          (runner)(ip->getAction(), event.xbutton.button);
-        } else if (ip->isSubMenu()) {
-          const Menu *parent = menu->getParent();
-          if (event.xbutton.x >= menu->getX()
-              && event.xbutton.x < menu->getX() + menu->getWidth()
-              && event.xbutton.y >= menu->getY()
-              && event.xbutton.y < menu->getY() + menu->getHeight()) {
-            break;
-          } else if (parent && event.xbutton.x >= parent->getX()
-              && event.xbutton.x < parent->getX() + parent->getWidth()
-              && event.xbutton.y >= parent->getY()
-              && event.xbutton.y < parent->getY() + parent->getHeight()) {
-            break;
-          }
-        }
-      }
-      return 1;
-    default:
-      break;
-    }
-
-  }
 }
 
 /** Signal for showing popups. */
@@ -304,8 +159,8 @@ void Menus::MenuCallback(const TimeType *now, int x, int y, Window w,
 }
 
 /** Create and map a menu. */
-void Menus::MapMenu(Menu *menu, int x, int y, char keyboard) {
-  menu->UpdatePosition(x, y, keyboard);
+void Menus::MapMenu(Menu *menu, int x, int y) {
+  menu->UpdatePosition(x, y);
 }
 
 /** Draw a menu. */
@@ -317,6 +172,7 @@ void Menus::DrawMenu(Menu *menu) {
 // TODO: Fix this ridiculous method
 MenuSelectionType Menus::UpdateMotion(Menu *menu,
     MenuItem::RunMenuCommandType runner, XEvent *event) {
+
   MenuItem *ip;
   Menu *tp;
   Window subwindow;
@@ -407,12 +263,12 @@ MenuSelectionType Menus::UpdateMotion(Menu *menu,
 
 /** Update the menu selection. */
 void Menus::UpdateMenu(Menu *menu, int x, int y) {
-  menu->UpdatePosition(x, y, 0);
+  menu->UpdatePosition(x, y);
   menu->Draw();
 }
 
 /** Determine if a menu is valid (and can be shown). */
-char Menus::IsMenuValid(const Menu *menu) {
+bool Menus::IsMenuValid(const Menu *menu) {
   if (menu) {
     return menu->valid();
   }
@@ -424,13 +280,14 @@ MenuItem::MenuItem(Menu *parent, const char *name, MenuItemType type,
     _name(name ? strdup(name) : NULL), _type(type), _tooltip(
         tooltip ? strdup(tooltip) : NULL), _iconName(
         iconName ? strdup(iconName) : NULL), _submenu(
-    NULL),  _icon(NULL), _parent(parent) {
+    NULL), _icon(NULL), _parent(parent) {
   if (_iconName) {
     _icon = Icon::LoadNamedIcon(_iconName, 1, 1);
-    if(!_icon) {
+    if (!_icon) {
       vLog("Could not load icon %s\n", _iconName);
     }
   }
+  memset(&this->_action, 0, sizeof(MenuAction));
 }
 
 MenuItem::~MenuItem() {
@@ -469,7 +326,7 @@ void MenuItem::Draw(Graphics *graphics, bool active, unsigned offset,
     ButtonType type = BUTTON_LABEL;
     ColorName fg = COLOR_MENU_FG;
 
-    if(_icon == NULL && _iconName) {
+    if (_icon == NULL && _iconName) {
       _icon = Icon::LoadNamedIcon(_iconName, 1, 1);
     }
 
@@ -491,6 +348,9 @@ void MenuItem::Draw(Graphics *graphics, bool active, unsigned offset,
 
     if (_submenu) {
 
+      _submenu->UpdatePosition(
+          this->_parent->getX() + this->_parent->getWidth(),
+          this->_parent->getY());
       const int asize = (_parent->getItemHeight() + 7) / 8;
       const int y = offset + (_parent->getItemHeight() + 1) / 2;
       int x = width - 2 * asize - 1;
@@ -505,6 +365,9 @@ void MenuItem::Draw(Graphics *graphics, bool active, unsigned offset,
       }
       graphics->point(x, y);
 
+      if (active) {
+        _submenu->Draw();
+      }
     }
 
   } else {
@@ -589,7 +452,8 @@ void MenuItem::removeTemporaryItems() {
 
 Menu::Menu() :
     _x(0), _y(0), _timeout_ms(DEFAULT_TIMEOUT_MS), _mousex(-1), _mousey(-1), _label(
-        0), _dynamic(0), _graphics(NULL), _window(0), _parentOffset(0), _parent(NULL), _textOffset(0) {
+        0), _dynamic(0), _graphics(NULL), _window(0), _parentOffset(0), _parent(
+    NULL), _textOffset(0), _shown(false) {
 
 }
 
@@ -604,6 +468,172 @@ Menu::~Menu() {
   for (auto item : items) {
     delete item;
   }
+}
+
+bool Menu::execute(MenuItem::RunMenuCommandType runner) {
+  XEvent event;
+    MenuItem *ip;
+    Window pressw;
+    int pressx, pressy;
+    char hadMotion;
+
+    hadMotion = 0;
+
+    Cursors::GetMousePosition(&pressx, &pressy, &pressw);
+
+    Menu* menu = this;
+    for (;;) {
+
+      Events::_WaitForEvent(&event);
+
+      switch (event.type) {
+      case Expose:
+        if (event.xexpose.count == 0) {
+          Menu *mp = menu;
+          while (mp) {
+            if (mp->getWindow() == event.xexpose.window) {
+              mp->Draw();
+              break;
+            }
+            mp = mp->getParent();
+          }
+        }
+        break;
+
+      case ButtonPress:
+
+        pressx = -100;
+        pressy = -100;
+
+      case KeyPress:
+      case MotionNotify:
+        hadMotion = 1;
+        switch (Menus::UpdateMotion(menu, runner, &event)) {
+        case MENU_NOSELECTION: /* no selection */
+          break;
+        case MENU_LEAVE: /* mouse left the menu */
+          JXPutBackEvent(display, &event);
+          return 0;
+        case MENU_SUBSELECT: /* selection made */
+          return 1;
+        }
+        break;
+
+      case ButtonRelease:
+
+        if (event.xbutton.button == Button4) {
+          break;
+        }
+        if (event.xbutton.button == Button5) {
+          break;
+        }
+        if (!hadMotion) {
+          break;
+        }
+        if (abs(event.xbutton.x_root - pressx) < settings.doubleClickDelta) {
+          if (abs(event.xbutton.y_root - pressy) < settings.doubleClickDelta) {
+            break;
+          }
+        }
+
+        ip = menu->getItemAt(event.xbutton.x, event.xbutton.y);
+
+        if (ip != NULL) {
+          if (ip->isNormal()) {
+            menu->Hide();
+            (runner)(ip->getAction(), event.xbutton.button);
+          } else if (ip->isSubMenu()) {
+            const Menu *parent = menu->getParent();
+            if (event.xbutton.x >= menu->getX()
+                && event.xbutton.x < menu->getX() + menu->getWidth()
+                && event.xbutton.y >= menu->getY()
+                && event.xbutton.y < menu->getY() + menu->getHeight()) {
+              break;
+            } else if (parent && event.xbutton.x >= parent->getX()
+                && event.xbutton.x < parent->getX() + parent->getWidth()
+                && event.xbutton.y >= parent->getY()
+                && event.xbutton.y < parent->getY() + parent->getHeight()) {
+              break;
+            }
+          }
+        }
+        return 1;
+      default:
+        break;
+      }
+
+    }
+}
+
+bool Menu::isShown() {
+  return _shown;
+}
+
+void Menu::Hide() {
+  Menu *mp = this;
+  do {
+    JXUnmapWindow(display, mp->getWindow());
+    mp = mp->getParent();
+  } while (mp);
+}
+
+bool Menu::Show(MenuItem::RunMenuCommandType runner, int x, int y) {
+  /* Don't show the menu if there isn't anything to show. */
+  if (!this->valid()) {
+    /* Return 1 if there is an invalid menu.
+     * This allows empty root menus to be defined to disable
+     * scrolling on the root window.
+     */
+    return false;
+  }
+  if (JUNLIKELY(shouldExit)) {
+    return false;
+  }
+
+  if (x < 0 && y < 0) {
+    Window w;
+    Cursors::GetMousePosition(&x, &y, &w);
+    x -= this->getItemHeight() / 2;
+    y -= this->getItemHeight() / 2 + this->getOffset(0);
+  }
+
+  if (!Cursors::GrabMouse(rootWindow)) {
+    return 0;
+  }
+  if (JXGrabKeyboard(display, rootWindow, False, GrabModeAsync,
+      GrabModeAsync, CurrentTime) != GrabSuccess) {
+    JXUngrabPointer(display, CurrentTime);
+    return 0;
+  }
+
+  Events::_RegisterCallback(settings.popupDelay, Menus::MenuCallback, this);
+  //this->ShowSubmenu(runner, x, y);
+  Events::_UnregisterCallback(Menus::MenuCallback, this);
+  //Menus::UnpatchMenu(this);
+
+  JXUngrabKeyboard(display, CurrentTime);
+  JXUngrabPointer(display, CurrentTime);
+  ClientNode::RefocusClient();
+
+  if (shouldReload) {
+    Roots::ReloadMenu();
+  }
+}
+
+bool Menu::ShowSubMenu(MenuItem::RunMenuCommandType runner, int x, int y) {
+  bool status;
+
+  //this->PatchMenu(menu);
+  //this->MapMenu(x, y);
+
+  menuShown += 1;
+  status = this->execute(runner);
+  menuShown -= 1;
+
+  JXDestroyWindow(display, this->getWindow());
+  this->freeGraphics();
+
+  return status;
 }
 
 bool Menu::valid() const {
@@ -638,9 +668,8 @@ Window Menu::getWindow() {
 void Menu::Draw() {
 
   if (_graphics == NULL) {
-    this->UpdatePosition(_x, _y, 0);
+    this->UpdatePosition(_x, _y);
   }
-  MenuItem *np;
 
   int height = getHeight();
   int width = getWidth();
@@ -774,10 +803,9 @@ const ScreenType* Menu::getScreen() {
   return Screens::GetCurrentScreen(getX(), getY());
 }
 
-void Menu::UpdatePosition(int x, int y, char keyboard) {
+void Menu::UpdatePosition(int x, int y) {
   XSetWindowAttributes attr;
   unsigned long attrMask;
-  int temp;
 
   const ScreenType *screen = getScreen();
   if (x + getWidth() > screen->x + screen->width) {
@@ -787,7 +815,6 @@ void Menu::UpdatePosition(int x, int y, char keyboard) {
       x = screen->x + screen->width - getWidth();
     }
   }
-  temp = y;
   if (y + getHeight() > screen->y + screen->height) {
     y = screen->y + screen->height - getHeight();
   }

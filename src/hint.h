@@ -158,7 +158,7 @@ public:
 	 * @param np The client.
 	 * @param alreadyMapped Set if the client is already mapped.
 	 */
-	static void ReadClientInfo(ClientNode *np, char alreadyMapped);
+	static void ReadClientInfo(ClientNode *np, bool alreadyMapped);
 
 	/** Read a client's name.
 	 * @param np The client.
@@ -198,7 +198,7 @@ public:
 	 * @return The window state.
 	 */
   //TODO: Move to clientnode
-	static void ReadWindowState(ClientNode* node, Window win, char alreadyMapped);
+	static void ReadWindowState(ClientNode* node, Window win, bool alreadyMapped);
 
 	/** Read WM hints.
 	 * @param win The window.
@@ -206,7 +206,7 @@ public:
 	 * @param alreadyMapped Set if the window is already mapped.
 	 */
   //TODO: Move to clientnode
-	static void ReadWMHints(Window win, ClientNode *node, char alreadyMapped);
+	static void ReadWMHints(Window win, ClientNode *node, bool alreadyMapped);
 
 	/** Read opacity.
 	 * @param win The window.

@@ -231,7 +231,10 @@ void Binding::ShowKeyMenu(MouseContextType context, unsigned state, int code) {
 		if (np->state == state && np->code == code) {
 			const int button = Roots::GetRootMenuIndexFromString(np->command);
 			if (JLIKELY(button >= 0)) {
-				Roots::ShowRootMenu(button, -1, -1, 1);
+			  // this used to pass keyboard true to indicate that the menu was created from a key
+			  // this seems of little use except to attempt to load a different menu or somehow
+			  // provide different menu options but none of that should be done this way
+				Roots::ShowRootMenu(button, -1, -1);
 			}
 			return;
 		}

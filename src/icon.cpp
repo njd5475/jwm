@@ -52,7 +52,8 @@ const unsigned Icon::MAX_EXTENSION_LENGTH = 5;
 
 char Icon::iconSizeSet = 0;
 
-char *Icon::defaultIconName = "DefaultIconName";
+
+char *Icon::defaultIconName = strdup("DefaultIconName");
 
 /** Initialize icon data.
  * This must be initialized before parsing the configuration.
@@ -87,6 +88,7 @@ void Icon::ShutdownIcons(void) {
   for (auto icon : images) {
     delete icon;
   }
+  images.clear();
 
   JXFreeGC(display, iconGC);
 }
@@ -130,7 +132,7 @@ void ScaledIconNode::PutIcon(Icon *icon, Drawable d, long fg, int x, int y,
     int width, int height) {
   ScaledIconNode *node;
 
-  Assert(icon);
+  //Assert(icon);
 
   if (icon == &emptyIcon || icon == NULL) {
     return;
@@ -850,8 +852,8 @@ Icon::Icon(Image *image, bool preserveAspect, const char *name) :
 
 Icon::~Icon() {
   Image::DestroyImage(this->image);
-  if (this->getName()) {
-    delete[] this->getName();
+  if (name) {
+    delete[] name;
   }
 }
 

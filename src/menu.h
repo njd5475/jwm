@@ -14,6 +14,7 @@
 #include <X11/Xlib.h>
 
 #include "timing.h"
+#include "screen.h"
 
 #include "Graphics.h"
 //class Graphics;
@@ -48,7 +49,7 @@ typedef unsigned char MenuActionType;
 #define MA_ACTION_MASK        0x7F
 #define MA_GROUP_MASK         0x80
 
-struct Menu;
+class Menu;
 class ClientNode;
 
 /** Enumeration of possible menu elements. */
@@ -121,6 +122,12 @@ public:
   void freeGraphics();
   void addItem(MenuItem *item);
   void addSeparator();
+  void Hide();
+  bool Show(MenuItem::RunMenuCommandType runner, int x, int y);
+  bool ShowSubMenu(MenuItem::RunMenuCommandType runner, int x, int y);
+  bool isShown();
+  void update(MenuItem::RunMenuCommandType runner, XEvent *e);
+  bool execute(MenuItem::RunMenuCommandType runner);
   MenuItem *getItemAt(int x, int y);
   bool valid() const;
   int getItemHeight() const;
@@ -138,9 +145,12 @@ public:
   int getWidth() const;
   void removeTemporaryItems();
   void mouseEvent(int x, int y, const TimeType now);
-  void UpdatePosition(int x, int y, char keyboard);
-  const struct ScreenType* getScreen();
+  void UpdatePosition(int x, int y);
+  void MenuCallback(const TimeType *now, int x, int y, Window w,
+      void *data);
+  const ScreenType* getScreen();
 private:
+  bool _shown;
   /* These fields must be set before calling ShowMenu */
   std::vector<MenuItem*> items; /**< Menu items. */
   char *_label; /**< Menu label (NULL for no label). */
@@ -187,34 +197,37 @@ public:
    * @return 1 if the menu was shown, 0 otherwise.
    */
   static char ShowMenu(Menu *menu, MenuItem::RunMenuCommandType runner,
-      int x, int y, char keyboard);
+      int x, int y);
 
   /** Destroy a menu structure.
    * @param menu The menu to destroy.
    */
   static void DestroyMenu(Menu *menu);
   static int GetMenuIndex(Menu *menu, int x, int y);
-private:
-  static char ShowSubmenu(Menu *menu, Menu *parent,
+
+  static void MenuCallback(const TimeType *now, int x, int y,
+      Window w, void *data);
+
+  static MenuSelectionType UpdateMotion(Menu *menu,
       MenuItem::RunMenuCommandType runner,
-      int x, int y, char keyboard);
+      XEvent *event);
+private:
+  static bool ShowSubmenu(Menu *menu, Menu *parent,
+      MenuItem::RunMenuCommandType runner,
+      int x, int y);
 
   static void PatchMenu(Menu *menu);
   static void UnpatchMenu(Menu *menu);
-  static void MapMenu(Menu *menu, int x, int y, char keyboard);
+  static void MapMenu(Menu *menu, int x, int y);
   static void HideMenu(Menu *menu);
   static void DrawMenu(Menu *menu);
 
   static char MenuLoop(Menu *menu, MenuItem::RunMenuCommandType runner);
-  static void MenuCallback(const TimeType *now, int x, int y,
-      Window w, void *data);
-  static MenuSelectionType UpdateMotion(Menu *menu,
-      MenuItem::RunMenuCommandType runner,
-      XEvent *event);
+
 
   static void UpdateMenu(Menu *menu, int x, int y);
   static MenuItem *GetMenuItem(Menu *menu, int x, int y);
-  static char IsMenuValid(const Menu *menu);
+  static bool IsMenuValid(const Menu *menu);
 
   static std::vector<Menu*> menus;
 

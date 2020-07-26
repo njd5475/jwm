@@ -24,10 +24,10 @@ static void CreateWindowSendToMenu(Menu *menu, ClientNode *np);
 static void AddWindowMenuItem(Menu *menu, const char *name, MenuActionType type, ClientNode *np, int value);
 
 /** Show a window menu. */
-void ShowWindowMenu(ClientNode *np, int x, int y, char keyboard) {
+void ShowWindowMenu(ClientNode *np, int x, int y) {
   Menu *menu = CreateWindowMenu(np);
   Menus::InitializeMenu(menu);
-  Menus::ShowMenu(menu, RunWindowCommand, x, y, keyboard);
+  Menus::ShowMenu(menu, RunWindowCommand, x, y);
   Menus::DestroyMenu(menu);
 }
 

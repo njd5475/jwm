@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "ApplicationsComponent.h"
 #include "battery.h"
 #include "binding.h"
 #include "border.h"
@@ -69,6 +70,7 @@ void WindowManager::Initialize(void) {
 	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new DockComponent());
 	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new DesktopComponent());
 	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new BackgroundComponent());
+	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(new ApplicationsComponent());
 
 	ILog(Binding::InitializeBindings);
 	ILog(ClientNode::InitializeClients);
@@ -161,7 +163,7 @@ void WindowManager::Startup(void) {
 	LogWindow::StartupPortals();
 //	LogWindow::DrawAll();
 
-	Flex::Create();
+	//Flex::Create();
 }
 
 /** Shutdown the various JWM components.

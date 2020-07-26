@@ -73,9 +73,9 @@ void TrayButton::DestroyTrayButtons(void) {
   while (!buttons.empty()) {
     it = buttons.begin();
     bp = (*it);
-    delete bp;
     buttons.erase(it);
   }
+  buttons.clear();
 }
 
 /** Create a button tray component. */

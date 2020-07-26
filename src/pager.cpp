@@ -33,10 +33,6 @@ void PagerType::ShutdownPager(void) {
 
 /** Release pager data. */
 void PagerType::DestroyPager(void) {
-  for(auto pp : pagers) {
-    Events::_UnregisterCallback(SignalPager, pp);
-    delete pp;
-  }
   pagers.clear();
 }
 
@@ -56,6 +52,7 @@ PagerType::PagerType(char labeled, Tray *tray, TrayComponent *parent) :
 PagerType::~PagerType() {
   Logger::Log("Destroying PagerType\n");
   this->getTray()->RemoveTrayComponent(this);
+  Events::_UnregisterCallback(SignalPager, this);
 }
 
 /** Initialize a pager tray component. */

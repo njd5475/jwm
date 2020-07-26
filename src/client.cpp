@@ -79,8 +79,7 @@ void ClientNode::StartupClients(void) {
   Events::_RequirePagerUpdate();
 
   const unsigned titleHeight = Border::GetTitleHeight();
-  int count;
-//	int x;
+  unsigned int count;
 
   count = settings.desktopCount * Screens::GetScreenCount();
   cascadeOffsets = new int[count];
@@ -91,7 +90,7 @@ void ClientNode::StartupClients(void) {
 
 }
 
-ClientNode* ClientNode::Create(Window w, char alreadyMapped, char notOwner) {
+ClientNode* ClientNode::Create(Window w, bool alreadyMapped, bool notOwner) {
   ClientNode *node = new ClientNode(w, alreadyMapped, notOwner);
   nodes.push_back(node);
   return node;
@@ -319,7 +318,7 @@ ClientNode::~ClientNode() {
 }
 
 /** Add a window to management. */
-ClientNode::ClientNode(Window w, char alreadyMapped, char notOwner) :
+ClientNode::ClientNode(Window w, bool alreadyMapped, bool notOwner) :
     oldx(0), oldy(0), oldWidth(0), oldHeight(0), yinc(0), minWidth(0), maxWidth(
         0), minHeight(0), maxHeight(0), gravity(0), controller(0), instanceName(
         0), baseHeight(0), baseWidth(0), colormaps(), icon(0), sizeFlags(0), className(
@@ -723,7 +722,7 @@ void ClientNode::SetOpacity(unsigned int opacity, char force) {
   }
 }
 
-void ClientNode::UpdateWindowState(char alreadyMapped) {
+void ClientNode::UpdateWindowState(bool alreadyMapped) {
   /* Read the window state. */
   Hints::ReadWindowState(this, this->window, alreadyMapped);
   if (this->minWidth == this->maxWidth && this->minHeight == this->maxHeight) {

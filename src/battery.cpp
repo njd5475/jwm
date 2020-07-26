@@ -80,7 +80,7 @@ Battery::Battery(int width, int height, Tray *tray, TrayComponent *parent) :
 }
 
 Battery::~Battery() {
-
+  Events::_UnregisterCallback(PollBattery, this);
 }
 
 /** Add an action to a Battery. */

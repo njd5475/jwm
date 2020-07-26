@@ -425,7 +425,7 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
   } else if (event->window == rootWindow) {
     /* Click on the root.
      * Note that we use the raw button from the event for ShowRootMenu. */
-    if (!Roots::ShowRootMenu(event->button, event->x, event->y, 0)) {
+    if (!Roots::ShowRootMenu(event->button, event->x, event->y)) {
       _ProcessBinding(MC_ROOT, NULL, event->state, button, 0, 0);
     }
   } else {
@@ -633,14 +633,14 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     if (np) {
       if (keyAction) {
         np->RaiseClient();
-        ShowWindowMenu(np, np->getX(), np->getY(), 1);
+        ShowWindowMenu(np, np->getX(), np->getY());
       } else {
         const unsigned bsize =
             (np->getBorder() & BORDER_OUTLINE) ? settings.borderWidth : 0;
         const unsigned titleHeight = Border::GetTitleHeight();
         const int mx = np->getX() + x - bsize;
         const int my = np->getY() + y - titleHeight - bsize;
-        ShowWindowMenu(np, mx, my, 0);
+        ShowWindowMenu(np, mx, my);
       }
     }
     break;

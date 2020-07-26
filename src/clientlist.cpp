@@ -273,10 +273,12 @@ void ClientList::Shutdown() {
   ClientNode *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
-      client = nodes[x][at];
-      client->setDelete();
-      client->DeleteClient();
-      client->RemoveClient();
+//      client = nodes[x][at];
+//      client->RaiseClient();
+//      client->setDelete();
+//      client->DeleteClient();
+//      client->RemoveClient();
+
     }
   }
 }

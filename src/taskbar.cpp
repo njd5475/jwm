@@ -49,14 +49,11 @@ void TaskBar::InitializeTaskBar(void) {
 
 /** Shutdown the task bar. */
 void TaskBar::ShutdownTaskBar(void) {
-  for (int b = 0; b < bars.size(); ++b) {
-    TaskBar *bar = bars[b];
-    delete bar;
-  }
   bars.clear();
 }
 
 TaskBar::~TaskBar() {
+  Events::_UnregisterCallback(SignalTaskbar, this);
   JXFreePixmap(display, this->buffer);
 }
 
@@ -382,7 +379,7 @@ void TaskBar::RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button) {
       Window w;
       int x, y;
       Cursors::GetMousePosition(&x, &y, &w);
-      ShowWindowMenu((ClientNode*) action->context, x, y, 0);
+      ShowWindowMenu((ClientNode*) action->context, x, y);
     } else {
       ClientNode *np = (ClientNode*) action->context;
       np->RestoreClient(1);
@@ -397,7 +394,7 @@ void TaskBar::RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button) {
 
 /** Add a client to the task bar. */
 void TaskBar::AddClientToTaskBar(ClientNode *np) {
-  BarItem *tp;
+  BarItem *tp = NULL;
   if (np->getClassName() && settings.groupTasks) {
     for (auto &entry : taskEntries) {
       const char *className = entry.second->getClassName();
@@ -443,7 +440,7 @@ void TaskBar::UpdateTaskBar(void) {
     return;
   }
 
-  TaskBar *bar;
+  TaskBar *bar = NULL;
   for (int b = 0; b < bars.size(); ++b) {
     bar = bars[b];
     if (bar->layout == LAYOUT_VERTICAL) {
@@ -879,7 +876,7 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
     y = Max(y, sp->y);
   }
 
-  Menus::ShowMenu(menu, TaskBar::RunTaskBarCommand, x, y, 0);
+  Menus::ShowMenu(menu, TaskBar::RunTaskBarCommand, x, y);
 
   Menus::DestroyMenu(menu);
 

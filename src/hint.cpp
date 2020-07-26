@@ -230,7 +230,7 @@ void Hints::ReadCurrentDesktop(void) {
 /** Read client hints.
  * This is called while the client is being added to management.
  */
-void Hints::ReadClientInfo(ClientNode *np, char alreadyMapped) {
+void Hints::ReadClientInfo(ClientNode *np, bool alreadyMapped) {
 
 	Status status;
 
@@ -442,7 +442,7 @@ char Hints::CheckShape(Window win) {
 }
 
 /** Read all hints needed to determine the current window state. */
-void Hints::ReadWindowState(ClientNode *result, Window win, char alreadyMapped) {
+void Hints::ReadWindowState(ClientNode *result, Window win, bool alreadyMapped) {
 
 	Status status;
 	unsigned long count, x;
@@ -622,8 +622,9 @@ void Hints::ReadWMProtocols(Window w, ClientNode *state) {
 
 	state->setNoTakeFocus();
 	state->setNoDelete();
+	printf("\nWindow %04x Display %04x\n", w);
 	status = JXGetWindowProperty(display, w, atoms[ATOM_WM_PROTOCOLS],
-	    0, 32, False, XA_ATOM,
+	    0, 64, False, XA_ATOM,
 	    &realType, &realFormat, &count, &extra, &temp);
 	p = (Atom*) temp;
 	if (JUNLIKELY(status != Success || realFormat == 0 || !p)) {
@@ -701,7 +702,7 @@ void Hints::ReadWMState(Window win, ClientNode *node) {
 }
 
 /** Read the WM hints for a window. */
-void Hints::ReadWMHints(Window win, ClientNode *node, char alreadyMapped) {
+void Hints::ReadWMHints(Window win, ClientNode *node, bool alreadyMapped) {
 
 	XWMHints *wmhints;
 

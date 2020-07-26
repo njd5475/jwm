@@ -97,7 +97,6 @@ Token::TYPE Token::getType() {
 Tokenizer::Tokenizer(FILE *file) :
     _file(file), _eof(false), _position(0), _lastReadCount(0), _theToken(
         Token(_charBuffer)), _nextToken(false) {
-  Assert(file != NULL);
   memset((void*) _charBuffer, 0, BUFFER_SIZE * sizeof(char));
 }
 
@@ -292,7 +291,7 @@ JObject* NicksConfigParser::object(JObject *parent, unsigned tabs) {
 
     // setting the indent level here because we need to expect children objects
     // to be at tabs + 1
-    consume();
+    whitespace(true);
   } while (isToken( { Token::PLUS }));
 
   children(obj, tabs + 1);
@@ -417,7 +416,7 @@ const char* NicksConfigParser::quotedIdentifier() {
   return strdup(id.c_str());
 }
 
-void NicksConfigParser::whitespace(bool includeNewLines) {
+void NicksConfigParser::whitespace(bool includeNewLines, bool consumeCommentLines) {
   getNextToken();
 
   while (_lastToken != NULL
@@ -427,7 +426,7 @@ void NicksConfigParser::whitespace(bool includeNewLines) {
         && _indentLevel > 0) {
       _indentLevel = 0;
     }
-    consume();
+    consume(consumeCommentLines);
   }
 
 }

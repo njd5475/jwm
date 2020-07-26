@@ -48,7 +48,7 @@ static const StringMappingType MAP[] = { { "close", CLOSE }, { "ddesktop",
     DDESKTOP }, { "desktop#", DESKTOP }, { "down", DOWN }, { "escape", ESC }, {
     "exit", EXIT }, { "fullscreen", FULLSCREEN }, { "ldesktop", LDESKTOP }, {
     "left", LEFT }, { "maxbottom", MAXBOTTOM }, { "maxh", MAXH }, { "maximize",
-    MAX }, { "maxleft", MAXLEFT }, { "maxright", MAXRIGHT },
+    MAX }, { "maxexleft", MAXLEFT }, { "maxright", MAXRIGHT },
     { "maxtop", MAXTOP }, { "maxv", MAXV }, { "minimize", MIN },
     { "move", MOVE }, { "next", NEXT }, { "nextstacked", NEXTSTACK }, { "none",
         NONE }, { "prev", PREV }, { "prevstacked", PREVSTACK }, { "rdesktop",
@@ -194,24 +194,24 @@ static T findOrDefault(const TokenNode *tok, const char *attrName,
 
 /** Parse the JWM configuration. */
 void Parser::ParseConfig(const char *fileName) {
-  if (fileName) {
-    if (!ParseFile(fileName, 0)) {
-      ParseError(NULL, _("could not open %s"), fileName);
-    }
-  } else {
-    unsigned i;
-    char found = 0;
-    for (i = 0; i < CONFIG_FILE_COUNT; i++) {
-      if (ParseFile(CONFIG_FILES[i], 0)) {
-        found = 1;
-        break;
-      }
-    }
-    if (!found) {
-      ParseError(NULL, _("could not open %s or %s"), CONFIG_FILES[0],
-      SYSTEM_CONFIG);
-    }
-  }
+//  if (fileName) {
+//    if (!ParseFile(fileName, 0)) {
+//      ParseError(NULL, _("could not open %s"), fileName);
+//    }
+//  } else {
+//    unsigned i;
+//    char found = 0;
+//    for (i = 0; i < CONFIG_FILE_COUNT; i++) {
+//      if (ParseFile(CONFIG_FILES[i], 0)) {
+//        found = 1;
+//        break;
+//      }
+//    }
+//    if (!found) {
+//      ParseError(NULL, _("could not open %s or %s"), CONFIG_FILES[0],
+//      SYSTEM_CONFIG);
+//    }
+//  }
   Binding::ValidateKeys();
 
   static const unsigned int NEW_CONFIG_FILE_COUNT = ARRAY_LENGTH(
@@ -225,7 +225,6 @@ void Parser::ParseConfig(const char *fileName) {
       vLog("Could not parse config file %s\n", configFile);
     } else {
       Configuration::load(config.array_val);
-
       Configuration::saveConfigs(stdout);
     }
   }

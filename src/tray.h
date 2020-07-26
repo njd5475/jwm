@@ -94,7 +94,7 @@ private:
   std::vector<TrayComponent*> components;
   static std::vector<Tray*> trays;
 
-private:
+public:
   Tray();
   virtual ~Tray();
 

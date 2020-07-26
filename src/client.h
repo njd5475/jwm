@@ -140,11 +140,12 @@ typedef struct Strut {
 class ClientNode {
 
 private:
-  ClientNode(Window w, char alreadyMapped, char notOwner);
+  ClientNode(Window w, bool alreadyMapped, bool notOwner);
 
-protected:
+public:
   virtual ~ClientNode();
 
+protected:
   static std::vector<ClientNode*> nodes;
 
   Window window; /**< The client window. */
@@ -197,7 +198,7 @@ public:
   static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
   static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
   static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
-  static ClientNode *Create(Window w, char alreadyMapped, char notOwner);
+  static ClientNode *Create(Window w, bool alreadyMapped, bool notOwner);
   static ClientNode *FindClient(Window w); // by window or parent
   static ClientNode *FindClientByWindow(Window w);
   static ClientNode *FindClientByParent(Window p);
@@ -287,7 +288,7 @@ public:
 
   void SetOpacity(unsigned int opacity, char force);
   void _UpdateState();
-  void UpdateWindowState(char alreadyMapped);
+  void UpdateWindowState(bool alreadyMapped);
   void ReadWMColormaps();
   void ReadWMNormalHints();
   void ReadWMName();

@@ -12,6 +12,7 @@
 #include <cstring>
 #include <sstream>
 #include <string>
+#include <string.h>
 
 #include "icon.h"
 #include "root.h"
@@ -23,6 +24,7 @@
 #include "pager.h"
 #include "battery.h"
 #include "dock.h"
+#include "binding.h"
 #include "clock.h"
 
 using namespace std;
@@ -140,6 +142,16 @@ void Configuration::processConfigs(Builder &builder) {
       JObject *rootMenu = jsonObject(itemObj, "RootMenu");
       if (rootMenu) {
         builder.buildRootMenu(rootMenu);
+      }
+
+      JObject *key = jsonObject(itemObj, "Key");
+      if (key) {
+        builder.buildKey(key);
+      }
+
+      JObject *mouse = jsonObject(itemObj, "Mouse");
+      if (mouse) {
+        builder.buildMouse(mouse);
       }
     }
   }
@@ -487,7 +499,7 @@ void Loader::buildTray(JObject *jobj) {
   }
 
   if (strAutohide) {
-    autohide = !strcmp(strAutohide, "off");
+    autohide = !(strcmp(strAutohide, "off") == 0);
   }
 
   if (strDelay) {
@@ -549,26 +561,27 @@ void Loader::buildTray(JObject *jobj) {
 }
 
 void Loader::buildTrayButton(Tray *tray, JObject *trayButton) {
-  const char* label = jsonString(trayButton, "label");
-  const char* icon = jsonString(trayButton, "icon");
-  const char* popup = jsonString(trayButton, "popup");
-  const char* strWidth = jsonString(trayButton, "width");
-  const char* strHeight = jsonString(trayButton, "height");
-  const char* action = jsonString(trayButton, "action");
+  const char *label = jsonString(trayButton, "label");
+  const char *icon = jsonString(trayButton, "icon");
+  const char *popup = jsonString(trayButton, "popup");
+  const char *strWidth = jsonString(trayButton, "width");
+  const char *strHeight = jsonString(trayButton, "height");
+  const char *action = jsonString(trayButton, "action");
 
   unsigned width = 0, height = 0;
 
-  if(strWidth) {
+  if (strWidth) {
     width = atoi(strWidth);
   }
 
-  if(strHeight) {
+  if (strHeight) {
     height = atoi(strHeight);
   }
 
-  TrayButton *button = TrayButton::Create(label, icon, popup, width, height, tray, tray->getLastComponent());
+  TrayButton *button = TrayButton::Create(icon, label, popup, width, height,
+      tray, tray->getLastComponent());
 
-  if(action) {
+  if (action) {
     const int default_mask = (1 << 1) | (1 << 2) | (1 << 3); // button mask default is any clicked
     button->addAction(action, default_mask);
   }
@@ -579,20 +592,21 @@ void Loader::buildTrayButton(Tray *tray, JObject *trayButton) {
 void Loader::buildPager(Tray *tray, JObject *pager) {
   const char *strLabeled = jsonString(pager, "labeled");
   char labeled = 0;
-  if(strLabeled) {
+  if (strLabeled) {
     labeled = !strcmp(strLabeled, "false");
   }
 
-  PagerType *pagerType = PagerType::CreatePager(labeled ? 1 : 0, tray, tray->getLastComponent());
+  PagerType *pagerType = PagerType::CreatePager(labeled ? 1 : 0, tray,
+      tray->getLastComponent());
 
   tray->AddTrayComponent(pagerType);
 }
 
-void Loader::buildTaskList(Tray *tray, JObject* taskList) {
-  const char* strMaxWidth = jsonString(taskList, "maxwidth");
+void Loader::buildTaskList(Tray *tray, JObject *taskList) {
+  const char *strMaxWidth = jsonString(taskList, "maxwidth");
   unsigned maxWidth = 0;
 
-  if(strMaxWidth) {
+  if (strMaxWidth) {
     maxWidth = atoi(strMaxWidth);
   }
   TaskBar *taskBar = TaskBar::Create(tray, tray->getLastComponent());
@@ -601,20 +615,21 @@ void Loader::buildTaskList(Tray *tray, JObject* taskList) {
   tray->AddTrayComponent(taskBar);
 }
 
-void Loader::buildBattery(Tray *tray, JObject* battery) {
+void Loader::buildBattery(Tray *tray, JObject *battery) {
   tray->AddTrayComponent(new Battery(0, 0, tray, tray->getLastComponent()));
 }
 
-void Loader::buildDock(Tray *tray, JObject* dock) {
+void Loader::buildDock(Tray *tray, JObject *dock) {
   DockType *dockType = DockType::Create(0, tray, tray->getLastComponent());
   tray->AddTrayComponent(dockType);
 }
 
-void Loader::buildClock(Tray *tray, JObject* clock) {
-  const char* format = jsonString(clock, "format");
-  const char* zone = jsonString(clock, "zone");
+void Loader::buildClock(Tray *tray, JObject *clock) {
+  const char *format = jsonString(clock, "format");
+  const char *zone = jsonString(clock, "zone");
 
-  ClockType *clockType = ClockType::CreateClock(format, zone ? zone : "UTC", 0, 9, tray, tray->getLastComponent());
+  ClockType *clockType = ClockType::CreateClock(format, zone ? zone : "UTC", 0,
+      9, tray, tray->getLastComponent());
   tray->AddTrayComponent(clockType);
 }
 
@@ -646,6 +661,143 @@ void Loader::buildDesktops(JObject *jobj) {
   }
 }
 
+#define LITERAL(action) #action
+void Loader::buildKey(JObject *jobj) {
+  const char *key = jsonString(jobj, "key");
+  const char *keycode = jsonString(jobj, "keycode");
+  const char *action = jsonString(jobj, "action");
+  const char *mask = jsonString(jobj, "mask");
+  const char *command = NULL;
+
+  if (key && action) {
+    ActionType theAction;
+    theAction.action = this->convertToAction(action);
+    theAction.extra = 0;
+
+    if (JUNLIKELY(theAction.action == INVALID)) {
+      vLog("invalid Key action: \"%s\"", action);
+    } else {
+      Binding::InsertBinding(theAction, mask, key, keycode, command);
+    }
+
+  }
+}
+
+Actions Loader::convertToAction(const char *action) {
+  Actions toRet = INVALID;
+  if (strcasecmp(action, LITERAL(LEFT))) {
+    toRet = LEFT;
+  } else if (strcasecmp(action, LITERAL(RIGHT))) {
+    toRet = RIGHT;
+  } else if (strcasecmp(action, LITERAL(UP))) {
+    toRet = UP;
+  } else if (strcasecmp(action, LITERAL(DOWN))) {
+    toRet = DOWN;
+  } else if (strcasecmp(action, LITERAL(CLOSE))) {
+    toRet = CLOSE;
+  } else if (strcasecmp(action, LITERAL(NONE))) {
+    toRet = NONE;
+  } else if (strcasecmp(action, "escape")) {
+    toRet = ESC;
+  } else if (strcasecmp(action, LITERAL(RESTART))) {
+    toRet = RESTART;
+  } else if (strcasecmp(action, LITERAL(LDESKTOP))) {
+    toRet = LDESKTOP;
+  } else if (strcasecmp(action, LITERAL(DESKTOP))) {
+    toRet = DESKTOP;
+  } else if (strcasecmp(action, LITERAL(EXIT))) {
+    toRet = EXIT;
+  } else if (strcasecmp(action, LITERAL(FULLSCREEN))) {
+    toRet = FULLSCREEN;
+  } else if (strcasecmp(action, LITERAL(MAXBOTTOM))) {
+    toRet = MAXBOTTOM;
+  } else if (strcasecmp(action, LITERAL(MAXH))) {
+    toRet = MAXH;
+  } else if (strcasecmp(action, LITERAL(MAX))) {
+    toRet = MAX;
+  } else if (strcasecmp(action, LITERAL(MAXLEFT))) {
+    toRet = MAXLEFT;
+  } else if (strcasecmp(action, LITERAL(MAXRIGHT))) {
+    toRet = MAXRIGHT;
+  } else if (strcasecmp(action, LITERAL(DDESKTOP))) {
+    toRet = DDESKTOP;
+  } else if (strcasecmp(action, LITERAL(SHOWDESK))) {
+    toRet = SHOWDESK;
+  } else if (strcasecmp(action, LITERAL(SHOWTRAY))) {
+    toRet = SHOWTRAY;
+  } else if (strcasecmp(action, LITERAL(EXEC))) {
+    toRet = EXEC;
+  } else if (strcasecmp(action, LITERAL(RESTART))) {
+    toRet = RESTART;
+  } else if (strcasecmp(action, LITERAL(SEND))) {
+    toRet = SEND;
+  } else if (strcasecmp(action, LITERAL(SENDR))) {
+    toRet = SENDR;
+  } else if (strcasecmp(action, LITERAL(SENDL))) {
+    toRet = SENDL;
+  } else if (strcasecmp(action, LITERAL(SENDU))) {
+    toRet = SENDU;
+  } else if (strcasecmp(action, LITERAL(SENDD))) {
+    toRet = SENDD;
+  } else if (strcasecmp(action, LITERAL(MAXTOP))) {
+    toRet = MAXTOP;
+  } else if (strcasecmp(action, LITERAL(MAXBOTTOM))) {
+    toRet = MAXBOTTOM;
+  } else if (strcasecmp(action, LITERAL(MAXLEFT))) {
+    toRet = MAXLEFT;
+  } else if (strcasecmp(action, LITERAL(MAXRIGHT))) {
+    toRet = MAXRIGHT;
+  } else if (strcasecmp(action, LITERAL(MAXV))) {
+    toRet = MAXV;
+  } else if (strcasecmp(action, LITERAL(MAXH))) {
+    toRet = MAXH;
+  } else if (strcasecmp(action, LITERAL(RESTORE))) {
+    toRet = RESTORE;
+  }
+  return toRet;
+}
+
+int Loader::convertToMouseContext(const char *context) {
+  MouseContextType mc = MC_NONE;
+  if (strcasecmp(context, "root")) {
+    mc = MC_ROOT;
+  } else if (strcasecmp(context, "border")) {
+    mc = MC_BORDER;
+  } else if (strcasecmp(context, "move") || strcasecmp(context, "title")) {
+    mc = MC_MOVE;
+  } else if (strcasecmp(context, "close")) {
+    mc = MC_CLOSE;
+  } else if (strcasecmp(context, "maximize")) {
+    mc = MC_MAXIMIZE;
+  } else if (strcasecmp(context, "minimize")) {
+    mc = MC_MINIMIZE;
+  } else if (strcasecmp(context, "icon")) {
+    mc = MC_ICON;
+  }
+  return mc;
+}
+
+void Loader::buildMouse(JObject *jobj) {
+  const char *context = jsonString(jobj, "context");
+  int button = jsonInt(jobj, "button");
+  const char *action = jsonString(jobj, "action");
+  const char *mask = jsonString(jobj, "mask");
+  const char *command = NULL;
+
+  if (button && action) {
+    ActionType theAction;
+    theAction.action = this->convertToAction(action);
+    theAction.extra = 0;
+    MouseContextType mc = this->convertToMouseContext(context);
+
+    if (JUNLIKELY(theAction.action == INVALID)) {
+      vLog("invalid Key action: \"%s\"", action);
+    } else {
+      Binding::InsertMouseBinding(button, mask, mc, theAction, command);
+    }
+  }
+}
+
 Saver::Saver(Configuration *cfg, FILE *output) :
     _output(output), Builder(cfg), TABS(4) {
 
@@ -657,7 +809,7 @@ Saver::~Saver() {
 
 void Saver::buildIconPath(JObject *iconPath) {
   const char *path = jsonString(iconPath, "path");
-  //TODO: replace spaces with escape characters
+//TODO: replace spaces with escape characters
   write("IconPath");
   write("path", path);
   write("\n");
@@ -676,7 +828,7 @@ void Saver::write(const char *key, const char *value) {
 }
 
 void Saver::buildMenuStyle(JObject *object) {
-  buildStyle(0, "Menu", object);
+  buildStyle(0, "MenuStyle", object);
 }
 
 void Saver::buildMenus(unsigned indent, const char *elementName,
@@ -726,6 +878,13 @@ void Saver::buildMenus(unsigned indent, const char *elementName,
 void Saver::writeIndent(unsigned indent) {
   for (unsigned i = 0; i < indent * TABS; ++i) {
     write(" ");
+  }
+}
+
+void Saver::write(JObject *obj, const char *key) {
+  const char* value = jsonString(obj, key);
+  if(value) {
+    write(key, value);
   }
 }
 
@@ -833,7 +992,85 @@ void Saver::buildStyle(unsigned indent, const char *styleName,
 }
 
 void Saver::buildTray(JObject *jobj) {
+  const char *strX = jsonString(jobj, "x");
+  const char *strY = jsonString(jobj, "y");
+  const char *strWidth = jsonString(jobj, "width");
+  const char *strHeight = jsonString(jobj, "height");
+  const char *strAutohide = jsonString(jobj, "autohide");
+  const char *strDelay = jsonString(jobj, "delay");
+  bool autohide = false;
+  float delay = 0.5f;
 
+  if (!strX) {
+    strX = "0";
+  }
+
+  if (!strY) {
+    strY = "0";
+  }
+
+  if (strAutohide) {
+    autohide = !(strcmp(strAutohide, "off") == 0);
+  }
+
+  if (strDelay) {
+    delay = atof(strDelay);
+  }
+
+  this->write("\n");
+  this->write("Tray");
+
+  if (strWidth) {
+    write("width", strWidth);
+  }
+
+  if (strHeight) {
+    write("height", strHeight);
+  }
+  write("autohide", autohide ? "on" : "off");
+  write("x", strX);
+  write("y", strY);
+
+  // process children after default properties
+  JArray *children = jsonArray(jobj, "children");
+  if (children) {
+    for (int i = 0; i < children->count; ++i) {
+      JArrayItem *val = children->_internal.vItems[i];
+      if (val->type == VAL_OBJ) {
+        JObject *item = val->value.object_val;
+
+        JObject *trayButton = jsonObject(item, "TrayButton");
+        if (trayButton) {
+          buildTrayButton(1, trayButton);
+        }
+
+        JObject *pager = jsonObject(item, "Pager");
+        if (pager) {
+          buildPager(1, pager);
+        }
+
+        JObject *taskList = jsonObject(item, "TaskList");
+        if (taskList) {
+          buildTaskList(1, taskList);
+        }
+
+        JObject *battery = jsonObject(item, "Battery");
+        if (battery) {
+          buildBattery(1, battery);
+        }
+
+        JObject *dock = jsonObject(item, "Dock");
+        if (dock) {
+          buildDock(1, dock);
+        }
+
+        JObject *clock = jsonObject(item, "Clock");
+        if (clock) {
+          buildClock(1, clock);
+        }
+      }
+    }
+  }
 }
 
 void Saver::buildGroup(JObject *jobj) {
@@ -843,3 +1080,56 @@ void Saver::buildGroup(JObject *jobj) {
 void Saver::buildDesktops(JObject *jobj) {
 
 }
+
+void Saver::buildKey(JObject *jobj) {
+
+}
+
+void Saver::buildMouse(JObject *jobj) {
+
+}
+
+void Saver::buildTrayButton(unsigned indent, JObject *trayButton) {
+  write("\n");
+  writeIndent(indent);
+  write("TrayButton");
+  write(trayButton, "icon");
+  write(trayButton, "label");
+  write(trayButton, "action");
+}
+
+void Saver::buildPager(unsigned indent, JObject *pager) {
+
+  write("\n");
+  writeIndent(indent);
+  write("Pager");
+  write(pager, "labeled");
+}
+
+void Saver::buildTaskList(unsigned indent, JObject* taskList) {
+  write("\n");
+  writeIndent(indent);
+  write("TaskList");
+  write(taskList, "maxwidth");
+}
+
+void Saver::buildBattery(unsigned indent, JObject* battery) {
+  write("\n");
+  writeIndent(indent);
+  write("Battery");
+}
+
+void Saver::buildDock(unsigned indent, JObject* dock) {
+  write("\n");
+  writeIndent(indent);
+  write("Dock");
+}
+
+void Saver::buildClock(unsigned indent, JObject* clock) {
+  write("\n");
+  writeIndent(indent);
+  write("Clock");
+  write(clock, "format");
+
+}
+
