@@ -17,7 +17,6 @@
 #include "event.h"
 #include "root.h"
 #include "settings.h"
-#include "parse.h"
 #include "winmenu.h"
 #include "screen.h"
 #include "hint.h"

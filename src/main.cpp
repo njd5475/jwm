@@ -9,9 +9,9 @@
 
 #include "jwm.h"
 #include "main.h"
-#include "parse.h"
 #include "help.h"
 #include "error.h"
+#include "Configuration.h"
 #include "misc.h"
 
 #include <fcntl.h>
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 	case COMMAND_PARSE:
 		Log("Initializing\n");
 		WindowManager::Initialize();
-		Parser::ParseConfig(configPath);
+		Configuration::ParseConfig(configPath);
 		WindowManager::DoExit(0);
 		break;
 	case COMMAND_RESTART:
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
 
 		/* Parse the configuration file. */
 		Log("Parsing Config...\n");
-		Parser::ParseConfig(configPath);
+		Configuration::ParseConfig(configPath);
 
 		/* Start up the JWM components. */
 		Log("Starting up components...\n");

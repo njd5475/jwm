@@ -1133,3 +1133,29 @@ void Saver::buildClock(unsigned indent, JObject* clock) {
 
 }
 
+#include "misc.h"
+#include "Token.h"
+
+static const char *const NEW_CONFIG_FILES[] = { "$XDG_CONFIG_HOME/nwm/nwmrc",
+    "$HOME/.config/nwm/nwm", "$HOME/.nwmrc" };
+
+/** Parse the JWM configuration. */
+void Configuration::ParseConfig(const char *fileName) {
+  Binding::ValidateKeys();
+
+  static const unsigned int NEW_CONFIG_FILE_COUNT = ARRAY_LENGTH(
+      NEW_CONFIG_FILES);
+  for (unsigned i = 0; i < NEW_CONFIG_FILE_COUNT; ++i) {
+    const char *configFile = NEW_CONFIG_FILES[i];
+    short type;
+    JItemValue config = NicksConfigParser::parse(configFile);
+
+    if (!config.array_val) {
+      vLog("Could not parse config file %s\n", configFile);
+    } else {
+      Configuration::load(config.array_val);
+      Configuration::saveConfigs(stdout);
+    }
+  }
+}
+

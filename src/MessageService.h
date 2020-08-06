@@ -8,9 +8,13 @@
 #ifndef SRC_MESSAGESERVICE_H_
 #define SRC_MESSAGESERVICE_H_
 
+#include <string>
+#include <vector>
+
 struct DBusConnection;
 struct DBusPendingCall;
 struct DBusMessage;
+struct DBusPendingCall;
 
 class MessageService {
 public:
@@ -18,19 +22,10 @@ public:
   virtual ~MessageService();
 
 public:
-  static void sendSignal(const char* signal);
-  static void callMethod(const char* busName, const char* path, const char* interface, const char* method, const char* param);
-  static void waitForResponse(DBusPendingCall *pending);
-  static void receiveSignals();
-  static void exposeMethod();
-  static void addRule();
-  static void cleanupMessageService();
-  static void reply_to_method_call(DBusMessage* msg, DBusConnection* conn);
+  static long getShutdownTime();
+  static std::string getShutdownProperty();
+  static char* getProperty(const char* service, const char* object, const char* interface, const char* property);
 
-private:
-  static DBusConnection *__conn;
-  static void requestName();
-  static DBusConnection *getConnection();
 };
 
 #endif /* SRC_MESSAGESERVICE_H_ */

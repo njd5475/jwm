@@ -93,6 +93,9 @@ private:
   bool _loaded;
 
   static std::vector<Configuration*> configurations;
+
+public:
+  static void ParseConfig(const char *fileName);
 };
 
 class Saver : public Builder {

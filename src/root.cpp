@@ -16,8 +16,8 @@
 #include "misc.h"
 #include "winmenu.h"
 #include "command.h"
-#include "parse.h"
 #include "settings.h"
+#include "Configuration.h"
 #include "DesktopEnvironment.h"
 
 /** Number of root menus to support. */
@@ -224,7 +224,7 @@ void Roots::ReloadMenu(void) {
 		ShutdownRootMenu();
 		DestroyRootMenu();
 		InitializeRootMenu();
-		Parser::ParseConfig(configPath);
+		Configuration::ParseConfig(configPath);
 		StartupRootMenu();
 		shouldReload = 0;
 	}

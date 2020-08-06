@@ -54,6 +54,7 @@
 #include "tray.h"
 #include "traybutton.h"
 #include "Flex.h"
+#include "MessageService.h"
 
 WindowManager::WindowManager() {
 
@@ -96,6 +97,9 @@ void WindowManager::Initialize(void) {
 	ILog(TaskBar::InitializeTaskBar);
 	ILog(Tray::InitializeTray);
 	ILog(TrayButton::InitializeTrayButtons);
+
+	//DBusPendingCall *pending = MessageService::callMethod("org.freedesktop.login1", "/org/freedesktop/login1", "org.freedesktop.login1.Manager", "ScheduledShutdown", NULL);
+	printf("Shutdown Time: %d\n", MessageService::getShutdownTime());
 }
 
 /** Startup the various JWM components.
