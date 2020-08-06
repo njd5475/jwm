@@ -23,30 +23,30 @@
 #include "action.h"
 #include "Graphics.h"
 
-std::vector<ClockType*> ClockType::clocks;
+std::vector<Clock*> Clock::clocks;
 
 /** Initialize clocks. */
-void ClockType::InitializeClock(void) {
+void Clock::InitializeClock(void) {
 
 }
 
 /** Start clock(s). */
-void ClockType::StartupClock(void) {
+void Clock::StartupClock(void) {
 
 }
 
 /** Destroy clock(s). */
-void ClockType::DestroyClock(void) {
+void Clock::DestroyClock(void) {
   for (auto clock : clocks) {
     delete clock;
   }
   clocks.clear();
 }
 
-const char *ClockType::DEFAULT_FORMAT = "%I:%M:%S %p";
+const char *Clock::DEFAULT_FORMAT = "%I:%M:%S %p";
 
 /** Create a clock tray component. */
-ClockType::ClockType(const char *format, const char *zone, int width,
+Clock::Clock(const char *format, const char *zone, int width,
     int height, Tray *tray, TrayComponent *parent) :
     TrayComponent(tray, parent) {
   this->mousex = -settings.doubleClickDelta;
@@ -75,7 +75,7 @@ ClockType::ClockType(const char *format, const char *zone, int width,
   Events::_RegisterCallback(Min(900, settings.popupDelay / 2), SignalClock, this);
 }
 
-ClockType::~ClockType() {
+Clock::~Clock() {
   if (this->format) {
     Release(this->format);
   }
@@ -86,12 +86,12 @@ ClockType::~ClockType() {
 }
 
 /** Initialize a clock tray component. */
-void ClockType::Create() {
+void Clock::Create() {
 
 }
 
 /** Resize a clock tray component. */
-void ClockType::Resize() {
+void Clock::Resize() {
   TrayComponent::Resize();
 //  TimeType now;
 //  memset(&this->lastTime, 0, sizeof(this->lastTime));
@@ -110,39 +110,39 @@ void ClockType::Resize() {
   Draw();
 }
 
-void ClockType::Draw() {
+void Clock::Draw() {
   TimeType now;
   GetCurrentTime(&now);
   this->DrawClock(&now);
 }
 
 /** Destroy a clock tray component. */
-void ClockType::Destroy() {
+void Clock::Destroy() {
 
 }
 
 /** Process a press event on a clock tray component. */
-void ClockType::ProcessButtonPress(int x, int y, int button) {
+void Clock::ProcessButtonPress(int x, int y, int button) {
   this->handlePressActions(x, y, button);
 }
 
-void ClockType::ProcessButtonRelease(int x, int y, int button) {
+void Clock::ProcessButtonRelease(int x, int y, int button) {
   this->handleReleaseActions(x, y, button);
 }
 
 /** Process a motion event on a clock tray component. */
-void ClockType::ProcessMotionEvent(int x, int y, int mask) {
-  ClockType *clk = (ClockType*) this;
+void Clock::ProcessMotionEvent(int x, int y, int mask) {
+  Clock *clk = (Clock*) this;
   clk->mousex = this->getScreenX() + x;
   clk->mousey = this->getScreenY() + y;
   GetCurrentTime(&clk->mouseTime);
 }
 
 /** Update a clock tray component. */
-void ClockType::SignalClock(const TimeType *now, int x, int y, Window w,
+void Clock::SignalClock(const TimeType *now, int x, int y, Window w,
     void *data) {
   const char *longTime;
-  ClockType *clk = (ClockType*) data;
+  Clock *clk = (Clock*) data;
 
   clk->DrawClock(now);
   if (clk->getTray()->getWindow() == w
@@ -156,12 +156,12 @@ void ClockType::SignalClock(const TimeType *now, int x, int y, Window w,
 
 }
 
-void ClockType::Draw(Graphics *g) {
+void Clock::Draw(Graphics *g) {
 
 }
 
 /** Draw a clock tray component. */
-void ClockType::DrawClock(const TimeType *now) {
+void Clock::DrawClock(const TimeType *now) {
   const char *timeString;
   int strWidth;
   int rwidth;
@@ -197,9 +197,9 @@ void ClockType::DrawClock(const TimeType *now) {
 
 }
 
-ClockType* ClockType::CreateClock(const char *format, const char *zone,
+Clock* Clock::CreateClock(const char *format, const char *zone,
     int width, int height, Tray *tray, TrayComponent *parent) {
-  ClockType *type = new ClockType(format, zone, width, height, tray, parent);
+  Clock *type = new Clock(format, zone, width, height, tray, parent);
   clocks.push_back(type);
   return type;
 }

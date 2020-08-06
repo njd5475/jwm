@@ -596,7 +596,7 @@ void Loader::buildPager(Tray *tray, JObject *pager) {
     labeled = !strcmp(strLabeled, "false");
   }
 
-  PagerType *pagerType = PagerType::CreatePager(labeled ? 1 : 0, tray,
+  Pager *pagerType = Pager::CreatePager(labeled ? 1 : 0, tray,
       tray->getLastComponent());
 
   tray->AddTrayComponent(pagerType);
@@ -620,7 +620,7 @@ void Loader::buildBattery(Tray *tray, JObject *battery) {
 }
 
 void Loader::buildDock(Tray *tray, JObject *dock) {
-  DockType *dockType = DockType::Create(0, tray, tray->getLastComponent());
+  Dock *dockType = Dock::Create(0, tray, tray->getLastComponent());
   tray->AddTrayComponent(dockType);
 }
 
@@ -628,7 +628,7 @@ void Loader::buildClock(Tray *tray, JObject *clock) {
   const char *format = jsonString(clock, "format");
   const char *zone = jsonString(clock, "zone");
 
-  ClockType *clockType = ClockType::CreateClock(format, zone ? zone : "UTC", 0,
+  Clock *clockType = Clock::CreateClock(format, zone ? zone : "UTC", 0,
       9, tray, tray->getLastComponent());
   tray->AddTrayComponent(clockType);
 }

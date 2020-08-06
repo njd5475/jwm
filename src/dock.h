@@ -21,12 +21,12 @@ typedef struct DockNode {
 } DockNode;
 
 /** Structure to represent a dock tray component. */
-class DockType : public TrayComponent {
+class Dock : public TrayComponent {
 public:
-	virtual ~DockType();
+	virtual ~Dock();
 
 private:
-	DockType(int width, Tray *tray, TrayComponent *parent);
+	Dock(int width, Tray *tray, TrayComponent *parent);
 	Window window;
 	int itemSize;
 
@@ -34,7 +34,7 @@ private:
 
 	static const char *BASE_SELECTION_NAME;
 
-	static DockType *dock;
+	static Dock *dock;
 	static char owner;
 	static Atom dockAtom;
 	static unsigned long orientation;
@@ -68,7 +68,7 @@ public:
 	 */
 	TrayComponent *_CreateDock(int width);
 
-	static DockType *Create(int width, Tray *tray, TrayComponent *parent);
+	static Dock *Create(int width, Tray *tray, TrayComponent *parent);
 	/** Handle a client message sent to the dock window.
 	 * @param event The event.
 	 */

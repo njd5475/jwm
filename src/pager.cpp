@@ -22,22 +22,22 @@
 #include "settings.h"
 #include "DesktopEnvironment.h"
 
-std::vector<PagerType*> PagerType::pagers;
+std::vector<Pager*> Pager::pagers;
 
 /** Shutdown the pager. */
-void PagerType::ShutdownPager(void) {
+void Pager::ShutdownPager(void) {
   for (auto pp : pagers) {
     JXFreePixmap(display, pp->buffer);
   }
 }
 
 /** Release pager data. */
-void PagerType::DestroyPager(void) {
+void Pager::DestroyPager(void) {
   pagers.clear();
 }
 
 /** Create a new pager tray component. */
-PagerType::PagerType(char labeled, Tray *tray, TrayComponent *parent) :
+Pager::Pager(char labeled, Tray *tray, TrayComponent *parent) :
     TrayComponent(tray, parent) {
   this->labeled = labeled;
   this->mousex = -settings.doubleClickDelta;
@@ -49,14 +49,14 @@ PagerType::PagerType(char labeled, Tray *tray, TrayComponent *parent) :
   Events::_RegisterCallback(settings.popupDelay / 2, SignalPager, this);
 }
 
-PagerType::~PagerType() {
+Pager::~Pager() {
   Logger::Log("Destroying PagerType\n");
   this->getTray()->RemoveTrayComponent(this);
   Events::_UnregisterCallback(SignalPager, this);
 }
 
 /** Initialize a pager tray component. */
-void PagerType::Create() {
+void Pager::Create() {
 
   Assert(this->getWidth() > 0);
   Assert(this->getHeight() > 0);
@@ -68,7 +68,7 @@ void PagerType::Create() {
 }
 
 /** Set the size of a pager tray component. */
-void PagerType::SetSize(int width, int height) {
+void Pager::SetSize(int width, int height) {
   width = this->getTray()->getWidth() * 0.15; // percentage of tray width
   height = this->getTray()->getHeight(); // full height of tray
 
@@ -114,7 +114,7 @@ void PagerType::SetSize(int width, int height) {
 }
 
 /** Get the desktop for a pager given a set of coordinates. */
-int PagerType::GetPagerDesktop(int x, int y) {
+int Pager::GetPagerDesktop(int x, int y) {
 
   int pagerx, pagery;
 
@@ -125,12 +125,12 @@ int PagerType::GetPagerDesktop(int x, int y) {
 
 }
 
-void PagerType::ProcessButtonRelease(int x, int y, int mask) {
+void Pager::ProcessButtonRelease(int x, int y, int mask) {
 
 }
 
 /** Process a button event on a pager tray component. */
-void PagerType::ProcessButtonPress(int x, int y, int mask) {
+void Pager::ProcessButtonPress(int x, int y, int mask) {
 
   switch (mask) {
   case Button1:
@@ -165,17 +165,17 @@ void PagerType::ProcessButtonPress(int x, int y, int mask) {
 }
 
 /** Process a motion event on a pager tray component. */
-void PagerType::ProcessMotionEvent(int x, int y, int mask) {
+void Pager::ProcessMotionEvent(int x, int y, int mask) {
   this->mousex = this->getScreenX() + x;
   this->mousey = this->getScreenY() + y;
   GetCurrentTime(&this->mouseTime);
 }
 
 /** Start a pager move operation. */
-void PagerType::StartPagerMove(int x, int y) {
+void Pager::StartPagerMove(int x, int y) {
 
   XEvent event;
-  PagerType *pp;
+  Pager *pp;
   ClientNode *np;
   int layer;
   int desktop;
@@ -188,7 +188,7 @@ void PagerType::StartPagerMove(int x, int y) {
   int startx, starty;
   MaxFlags maxFlags;
 
-  pp = (PagerType*) this;
+  pp = (Pager*) this;
 
   /* Determine the selected desktop. */
   desktop = pp->GetPagerDesktop(x, y);
@@ -289,7 +289,7 @@ void PagerType::StartPagerMove(int x, int y) {
 
   Border::GetBorderSize(np, &north, &south, &east, &west);
 
-  np->setController(PagerType::PagerMoveController);
+  np->setController(Pager::PagerMoveController);
   shouldStopMove = 0;
 
   oldx = np->getX();
@@ -379,10 +379,10 @@ void PagerType::StartPagerMove(int x, int y) {
 
 }
 
-char PagerType::shouldStopMove = 0;
+char Pager::shouldStopMove = 0;
 
 /** Client-terminated pager move. */
-void PagerType::PagerMoveController(int wasDestroyed) {
+void Pager::PagerMoveController(int wasDestroyed) {
 
   JXUngrabPointer(display, CurrentTime);
   JXUngrabKeyboard(display, CurrentTime);
@@ -391,7 +391,7 @@ void PagerType::PagerMoveController(int wasDestroyed) {
 }
 
 /** Draw a pager. */
-void PagerType::Draw() {
+void Pager::Draw() {
   Pixmap buffer;
   int width, height;
   int deskWidth, deskHeight;
@@ -456,14 +456,14 @@ void PagerType::Draw() {
 
 }
 
-void PagerType::Draw(Graphics *g) {
+void Pager::Draw(Graphics *g) {
 
 }
 
 /** Update the pager. */
-void PagerType::UpdatePager(void) {
+void Pager::UpdatePager(void) {
 
-  PagerType *pp;
+  Pager *pp;
 
   if (JUNLIKELY(shouldExit)) {
     return;
@@ -482,9 +482,9 @@ void PagerType::UpdatePager(void) {
 }
 
 /** Signal pagers (for popups). */
-void PagerType::SignalPager(const TimeType *now, int x, int y, Window w,
+void Pager::SignalPager(const TimeType *now, int x, int y, Window w,
     void *data) {
-  PagerType *pp = (PagerType*) data;
+  Pager *pp = (Pager*) data;
   if (pp->getTray()->getWindow() == w
       && abs(pp->mousex - x) < settings.doubleClickDelta
       && abs(pp->mousey - y) < settings.doubleClickDelta) {
@@ -504,7 +504,7 @@ void PagerType::SignalPager(const TimeType *now, int x, int y, Window w,
 }
 
 /** Draw a client on the pager. */
-void PagerType::DrawPagerClient(ClientNode *np) {
+void Pager::DrawPagerClient(ClientNode *np) {
 
   int x, y;
   int width, height;
@@ -584,8 +584,8 @@ void PagerType::DrawPagerClient(ClientNode *np) {
 }
 
 
-TrayComponent *PagerType::CreatePager(char labeled, Tray * tray, TrayComponent *parent) {
-  PagerType *pager = new PagerType(labeled, tray, parent);
+TrayComponent *Pager::CreatePager(char labeled, Tray * tray, TrayComponent *parent) {
+  Pager *pager = new Pager(labeled, tray, parent);
   pagers.push_back(pager);
   return pager;
 }

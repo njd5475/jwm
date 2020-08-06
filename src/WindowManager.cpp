@@ -87,7 +87,7 @@ void WindowManager::Initialize(void) {
 	ILog(Groups::InitializeGroups);
 	ILog(Hints::InitializeHints);
 	ILog(Icon::InitializeIcons);
-	ILog(PagerType::InitializePager);
+	ILog(Pager::InitializePager);
 	ILog(Places::InitializePlacement);
 	ILog(Popups::InitializePopup);
 	ILog(Roots::InitializeRootMenu);
@@ -122,7 +122,7 @@ void WindowManager::Startup(void) {
 	Icon::StartupIcons();
 	Cursors::StartupCursors();
 
-	PagerType::StartupPager();
+	Pager::StartupPager();
 	Battery::StartupBattery();
 	TaskBar::StartupTaskBar();
 	TrayButton::StartupTrayButtons();
@@ -185,14 +185,14 @@ void WindowManager::Shutdown(void) {
 	Popups::ShutdownPopup();
 	LogWindow::ShutdownPortals();
 	Binding::ShutdownBindings();
-	PagerType::ShutdownPager();
+	Pager::ShutdownPager();
 	Roots::ShutdownRootMenu();
 	ClientNode::ShutdownClients();
 	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
 	Tray::ShutdownTray();
 	TrayButton::ShutdownTrayButtons();
 	TaskBar::ShutdownTaskBar();
-	ClockType::ShutdownClock();
+	Clock::ShutdownClock();
 	Battery::ShutdownBattery();
 	Icon::ShutdownIcons();
 	Cursors::ShutdownCursors();
@@ -227,7 +227,7 @@ void WindowManager::Destroy(void) {
 	Hints::DestroyHints();
 	Icon::DestroyIcons();
 	Binding::DestroyBindings();
-	PagerType::DestroyPager();
+	Pager::DestroyPager();
 	Places::DestroyPlacement();
 	Popups::DestroyPopup();
 	Roots::DestroyRootMenu();

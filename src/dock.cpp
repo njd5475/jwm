@@ -23,21 +23,21 @@
 #define SYSTEM_TRAY_ORIENTATION_HORZ 0
 #define SYSTEM_TRAY_ORIENTATION_VERT 1
 
-DockType *DockType::dock = NULL;
-char DockType::owner = 0;
+Dock *Dock::dock = NULL;
+char Dock::owner = 0;
 
-Atom DockType::dockAtom = 0;
-unsigned long DockType::orientation = 0;
+Atom Dock::dockAtom = 0;
+unsigned long Dock::orientation = 0;
 
-const char *DockType::BASE_SELECTION_NAME = "_NET_SYSTEM_TRAY_S%d";
+const char *Dock::BASE_SELECTION_NAME = "_NET_SYSTEM_TRAY_S%d";
 
 /** Initialize dock data. */
-void DockType::_InitializeDock(void) {
+void Dock::_InitializeDock(void) {
   owner = 0;
 }
 
 /** Startup the dock. */
-void DockType::_StartupDock(void) {
+void Dock::_StartupDock(void) {
 
   char *selectionName;
 
@@ -69,15 +69,15 @@ void DockType::_StartupDock(void) {
 
 }
 
-DockType* DockType::Create(int width, Tray *tray, TrayComponent *parent) {
+Dock* Dock::Create(int width, Tray *tray, TrayComponent *parent) {
   if (!dock) {
-    dock = new DockType(width, tray, parent);
+    dock = new Dock(width, tray, parent);
   }
   return dock;
 }
 
 /** Shutdown the dock. */
-void DockType::_ShutdownDock(void) {
+void Dock::_ShutdownDock(void) {
 
   DockNode *np;
 
@@ -98,7 +98,7 @@ void DockType::_ShutdownDock(void) {
 }
 
 /** Destroy dock data. */
-void DockType::_DestroyDock(void) {
+void Dock::_DestroyDock(void) {
   if (dock) {
     Release(dock);
     dock = NULL;
@@ -106,7 +106,7 @@ void DockType::_DestroyDock(void) {
 }
 
 /** Create a dock component. */
-DockType::DockType(int width, Tray *tray, TrayComponent *parent) :
+Dock::Dock(int width, Tray *tray, TrayComponent *parent) :
     TrayComponent(tray, parent) {
   this->window = None;
   this->requestedWidth = 1;
@@ -114,7 +114,7 @@ DockType::DockType(int width, Tray *tray, TrayComponent *parent) :
   this->itemSize = width;
 }
 
-DockType::~DockType() {
+Dock::~Dock() {
   /* Release memory used by the dock list. */
   DockNode *node;
   while (!nodes.empty()) {
@@ -125,12 +125,12 @@ DockType::~DockType() {
   }
 }
 
-void DockType::Draw(Graphics *g) {
+void Dock::Draw(Graphics *g) {
 
 }
 
 /** Set the size of a dock component. */
-void DockType::SetSize(int width, int height) {
+void Dock::SetSize(int width, int height) {
 
   /* Set the orientation. */
   if (width == 0) {
@@ -154,7 +154,7 @@ void DockType::SetSize(int width, int height) {
 }
 
 /** Initialize a dock component. */
-void DockType::Create() {
+void Dock::Create() {
 
   XEvent event;
 
@@ -205,7 +205,7 @@ void DockType::Create() {
 }
 
 /** Resize a dock component. */
-void DockType::Resize() {
+void Dock::Resize() {
   TrayComponent::Resize();
   JXResizeWindow(display, this->getWindow(), this->getWidth(),
       this->getHeight());
@@ -213,7 +213,7 @@ void DockType::Resize() {
 }
 
 /** Handle a dock event. */
-void DockType::_HandleDockEvent(const XClientMessageEvent *event) {
+void Dock::_HandleDockEvent(const XClientMessageEvent *event) {
   Assert(event);
   switch (event->data.l[1]) {
   case SYSTEM_TRAY_REQUEST_DOCK:
@@ -230,7 +230,7 @@ void DockType::_HandleDockEvent(const XClientMessageEvent *event) {
 }
 
 /** Handle a resize request event. */
-char DockType::_HandleDockResizeRequest(const XResizeRequestEvent *event) {
+char Dock::_HandleDockResizeRequest(const XResizeRequestEvent *event) {
   DockNode *np;
 
   Assert(event);
@@ -251,7 +251,7 @@ char DockType::_HandleDockResizeRequest(const XResizeRequestEvent *event) {
 }
 
 /** Handle a configure request event. */
-char DockType::_HandleDockConfigureRequest(
+char Dock::_HandleDockConfigureRequest(
     const XConfigureRequestEvent *event) {
 
   DockNode *np;
@@ -275,7 +275,7 @@ char DockType::_HandleDockConfigureRequest(
 }
 
 /** Handle a reparent notify event. */
-char DockType::_HandleDockReparentNotify(const XReparentEvent *event) {
+char Dock::_HandleDockReparentNotify(const XReparentEvent *event) {
 
   DockNode *np;
   char handled;
@@ -315,7 +315,7 @@ char DockType::_HandleDockReparentNotify(const XReparentEvent *event) {
 }
 
 /** Handle a selection clear event. */
-char DockType::_HandleDockSelectionClear(const XSelectionClearEvent *event) {
+char Dock::_HandleDockSelectionClear(const XSelectionClearEvent *event) {
   if (event->selection == dockAtom) {
     Debug("lost _NET_SYSTEM_TRAY selection");
     owner = 0;
@@ -324,7 +324,7 @@ char DockType::_HandleDockSelectionClear(const XSelectionClearEvent *event) {
 }
 
 /** Add a window to the dock. */
-void DockType::_DockWindow(Window win) {
+void Dock::_DockWindow(Window win) {
   DockNode *np;
 
   /* If no dock is running, just return. */
@@ -370,7 +370,7 @@ void DockType::_DockWindow(Window win) {
 }
 
 /** Remove a window from the dock. */
-char DockType::_HandleDockDestroy(Window win) {
+char Dock::_HandleDockDestroy(Window win) {
   DockNode **np;
 
   /* If no dock is running, just return. */
@@ -403,7 +403,7 @@ char DockType::_HandleDockDestroy(Window win) {
 }
 
 /** Layout items on the dock. */
-void DockType::_UpdateDock(void) {
+void Dock::_UpdateDock(void) {
 
   XConfigureEvent event;
   DockNode *np;
@@ -449,7 +449,7 @@ void DockType::_UpdateDock(void) {
 }
 
 /** Get the size of a particular window on the dock. */
-void DockType::_GetDockItemSize(int *size) {
+void Dock::_GetDockItemSize(int *size) {
   /* Determine the default size of items in the dock. */
   if (0 == SYSTEM_TRAY_ORIENTATION_HORZ) {
     *size = dock->getHeight();
@@ -462,7 +462,7 @@ void DockType::_GetDockItemSize(int *size) {
 }
 
 /** Get the size of the dock. */
-void DockType::_GetDockSize(int *width, int *height) {
+void Dock::_GetDockSize(int *width, int *height) {
   DockNode *np;
   int itemSize;
 

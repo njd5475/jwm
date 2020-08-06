@@ -15,10 +15,10 @@
 #include "TrayComponent.h"
 
 /** Structure to represent a pager tray component. */
-class PagerType : public TrayComponent {
+class Pager : public TrayComponent {
 private: /* statics */
 
-  static std::vector<PagerType*> pagers;
+  static std::vector<Pager*> pagers;
   static char shouldStopMove;
   static void PagerMoveController(int wasDestroyed);
   static void SignalPager(const TimeType *now, int x, int y, Window w, void *data);
@@ -53,10 +53,10 @@ private:
 
 public:
   virtual void Draw();
-  virtual ~PagerType();
+  virtual ~Pager();
 
 private:
-  PagerType(char labelled, Tray *tray, TrayComponent *parent);
+  Pager(char labelled, Tray *tray, TrayComponent *parent);
 
 public:
   static TrayComponent *CreatePager(char labeled, Tray * tray, TrayComponent *parent);

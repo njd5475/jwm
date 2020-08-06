@@ -52,19 +52,19 @@ DesktopEnvironment* DesktopEnvironment::_instance = NULL;
 char *DesktopEnvironment::displayString = NULL;
 
 char DesktopEnvironment::HandleDockReparentNotify(const XReparentEvent* event) {
-  return DockType::_HandleDockReparentNotify(event);
+  return Dock::_HandleDockReparentNotify(event);
 }
 
 char DesktopEnvironment::HandleDockDestroy(unsigned long int num) {
-  return DockType::_HandleDockDestroy(num);
+  return Dock::_HandleDockDestroy(num);
 }
 
 char DesktopEnvironment::HandleDockConfigureRequest(const XConfigureRequestEvent* event) {
-  return DockType::_HandleDockConfigureRequest(event);
+  return Dock::_HandleDockConfigureRequest(event);
 }
 
 void DesktopEnvironment::HandleDockEvent(const XClientMessageEvent* event) {
-  DockType::_HandleDockEvent(event);
+  Dock::_HandleDockEvent(event);
 }
 
 void DesktopEnvironment::LoadBackground(unsigned int num) {
@@ -171,7 +171,7 @@ void DesktopEnvironment::SetBackground(int id, const char* file, char* const val
 }
 
 TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayComponent *parent) {
-  return DockType::Create(width, tray, parent);
+  return Dock::Create(width, tray, parent);
 }
 
 Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {

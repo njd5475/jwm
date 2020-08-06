@@ -15,19 +15,19 @@
 bool DockComponent::registered = environment->RegisterComponent(new DockComponent());
 
 void DockComponent::initialize() {
-  DockType::_InitializeDock();
+  Dock::_InitializeDock();
 }
 
 void DockComponent::start() {
-  DockType::_StartupDock();
+  Dock::_StartupDock();
 }
 
 void DockComponent::stop() {
-  DockType::_ShutdownDock();
+  Dock::_ShutdownDock();
 }
 
 void DockComponent::destroy() {
-  DockType::_DestroyDock();
+  Dock::_DestroyDock();
 }
 
 DockComponent::DockComponent() : Component() {

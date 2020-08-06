@@ -268,7 +268,7 @@ void Events::_Signal(void) {
   }
   if (pager_update_pending) {
     Logger::Log("Updating pager\n");
-    PagerType::UpdatePager();
+    Pager::UpdatePager();
     pager_update_pending = 0;
   }
 

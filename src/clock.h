@@ -16,11 +16,11 @@
 class Graphics;
 
 /** Structure to respresent a clock tray component. */
-class ClockType : public TrayComponent {
+class Clock : public TrayComponent {
 public:
-  virtual ~ClockType();
+  virtual ~Clock();
 private:
-  ClockType(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
+  Clock(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
   char *format; /**< The time format to use. */
   char *zone; /**< The time zone to use (NULL = local). */
   //struct ActionNode *actions; /**< Actions */
@@ -37,7 +37,7 @@ private:
   /** The default time format to use. */
   static const char *DEFAULT_FORMAT;
 
-  static std::vector<ClockType*> clocks;
+  static std::vector<Clock*> clocks;
 
 public:
 
@@ -67,7 +67,7 @@ public:
    * @param mask The mouse button mask.
    */
   static void AddClockAction(struct TrayComponent *cp, const char *action, int mask);
-  static ClockType *CreateClock(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
+  static Clock *CreateClock(const char *format, const char *zone, int width, int height,  Tray *tray, TrayComponent *parent);
 };
 
 #endif /* CLOCK_H */
