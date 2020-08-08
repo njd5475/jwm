@@ -50,7 +50,11 @@ std::string MessageService::getShutdownProperty() {
     }
   }
 
-  return params[1];
+  if(params.size() >= 2) {
+    return params[1];
+  }
+
+  return "";
 }
 
 char* MessageService::getProperty(const char *service, const char *object,
