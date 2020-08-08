@@ -10,7 +10,21 @@
 #ifndef CONFIRM_H
 #define CONFIRM_H
 
+#include "event.h"
+
 struct ClientNode;
+
+class DialogsEventHandler : public EventHandler {
+
+public:
+
+  /** Handle an event on a dialog window.
+   * @param event The event.
+   * @return 1 if handled, 0 if not handled.
+   */
+  bool process(const XEvent* event);
+};
+
 
 class Dialogs {
 public:
@@ -21,11 +35,6 @@ public:
 	static void DestroyDialogs();
 	/*@}*/
 
-	/** Handle an event on a dialog window.
-	 * @param event The event.
-	 * @return 1 if handled, 0 if not handled.
-	 */
-	static char ProcessDialogEvent(const XEvent *event);
 
 	/** Show a confirm dialog.
 	 * @param np A client window associated with the dialog.
@@ -34,6 +43,9 @@ public:
 	static void ShowConfirmDialog(struct ClientNode *np,
 			void (*action)(struct ClientNode*), ...);
 
+private:
+
+	static DialogsEventHandler handler;
 };
 
 #endif /* CONFIRM_H */

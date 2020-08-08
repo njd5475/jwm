@@ -31,6 +31,12 @@ typedef struct CallbackNode {
   struct CallbackNode *next;
 } CallbackNode;
 
+class EventHandler {
+public:
+  virtual ~EventHandler() {}
+  virtual bool process(const XEvent *event) = 0;
+};
+
 class Events {
 public:
 
@@ -91,8 +97,11 @@ public:
   /** Update the pager before waiting for an event. */
   static void _RequirePagerUpdate();
 
+  static void registerHandler(EventHandler* handler);
+
 private:
 
+  static std::vector<EventHandler*> handlers;
   static std::vector<CallbackNode*> callbacks;
   static char restack_pending;
   static char task_update_pending;

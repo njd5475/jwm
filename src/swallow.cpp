@@ -17,112 +17,112 @@
 #include "client.h"
 #include "misc.h"
 
+std::stack<SwallowNode*> SwallowNode::pendingNodes;
+std::vector<SwallowNode*> SwallowNode::nodes;
+std::vector<SwallowNode*> SwallowNode::swallowNodes;
+
 /** Start swallow processing. */
 void SwallowNode::StartupSwallow(void) {
-	SwallowNode *np;
-	for (np = pendingNodes; np; np = np->next) {
-		if (np->command) {
-			Commands::RunCommand(np->command);
-		}
-	}
+  if(!pendingNodes.empty()) {
+    fprintf(stderr, "WARNING: Swallow has pending nodes for some reason");
+
+  }
+//    if (np->command) {
+//      Commands::RunCommand(np->command);
+//    }
 }
 
 /** Destroy swallow data. */
 void SwallowNode::DestroySwallow(void) {
-	ReleaseNodes(pendingNodes);
-	ReleaseNodes(swallowNodes);
-	pendingNodes = NULL;
-	swallowNodes = NULL;
+  for(auto node : nodes) {
+    delete node;
+  }
+  nodes.clear();
 }
 
 /** Release a linked list of swallow nodes. */
 void SwallowNode::ReleaseNodes(SwallowNode *nodes) {
-	while (nodes) {
-		SwallowNode *np = nodes->next;
-		Assert(nodes->name);
-		Release(nodes->name);
-		if (nodes->command) {
-			Release(nodes->command);
-		}
-		Release(nodes);
-		nodes = np;
-	}
+  while (nodes) {
+  }
 }
 
 /** Create a swallowed application tray component. */
 SwallowNode::SwallowNode(const char *name, const char *command, int width,
-		int height, Tray *tray, TrayComponent *parent) :
-		TrayComponent(tray, parent), border(0) {
-	if (JUNLIKELY(!name)) {
-		Warning(_("cannot swallow a client with no name"));
-		return;
-	}
+    int height, Tray *tray, TrayComponent *parent) :
+    TrayComponent(tray, parent), border(0) {
+  if (JUNLIKELY(!name)) {
+    Warning(_("cannot swallow a client with no name"));
+    return;
+  }
 
-	this->name = CopyString(name);
-	this->command = CopyString(command);
+  this->name = CopyString(name);
+  this->command = CopyString(command);
 
-	this->next = pendingNodes;
-	pendingNodes = this;
 
-	if (width) {
-		this->requestedWidth = width;
-		this->userWidth = 1;
-	} else {
-		this->requestedWidth = 1;
-		this->userWidth = 0;
-	}
-	if (height) {
-		this->requestedHeight = height;
-		this->userHeight = 1;
-	} else {
-		this->requestedHeight = 1;
-		this->userHeight = 0;
-	}
+  if (width) {
+    this->requestedWidth = width;
+    this->userWidth = 1;
+  } else {
+    this->requestedWidth = 1;
+    this->userWidth = 0;
+  }
+  if (height) {
+    this->requestedHeight = height;
+    this->userHeight = 1;
+  } else {
+    this->requestedHeight = 1;
+    this->userHeight = 0;
+  }
 
+  Events::registerHandler(this);
+  pendingNodes.push(this);
+}
+
+SwallowNode::~SwallowNode() {
+  Assert(this->name);
+  Release(this->name);
+  if (this->command) {
+    Release(this->command);
+  }
 }
 
 /** Process an event on a swallowed window. */
-char SwallowNode::ProcessSwallowEvent(const XEvent *event) {
+bool SwallowNode::process(const XEvent *event) {
 
-	SwallowNode *np;
-	int width, height;
+  int width, height;
 
-	for (np = swallowNodes; np; np = np->next) {
-		if (event->xany.window == np->window) {
-			switch (event->type) {
-			case DestroyNotify:
-				np->window = None;
-				np->requestedWidth = 1;
-				np->requestedHeight = 1;
-				np->getTray()->ResizeTray();
-				break;
-			case ResizeRequest:
-				np->requestedWidth = event->xresizerequest.width
-						+ np->border * 2;
-				np->requestedHeight = event->xresizerequest.height
-						+ np->border * 2;
-				np->getTray()->ResizeTray();
-				break;
-			case ConfigureNotify:
-				/* I don't think this should be necessary, but somehow
-				 * resize requests slip by sometimes... */
-				width = event->xconfigure.width + np->border * 2;
-				height = event->xconfigure.height + np->border * 2;
-				if (width != np->getRequestedWidth()
-						&& height != np->getRequestedHeight()) {
-					np->requestedWidth = width;
-					np->requestedHeight = height;
-					np->getTray()->ResizeTray();
-				}
-				break;
-			default:
-				break;
-			}
-			return 1;
-		}
-	}
+  if (event->xany.window == this->window) {
+    switch (event->type) {
+    case DestroyNotify:
+      this->window = None;
+      this->requestedWidth = 1;
+      this->requestedHeight = 1;
+      this->getTray()->ResizeTray();
+      break;
+    case ResizeRequest:
+      this->requestedWidth = event->xresizerequest.width + this->border * 2;
+      this->requestedHeight = event->xresizerequest.height + this->border * 2;
+      this->getTray()->ResizeTray();
+      break;
+    case ConfigureNotify:
+      /* I don't think this should be necessary, but somehow
+       * resize requests slip by sometimes... */
+      width = event->xconfigure.width + this->border * 2;
+      height = event->xconfigure.height + this->border * 2;
+      if (width != this->getRequestedWidth()
+          && height != this->getRequestedHeight()) {
+        this->requestedWidth = width;
+        this->requestedHeight = height;
+        this->getTray()->ResizeTray();
+      }
+      break;
+    default:
+      break;
+    }
+    return true;
+  }
 
-	return 0;
+  return false;
 
 }
 
@@ -136,111 +136,106 @@ void SwallowNode::Draw(Graphics *g) {
 
 /** Handle a tray resize. */
 void SwallowNode::Resize() {
-	TrayComponent::Resize();
-	if (this->window != None) {
-		const unsigned int width = this->getWidth() - this->border * 2;
-		const unsigned int height = this->getHeight() - this->border * 2;
-		JXResizeWindow(display, this->window, width, height);
-	}
+  TrayComponent::Resize();
+  if (this->window != None) {
+    const unsigned int width = this->getWidth() - this->border * 2;
+    const unsigned int height = this->getHeight() - this->border * 2;
+    JXResizeWindow(display, this->window, width, height);
+  }
 
 }
 
 /** Destroy a swallow tray component. */
 void SwallowNode::Destroy() {
 
-	/* Destroy the window if there is one. */
-	if (this->window) {
+  /* Destroy the window if there is one. */
+  if (this->window) {
 
-		JXReparentWindow(display, this->window, rootWindow, 0, 0);
-		JXRemoveFromSaveSet(display, this->window);
+    JXReparentWindow(display, this->window, rootWindow, 0, 0);
+    JXRemoveFromSaveSet(display, this->window);
 
-		if (Hints::IsDeleteAtomSet(this->window)) {
-			ClientNode::SendClientMessage(this->window, ATOM_WM_PROTOCOLS,
-					ATOM_WM_DELETE_WINDOW);
-		} else {
-			JXKillClient(display, this->window);
-		}
+    if (Hints::IsDeleteAtomSet(this->window)) {
+      ClientNode::SendClientMessage(this->window, ATOM_WM_PROTOCOLS,
+          ATOM_WM_DELETE_WINDOW);
+    } else {
+      JXKillClient(display, this->window);
+    }
 
-	}
+  }
 
 }
-
-SwallowNode *SwallowNode::pendingNodes = NULL;
-SwallowNode *SwallowNode::swallowNodes = NULL;
 
 /** Determine if this is a window to be swallowed, if it is, swallow it. */
 char SwallowNode::CheckSwallowMap(Window win) {
 
-	SwallowNode **npp;
-	XClassHint hint;
-	XWindowAttributes attr;
-	char result;
+  SwallowNode **npp;
+  XClassHint hint;
+  XWindowAttributes attr;
+  char result;
 
-	/* Return if there are no programs left to swallow. */
-	if (!pendingNodes) {
-		return 0;
-	}
+  /* Return if there are no programs left to swallow. */
+  if (pendingNodes.empty()) {
+    return 0;
+  }
 
-	/* Get the name of the window. */
-	if (JXGetClassHint(display, win, &hint) == 0) {
-		return 0;
-	}
+  /* Get the name of the window. */
+  if (JXGetClassHint(display, win, &hint) == 0) {
+    return 0;
+  }
 
-	/* Check if we should swallow this window. */
-	result = 0;
-	npp = &pendingNodes;
-	while (*npp) {
+  /* Check if we should swallow this window. */
+  result = 0;
+  std::vector<SwallowNode*> toRemove;
+  while(!pendingNodes.empty()) {
 
-		SwallowNode *np = *npp;
-		Assert(np->getTray()->getWindow() != None);
+    SwallowNode *np = pendingNodes.top();
+    pendingNodes.pop();
+    Assert(np->getTray()->getWindow() != None);
 
-		if (!strcmp(hint.res_name, np->name)) {
+    if (!strcmp(hint.res_name, np->name)) {
 
-			/* Swallow the window. */
-			JXSelectInput(display, win,
-					StructureNotifyMask | ResizeRedirectMask);
-			JXAddToSaveSet(display, win);
-			JXSetWindowBorder(display, win, Colors::lookupColor(COLOR_TRAY_BG2));
-			JXReparentWindow(display, win, np->getTray()->getWindow(), 0, 0);
-			JXMapRaised(display, win);
-			np->window = win;
+      /* Swallow the window. */
+      JXSelectInput(display, win, StructureNotifyMask | ResizeRedirectMask);
+      JXAddToSaveSet(display, win);
+      JXSetWindowBorder(display, win, Colors::lookupColor(COLOR_TRAY_BG2));
+      JXReparentWindow(display, win, np->getTray()->getWindow(), 0, 0);
+      JXMapRaised(display, win);
+      np->window = win;
 
-			/* Remove this node from the pendingNodes list and place it
-			 * on the swallowNodes list. */
-			*npp = np->next;
-			np->next = swallowNodes;
-			swallowNodes = np;
+      /* Remove this node from the pendingNodes list and place it
+       * on the swallowNodes list. */
+      toRemove.push_back(np);
+      swallowNodes.push_back(np);
 
-			/* Update the size. */
-			JXGetWindowAttributes(display, win, &attr);
-			np->border = attr.border_width;
-			int newWidth = np->getWidth(), newHeight = np->getHeight();
-			if (!np->userWidth) {
-				newWidth = attr.width + 2 * np->border;
-			}
-			if (!np->userHeight) {
-				newHeight = attr.height + 2 * np->border;
-			}
-			np->requestNewSize(newWidth, newHeight);
+      /* Update the size. */
+      JXGetWindowAttributes(display, win, &attr);
+      np->border = attr.border_width;
+      int newWidth = np->getWidth(), newHeight = np->getHeight();
+      if (!np->userWidth) {
+        newWidth = attr.width + 2 * np->border;
+      }
+      if (!np->userHeight) {
+        newHeight = attr.height + 2 * np->border;
+      }
+      np->requestNewSize(newWidth, newHeight);
 
-			np->getTray()->ResizeTray();
-			result = 1;
+      np->getTray()->ResizeTray();
+      result = 1;
 
-			break;
-		}
+      break;
+    }
 
-		npp = &np->next;
+  }
 
-	}
-	JXFree(hint.res_name);
-	JXFree(hint.res_class);
+  JXFree(hint.res_name);
+  JXFree(hint.res_class);
 
-	return result;
+  return result;
 
 }
 
 /** Determine if there are swallow processes pending. */
 char SwallowNode::IsSwallowPending(void) {
-	return pendingNodes ? 1 : 0;
+  return !pendingNodes.empty();
 }
 

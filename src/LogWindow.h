@@ -13,10 +13,12 @@
 #include "jwm.h"
 #include "main.h"
 #include "LoggerListener.h"
+#include "event.h"
+
 class ClientNode;
 class Graphics;
 
-class LogWindow : public LoggerListener {
+class LogWindow : public LoggerListener, EventHandler {
 public:
 	LogWindow(const LogWindow &p);
 	virtual ~LogWindow();
@@ -44,7 +46,7 @@ public:
 	static void ShutdownPortals();
 	static void Add(int x, int y, int width, int height);
 	static void DrawAll();
-	static char ProcessEvents(const XEvent *event);
+	bool process(const XEvent *event);
 
 private:
 	virtual void log(const char* message);

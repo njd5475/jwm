@@ -39,11 +39,14 @@ static void MeasurePopupText();
 static void SignalPopup(const TimeType *now, int x, int y, Window w,
 		void *data);
 
+PopupEventHandler Popups::handler;
+
 /** Startup popups. */
 void Popups::StartupPopup(void) {
 	popup.text = NULL;
 	popup.window = None;
 	Events::_RegisterCallback(100, SignalPopup, NULL);
+	Events::registerHandler(&handler);
 }
 
 /** Shutdown popups. */
@@ -211,7 +214,7 @@ void SignalPopup(const TimeType *now, int x, int y, Window w,
 }
 
 /** Process an event on a popup window. */
-char Popups::ProcessPopupEvent(const XEvent *event) {
+bool PopupEventHandler::process(const XEvent *event) {
 	if (popup.window != None && event->xany.window == popup.window) {
 		if (event->type == Expose && event->xexpose.count == 0) {
 			JXCopyArea(display, popup.pmap, popup.window, rootGC, 0, 0,
@@ -221,7 +224,7 @@ char Popups::ProcessPopupEvent(const XEvent *event) {
 			JXFreePixmap(display, popup.pmap);
 			popup.window = None;
 		}
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }

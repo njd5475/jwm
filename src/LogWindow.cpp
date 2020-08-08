@@ -65,11 +65,12 @@ LogWindow::LogWindow(const LogWindow &p) {
   this->node = p.node;
   this->graphics = p.graphics;
   this->percentage = p.percentage;
+  Events::registerHandler(this);
 }
 
 LogWindow::~LogWindow() {
-  for(auto line : lines) {
-    free((void*)line);
+  for (auto line : lines) {
+    free((void*) line);
   }
   lines.clear();
 
@@ -81,7 +82,8 @@ LogWindow::~LogWindow() {
   Logger::RemoveListener(this);
 
   std::vector<LogWindow*>::iterator found;
-  if ((found = std::find(windows.begin(), windows.end(), this)) != windows.end()) {
+  if ((found = std::find(windows.begin(), windows.end(), this))
+      != windows.end()) {
     windows.erase(found);
   }
 }
@@ -148,7 +150,7 @@ void LogWindow::DrawAll() {
   }
 }
 
-char LogWindow::ProcessEvents(const XEvent *event) {
+bool LogWindow::process(const XEvent *event) {
 
   Window window;
   switch (event->type) {
@@ -169,17 +171,14 @@ char LogWindow::ProcessEvents(const XEvent *event) {
     break;
   }
 
-  std::vector<LogWindow*>::iterator it;
-  for (it = windows.begin(); it != windows.end(); ++it) {
-    LogWindow *p = (*it);
-    if (p->node && p->node->getWindow() == window) {
-      p->graphics->copy(p->node->getWindow(), 0, 0, p->width, p->height, 0, 0);
-      p->Draw();
-      return 1;
-    }
+  if (this->node && this->node->getWindow() == window) {
+    this->graphics->copy(this->node->getWindow(), 0, 0, this->width,
+        this->height, 0, 0);
+    this->Draw();
+    return true;
   }
 
-  return 0;
+  return false;
 }
 
 void LogWindow::log(const char *message) {

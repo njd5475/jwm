@@ -179,6 +179,7 @@ Tray::Tray() {
   this->hidden = 0;
 
   this->window = None;
+  Events::registerHandler(this);
 }
 
 Tray::~Tray() {
@@ -550,34 +551,30 @@ void Tray::HideTray() {
 }
 
 /** Process a tray event. */
-char Tray::ProcessTrayEvent(const XEvent *event) {
-
-  std::vector<Tray*>::iterator it;
-  for (it = trays.begin(); it != trays.end(); ++it) {
-    if (event->xany.window == (*it)->window) {
-      switch (event->type) {
-      case Expose:
-        HandleTrayExpose((*it), &event->xexpose);
-        return 1;
-      case EnterNotify:
-        HandleTrayEnterNotify((*it), &event->xcrossing);
-        return 1;
-      case ButtonPress:
-        HandleTrayButtonPress((*it), &event->xbutton);
-        return 1;
-      case ButtonRelease:
-        HandleTrayButtonRelease((*it), &event->xbutton);
-        return 1;
-      case MotionNotify:
-        HandleTrayMotionNotify((*it), &event->xmotion);
-        return 1;
-      default:
-        return 0;
-      }
+bool Tray::process(const XEvent *event) {
+  if (event->xany.window == this->window) {
+    switch (event->type) {
+    case Expose:
+      HandleTrayExpose(this, &event->xexpose);
+      return true;
+    case EnterNotify:
+      HandleTrayEnterNotify(this, &event->xcrossing);
+      return true;
+    case ButtonPress:
+      HandleTrayButtonPress(this, &event->xbutton);
+      return true;
+    case ButtonRelease:
+      HandleTrayButtonRelease(this, &event->xbutton);
+      return true;
+    case MotionNotify:
+      HandleTrayMotionNotify(this, &event->xmotion);
+      return true;
+    default:
+      return false;
     }
   }
 
-  return 0;
+  return false;
 }
 
 /** Signal the tray (needed for autohide). */
@@ -618,20 +615,21 @@ void Tray::HandleTrayEnterNotify(Tray *tp, const XCrossingEvent *event) {
 
 /** Get the tray component under the given coordinates. */
 TrayComponent* Tray::GetTrayComponent(Tray *tp, int x, int y) {
-  TrayComponent *cp;
   int xoffset, yoffset;
 
   xoffset = 0;
   yoffset = 0;
-  std::vector<TrayComponent*>::iterator it;
-  for (it = tp->components.begin(); it != tp->components.end(); ++it) {
-    cp = *it;
+  for (auto cp : tp->components) {
     const int startx = cp->getScreenX();
     const int starty = cp->getScreenY();
     const int width = cp->getWidth();
     const int height = cp->getHeight();
+    printf("Searching for component at (%d,%d): Match %d,%d %dx%d\n", x, y,
+        startx, starty, width, height);
     if (x >= startx && x < startx + width) {
       if (y >= starty && y < starty + height) {
+        printf("Found component at (%d,%d): Match %d,%d %dx%d\n", x, y, startx,
+            starty, width, height);
         return cp;
       }
     }

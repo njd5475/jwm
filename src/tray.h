@@ -13,6 +13,7 @@
 #include <vector>
 #include "menu.h"
 #include "hint.h"
+#include "event.h"
 #include "timing.h"
 
 class TrayComponent;
@@ -63,7 +64,7 @@ typedef unsigned char TrayAutoHideType;
  */
 
 /** Structure to represent a tray. */
-class Tray {
+class Tray : public EventHandler {
 
 private:
   int requestedX; /**< The user-requested x-coordinate of the tray. */
@@ -136,6 +137,7 @@ public:
   char CheckHorizontalFill();
   char CheckVerticalFill();
   TrayComponent *getLastComponent();
+  bool process(const XEvent *event);
 
 public:
 
@@ -152,7 +154,6 @@ public:
 
   static void ClearTrayDrawable(const TrayComponent *cp);
 
-  static char ProcessTrayEvent(const XEvent *event);
 
   static void HandleTrayExpose(Tray *tp, const XExposeEvent *event);
   static void HandleTrayEnterNotify(Tray *tp, const XCrossingEvent *event);

@@ -19,21 +19,21 @@
 #include "place.h"
 #include "resize.h"
 #include "root.h"
-#include "swallow.h"
 #include "taskbar.h"
 #include "timing.h"
 #include "winmenu.h"
 #include "settings.h"
-#include "tray.h"
-#include "popup.h"
 #include "pager.h"
 #include "grab.h"
 #include "action.h"
 #include "binding.h"
 #include "pager.h"
 #include "DesktopEnvironment.h"
-#include "LogWindow.h"
 #include "Flex.h"
+
+// Remove these to make this component more generic
+#include "swallow.h"
+#include "tray.h"
 
 #ifdef USE_INOTIFYTOOLS
 #include <inotifytools/inotify.h>
@@ -221,26 +221,20 @@ char Events::_WaitForEvent(XEvent *event) {
       }
       break;
     }
-    sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
-    Logger::Log(buf);
+
+    if(event->type != MotionNotify) {
+      sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
+      Logger::Log(buf);
+    }
     Flex::DrawAll();
 
-    if (!handled) {
-      handled = Tray::ProcessTrayEvent(event);
-    }
-    if (!handled) {
-      handled = Dialogs::ProcessDialogEvent(event);
-    }
-    if (!handled) {
-      handled = LogWindow::ProcessEvents(event);
-    }
-    if (!handled) {
-      handled = SwallowNode::ProcessSwallowEvent(event);
-    }
-    if (!handled) {
-      handled = Popups::ProcessPopupEvent(event);
-    }
+    for(auto handler : handlers) {
+      handled = handler->process(event);
 
+      if(handled) {
+        break;
+      }
+    }
   } while (handled && JLIKELY(!shouldExit));
 
   return !handled;
@@ -1690,6 +1684,12 @@ void Events::_UnregisterCallback(SignalCallback callback, void *data) {
 
   }
 
+}
+
+std::vector<EventHandler*> Events::handlers;
+
+void Events::registerHandler(EventHandler* handler) {
+  handlers.push_back(handler);
 }
 
 /** Restack clients before waiting for an event. */
