@@ -13,12 +13,9 @@
 #include "clientlist.h"
 #include "icon.h"
 #include "group.h"
-#include "tray.h"
 #include "confirm.h"
 #include "cursor.h"
-#include "taskbar.h"
 #include "screen.h"
-#include "pager.h"
 #include "color.h"
 #include "place.h"
 #include "event.h"
@@ -32,7 +29,6 @@
 #include "font.h"
 #include "outline.h"
 #include "resize.h"
-#include "binding.h"
 #include "status.h"
 
 #include <X11/Xlibint.h>
@@ -297,7 +293,6 @@ ClientNode::~ClientNode() {
     JXFree(this->className);
   }
 
-  TaskBar::RemoveClientFromTaskBar(this);
   Places::RemoveClientStrut(this);
 
   while (this->colormaps) {
@@ -444,9 +439,6 @@ ClientNode::ClientNode(Window w, bool alreadyMapped, bool notOwner) :
   if (this->isUrgent()) {
     Events::_RegisterCallback(URGENCY_DELAY, SignalUrgent, this);
   }
-
-  /* Update task bars. */
-  TaskBar::AddClientToTaskBar(this);
 
   /* Make sure we're still in sync */
   Hints::WriteState(this);
@@ -1437,7 +1429,7 @@ void ClientNode::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
   BoundingBox src;
   BoundingBox last;
 
-  std::vector<BoundingBox> boxes = Tray::GetBoundsAbove(layer);
+  std::vector<BoundingBox> boxes;
   std::vector<BoundingBox>::iterator it;
   for (it = boxes.begin(); it != boxes.end(); ++it) {
     BoundingBox bb = *it;
@@ -1666,7 +1658,7 @@ void ClientNode::RestackClient(Window above, int detail) {
 void ClientNode::RestackClients(void) {
 
   unsigned int layer, index;
-  int trayCount;
+  int trayCount = 0;
   Window *stack;
   Window fw;
 
@@ -1675,7 +1667,7 @@ void ClientNode::RestackClients(void) {
   }
 
   /* Allocate memory for restacking. */
-  trayCount = Tray::GetTrayCount();
+
   stack = AllocateStack((clientCount + trayCount) * sizeof(Window));
 
   /* Prepare the stacking array. */
@@ -1722,7 +1714,7 @@ void ClientNode::RestackClients(void) {
       }
     }
 
-    std::vector<Window> windows = Tray::getTrayWindowsAt(layer);
+    std::vector<Window> windows;
     std::vector<Window>::iterator it;
     for (it = windows.begin(); it != windows.end(); ++it) {
       stack[index] = (*it);
@@ -1739,7 +1731,6 @@ void ClientNode::RestackClients(void) {
   JXRestackWindows(display, stack, index);
 
   ReleaseStack(stack);
-  TaskBar::UpdateNetClientList();
   Events::_RequirePagerUpdate();
 
 }
@@ -2266,7 +2257,7 @@ void ClientNode::DoSnapBorder() {
   for (layer = 0; layer < LAYER_COUNT; layer++) {
 
     /* Check tray windows. */
-    std::vector<BoundingBox> boxes = Tray::GetVisibleBounds();
+    std::vector<BoundingBox> boxes;
     std::vector<BoundingBox>::iterator it;
     for (it = boxes.begin(); it != boxes.end(); ++it) {
       BoundingBox box = *it;
@@ -3254,27 +3245,8 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
     if (event.type == KeyPress) {
       int deltax = 0;
       int deltay = 0;
-      ActionType action;
 
       Events::_DiscardKeyEvents(&event, this->window);
-      action = Binding::GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
-      switch (action.action) {
-      case UP:
-        deltay = Min(-this->yinc, -10);
-        break;
-      case DOWN:
-        deltay = Max(this->yinc, 10);
-        break;
-      case RIGHT:
-        deltax = Max(this->xinc, 10);
-        break;
-      case LEFT:
-        deltax = Min(-this->xinc, -10);
-        break;
-      default:
-        this->StopResize();
-        return;
-      }
 
       deltay -= deltay % this->yinc;
       this->height += deltay;
@@ -3685,35 +3657,8 @@ char ClientNode::MoveClientKeyboard() {
     moved = 0;
 
     if (event.type == KeyPress) {
-      ActionType action;
 
       Events::_DiscardKeyEvents(&event, this->window);
-      action = Binding::GetKey(MC_NONE, event.xkey.state, event.xkey.keycode);
-      switch (action.action) {
-      case UP:
-        if (this->getY() + height > 0) {
-          this->y -= 10;
-        }
-        break;
-      case DOWN:
-        if (this->getY() < rootHeight) {
-          this->y += 10;
-        }
-        break;
-      case RIGHT:
-        if (this->getX() < rootWidth) {
-          this->x += 10;
-        }
-        break;
-      case LEFT:
-        if (this->getX() + this->getWidth() > 0) {
-          this->x -= 10;
-        }
-        break;
-      default:
-        this->StopMove(1, oldx, oldy);
-        return 1;
-      }
 
       Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
       Events::_DiscardMotionEvents(&event, this->window);

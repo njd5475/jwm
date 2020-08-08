@@ -18,20 +18,11 @@
 #include "move.h"
 #include "place.h"
 #include "resize.h"
-#include "taskbar.h"
 #include "timing.h"
 #include "settings.h"
-#include "pager.h"
 #include "grab.h"
-#include "action.h"
-#include "binding.h"
-#include "pager.h"
 #include "DesktopEnvironment.h"
 #include "Flex.h"
-
-// Remove these to make this component more generic
-#include "swallow.h"
-#include "tray.h"
 
 #ifdef USE_INOTIFYTOOLS
 #include <inotifytools/inotify.h>
@@ -148,9 +139,9 @@ char Events::_WaitForEvent(XEvent *event) {
     case ResizeRequest:
 
       eventName = "ResizeRequest";
-      handled =
-          DesktopEnvironment::DefaultEnvironment()->HandleDockResizeRequest(
-              &event->xresizerequest);
+//      handled =
+//          DesktopEnvironment::DefaultEnvironment()->HandleDockResizeRequest(
+//              &event->xresizerequest);
       break;
     case MotionNotify:
       eventName = "MotionNotify";
@@ -184,9 +175,9 @@ char Events::_WaitForEvent(XEvent *event) {
       break;
     case ReparentNotify:
       eventName = "ReparentNotify";
-      DesktopEnvironment::DefaultEnvironment()->HandleDockReparentNotify(
-          &event->xreparent);
-      handled = 1;
+//      DesktopEnvironment::DefaultEnvironment()->HandleDockReparentNotify(
+//          &event->xreparent);
+//      handled = 1;
       break;
     case ConfigureNotify:
       eventName = "ConfigureNotify";
@@ -255,12 +246,12 @@ void Events::_Signal(void) {
   }
   if (task_update_pending) {
     Logger::Log("Updating task bars\n");
-    TaskBar::UpdateTaskBar();
+//    TaskBar::UpdateTaskBar();
     task_update_pending = 0;
   }
   if (pager_update_pending) {
     Logger::Log("Updating pager\n");
-    Pager::UpdatePager();
+//    Pager::UpdatePager();
     pager_update_pending = 0;
   }
 
@@ -361,8 +352,9 @@ char Events::_HandleSelectionClear(const XSelectionClearEvent *event) {
     shouldExit = 1;
     return 1;
   }
-  return DesktopEnvironment::DefaultEnvironment()->HandleDockSelectionClear(
-      event);
+//  return DesktopEnvironment::DefaultEnvironment()->HandleDockSelectionClear(
+//      event);
+  return 0;
 }
 
 /** Process a button event. */
@@ -422,7 +414,9 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 //    }
   } else {
     /* Click over window content. */
-    const unsigned int mask = event->state & ~Binding::lockMask;
+    unsigned int lockMask = Button1Mask | Button2Mask | Button3Mask | Button4Mask
+          | Button5Mask | (1 << 13) | (1 << 14);
+    const unsigned int mask = event->state & ~lockMask;
     np = ClientNode::FindClientByWindow(event->window);
     if (np) {
       const char move_resize = (np->isDragable())
@@ -479,14 +473,14 @@ void Events::Bind(KeyEventHandler *handler, Actions action) {
 /** Process a key or mouse binding. */
 void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     unsigned state, int code, int x, int y) {
-  const ActionType key = Binding::GetKey(context, state, code);
+  //const ActionType key = Binding::GetKey(context, state, code);
   const char keyAction = context == MC_NONE;
-  switch (key.action) {
+  switch (0) {
   case EXEC:
-    Binding::RunKeyCommand(context, state, code);
+    //Binding::RunKeyCommand(context, state, code);
     break;
   case DESKTOP:
-    DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(key.extra);
+    //DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(key.extra);
     break;
   case RDESKTOP:
     DesktopEnvironment::DefaultEnvironment()->RightDesktop();
@@ -504,11 +498,11 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
     break;
   case SHOWTRAY:
-    Tray::ShowAllTrays();
+    //Tray::ShowAllTrays();
     break;
   case NEXT:
     ClientList::StartWindowWalk();
-    TaskBar::FocusNext();
+   // TaskBar::FocusNext();
     break;
   case NEXTSTACK:
     ClientList::StartWindowStackWalk();
@@ -516,7 +510,7 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     break;
   case PREV:
     ClientList::StartWindowWalk();
-    TaskBar::FocusPrevious();
+    //TaskBar::FocusPrevious();
     break;
   case PREVSTACK:
     ClientList::StartWindowStackWalk();
@@ -557,16 +551,17 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
   case RESIZE:
     if (np) {
       /* Use provided context by default. */
-      const unsigned char corner = key.extra;
+      //const unsigned char corner = key.extra;
       MouseContextType resizeContext = context;
-      if (corner) {
-        /* Custom corner specified. */
-        resizeContext = MC_BORDER;
-        resizeContext |= (corner & RESIZE_N) ? MC_BORDER_N : MC_NONE;
-        resizeContext |= (corner & RESIZE_S) ? MC_BORDER_S : MC_NONE;
-        resizeContext |= (corner & RESIZE_E) ? MC_BORDER_E : MC_NONE;
-        resizeContext |= (corner & RESIZE_W) ? MC_BORDER_W : MC_NONE;
-      } else if (keyAction) {
+//      if (corner) {
+//        /* Custom corner specified. */
+//        resizeContext = MC_BORDER;
+//        resizeContext |= (corner & RESIZE_N) ? MC_BORDER_N : MC_NONE;
+//        resizeContext |= (corner & RESIZE_S) ? MC_BORDER_S : MC_NONE;
+//        resizeContext |= (corner & RESIZE_E) ? MC_BORDER_E : MC_NONE;
+//        resizeContext |= (corner & RESIZE_W) ? MC_BORDER_W : MC_NONE;
+//      } else
+        if (keyAction) {
         /* No corner specified for a key action, assume SE. */
         resizeContext = MC_BORDER | MC_BORDER_S | MC_BORDER_E;
       }
@@ -619,7 +614,7 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     _ToggleMaximized(np, MAX_HORIZ);
     break;
   case ROOT:
-    Binding::ShowKeyMenu(context, state, code);
+    //Binding::ShowKeyMenu(context, state, code);
     break;
   case WIN:
     if (np) {
@@ -653,9 +648,9 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     break;
   case SEND:
     if (np) {
-      const unsigned desktop = key.extra;
-      np->SetClientDesktop(desktop);
-      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
+//      const unsigned desktop = key.extra;
+//      np->SetClientDesktop(desktop);
+//      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
     }
     break;
   case SENDR:
@@ -710,21 +705,21 @@ void Events::_HandleKeyPress(const XKeyEvent *event) {
 
 /** Handle a key release event. */
 void Events::_HandleKeyRelease(const XKeyEvent *event) {
-  const ActionType key = Binding::GetKey(MC_NONE, event->state, event->keycode);
-  if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV
-      && key.action != PREVSTACK) {
-    ClientList::StopWindowWalk();
-  }
+//  const ActionType key = Binding::GetKey(MC_NONE, event->state, event->keycode);
+//  if (key.action != NEXTSTACK && key.action != NEXT && key.action != PREV
+//      && key.action != PREVSTACK) {
+//    ClientList::StopWindowWalk();
+//  }
 }
 
 /** Process a configure request. */
 void Events::_HandleConfigureRequest(const XConfigureRequestEvent *event) {
   Places *np;
 
-  if (DesktopEnvironment::DefaultEnvironment()->HandleDockConfigureRequest(
-      event)) {
-    return;
-  }
+//  if (DesktopEnvironment::DefaultEnvironment()->HandleDockConfigureRequest(
+//      event)) {
+//    return;
+//  }
 
   np = (Places*) ClientNode::FindClientByWindow(event->window);
   if (np) {
@@ -1113,7 +1108,7 @@ void Events::_HandleClientMessage(const XClientMessageEvent *event) {
 
   } else if (event->message_type == Hints::atoms[ATOM_NET_SYSTEM_TRAY_OPCODE]) {
 
-    DesktopEnvironment::DefaultEnvironment()->HandleDockEvent(event);
+//    DesktopEnvironment::DefaultEnvironment()->HandleDockEvent(event);
 
   } else {
 #ifdef DEBUG
@@ -1519,9 +1514,7 @@ void Events::_HandleColormapChange(const XColormapEvent *event) {
 void Events::_HandleMapRequest(const XMapEvent *event) {
   ClientNode *np;
   Assert(event);
-  if (SwallowNode::CheckSwallowMap(event->window)) {
-    return;
-  }
+
   np = ClientNode::FindClientByWindow(event->window);
   if (!np) {
     Grabs::GrabServer();
@@ -1612,10 +1605,12 @@ char Events::_HandleDestroyNotify(const XDestroyWindowEvent *event) {
     }
     np->RemoveClient();
     return 1;
-  } else {
-    return DesktopEnvironment::DefaultEnvironment()->HandleDockDestroy(
-        event->window);
   }
+  return 0;
+//  } else {
+//    return DesktopEnvironment::DefaultEnvironment()->HandleDockDestroy(
+//        event->window);
+//  }
 }
 
 /** Update the last event time. */

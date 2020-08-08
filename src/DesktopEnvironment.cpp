@@ -7,11 +7,9 @@
 
 #include "jwm.h"
 #include "DesktopEnvironment.h"
-#include "dock.h"
 #include "background.h"
 #include "event.h"
 #include "desktop.h"
-#include "tray.h"
 
 Display *display = NULL;
 Window rootWindow;
@@ -50,22 +48,6 @@ char *configPath = NULL;
 
 DesktopEnvironment* DesktopEnvironment::_instance = NULL;
 char *DesktopEnvironment::displayString = NULL;
-
-char DesktopEnvironment::HandleDockReparentNotify(const XReparentEvent* event) {
-  return Dock::_HandleDockReparentNotify(event);
-}
-
-char DesktopEnvironment::HandleDockDestroy(unsigned long int num) {
-  return Dock::_HandleDockDestroy(num);
-}
-
-char DesktopEnvironment::HandleDockConfigureRequest(const XConfigureRequestEvent* event) {
-  return Dock::_HandleDockConfigureRequest(event);
-}
-
-void DesktopEnvironment::HandleDockEvent(const XClientMessageEvent* event) {
-  Dock::_HandleDockEvent(event);
-}
 
 void DesktopEnvironment::LoadBackground(unsigned int num) {
   Backgrounds::_LoadBackground(num);
@@ -118,10 +100,6 @@ const unsigned DesktopEnvironment::GetBelowDesktop(signed short int num) {
   return Desktops::_GetBelowDesktop(num);
 }
 
-char DesktopEnvironment::HandleDockResizeRequest(XResizeRequestEvent* event) {
-  return this->HandleDockResizeRequest(event);
-}
-
 void DesktopEnvironment::InitializeComponents() {
   for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->initialize();
@@ -168,14 +146,6 @@ void DesktopEnvironment::SetDesktopName(int num, const char* name) {
 
 void DesktopEnvironment::SetBackground(int id, const char* file, char* const value) {
   Backgrounds::_SetBackground(id, file, value);
-}
-
-TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayComponent *parent) {
-  return Dock::Create(width, tray, parent);
-}
-
-char DesktopEnvironment::HandleDockSelectionClear(const XSelectionClearEvent* event) {
-  return this->HandleDockSelectionClear(event);
 }
 
 bool DesktopEnvironment::OpenConnection() {

@@ -38,19 +38,12 @@ public:
   virtual bool BelowDesktop();
   virtual void SetDesktopName(int num, const char* name);
   virtual void SetBackground(int id, const char* file, char* const value);
-  virtual TrayComponent* CreateDock(int dockId, Tray *tray, TrayComponent *parent);
 
   virtual const unsigned GetRightDesktop(short signed int num);
   virtual const unsigned GetLeftDesktop(short signed int num);
   virtual const unsigned GetAboveDesktop(short signed int num);
   virtual const unsigned GetBelowDesktop(short signed int num);
 
-  virtual char HandleDockReparentNotify(const XReparentEvent* event);
-  virtual char HandleDockResizeRequest(XResizeRequestEvent* event);
-  virtual char HandleDockConfigureRequest(const XConfigureRequestEvent* event);
-  virtual char HandleDockDestroy(const Window);
-  virtual void HandleDockEvent(const XClientMessageEvent* event);
-  virtual char HandleDockSelectionClear(const XSelectionClearEvent* event);
 private:
   std::vector<Component*> _components;
   unsigned int _componentCount;

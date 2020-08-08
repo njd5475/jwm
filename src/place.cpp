@@ -12,7 +12,6 @@
 #include "client.h"
 #include "border.h"
 #include "screen.h"
-#include "tray.h"
 #include "settings.h"
 #include "clientlist.h"
 #include "misc.h"

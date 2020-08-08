@@ -7,15 +7,13 @@
 
 #include "jwm.h"
 #include "error.h"
-#include "action.h"
 #include "TrayComponent.h"
 #include "main.h"
 #include "DesktopEnvironment.h"
-#include "tray.h"
 
 /** Create an empty tray component. */
-TrayComponent::TrayComponent(Tray *tray, TrayComponent *parent) :
-    screenx(0), screeny(0), tray(tray), parent(parent) {
+TrayComponent::TrayComponent(TrayComponent *parent) :
+    screenx(0), screeny(0), parent(parent) {
 
   this->x = 0;
   this->y = 0;
@@ -30,16 +28,9 @@ TrayComponent::TrayComponent(Tray *tray, TrayComponent *parent) :
 }
 
 TrayComponent::~TrayComponent() {
-  std::vector<ActionNode*>::iterator it;
-  for (it = this->actions.begin(); it != this->actions.end(); ++it) {
-    delete *it;
-  }
-  this->actions.clear();
-  tray->RemoveTrayComponent(this);
 }
 
 void TrayComponent::addAction(const char *action, int mask) {
-  ActionNode *ap = new ActionNode(action, mask);
 
   /* Make sure we actually have an action. */
   if (action == NULL || action[0] == 0 || mask == 0) {
@@ -56,29 +47,6 @@ void TrayComponent::addAction(const char *action, int mask) {
     /* Invalid; don't add the action. */
     Warning(_("invalid action: \"%s\""), action);
     return;
-  }
-  this->actions.push_back(ap);
-}
-
-void TrayComponent::validateActions() {
-  std::vector<ActionNode*>::iterator it;
-  for (it = this->actions.begin(); it != this->actions.end(); ++it) {
-    (*it)->ValidateAction();
-  }
-}
-
-void TrayComponent::handleReleaseActions(int x, int y, int button) {
-  std::vector<ActionNode*>::iterator it;
-  for (it = this->actions.begin(); it != this->actions.end(); ++it) {
-    (*it)->ProcessActionRelease(this, x, y, button);
-  }
-}
-
-void TrayComponent::handlePressActions(int x, int y, int button) {
-  Log("Tray component handling press action\n");
-  std::vector<ActionNode*>::iterator it;
-  for (it = this->actions.begin(); it != this->actions.end(); ++it) {
-    (*it)->ProcessActionPress(this, x, y, button);
   }
 }
 
@@ -105,7 +73,7 @@ void TrayComponent::UpdateSpecificTray(const Tray *tp) {
 
   /* If the tray is hidden, draw only the background. */
   if (this->getPixmap() != None) {
-    JXCopyArea(display, this->getPixmap(), this->getTray()->getWindow(), rootGC,
+    JXCopyArea(display, this->getPixmap(), this->getWindow(), rootGC,
         0, 0, this->getWidth(), this->getHeight(), this->getX(), this->getY());
   }
 }

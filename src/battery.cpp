@@ -9,7 +9,6 @@
 
 #include "jwm.h"
 #include "battery.h"
-#include "tray.h"
 #include "color.h"
 #include "font.h"
 #include "timing.h"
@@ -21,7 +20,6 @@
 #include "error.h"
 #include "settings.h"
 #include "event.h"
-#include "action.h"
 #include "Graphics.h"
 
 static void PollBattery(const struct TimeType *now, int x, int y, Window w,
@@ -67,8 +65,8 @@ void Battery::StartupBattery(void) {
 }
 
 /** Create a Battery tray component. */
-Battery::Battery(int width, int height, Tray *tray, TrayComponent *parent) :
-    TrayComponent(tray, parent), lastLevel(0.0) {
+Battery::Battery(int width, int height, TrayComponent *parent) :
+    TrayComponent(parent), lastLevel(0.0) {
   Warning(_("Creating Battery Component"));
   this->SetSize(width, height);
 
@@ -148,11 +146,9 @@ void Battery::Draw() {
         (this->getHeight() - Fonts::GetStringHeight(FONT_CLOCK)) / 2,
         this->getWidth(), buf);
 
-    this->UpdateSpecificTray(this->getTray());
   } else {
     Warning(_("Requesting the tray to give us a better size"));
     this->requestNewSize(strWidth, this->getRequestedHeight());
-    this->getTray()->ResizeTray();
   }
 
   this->graphics->setForeground(COLOR_MENU_ACTIVE_BG1);
@@ -160,7 +156,7 @@ void Battery::Draw() {
   //update battery level
   this->lastLevel = percentage;
 
-  graphics->copy(this->getTray()->getWindow(), 0, 0, this->getWidth(), this->getHeight(),
+  graphics->copy(this->getWindow(), 0, 0, this->getWidth(), this->getHeight(),
       this->getX(), this->getY());
 }
 

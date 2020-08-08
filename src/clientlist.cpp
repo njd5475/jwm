@@ -11,7 +11,6 @@
 #include "clientlist.h"
 #include "client.h"
 #include "event.h"
-#include "tray.h"
 #include "settings.h"
 
 using namespace std;
@@ -57,7 +56,6 @@ char ClientList::ShouldFocus(const ClientNode *np, char current) {
 void ClientList::StartWindowWalk(void) {
   JXGrabKeyboard(display, rootWindow, False, GrabModeAsync, GrabModeAsync,
       CurrentTime);
-  Tray::RaiseTrays();
   walkingWindows = 1;
 }
 
@@ -112,8 +110,6 @@ void ClientList::StartWindowStackWalk(void) {
 
   JXGrabKeyboard(display, rootWindow, False, GrabModeAsync, GrabModeAsync,
       CurrentTime);
-
-  Tray::RaiseTrays();
 
   walkingWindows = 1;
   wasMinimized = 0;
@@ -207,7 +203,6 @@ void ClientList::StopWindowWalk(void) {
 
   if (walkingWindows) {
     JXUngrabKeyboard(display, CurrentTime);
-    Tray::LowerTrays();
     walkingWindows = 0;
   }
 

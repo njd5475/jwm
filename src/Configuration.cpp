@@ -17,14 +17,7 @@
 #include "icon.h"
 #include "settings.h"
 #include "DesktopEnvironment.h"
-#include "tray.h"
-#include "traybutton.h"
-#include "taskbar.h"
-#include "pager.h"
 #include "battery.h"
-#include "dock.h"
-#include "binding.h"
-#include "clock.h"
 
 using namespace std;
 
@@ -83,29 +76,9 @@ void Configuration::processConfigs(Builder &builder) {
         builder.buildIconPath(iconPath);
       }
 
-      JObject *menuStyle = jsonObject(itemObj, "MenuStyle");
-      if (menuStyle) {
-        builder.buildMenuStyle(menuStyle);
-      }
-
       JObject *windowStyle = jsonObject(itemObj, "WindowStyle");
       if (windowStyle) {
         builder.buildWindowStyle(windowStyle);
-      }
-
-      JObject *trayStyle = jsonObject(itemObj, "TrayStyle");
-      if (trayStyle) {
-        builder.buildTrayStyle(trayStyle);
-      }
-
-      JObject *taskListStyle = jsonObject(itemObj, "TaskListStyle");
-      if (taskListStyle) {
-        builder.buildTaskListStyle(taskListStyle);
-      }
-
-      JObject *pagerStyle = jsonObject(itemObj, "PagerStyle");
-      if (pagerStyle) {
-        builder.buildPagerStyle(pagerStyle);
       }
 
       JObject *popupStyle = jsonObject(itemObj, "PopupStyle");
@@ -113,24 +86,9 @@ void Configuration::processConfigs(Builder &builder) {
         builder.buildPopupStyle(popupStyle);
       }
 
-      JObject *clockStyle = jsonObject(itemObj, "ClockStyle");
-      if (clockStyle) {
-        builder.buildClockStyle(clockStyle);
-      }
-
-      JObject *trayButtonStyle = jsonObject(itemObj, "TrayButtonStyle");
-      if (trayButtonStyle) {
-        builder.buildTrayButtonStyle(trayButtonStyle);
-      }
-
       JObject *group = jsonObject(itemObj, "Group");
       if (group) {
         builder.buildGroup(group);
-      }
-
-      JObject *tray = jsonObject(itemObj, "Tray");
-      if (tray) {
-        builder.buildTray(tray);
       }
 
       JObject *desktops = jsonObject(itemObj, "Desktops");
@@ -138,10 +96,6 @@ void Configuration::processConfigs(Builder &builder) {
         builder.buildDesktops(desktops);
       }
 
-      JObject *key = jsonObject(itemObj, "Key");
-      if (key) {
-        builder.buildKey(key);
-      }
 
       JObject *mouse = jsonObject(itemObj, "Mouse");
       if (mouse) {
@@ -303,38 +257,6 @@ void Loader::buildIconPath(JObject *iconPath) {
   Icon::AddIconPath(path);
 }
 
-void Loader::buildMenuStyle(JObject *menuStyle) {
-  Configuration::loadStyle(menuStyle, (Configuration::StyleColors ) { FONT_MENU,
-      COLOR_MENU_BG, COLOR_MENU_BG,
-      COLOR_MENU_FG,
-      COLOR_MENU_UP, COLOR_MENU_DOWN, Configuration::MENU, {
-      COLOR_MENU_ACTIVE_BG1, COLOR_MENU_ACTIVE_BG2,
-      COLOR_MENU_ACTIVE_FG, COLOR_MENU_ACTIVE_UP,
-      COLOR_MENU_ACTIVE_DOWN } });
-}
-
-void Loader::buildTaskListStyle(JObject *taskListStyle) {
-  Configuration::loadStyle(taskListStyle, (Configuration::StyleColors ) {
-          FONT_TASKLIST,
-          COLOR_TASKLIST_BG1, COLOR_TASKLIST_BG2,
-          COLOR_TASKLIST_FG, COLOR_TASKLIST_UP, COLOR_TASKLIST_DOWN,
-          Configuration::TASKLIST, {
-          COLOR_TASKLIST_ACTIVE_BG1, COLOR_TASKLIST_ACTIVE_BG2,
-          COLOR_TASKLIST_ACTIVE_FG, COLOR_TASKLIST_ACTIVE_UP,
-          COLOR_TASKLIST_ACTIVE_DOWN } });
-}
-
-void Loader::buildPagerStyle(JObject *pagerStyle) {
-  Configuration::loadStyle(pagerStyle, (Configuration::StyleColors ) {
-          FONT_PAGER,
-          COLOR_PAGER_BG, COLOR_PAGER_BG,
-          COLOR_PAGER_FG, COLOR_PAGER_BG, COLOR_PAGER_BG, Configuration::PAGER,
-          {
-          COLOR_PAGER_ACTIVE_BG, COLOR_PAGER_ACTIVE_BG,
-          COLOR_PAGER_ACTIVE_FG, COLOR_PAGER_ACTIVE_BG,
-          COLOR_PAGER_ACTIVE_BG } });
-}
-
 void Loader::buildPopupStyle(JObject *popupStyle) {
   Configuration::loadStyle(popupStyle, (Configuration::StyleColors ) {
           FONT_POPUP,
@@ -344,37 +266,6 @@ void Loader::buildPopupStyle(JObject *popupStyle) {
           COLOR_COUNT, COLOR_COUNT,
           COLOR_COUNT, COLOR_COUNT,
           COLOR_COUNT } });
-}
-
-void Loader::buildTrayStyle(JObject *trayStyle) {
-  Configuration::loadStyle(trayStyle, (Configuration::StyleColors ) { FONT_TRAY,
-      COLOR_TRAY_BG1, COLOR_TRAY_BG2,
-      COLOR_TRAY_FG, COLOR_TRAY_UP, COLOR_TRAY_DOWN, Configuration::TRAY, {
-      COLOR_TRAY_ACTIVE_BG1, COLOR_TRAY_ACTIVE_BG2,
-      COLOR_TRAY_ACTIVE_FG, COLOR_TRAY_ACTIVE_UP,
-      COLOR_TRAY_ACTIVE_DOWN } });
-}
-
-void Loader::buildTrayButtonStyle(JObject *trayButtonStyle) {
-  Configuration::loadStyle(trayButtonStyle, (Configuration::StyleColors ) {
-          FONT_TRAYBUTTON,
-          COLOR_TRAYBUTTON_BG1, COLOR_TRAYBUTTON_BG2,
-          COLOR_TRAYBUTTON_FG, COLOR_TRAYBUTTON_UP,
-          COLOR_TRAYBUTTON_DOWN, Configuration::TRAYBUTTON, {
-          COLOR_TRAYBUTTON_ACTIVE_BG1, COLOR_TRAYBUTTON_ACTIVE_BG2,
-          COLOR_TRAYBUTTON_ACTIVE_FG, COLOR_TRAYBUTTON_ACTIVE_UP,
-          COLOR_TRAYBUTTON_ACTIVE_DOWN } });
-}
-
-void Loader::buildClockStyle(JObject *clockStyle) {
-  Configuration::loadStyle(clockStyle, (Configuration::StyleColors ) {
-          FONT_CLOCK,
-          COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
-          COLOR_CLOCK_FG, COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
-          Configuration::TRAYBUTTON, {
-          COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
-          COLOR_CLOCK_FG, COLOR_CLOCK_BG1,
-          COLOR_CLOCK_BG1 } });
 }
 
 void Loader::buildWindowStyle(JObject *windowStyle) {
@@ -387,161 +278,6 @@ void Loader::buildWindowStyle(JObject *windowStyle) {
           COLOR_TITLE_ACTIVE_BG2, COLOR_TITLE_ACTIVE_FG,
           COLOR_TITLE_ACTIVE_UP, COLOR_TITLE_ACTIVE_DOWN } });
   Configuration::loadWindowSettings(windowStyle);
-}
-
-void Loader::buildTray(JObject *jobj) {
-  const char *strX = jsonString(jobj, "x");
-  const char *strY = jsonString(jobj, "y");
-  const char *strWidth = jsonString(jobj, "width");
-  const char *strHeight = jsonString(jobj, "height");
-  const char *strAutohide = jsonString(jobj, "autohide");
-  const char *strDelay = jsonString(jobj, "delay");
-  bool autohide = false;
-  float delay = 0.5f;
-
-  Tray *tray = Tray::Create();
-
-  if (!strX) {
-    strX = "0";
-  }
-
-  if (!strY) {
-    strY = "0";
-  }
-
-  if (strAutohide) {
-    autohide = !(strcmp(strAutohide, "off") == 0);
-  }
-
-  if (strDelay) {
-    delay = atof(strDelay);
-  }
-
-  if (strWidth) {
-    tray->SetTrayWidth(strWidth);
-  }
-
-  if (strHeight) {
-    tray->SetTrayHeight(strHeight);
-  }
-  tray->SetAutoHideTray(autohide ? THIDE_ON : THIDE_OFF, delay);
-  tray->SetTrayX(strX);
-  tray->SetTrayY(strY);
-
-  // process children after default properties
-  JArray *children = jsonArray(jobj, "children");
-  if (children) {
-    for (int i = 0; i < children->count; ++i) {
-      JArrayItem *val = children->_internal.vItems[i];
-      if (val->type == VAL_OBJ) {
-        JObject *item = val->value.object_val;
-
-        JObject *trayButton = jsonObject(item, "TrayButton");
-        if (trayButton) {
-          buildTrayButton(tray, trayButton);
-        }
-
-        JObject *pager = jsonObject(item, "Pager");
-        if (pager) {
-          buildPager(tray, pager);
-        }
-
-        JObject *taskList = jsonObject(item, "TaskList");
-        if (taskList) {
-          buildTaskList(tray, taskList);
-        }
-
-        JObject *battery = jsonObject(item, "Battery");
-        if (battery) {
-          buildBattery(tray, battery);
-        }
-
-        JObject *dock = jsonObject(item, "Dock");
-        if (dock) {
-          buildDock(tray, dock);
-        }
-
-        JObject *clock = jsonObject(item, "Clock");
-        if (clock) {
-          buildClock(tray, clock);
-        }
-      }
-    }
-  }
-
-}
-
-void Loader::buildTrayButton(Tray *tray, JObject *trayButton) {
-  const char *label = jsonString(trayButton, "label");
-  const char *icon = jsonString(trayButton, "icon");
-  const char *popup = jsonString(trayButton, "popup");
-  const char *strWidth = jsonString(trayButton, "width");
-  const char *strHeight = jsonString(trayButton, "height");
-  const char *action = jsonString(trayButton, "action");
-
-  unsigned width = 0, height = 0;
-
-  if (strWidth) {
-    width = atoi(strWidth);
-  }
-
-  if (strHeight) {
-    height = atoi(strHeight);
-  }
-
-  TrayButton *button = TrayButton::Create(icon, label, popup, width, height,
-      tray, tray->getLastComponent());
-
-  if (action) {
-    const int default_mask = (1 << 1) | (1 << 2) | (1 << 3); // button mask default is any clicked
-    button->addAction(action, default_mask);
-  }
-
-  tray->AddTrayComponent(button);
-}
-
-void Loader::buildPager(Tray *tray, JObject *pager) {
-  const char *strLabeled = jsonString(pager, "labeled");
-  char labeled = 0;
-  if (strLabeled) {
-    labeled = !strcmp(strLabeled, "false");
-  }
-
-  Pager *pagerType = Pager::CreatePager(labeled ? 1 : 0, tray,
-      tray->getLastComponent());
-
-  tray->AddTrayComponent(pagerType);
-}
-
-void Loader::buildTaskList(Tray *tray, JObject *taskList) {
-  const char *strMaxWidth = jsonString(taskList, "maxwidth");
-  unsigned maxWidth = 0;
-
-  if (strMaxWidth) {
-    maxWidth = atoi(strMaxWidth);
-  }
-  TaskBar *taskBar = TaskBar::Create(tray, tray->getLastComponent());
-  taskBar->SetMaxTaskBarItemWidth(maxWidth);
-
-  tray->AddTrayComponent(taskBar);
-}
-
-void Loader::buildBattery(Tray *tray, JObject *battery) {
-  tray->AddTrayComponent(new Battery(0, 0, tray, tray->getLastComponent()));
-}
-
-void Loader::buildDock(Tray *tray, JObject *dock) {
-  Dock *dockType = Dock::Create(0, tray, tray->getLastComponent());
-  tray->AddTrayComponent(dockType);
-}
-
-void Loader::buildClock(Tray *tray, JObject *clock) {
-  const char *format = jsonString(clock, "format");
-  const char *zone = jsonString(clock, "zone");
-
-  Clock *clockType = Clock::CreateClock(format, zone ? zone : "UTC", 0,
-      9, tray, tray->getLastComponent());
-  tray->AddTrayComponent(clockType);
 }
 
 void Loader::buildGroup(JObject *jobj) {
@@ -573,26 +309,6 @@ void Loader::buildDesktops(JObject *jobj) {
 }
 
 #define LITERAL(action) #action
-void Loader::buildKey(JObject *jobj) {
-  const char *key = jsonString(jobj, "key");
-  const char *keycode = jsonString(jobj, "keycode");
-  const char *action = jsonString(jobj, "action");
-  const char *mask = jsonString(jobj, "mask");
-  const char *command = NULL;
-
-  if (key && action) {
-    ActionType theAction;
-    theAction.action = this->convertToAction(action);
-    theAction.extra = 0;
-
-    if (JUNLIKELY(theAction.action == INVALID)) {
-      vLog("invalid Key action: \"%s\"", action);
-    } else {
-      Binding::InsertBinding(theAction, mask, key, keycode, command);
-    }
-
-  }
-}
 
 Actions Loader::convertToAction(const char *action) {
   Actions toRet = INVALID;
@@ -696,16 +412,7 @@ void Loader::buildMouse(JObject *jobj) {
   const char *command = NULL;
 
   if (button && action) {
-    ActionType theAction;
-    theAction.action = this->convertToAction(action);
-    theAction.extra = 0;
     MouseContextType mc = this->convertToMouseContext(context);
-
-    if (JUNLIKELY(theAction.action == INVALID)) {
-      vLog("invalid Key action: \"%s\"", action);
-    } else {
-      Binding::InsertMouseBinding(button, mask, mc, theAction, command);
-    }
   }
 }
 
@@ -738,53 +445,6 @@ void Saver::write(const char *key, const char *value) {
   }
 }
 
-void Saver::buildMenuStyle(JObject *object) {
-  buildStyle(0, "MenuStyle", object);
-}
-
-void Saver::buildMenus(unsigned indent, const char *elementName,
-    JObject *object) {
-  this->buildMenuItem(indent, elementName, object);
-  JArray *children = jsonArray(object, "children");
-
-  if (children) {
-    ++indent;
-    for (int i = 0; i < children->count; ++i) {
-      JArrayItem *val = children->_internal.vItems[i];
-      if (val->type == VAL_OBJ) {
-        JObject *item = val->value.object_val;
-
-        JObject *program = jsonObject(item, "Program");
-        if (program) {
-          buildMenuItem(indent, "Program", program);
-        }
-
-        JObject *submenu = jsonObject(item, "Menu");
-        if (submenu) {
-          buildMenus(indent, "Menu", submenu);
-        }
-
-        JObject *separator = jsonObject(item, "Separator");
-        if (separator) {
-          for (unsigned i = 0; i < indent; ++i) {
-            fprintf(_output, "  ");
-          }
-          buildMenuItem(indent, "Separator", separator);
-        }
-
-        JObject *restart = jsonObject(item, "Restart");
-        if (restart) {
-          buildMenuItem(indent, "Restart", restart);
-        }
-
-        JObject *exit = jsonObject(item, "Exit");
-        if (exit) {
-          buildMenuItem(indent, "Exit", exit);
-        }
-      }
-    }
-  }
-}
 
 void Saver::writeIndent(unsigned indent) {
   for (unsigned i = 0; i < indent * TABS; ++i) {
@@ -799,53 +459,10 @@ void Saver::write(JObject *obj, const char *key) {
   }
 }
 
-void Saver::buildMenuItem(int indent, const char *type, JObject *itemObj) {
-  this->writeIndent(indent);
-  const char *icon = jsonString(itemObj, "icon");
-  const char *label = jsonString(itemObj, "label");
-  const char *tooltip = jsonString(itemObj, "tooltip");
-  const char *exec = jsonString(itemObj, "exec");
-
-  fprintf(_output, "%s", type);
-
-  if (icon) {
-    write("icon", icon);
-  }
-
-  if (label) {
-    write("label", label);
-  }
-
-  if (tooltip) {
-    write("tooltip", tooltip);
-  }
-
-  if (exec) {
-    write("exec", exec);
-  }
-
-  write("\n");
-}
-
-void Saver::buildTaskListStyle(JObject *object) {
-  this->buildStyle("TaskListStyle", object);
-}
-
-void Saver::buildPagerStyle(JObject *object) {
-  this->buildStyle("PagerStyle", object);
-}
-
 void Saver::buildPopupStyle(JObject *object) {
   this->buildStyle("PopupStyle", object);
 }
 
-void Saver::buildTrayStyle(JObject *object) {
-  this->buildStyle("TrayStyle", object);
-}
-
-void Saver::buildTrayButtonStyle(JObject *object) {
-  this->buildStyle("TrayButtonStyle", object);
-}
 
 void Saver::buildWindowStyle(JObject *object) {
   this->buildStyle("WindowStyle", object);
@@ -853,10 +470,6 @@ void Saver::buildWindowStyle(JObject *object) {
 
 void Saver::buildStyle(const char *styleName, JObject *object) {
   this->buildStyle(0, styleName, object);
-}
-
-void Saver::buildClockStyle(JObject *object) {
-  this->buildStyle(0, "ClockStyle", object);
 }
 
 void Saver::buildStyle(unsigned indent, const char *styleName,
@@ -898,88 +511,6 @@ void Saver::buildStyle(unsigned indent, const char *styleName,
   write("\n");
 }
 
-void Saver::buildTray(JObject *jobj) {
-  const char *strX = jsonString(jobj, "x");
-  const char *strY = jsonString(jobj, "y");
-  const char *strWidth = jsonString(jobj, "width");
-  const char *strHeight = jsonString(jobj, "height");
-  const char *strAutohide = jsonString(jobj, "autohide");
-  const char *strDelay = jsonString(jobj, "delay");
-  bool autohide = false;
-  float delay = 0.5f;
-
-  if (!strX) {
-    strX = "0";
-  }
-
-  if (!strY) {
-    strY = "0";
-  }
-
-  if (strAutohide) {
-    autohide = !(strcmp(strAutohide, "off") == 0);
-  }
-
-  if (strDelay) {
-    delay = atof(strDelay);
-  }
-
-  this->write("\n");
-  this->write("Tray");
-
-  if (strWidth) {
-    write("width", strWidth);
-  }
-
-  if (strHeight) {
-    write("height", strHeight);
-  }
-  write("autohide", autohide ? "on" : "off");
-  write("x", strX);
-  write("y", strY);
-
-  // process children after default properties
-  JArray *children = jsonArray(jobj, "children");
-  if (children) {
-    for (int i = 0; i < children->count; ++i) {
-      JArrayItem *val = children->_internal.vItems[i];
-      if (val->type == VAL_OBJ) {
-        JObject *item = val->value.object_val;
-
-        JObject *trayButton = jsonObject(item, "TrayButton");
-        if (trayButton) {
-          buildTrayButton(1, trayButton);
-        }
-
-        JObject *pager = jsonObject(item, "Pager");
-        if (pager) {
-          buildPager(1, pager);
-        }
-
-        JObject *taskList = jsonObject(item, "TaskList");
-        if (taskList) {
-          buildTaskList(1, taskList);
-        }
-
-        JObject *battery = jsonObject(item, "Battery");
-        if (battery) {
-          buildBattery(1, battery);
-        }
-
-        JObject *dock = jsonObject(item, "Dock");
-        if (dock) {
-          buildDock(1, dock);
-        }
-
-        JObject *clock = jsonObject(item, "Clock");
-        if (clock) {
-          buildClock(1, clock);
-        }
-      }
-    }
-  }
-}
-
 void Saver::buildGroup(JObject *jobj) {
 
 }
@@ -988,37 +519,10 @@ void Saver::buildDesktops(JObject *jobj) {
 
 }
 
-void Saver::buildKey(JObject *jobj) {
-
-}
-
 void Saver::buildMouse(JObject *jobj) {
 
 }
 
-void Saver::buildTrayButton(unsigned indent, JObject *trayButton) {
-  write("\n");
-  writeIndent(indent);
-  write("TrayButton");
-  write(trayButton, "icon");
-  write(trayButton, "label");
-  write(trayButton, "action");
-}
-
-void Saver::buildPager(unsigned indent, JObject *pager) {
-
-  write("\n");
-  writeIndent(indent);
-  write("Pager");
-  write(pager, "labeled");
-}
-
-void Saver::buildTaskList(unsigned indent, JObject* taskList) {
-  write("\n");
-  writeIndent(indent);
-  write("TaskList");
-  write(taskList, "maxwidth");
-}
 
 void Saver::buildBattery(unsigned indent, JObject* battery) {
   write("\n");
@@ -1026,19 +530,6 @@ void Saver::buildBattery(unsigned indent, JObject* battery) {
   write("Battery");
 }
 
-void Saver::buildDock(unsigned indent, JObject* dock) {
-  write("\n");
-  writeIndent(indent);
-  write("Dock");
-}
-
-void Saver::buildClock(unsigned indent, JObject* clock) {
-  write("\n");
-  writeIndent(indent);
-  write("Clock");
-  write(clock, "format");
-
-}
 
 #include "misc.h"
 #include "Token.h"
@@ -1048,7 +539,6 @@ static const char *const NEW_CONFIG_FILES[] = { "$XDG_CONFIG_HOME/nwm/nwmrc",
 
 /** Parse the JWM configuration. */
 void Configuration::ParseConfig(const char *fileName) {
-  Binding::ValidateKeys();
 
   static const unsigned int NEW_CONFIG_FILE_COUNT = ARRAY_LENGTH(
       NEW_CONFIG_FILES);

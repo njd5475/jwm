@@ -13,11 +13,9 @@
 #include "outline.h"
 #include "cursor.h"
 #include "misc.h"
-#include "pager.h"
 #include "status.h"
 #include "event.h"
 #include "settings.h"
-#include "binding.h"
 
 char shouldStopResize = 0;
 

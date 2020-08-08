@@ -16,13 +16,10 @@
 #include "cursor.h"
 #include "event.h"
 #include "outline.h"
-#include "pager.h"
 #include "screen.h"
 #include "status.h"
-#include "tray.h"
 #include "settings.h"
 #include "timing.h"
-#include "binding.h"
 #include "DesktopEnvironment.h"
 
 

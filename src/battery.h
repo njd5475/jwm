@@ -24,7 +24,7 @@ public:
 	/*@}*/
 
 public:
-	Battery(int width, int height, Tray *tray, TrayComponent *parent);
+	Battery(int width, int height, TrayComponent *parent);
 	virtual ~Battery();
 
 	/**

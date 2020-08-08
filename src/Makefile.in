@@ -6,14 +6,14 @@ BINDIR = $(DESTDIR)@BINDIR@
 
 VPATH=.:os
 
-OBJECTS = action.o background.o binding.o border.o button.o client.o \
-   clientlist.o clock.o color.o command.o confirm.o cursor.o debug.o \
-   desktop.o dock.o event.o error.o font.o grab.o gradient.o group.o \
+OBJECTS = background.o border.o button.o client.o \
+   clientlist.o color.o command.o confirm.o cursor.o debug.o \
+   desktop.o event.o error.o font.o grab.o gradient.o group.o \
    help.o hint.o icon.o image.o main.o misc.o \
-   move.o outline.o pager.o place.o popup.o resize.o \
-   screen.o settings.o spacer.o status.o swallow.o taskbar.o \
-   timing.o tray.o traybutton.o battery.o AbstractAction.o \
-   DesktopEnvironment.o DockComponent.o DesktopComponent.o \
+   move.o outline.o place.o popup.o resize.o \
+   screen.o settings.o status.o \
+   timing.o battery.o AbstractAction.o \
+   DesktopEnvironment.o DesktopComponent.o \
    BackgroundComponent.o Component.o logger.o WindowManager.o \
    LogWindow.o Graphics.o TrayComponent.o Flex.o KeyEventHandler.o Token.o \
    json.o fnv.o Configuration.o Notifications.o ApplicationsComponent.o \

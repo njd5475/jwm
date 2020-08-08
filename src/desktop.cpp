@@ -12,14 +12,12 @@
 #include "main.h"
 #include "client.h"
 #include "clientlist.h"
-#include "taskbar.h"
 #include "error.h"
-#include "menu.h"
+
 #include "misc.h"
 #include "settings.h"
 #include "grab.h"
 #include "event.h"
-#include "tray.h"
 #include "DesktopEnvironment.h"
 
 std::vector<const char*> Desktops::names;
@@ -239,7 +237,6 @@ void Desktops::_ShowDesktop(void) {
 	}
 	Hints::SetCardinalAtom(rootWindow, ATOM_NET_SHOWING_DESKTOP, showing[currentDesktop]);
 	Grabs::UngrabServer();
-	Tray::DrawTray();
 
 }
 

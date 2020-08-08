@@ -19,10 +19,8 @@
 
 #include "ApplicationsComponent.h"
 #include "battery.h"
-#include "binding.h"
 #include "border.h"
 #include "BackgroundComponent.h"
-#include "clock.h"
 #include "color.h"
 #include "command.h"
 #include "confirm.h"
@@ -30,7 +28,6 @@
 #include "debug.h"
 #include "DesktopComponent.h"
 #include "DesktopEnvironment.h"
-#include "DockComponent.h"
 #include "error.h"
 #include "event.h"
 #include "font.h"
@@ -42,16 +39,11 @@
 #include "logger.h"
 #include "LogWindow.h"
 #include "main.h"
-#include "pager.h"
 #include "place.h"
 #include "popup.h"
 #include "screen.h"
 #include "settings.h"
-#include "swallow.h"
-#include "taskbar.h"
 #include "timing.h"
-#include "tray.h"
-#include "traybutton.h"
 #include "Flex.h"
 #include "MessageService.h"
 
@@ -67,15 +59,12 @@ void WindowManager::Initialize(void) {
 
   Log("Registering Components\n");
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
-      new DockComponent());
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
       new DesktopComponent());
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
       new BackgroundComponent());
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
       new ApplicationsComponent());
 
-  ILog(Binding::InitializeBindings);
   ILog(ClientNode::InitializeClients);
   ILog(Battery::InitializeBattery);
   ILog(Colors::InitializeColors);
@@ -89,15 +78,10 @@ void WindowManager::Initialize(void) {
   ILog(Groups::InitializeGroups);
   ILog(Hints::InitializeHints);
   ILog(Icon::InitializeIcons);
-  ILog(Pager::InitializePager);
   ILog(Places::InitializePlacement);
   ILog(Popups::InitializePopup);
   ILog(Screens::InitializeScreens);
   ILog(Setting::InitializeSettings);
-  ILog(SwallowNode::InitializeSwallow);
-  ILog(TaskBar::InitializeTaskBar);
-  ILog(Tray::InitializeTray);
-  ILog(TrayButton::InitializeTrayButtons);
 
   //DBusPendingCall *pending = MessageService::callMethod("org.freedesktop.login1", "/org/freedesktop/login1", "org.freedesktop.login1.Manager", "ScheduledShutdown", NULL);
   printf("Shutdown Time: %d\n", MessageService::getShutdownTime());
@@ -126,14 +110,9 @@ void WindowManager::Startup(void) {
   Icon::StartupIcons();
   Cursors::StartupCursors();
 
-  Pager::StartupPager();
   Battery::StartupBattery();
-  TaskBar::StartupTaskBar();
-  TrayButton::StartupTrayButtons();
   DesktopEnvironment::DefaultEnvironment()->StartupComponents();
   Hints::StartupHints();
-  Tray::StartupTray();
-  Binding::StartupBindings();
   Places::StartupPlacement();
 
 #  ifndef DISABLE_CONFIRM
@@ -152,9 +131,6 @@ void WindowManager::Startup(void) {
   Grabs::UngrabServer();
 
   ClientNode::StartupClients();
-  SwallowNode::StartupSwallow();
-
-  Tray::DrawTray();
 
   /* Send expose events. */
   Border::ExposeCurrentDesktop();
@@ -179,21 +155,13 @@ void WindowManager::Shutdown(void) {
 
   /* This order is important. */
 
-  SwallowNode::ShutdownSwallow();
-
 #  ifndef DISABLE_CONFIRM
   Dialogs::ShutdownDialogs();
 #  endif
   Popups::ShutdownPopup();
   LogWindow::ShutdownPortals();
-  Binding::ShutdownBindings();
-  Pager::ShutdownPager();
   ClientNode::ShutdownClients();
   DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
-  Tray::ShutdownTray();
-  TrayButton::ShutdownTrayButtons();
-  TaskBar::ShutdownTaskBar();
-  Clock::ShutdownClock();
   Battery::ShutdownBattery();
   Icon::ShutdownIcons();
   Cursors::ShutdownCursors();
@@ -227,16 +195,10 @@ void WindowManager::Destroy(void) {
   Groups::DestroyGroups();
   Hints::DestroyHints();
   Icon::DestroyIcons();
-  Binding::DestroyBindings();
-  Pager::DestroyPager();
   Places::DestroyPlacement();
   Popups::DestroyPopup();
   Screens::DestroyScreens();
   Setting::DestroySettings();
-  SwallowNode::DestroySwallow();
-  TaskBar::DestroyTaskBar();
-  TrayButton::DestroyTrayButtons();
-  Tray::DestroyTray();
   Flex::DestroyFlexes();
 }
 
@@ -447,14 +409,10 @@ void WindowManager::EventLoop(void) {
   GetCurrentTime(&start);
   for (;;) {
     if (JXPending(display) == 0) {
-      if (!SwallowNode::IsSwallowPending()) {
+      TimeType now;
+      GetCurrentTime(&now);
+      if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
         break;
-      } else {
-        TimeType now;
-        GetCurrentTime(&now);
-        if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
-          break;
-        }
       }
     }
     if (Events::_WaitForEvent(&event)) {

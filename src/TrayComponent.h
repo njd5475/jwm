@@ -8,8 +8,6 @@
 #ifndef SRC_TRAYCOMPONENT_H_
 #define SRC_TRAYCOMPONENT_H_
 
-#include "action.h"
-
 class Graphics;
 
 class ActionNode;
@@ -18,11 +16,6 @@ class Tray;
 class TrayComponent {
 
 private:
-	/** The tray containing the component.
-	 * UpdateSpecificTray(TrayType*, TrayComponentType*) should be called
-	 * when content changes.
-	 */
-	Tray *tray;
 
 	int x; /**< x-coordinate on the tray (valid only after Create). */
 	int y; /**< y-coordinate on the tray (valid only after Create). */
@@ -48,10 +41,9 @@ private:
 	char grabbed; /**< 1 if the mouse was grabbed by this component. */
 
 public:
-	TrayComponent(Tray *tray, TrayComponent *parent);
+	TrayComponent(TrayComponent *parent);
 	virtual ~TrayComponent();
 
-	void SetParent(Tray *parent) {this->tray = parent;}
 	void RefreshSize();
 	int getX() const;
 	int getY() const;
@@ -66,7 +58,6 @@ public:
 
 	void SetLocation(int x, int y);
 	void SetScreenLocation(int x, int y);
-	Tray *getTray() const {return this->tray;}
 	Pixmap getPixmap() const {return this->pixmap;}
 	void setPixmap(Pixmap pixmap);
 
@@ -130,16 +121,7 @@ public:
 	char wasGrabbed() {return this->grabbed;}
 
 	void addAction(const char *action, int mask);
-	void validateActions();
-	virtual void handleReleaseActions(int x, int y, int button);
-	virtual void handlePressActions(int x, int y, int button);
-private:
-	std::vector<ActionNode*> actions;
 
-protected:
-	Tray *getParent() {
-	  return this->tray;
-	}
 };
 
 #endif /* SRC_TRAYCOMPONENT_H_ */
