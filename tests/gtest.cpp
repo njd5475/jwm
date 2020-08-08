@@ -1,8 +1,8 @@
 #include "gtest/gtest.h" // we will add the path to C preprocessor later
 
 #include "../src/DesktopEnvironment.h"
+#include "../src/DesktopSystemComponent.h"
 #include "../src/DockComponent.h"
-#include "../src/DesktopComponent.h"
 #include "../src/parse.h"
 
 TEST(DockComponent, InitializeComponent) {

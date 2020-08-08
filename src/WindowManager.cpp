@@ -17,17 +17,17 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "ApplicationsComponent.h"
+#include "ApplicationsSystemComponent.h"
 #include "battery.h"
 #include "border.h"
-#include "BackgroundComponent.h"
+#include "BackgroundSystemComponent.h"
 #include "color.h"
 #include "command.h"
 #include "confirm.h"
 #include "cursor.h"
 #include "debug.h"
-#include "DesktopComponent.h"
 #include "DesktopEnvironment.h"
+#include "DesktopSystemComponent.h"
 #include "error.h"
 #include "event.h"
 #include "font.h"
@@ -141,9 +141,9 @@ void WindowManager::Startup(void) {
   /* Run any startup commands. */
   Commands::StartupCommands();
 
-//	LogWindow::Add(30, 30, 300, 200);
+	LogWindow::Add(30, 30, 300, 200);
   LogWindow::StartupPortals();
-//	LogWindow::DrawAll();
+	LogWindow::DrawAll();
 
 //Flex::Create();
 }

@@ -12,7 +12,9 @@
 
 #include "font.h"
 #include "settings.h"
+#include "Component.h"
 
+class Graphics;
 class Icon;
 
 /** Button types. */
@@ -31,5 +33,26 @@ typedef unsigned char ButtonType;
 void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const char *text, bool fill,
 		bool border, Drawable drawable, Icon *icon, int x, int y, int width, int height,
 		int xoffset, int yoffset);
+
+class Button : public Component {
+
+public:
+  Button(const char* text, int x, int y, int width, int height);
+  virtual ~Button();
+
+  void Draw(Graphics *g);
+
+  int getX();
+  int getY();
+  int getWidth();
+  int getHeight();
+  bool isActive();
+  bool contains(int x, int y);
+  void mouseMoved(int mouseX, int mouseY);
+private:
+  int _x,_y,_width,_height;
+  bool _active;
+  const char* _text;
+};
 
 #endif /* BUTTON_H */

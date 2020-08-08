@@ -9,8 +9,8 @@
 #define SRC_DESKTOPENVIRONMENT_H_
 
 #include "jwm.h"
-#include "Component.h"
 #include <vector>
+#include "SystemComponent.h"
 
 class TrayComponent;
 class Tray;
@@ -24,7 +24,7 @@ public:
   virtual void StartupComponents();
   virtual void ShutdownComponents();
   virtual void DestroyComponents();
-  virtual bool RegisterComponent(Component *component);
+  virtual bool RegisterComponent(SystemComponent *component);
   virtual unsigned int ComponentCount() {return _componentCount;}
 
   virtual bool OpenConnection();
@@ -45,7 +45,7 @@ public:
   virtual const unsigned GetBelowDesktop(short signed int num);
 
 private:
-  std::vector<Component*> _components;
+  std::vector<SystemComponent*> _components;
   unsigned int _componentCount;
 public:
   static DesktopEnvironment *DefaultEnvironment() {

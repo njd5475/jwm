@@ -61,7 +61,7 @@ void DesktopEnvironment::ShowDesktop() {
 	Desktops::_ShowDesktop();
 }
 
-bool DesktopEnvironment::RegisterComponent(Component *component) {
+bool DesktopEnvironment::RegisterComponent(SystemComponent *component) {
   ++this->_componentCount;
   this->_components.push_back(component);
   return true;
@@ -73,7 +73,7 @@ DesktopEnvironment::DesktopEnvironment() :
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
-  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
+  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     delete *it;
   }
   this->_components.clear();
@@ -101,25 +101,25 @@ const unsigned DesktopEnvironment::GetBelowDesktop(signed short int num) {
 }
 
 void DesktopEnvironment::InitializeComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
+  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->initialize();
   }
 }
 
 void DesktopEnvironment::StartupComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
+  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->start();
   }
 }
 
 void DesktopEnvironment::ShutdownComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
+  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->stop();
   }
 }
 
 void DesktopEnvironment::DestroyComponents() {
-  for (std::vector<Component*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
+  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
     (*it)->destroy();
   }
 }

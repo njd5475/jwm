@@ -5,13 +5,13 @@
  *      Author: nick
  */
 
-#ifndef SRC_COMPONENT_H_
-#define SRC_COMPONENT_H_
+#ifndef SRC_SYSTEMCOMPONENT_H_
+#define SRC_SYSTEMCOMPONENT_H_
 
-class Component {
+class SystemComponent {
 public:
-  Component();
-  virtual ~Component();
+  SystemComponent();
+  virtual ~SystemComponent();
 
   virtual void initialize() = 0;
   virtual void start() = 0;
@@ -20,4 +20,4 @@ public:
 
 };
 
-#endif /* SRC_COMPONENT_H_ */
+#endif /* SRC_SYSTEMCOMPONENT_H_ */

@@ -5,12 +5,12 @@
  *      Author: nick
  */
 
-#ifndef SRC_BACKGROUNDCOMPONENT_H_
-#define SRC_BACKGROUNDCOMPONENT_H_
+#ifndef SRC_BACKGROUNDSYSTEMCOMPONENT_H_
+#define SRC_BACKGROUNDSYSTEMCOMPONENT_H_
 
-#include "Component.h"
+#include "SystemComponent.h"
 
-class BackgroundComponent : public Component {
+class BackgroundComponent : public SystemComponent {
 public:
   BackgroundComponent();
   virtual ~BackgroundComponent();
@@ -25,4 +25,4 @@ private:
   static bool registered;
 };
 
-#endif /* SRC_BACKGROUNDCOMPONENT_H_ */
+#endif /* SRC_BACKGROUNDSYSTEMCOMPONENT_H_ */

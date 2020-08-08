@@ -6,8 +6,8 @@
  */
 
 #include "DesktopEnvironment.h"
-#include "BackgroundComponent.h"
 #include "background.h"
+#include "BackgroundSystemComponent.h"
 
 bool BackgroundComponent::registered = environment->RegisterComponent(new BackgroundComponent());
 

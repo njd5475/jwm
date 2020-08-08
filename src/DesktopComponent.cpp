@@ -6,8 +6,8 @@
  */
 
 #include "DesktopEnvironment.h"
-#include "DesktopComponent.h"
 #include "desktop.h"
+#include "DesktopSystemComponent.h"
 
 bool DesktopComponent::registered = environment->RegisterComponent(new DesktopComponent());
 

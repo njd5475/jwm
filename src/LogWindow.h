@@ -15,6 +15,7 @@
 #include "LoggerListener.h"
 #include "event.h"
 
+class Component;
 class ClientNode;
 class Graphics;
 
@@ -52,6 +53,7 @@ private:
 	virtual void log(const char* message);
 	std::vector<const char *> lines;
 	static std::vector<LogWindow*> windows;
+	std::vector<Component*> components;
 };
 
 #endif /* SRC_LOGWINDOW_H_ */

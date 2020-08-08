@@ -5,13 +5,13 @@
  *      Author: nick
  */
 
-#include "Component.h"
+#include "SystemComponent.h"
 
-Component::Component() {
+SystemComponent::SystemComponent() {
 
 }
 
-Component::~Component() {
+SystemComponent::~SystemComponent() {
 
 }
 

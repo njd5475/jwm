@@ -12,7 +12,7 @@
 
 #include "gradient.h"
 #include "icon.h"
-#include "Component.h"
+#include "SystemComponent.h"
 
 typedef struct {
   int left, right;
@@ -34,7 +34,7 @@ typedef unsigned char BorderIconType;
 
 typedef unsigned char MouseContextType;
 
-class Border : public Component {
+class Border : public SystemComponent {
 public:
   /*@{*/
   void initialize(void);

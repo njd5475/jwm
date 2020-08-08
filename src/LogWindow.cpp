@@ -52,6 +52,26 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   /* Grab the mouse. */
   JXGrabButton(display, AnyButton, AnyModifier, window, True, ButtonReleaseMask,
       GrabModeAsync, GrabModeAsync, None, None);
+  Events::registerHandler(this);
+
+  int lineHeight = 20;
+  int lns = (int) (lines.size() * this->percentage);
+  int temp;
+  int buttonWidth = Fonts::GetStringWidth(FONT_MENU, "Don't Press");
+  temp = Fonts::GetStringWidth(FONT_MENU, "Press Button");
+  if (temp > buttonWidth) {
+    buttonWidth = temp;
+  }
+  buttonWidth += 16;
+  int buttonHeight = lineHeight + 4;
+
+  int okx = width / 3 - buttonWidth / 2;
+  int cancelx = 2 * width / 3 - buttonWidth / 2;
+  int buttony = height - lineHeight - lineHeight / 2;
+  this->components.push_back(
+      new Button("Start", okx, buttony, buttonWidth, buttonHeight));
+  this->components.push_back(
+      new Button("Exit", cancelx, buttony, buttonWidth, buttonHeight));
 }
 
 LogWindow::LogWindow(const LogWindow &p) {
@@ -130,17 +150,9 @@ void LogWindow::Draw() {
   buttonWidth += 16;
   int buttonHeight = lineHeight + 4;
 
-  int okx = width / 3 - buttonWidth / 2;
-  int cancelx = 2 * width / 3 - buttonWidth / 2;
-  int buttony = height - lineHeight - lineHeight / 2;
-
-  DrawButton(buttonState == BUT_STATE_OK ? BUTTON_MENU_ACTIVE : BUTTON_MENU,
-  ALIGN_CENTER, FONT_MENU, "Press Button", true, true, pixmap, NULL, okx,
-      buttony, buttonWidth, buttonHeight, 0, 0);
-
-  DrawButton(buttonState == BUT_STATE_OK ? BUTTON_MENU_ACTIVE : BUTTON_MENU,
-  ALIGN_CENTER, FONT_MENU, "Don't Press", true, true, pixmap, NULL, cancelx,
-      buttony, buttonWidth, buttonHeight, 0, 0);
+  for (auto c : components) {
+    c->Draw(graphics);
+  }
 }
 
 void LogWindow::DrawAll() {
@@ -152,24 +164,43 @@ void LogWindow::DrawAll() {
 
 bool LogWindow::process(const XEvent *event) {
 
-  Window window;
+  Window window = 0;
+  int mx, my;
   switch (event->type) {
   case Expose:
     window = event->xexpose.window;
     break;
   case ButtonPress:
     window = event->xbutton.window;
-    Log("Button Pressed");
+    mx = event->xbutton.x;
+    my = event->xbutton.y;
+    Log("LogWindow: Button Pressed");
 
     break;
   case ButtonRelease:
     window = event->xbutton.window;
-    Log("Button Released");
+    Log("LogWindow: Button Released");
+    mx = event->xbutton.x;
+    my = event->xbutton.y;
+    break;
+  case MotionNotify:
+    window = event->xmotion.window;
+    mx = event->xbutton.x;
+    my = event->xbutton.y;
     break;
   case KeyPress:
     window = event->xkey.window;
     break;
   }
+
+  for (auto c : components) {
+    if(c->contains(mx, my)) {
+      c->mouseMoved(mx, my);
+    }
+  }
+  this->Draw();
+  graphics->copy(node->getWindow(), 0, 0, this->width, this->height, 0, 0);
+
 
   if (this->node && this->node->getWindow() == window) {
     this->graphics->copy(this->node->getWindow(), 0, 0, this->width,

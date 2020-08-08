@@ -5,12 +5,12 @@
  *      Author: nick
  */
 
-#ifndef SRC_APPLICATIONSCOMPONENT_H_
-#define SRC_APPLICATIONSCOMPONENT_H_
+#ifndef SRC_APPLICATIONSSYSTEMCOMPONENT_H_
+#define SRC_APPLICATIONSSYSTEMCOMPONENT_H_
 
-#include "Component.h"
+#include "SystemComponent.h"
 
-class ApplicationsComponent : public Component {
+class ApplicationsComponent : public SystemComponent {
 public:
   ApplicationsComponent();
   virtual ~ApplicationsComponent();
@@ -21,4 +21,4 @@ public:
   void stop();
 };
 
-#endif /* SRC_APPLICATIONSCOMPONENT_H_ */
+#endif /* SRC_APPLICATIONSSYSTEMCOMPONENT_H_ */

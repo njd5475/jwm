@@ -5,7 +5,7 @@
  *      Author: nick
  */
 
-#include "ApplicationsComponent.h"
+#include "ApplicationsSystemComponent.h"
 
 ApplicationsComponent::ApplicationsComponent() {
   // TODO Auto-generated constructor stub

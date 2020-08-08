@@ -5,12 +5,12 @@
  *      Author: nick
  */
 
-#ifndef SRC_DESKTOPCOMPONENT_H_
-#define SRC_DESKTOPCOMPONENT_H_
+#ifndef SRC_DESKTOPSYSTEMCOMPONENT_H_
+#define SRC_DESKTOPSYSTEMCOMPONENT_H_
 
-#include "Component.h"
+#include "SystemComponent.h"
 
-class DesktopComponent : public Component {
+class DesktopComponent : public SystemComponent {
 public:
   DesktopComponent();
   virtual ~DesktopComponent();
@@ -23,4 +23,4 @@ private:
   static bool registered;
 };
 
-#endif /* SRC_DESKTOPCOMPONENT_H_ */
+#endif /* SRC_DESKTOPSYSTEMCOMPONENT_H_ */
