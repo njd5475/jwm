@@ -179,57 +179,6 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 
 }
 
-/** Create a desktop menu. */
-Menu* Desktops::_CreateDesktopMenu(unsigned int mask, void *context) {
-
-	Menu *menu;
-	int x;
-
-	menu = Menus::CreateMenu();
-	for (x = settings.desktopCount - 1; x >= 0; x--) {
-		const size_t len = strlen(names[x]);
-
-		char *name = new char[len + 3];
-    name[0] = (mask & (1 << x)) ? '[' : ' ';
-    memcpy(&name[1], names[x], len);
-    name[len + 1] = (mask & (1 << x)) ? ']' : ' ';
-    name[len + 2] = 0;
-
-		MenuItem *item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, name, NULL, NULL);
-
-		item->setAction(MA_DESKTOP, context, x);
-
-	}
-
-	return menu;
-
-}
-
-/** Create a sendto menu. */
-Menu* Desktops::_CreateSendtoMenu(MenuActionType mask, void *context) {
-
-	Menu *menu;
-	int x;
-
-	menu = Menus::CreateMenu();
-	for (x = settings.desktopCount - 1; x >= 0; x--) {
-		const size_t len = strlen(names[x]);
-
-    char* name = new char[len + 3];
-    name[0] = (x == currentDesktop) ? '[' : ' ';
-    memcpy(&name[1], names[x], len);
-    name[len + 1] = (x == currentDesktop) ? ']' : ' ';
-    name[len + 2] = 0;
-
-		MenuItem *item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, name, NULL, NULL);
-		delete[] name;
-
-		item->setAction(MA_SENDTO | mask, context, x);
-	}
-
-	return menu;
-}
-
 /** Toggle the "show desktop" state. */
 void Desktops::_ShowDesktop(void) {
 

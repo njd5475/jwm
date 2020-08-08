@@ -581,7 +581,7 @@ bool Tray::process(const XEvent *event) {
 void Tray::SignalTray(const TimeType *now, int x, int y, Window w, void *data) {
   Tray *tp = (Tray*) data;
   Assert(tp->autoHide != THIDE_OFF);
-  if (tp->hidden || menuShown) {
+  if (tp->hidden) {
     return;
   }
 

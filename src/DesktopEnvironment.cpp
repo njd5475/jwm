@@ -174,14 +174,6 @@ TrayComponent* DesktopEnvironment::CreateDock(int width, Tray *tray, TrayCompone
   return Dock::Create(width, tray, parent);
 }
 
-Menu* DesktopEnvironment::CreateDesktopMenu(int desktop, void* mem) {
-  return Desktops::_CreateDesktopMenu(desktop, mem);
-}
-
-Menu* DesktopEnvironment::CreateSendtoMenu(int desktop, void* mem) {
-  return Desktops::_CreateSendtoMenu(desktop, mem);
-}
-
 char DesktopEnvironment::HandleDockSelectionClear(const XSelectionClearEvent* event) {
   return this->HandleDockSelectionClear(event);
 }

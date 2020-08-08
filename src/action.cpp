@@ -9,7 +9,6 @@
 #include "action.h"
 #include "tray.h"
 #include "TrayComponent.h"
-#include "root.h"
 #include "screen.h"
 #include "misc.h"
 #include "error.h"
@@ -73,7 +72,7 @@ void ActionNode::ProcessActionPress(struct TrayComponent *cp, int x, int y,
 				return;
 
 			} else {
-				menu = Roots::GetRootMenuIndexFromString(&this->action[5]);
+				//menu = Roots::GetRootMenuIndexFromString(&this->action[5]);
 			}
 		} else {
 			menu = 1;
@@ -84,7 +83,7 @@ void ActionNode::ProcessActionPress(struct TrayComponent *cp, int x, int y,
 		return;
 	}
 
-	Roots::GetRootMenuSize(menu, &mwidth, &mheight);
+	//Roots::GetRootMenuSize(menu, &mwidth, &mheight);
 	sp = Screens::GetCurrentScreen(cp->getScreenX(), cp->getScreenY());
 	if (cp->getTray()->getLayout() == LAYOUT_HORIZONTAL) {
 		x = cp->getScreenX() - 1;
@@ -106,11 +105,11 @@ void ActionNode::ProcessActionPress(struct TrayComponent *cp, int x, int y,
 	cp->Redraw();
 	cp->UpdateSpecificTray(cp->getTray());
 
-	if (Roots::ShowRootMenu(menu, x, y)) {
-		cp->ungrab();
-		cp->Redraw();
-		cp->UpdateSpecificTray(cp->getTray());
-	}
+//	if (Roots::ShowRootMenu(menu, x, y)) {
+//		cp->ungrab();
+//		cp->Redraw();
+//		cp->UpdateSpecificTray(cp->getTray());
+//	}
 }
 
 /** Process a button release. */
@@ -151,10 +150,10 @@ void ActionNode::ProcessActionRelease(struct TrayComponent *cp, int x,
 /** Validate actions. */
 void ActionNode::ValidateAction() {
 	if (this->action && !strncmp(this->action, "root:", 5)) {
-		const int bindex = Roots::GetRootMenuIndexFromString(&this->action[5]);
-		if (JUNLIKELY(!Roots::IsRootMenuDefined(bindex))) {
-			Warning(_("action: root menu \"%s\" not defined"),
-					&this->action[5]);
-		}
+//		const int bindex = Roots::GetRootMenuIndexFromString(&this->action[5]);
+//		if (JUNLIKELY(!Roots::IsRootMenuDefined(bindex))) {
+//			Warning(_("action: root menu \"%s\" not defined"),
+//					&this->action[5]);
+//		}
 	}
 }

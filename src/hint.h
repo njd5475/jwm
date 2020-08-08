@@ -10,6 +10,7 @@
 #ifndef HINT_H
 #define HINT_H
 
+#include "jwm.h"
 struct ClientNode;
 
 /** Enumeration of atoms. */

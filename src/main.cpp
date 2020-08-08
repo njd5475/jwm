@@ -17,8 +17,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "winmenu.h"
-
 #include "WindowManager.h"
 #include "DesktopEnvironment.h"
 

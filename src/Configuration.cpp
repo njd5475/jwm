@@ -15,7 +15,6 @@
 #include <string.h>
 
 #include "icon.h"
-#include "root.h"
 #include "settings.h"
 #include "DesktopEnvironment.h"
 #include "tray.h"
@@ -139,11 +138,6 @@ void Configuration::processConfigs(Builder &builder) {
         builder.buildDesktops(desktops);
       }
 
-      JObject *rootMenu = jsonObject(itemObj, "RootMenu");
-      if (rootMenu) {
-        builder.buildRootMenu(rootMenu);
-      }
-
       JObject *key = jsonObject(itemObj, "Key");
       if (key) {
         builder.buildKey(key);
@@ -155,75 +149,6 @@ void Configuration::processConfigs(Builder &builder) {
       }
     }
   }
-}
-
-Menu* Configuration::loadMenu(JObject *menuObject, Menu *menu) {
-  JArray *children = jsonArray(menuObject, "children");
-
-  if (menu == NULL) {
-    menu = Menus::CreateMenu();
-  }
-  if (children) {
-    for (int i = 0; i < children->count; ++i) {
-      JArrayItem *val = children->_internal.vItems[i];
-      if (val->type == VAL_OBJ) {
-        JObject *item = val->value.object_val;
-
-        JObject *program = jsonObject(item, "Program");
-        if (program) {
-          loadMenuItem(menu, MENU_ITEM_NORMAL, program);
-        }
-
-        JObject *submenu = jsonObject(item, "Menu");
-        if (submenu) {
-          MenuItem *theItem = loadMenuItem(menu, MENU_ITEM_SUBMENU, submenu);
-          Menu *subMenu = theItem->CreateSubMenu();
-          loadMenu(submenu, subMenu);
-        }
-
-        JObject *separator = jsonObject(item, "Separator");
-        if (separator) {
-          menu->addSeparator();
-        }
-
-        JObject *restart = jsonObject(item, "Restart");
-        if (restart) {
-          MenuItem *restartItem = new MenuItem(menu, "Restart",
-          MENU_ITEM_NORMAL,
-          NULL, NULL);
-          restartItem->setAction(MA_RESTART, NULL, 1);
-          menu->addItem(restartItem);
-        }
-
-        JObject *exit = jsonObject(item, "Exit");
-        if (exit) {
-          MenuItem *exitItem = new MenuItem(menu, "Exit",
-          MENU_ITEM_NORMAL,
-          NULL, NULL);
-          exitItem->setAction(MA_EXIT, NULL, 1);
-          menu->addItem(exitItem);
-        }
-      }
-    }
-  }
-  return menu;
-}
-
-MenuItem* Configuration::loadMenuItem(Menu *menu, MenuItemType type,
-    JObject *item) {
-
-  const char *icon = jsonString(item, "icon");
-  const char *label = jsonString(item, "label");
-  const char *tooltip = jsonString(item, "tooltip");
-  const char *exec = jsonString(item, "exec");
-
-  MenuItem *menuItem = Menus::CreateMenuItem(menu, type, label, tooltip, icon);
-
-  if (exec) {
-    menuItem->setActionStr(MA_EXECUTE, exec);
-  }
-
-  return menuItem;
 }
 
 void Configuration::loadWindowSettings(JObject *window) {
@@ -450,20 +375,6 @@ void Loader::buildClockStyle(JObject *clockStyle) {
           COLOR_CLOCK_BG1, COLOR_CLOCK_BG2,
           COLOR_CLOCK_FG, COLOR_CLOCK_BG1,
           COLOR_CLOCK_BG1 } });
-}
-
-void Loader::buildRootMenu(JObject *rootMenu) {
-  Menu *menu = Configuration::loadMenu(rootMenu);
-  if (!menu) {
-
-  }
-
-  const char *onroot = jsonString(rootMenu, "onroot");
-  if (!onroot) {
-    onroot = "123";
-  }
-
-  Roots::SetRootMenu(onroot, menu);
 }
 
 void Loader::buildWindowStyle(JObject *windowStyle) {
@@ -934,10 +845,6 @@ void Saver::buildTrayStyle(JObject *object) {
 
 void Saver::buildTrayButtonStyle(JObject *object) {
   this->buildStyle("TrayButtonStyle", object);
-}
-
-void Saver::buildRootMenu(JObject *object) {
-  this->buildMenus(0, "RootMenu", object);
 }
 
 void Saver::buildWindowStyle(JObject *object) {

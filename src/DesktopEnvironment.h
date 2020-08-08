@@ -12,7 +12,6 @@
 #include "Component.h"
 #include <vector>
 
-class Menu;
 class TrayComponent;
 class Tray;
 
@@ -40,8 +39,6 @@ public:
   virtual void SetDesktopName(int num, const char* name);
   virtual void SetBackground(int id, const char* file, char* const value);
   virtual TrayComponent* CreateDock(int dockId, Tray *tray, TrayComponent *parent);
-  virtual Menu* CreateDesktopMenu(int desktop, void* mem);
-  virtual Menu* CreateSendtoMenu(int desktop, void* mem);
 
   virtual const unsigned GetRightDesktop(short signed int num);
   virtual const unsigned GetLeftDesktop(short signed int num);

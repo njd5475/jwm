@@ -13,7 +13,6 @@
 #include "icon.h"
 #include "image.h"
 #include "error.h"
-#include "root.h"
 #include "main.h"
 #include "font.h"
 #include "button.h"

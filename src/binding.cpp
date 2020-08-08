@@ -15,7 +15,6 @@
 #include "command.h"
 #include "error.h"
 #include "misc.h"
-#include "root.h"
 #include "tray.h"
 #include "AbstractAction.h"
 
@@ -229,13 +228,13 @@ void Binding::ShowKeyMenu(MouseContextType context, unsigned state, int code) {
 
 	for (np = bindings[context]; np; np = np->next) {
 		if (np->state == state && np->code == code) {
-			const int button = Roots::GetRootMenuIndexFromString(np->command);
-			if (JLIKELY(button >= 0)) {
-			  // this used to pass keyboard true to indicate that the menu was created from a key
-			  // this seems of little use except to attempt to load a different menu or somehow
-			  // provide different menu options but none of that should be done this way
-				Roots::ShowRootMenu(button, -1, -1);
-			}
+//			const int button = Roots::GetRootMenuIndexFromString(np->command);
+//			if (JLIKELY(button >= 0)) {
+//			  // this used to pass keyboard true to indicate that the menu was created from a key
+//			  // this seems of little use except to attempt to load a different menu or somehow
+//			  // provide different menu options but none of that should be done this way
+//				Roots::ShowRootMenu(button, -1, -1);
+//			}
 			return;
 		}
 	}
@@ -476,11 +475,11 @@ void Binding::ValidateKeys(void) {
 	for (i = 0; i < MC_COUNT; i++) {
 		for (kp = bindings[i]; kp; kp = kp->next) {
 			if (kp->action.action == ROOT && kp->command) {
-				const int bindex = Roots::GetRootMenuIndexFromString(kp->command);
-				if (JUNLIKELY(!Roots::IsRootMenuDefined(bindex))) {
-					Warning(_("key binding: root menu \"%s\" not defined"),
-							kp->command);
-				}
+//				const int bindex = Roots::GetRootMenuIndexFromString(kp->command);
+//				if (JUNLIKELY(!Roots::IsRootMenuDefined(bindex))) {
+//					Warning(_("key binding: root menu \"%s\" not defined"),
+//							kp->command);
+//				}
 			}
 		}
 	}

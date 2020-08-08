@@ -63,7 +63,6 @@ private:
 	  const char* getName();
 	  Icon *getIcon();
 	  void ShowClientList(TaskBar *bar);
-	  void RunTaskBarCommand(MenuItem::MenuAction* action, unsigned button);
 	private:
 	  std::vector<ClientNode*> clients;
 	};
@@ -78,7 +77,6 @@ public:
 	void Draw(Graphics *g);
 	virtual void Draw();
 	void ShowClientList(TaskBar *bar, BarItem *tp);
-	static void RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button);
 
 	void SetSize(int width, int height);
 	virtual void Create();

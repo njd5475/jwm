@@ -35,7 +35,6 @@
 #include "screen.h"
 #include "settings.h"
 #include "timing.h"
-#include "winmenu.h"
 
 using namespace std;
 using ::TaskBar;
@@ -367,29 +366,6 @@ void TaskBar::ProcessMotionEvent(int x, int y, int mask) {
   this->mousex = this->getScreenX() + x;
   this->mousey = this->getScreenY() + y;
   GetCurrentTime(&this->mouseTime);
-}
-
-/** Run a menu action. */
-void TaskBar::RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button) {
-  if (action->type & MA_GROUP_MASK) {
-    BarItem *tp = (BarItem*) action->context;
-    tp->RunTaskBarCommand(action, button);
-  } else if (action->type == MA_EXECUTE) {
-    if (button == Button3) {
-      Window w;
-      int x, y;
-      Cursors::GetMousePosition(&x, &y, &w);
-      ShowWindowMenu((ClientNode*) action->context, x, y);
-    } else {
-      ClientNode *np = (ClientNode*) action->context;
-      np->RestoreClient(1);
-      np->keyboardFocus();
-      Cursors::MoveMouse(np->getWindow(), np->getWidth() / 2,
-          np->getHeight() / 2);
-    }
-  } else {
-    RunWindowCommand(action, button);
-  }
 }
 
 /** Add a client to the task bar. */
@@ -789,36 +765,12 @@ vector<ClientNode*> TaskBar::BarItem::shouldFocus() {
 
 /** Show the menu associated with a task list item. */
 void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
-  Menu *menu;
-  MenuItem *item;
 
   const ScreenType *sp;
   int x, y;
   Window w;
 
   if (settings.groupTasks) {
-
-    menu = Menus::CreateMenu();
-
-    item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, "Close", NULL, NULL);
-    item->setAction(MA_CLOSE | MA_GROUP_MASK, this, 0);
-    menu->addItem(item);
-
-    item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, "Minimize", NULL, NULL);
-    item->setAction(MA_MINIMIZE | MA_GROUP_MASK, this, 0);
-    menu->addItem(item);
-
-    item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, "Restore", NULL, NULL);
-    item->setAction(MA_RESTORE | MA_GROUP_MASK, bar, 0);
-    menu->addItem(item);
-
-    item = Menus::CreateMenuItem(menu, MENU_ITEM_SUBMENU, "Send To", NULL , NULL);
-    item->setAction(MA_SENDTO_MENU | MA_GROUP_MASK, this, 0);
-    menu->addItem(item);
-
-    /* Load the separator and group actions. */
-    item = Menus::CreateMenuItem(menu, MENU_ITEM_SEPARATOR, NULL, NULL, NULL);
-    menu->addItem(item);
 
     /* Load the clients into the menu. */
     for (auto client : this->shouldFocus()) {
@@ -841,17 +793,12 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
       if(node) {
         iconName = node->getName();
       }
-      item = Menus::CreateMenuItem(menu, MENU_ITEM_NORMAL, name, iconName, NULL);
-      item->setAction(MA_EXECUTE, client, 0);
-      menu->addItem(item);
     }
   } else {
-    /* Not grouping clients. */
-    menu = CreateWindowMenu(*clients.begin());
+    Log("NOT IMPLEMENTED: Not grouping clients should create window menu");
   }
 
   /* Initialize and position the menu. */
-  Menus::InitializeMenu(menu);
   sp = Screens::GetCurrentScreen(bar->getScreenX(), bar->getScreenY());
   Cursors::GetMousePosition(&x, &y, &w);
   if (bar->layout == LAYOUT_HORIZONTAL) {
@@ -860,25 +807,17 @@ void TaskBar::BarItem::ShowClientList(TaskBar *bar) {
       y = bar->getScreenY() + bar->getHeight();
     } else {
       /* Top of the screen: menus go down. */
-      y = bar->getScreenY() - menu->getHeight();
+
     }
-    x -= menu->getWidth() / 2;
     x = Max(x, sp->x);
   } else {
     if (bar->getScreenX() + bar->getWidth() / 2 < sp->x + sp->width / 2) {
       /* Left side: menus go right. */
       x = bar->getScreenX() + bar->getWidth();
     } else {
-      /* Right side: menus go left. */
-      x = bar->getScreenX() - menu->getWidth();
     }
-    y -= menu->getHeight() / 2;
     y = Max(y, sp->y);
   }
-
-  Menus::ShowMenu(menu, TaskBar::RunTaskBarCommand, x, y);
-
-  Menus::DestroyMenu(menu);
 
 }
 
@@ -907,30 +846,6 @@ bool TaskBar::BarItem::RemoveClient(ClientNode *np) {
   }
 
   return false;
-}
-
-void TaskBar::BarItem::RunTaskBarCommand(MenuItem::MenuAction *action, unsigned button) {
-  for (auto client : clients) {
-    if (!ClientList::ShouldFocus(client, 0)) {
-      continue;
-    }
-    switch (action->type & ~MA_GROUP_MASK) {
-    case MA_SENDTO:
-      client->SetClientDesktop(action->value);
-      break;
-    case MA_CLOSE:
-      client->DeleteClient();
-      break;
-    case MA_RESTORE:
-      client->RestoreClient(0);
-      break;
-    case MA_MINIMIZE:
-      client->MinimizeClient(0);
-      break;
-    default:
-      break;
-    }
-  }
 }
 
 TaskBar::BarItem::BarItem(ClientNode *atLeastOne) {

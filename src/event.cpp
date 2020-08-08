@@ -18,10 +18,8 @@
 #include "move.h"
 #include "place.h"
 #include "resize.h"
-#include "root.h"
 #include "taskbar.h"
 #include "timing.h"
-#include "winmenu.h"
 #include "settings.h"
 #include "pager.h"
 #include "grab.h"
@@ -89,7 +87,7 @@ char Events::_WaitForEvent(XEvent *event) {
       inotify_event* event = inotifytools_next_event(0);
       if(event != NULL) {
         Log("We received an event from inotify\n");
-        Roots::Restart();
+//        Roots::Restart();
       }
 #endif
 
@@ -419,9 +417,9 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
   } else if (event->window == rootWindow) {
     /* Click on the root.
      * Note that we use the raw button from the event for ShowRootMenu. */
-    if (!Roots::ShowRootMenu(event->button, event->x, event->y)) {
-      _ProcessBinding(MC_ROOT, NULL, event->state, button, 0, 0);
-    }
+//    if (!Roots::ShowRootMenu(event->button, event->x, event->y)) {
+//      _ProcessBinding(MC_ROOT, NULL, event->state, button, 0, 0);
+//    }
   } else {
     /* Click over window content. */
     const unsigned int mask = event->state & ~Binding::lockMask;
@@ -627,22 +625,22 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
     if (np) {
       if (keyAction) {
         np->RaiseClient();
-        ShowWindowMenu(np, np->getX(), np->getY());
       } else {
         const unsigned bsize =
             (np->getBorder() & BORDER_OUTLINE) ? settings.borderWidth : 0;
         const unsigned titleHeight = Border::GetTitleHeight();
         const int mx = np->getX() + x - bsize;
         const int my = np->getY() + y - titleHeight - bsize;
-        ShowWindowMenu(np, mx, my);
       }
     }
     break;
   case RESTART:
-    Roots::Restart();
+    Log("NOT IMPLEMENTED: Should restart here");
+//    Roots::Restart();
     break;
   case EXIT:
-    Roots::Exit(1);
+    Log("NOT IMPLEMENTED: Should exit here");
+//    Roots::Exit(1);
     break;
   case FULLSCREEN:
     if (np) {
@@ -1088,11 +1086,14 @@ void Events::_HandleClientMessage(const XClientMessageEvent *event) {
   } else if (event->window == rootWindow) {
 
     if (event->message_type == Hints::atoms[ATOM_JWM_RESTART]) {
-      Roots::Restart();
+      Log("NOT IMPLEMENTED: Should restart here");
+//      Roots::Restart();
     } else if (event->message_type == Hints::atoms[ATOM_JWM_EXIT]) {
-      Roots::Exit(0);
+      Log("NOT IMPLEMENTED: Should exit here");
+//      Roots::Exit(0);
     } else if (event->message_type == Hints::atoms[ATOM_JWM_RELOAD]) {
-      Roots::ReloadMenu();
+//      Roots::ReloadMenu();
+      Log("NOT IMPLEMENTED: Should reload menu");
     } else if (event->message_type == Hints::atoms[ATOM_NET_CURRENT_DESKTOP]) {
       DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(event->data.l[0]);
     } else if (event->message_type == Hints::atoms[ATOM_NET_SHOWING_DESKTOP]) {

@@ -34,7 +34,6 @@ public:
   virtual void buildGroup(JObject *jobj) = 0;
   virtual void buildDesktops(JObject *jobj) = 0;
   virtual void buildTrayButtonStyle(JObject* jobj) = 0;
-  virtual void buildRootMenu(JObject* jobj) = 0;
   virtual void buildClockStyle(JObject* jobj) = 0;
   virtual void buildWindowStyle(JObject* jobj) = 0;
   virtual void buildKey(JObject* jobj) = 0;
@@ -81,8 +80,6 @@ public:
       OpacityType otype);
   static void loadStyle(JObject* object, Configuration::StyleColors colors);
   static void loadWindowSettings(JObject* object);
-  static Menu *loadMenu(JObject *menuObject, Menu* menu = NULL);
-  static MenuItem *loadMenuItem(Menu* menu, MenuItemType type, JObject *item);
 
 private:
   Configuration(JArray *configurations);
@@ -115,7 +112,6 @@ public:
   virtual void buildGroup(JObject *jobj);
   virtual void buildTrayButtonStyle(JObject* jobj);
   virtual void buildClockStyle(JObject* jobj);
-  virtual void buildRootMenu(JObject* jobj);
   virtual void buildWindowStyle(JObject* jobj);
   virtual void buildStyle(const char* styleName, JObject* jobj);
   virtual void buildStyle(unsigned indent, const char* styleName, JObject* jobj);
@@ -156,7 +152,6 @@ public:
   virtual void buildDesktops(JObject *jobj);
   virtual void buildGroup(JObject *jobj);
   virtual void buildTrayButtonStyle(JObject* jobj);
-  virtual void buildRootMenu(JObject* jobj);
   virtual void buildWindowStyle(JObject* jobj);
   virtual void buildKey(JObject* jobj);
   virtual void buildMouse(JObject* jobj);
