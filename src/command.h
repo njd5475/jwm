@@ -10,6 +10,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <sys/types.h>
+
 class Commands {
 public:
 	/*@{*/

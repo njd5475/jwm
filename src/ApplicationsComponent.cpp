@@ -5,6 +5,8 @@
  *      Author: nick
  */
 
+#include "stdlib.h"
+#include "logger.h"
 #include "ApplicationsSystemComponent.h"
 
 ApplicationsComponent::ApplicationsComponent() {
@@ -17,7 +19,7 @@ ApplicationsComponent::~ApplicationsComponent() {
 }
 
 void ApplicationsComponent::initialize() {
-
+  vLog("PATH is %s\n", std::getenv("PATH"));
 }
 
 void ApplicationsComponent::start() {

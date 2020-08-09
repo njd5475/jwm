@@ -78,4 +78,7 @@ const char *FindKey(const StringMappingType *mapping, int count, int value);
 /** Case insensitive string compare. */
 int StrCmpNoCase(const char *a, const char *b);
 
+#include <string>
+std::vector<std::string> splitStr(char* str, const char* tok);
+
 #endif /* MISC_H */

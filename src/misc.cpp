@@ -7,6 +7,7 @@
  *
  */
 
+#include <string.h>
 #include "jwm.h"
 #include "misc.h"
 #include "debug.h"
@@ -203,7 +204,8 @@ void Trim(char *str) {
 /** Copy a string. */
 char* CopyString(const char *str) {
 
-  char *temp = NULL;;
+  char *temp = NULL;
+  ;
   unsigned int len;
 
   if (!str) {
@@ -269,4 +271,21 @@ int StrCmpNoCase(const char *a, const char *b) {
     b += 1;
   }
   return *b - *a;
+}
+
+using namespace std;
+vector<string> splitStr(char *str, const char *tok) {
+  vector<string> parts;
+  char *pch;
+  pch = strtok(str, " ");
+  while (pch != NULL) {
+    printf("%s\n", pch);
+    pch = strtok(NULL, " ");
+
+    if (pch) {
+      std::string param(pch);
+      parts.push_back(param);
+    }
+  }
+  return parts;
 }

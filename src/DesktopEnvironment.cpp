@@ -68,13 +68,13 @@ bool DesktopEnvironment::RegisterComponent(SystemComponent *component) {
 }
 
 DesktopEnvironment::DesktopEnvironment() :
-    _componentCount(0), _components(0) {
+     _components(0), _componentCount(0) {
 
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
-  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
-    delete *it;
+  for(auto c : this->_components) {
+    delete c;
   }
   this->_components.clear();
   _componentCount = 0;
@@ -101,26 +101,26 @@ const unsigned DesktopEnvironment::GetBelowDesktop(signed short int num) {
 }
 
 void DesktopEnvironment::InitializeComponents() {
-  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
-    (*it)->initialize();
+  for(auto c : this->_components) {
+    c->initialize();
   }
 }
 
 void DesktopEnvironment::StartupComponents() {
-  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
-    (*it)->start();
+  for(auto c : this->_components) {
+    c->start();
   }
 }
 
 void DesktopEnvironment::ShutdownComponents() {
-  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
-    (*it)->stop();
+  for(auto c : this->_components) {
+    c->stop();
   }
 }
 
 void DesktopEnvironment::DestroyComponents() {
-  for (std::vector<SystemComponent*>::iterator it = this->_components.begin(); it != this->_components.end(); ++it) {
-    (*it)->destroy();
+  for(auto c : this->_components) {
+    c->destroy();
   }
 }
 

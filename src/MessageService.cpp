@@ -8,6 +8,7 @@
 #include "jwm.h"
 #include "MessageService.h"
 #include "command.h"
+#include "misc.h"
 
 #include <string.h>
 #include <string>
@@ -37,18 +38,7 @@ std::string MessageService::getShutdownProperty() {
 
   using namespace std;
 
-  vector<string> params;
-  char *pch;
-  pch = strtok(property, " ");
-  while (pch != NULL) {
-    printf("%s\n", pch);
-    pch = strtok(NULL, " ");
-
-    if(pch) {
-      std::string param(pch);
-      params.push_back(param);
-    }
-  }
+  vector<string> params = splitStr(property, " ");
 
   if(params.size() >= 2) {
     return params[1];
