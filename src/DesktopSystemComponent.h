@@ -10,10 +10,10 @@
 
 #include "SystemComponent.h"
 
-class DesktopComponent : public SystemComponent {
+class DesktopSystemComponent : public SystemComponent {
 public:
-  DesktopComponent();
-  virtual ~DesktopComponent();
+  DesktopSystemComponent();
+  virtual ~DesktopSystemComponent();
 
   virtual void initialize();
   virtual void start();

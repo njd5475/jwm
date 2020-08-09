@@ -99,7 +99,7 @@ TEST(DesktopEnvironment, RegisterComponentTest) {
   int defaultCount = de->ComponentCount();
   de->RegisterComponent(new DockComponent());
   ASSERT_EQ(defaultCount + 1, de->ComponentCount());
-  de->RegisterComponent(new DesktopComponent());
+  de->RegisterComponent(new DesktopSystemComponent());
   ASSERT_EQ(defaultCount + 2, de->ComponentCount());
 }
 

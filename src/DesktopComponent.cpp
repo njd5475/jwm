@@ -9,29 +9,29 @@
 #include "desktop.h"
 #include "DesktopSystemComponent.h"
 
-bool DesktopComponent::registered = environment->RegisterComponent(new DesktopComponent());
+bool DesktopSystemComponent::registered = environment->RegisterComponent(new DesktopSystemComponent());
 
-void DesktopComponent::initialize() {
+void DesktopSystemComponent::initialize() {
 	Desktops::_InitializeDesktops();
 }
 
-void DesktopComponent::start() {
+void DesktopSystemComponent::start() {
 	Desktops::_StartupDesktops();
 }
 
-void DesktopComponent::stop() {
+void DesktopSystemComponent::stop() {
 	Desktops::_ShutdownDesktops();
 }
 
-void DesktopComponent::destroy() {
+void DesktopSystemComponent::destroy() {
 	Desktops::_DestroyDesktops();
 }
 
-DesktopComponent::DesktopComponent() {
+DesktopSystemComponent::DesktopSystemComponent() {
 
 }
 
-DesktopComponent::~DesktopComponent() {
+DesktopSystemComponent::~DesktopSystemComponent() {
 
 }
 

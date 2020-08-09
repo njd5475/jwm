@@ -59,7 +59,7 @@ void WindowManager::Initialize(void) {
 
   Log("Registering Components\n");
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
-      new DesktopComponent());
+      new DesktopSystemComponent());
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
       new BackgroundComponent());
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
