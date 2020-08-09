@@ -3,7 +3,7 @@
 # Christopher Meng <i@cicku.me>, 2014-2015
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.0\n"
+"Project-Id-Version: nwm 2.3.0\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2015-09-24 16:11+0800\n"
@@ -79,12 +79,12 @@ msgstr "无法获取系统托盘选择"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
+msgid "NWM: error: "
 msgstr ""
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
+msgid "NWM: warning: "
 msgstr ""
 
 #: src/error.c:77
@@ -324,8 +324,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "指定的主菜单无效：\"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "退出 JWM"
+msgid "Exit NWM"
+msgstr "退出 NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

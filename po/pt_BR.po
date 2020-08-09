@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.4\n"
+"Project-Id-Version: nwm 2.3.4\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2016-03-19 13:29-0300\n"
@@ -78,13 +78,13 @@ msgstr "impossível adquirir a seleção da área de notificação"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
-msgstr "JWM: erro:"
+msgid "NWM: error: "
+msgstr "NWM: erro:"
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
-msgstr "JWM: aviso:"
+msgid "NWM: warning: "
+msgstr "NWM: aviso:"
 
 #: src/error.c:77
 msgid "display is already managed"
@@ -323,8 +323,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "menu root especificado é inválido: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Sair do JWM"
+msgid "Exit NWM"
+msgstr "Sair do NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

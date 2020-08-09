@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.1.1\n"
+"Project-Id-Version: nwm 2.1.1\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2016-03-30 11:27+0100\n"
@@ -76,13 +76,13 @@ msgstr "impossible d'obtenir la sélection de la barre système"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
-msgstr "JWM: erreur: "
+msgid "NWM: error: "
+msgstr "NWM: erreur: "
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
-msgstr "JWM: avertissement: "
+msgid "NWM: warning: "
+msgstr "NWM: avertissement: "
 
 #: src/error.c:77
 msgid "display is already managed"
@@ -321,8 +321,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "menu racine spécifié incorrect: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Quitter JWM"
+msgid "Exit NWM"
+msgstr "Quitter NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

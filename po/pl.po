@@ -1,6 +1,6 @@
-# Polish translations for jwm package.
+# Polish translations for nwm package.
 # Copyright (C) 2012 Free Software Foundation, Inc.
-# This file is distributed under the same license as the jwm package.
+# This file is distributed under the same license as the nwm package.
 # Miś Uszatek <adres.email@ymail.com>, 2012
 #
 msgid ""
@@ -81,12 +81,12 @@ msgstr "nie można nabyć wyboru w zasobniku systemowym"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
+msgid "NWM: error: "
 msgstr ""
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
+msgid "NWM: warning: "
 msgstr ""
 
 #: src/error.c:77
@@ -326,8 +326,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "nieprawidłowo określono menu główne: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Zakończ JWM"
+msgid "Exit NWM"
+msgstr "Zakończ NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

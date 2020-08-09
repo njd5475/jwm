@@ -13,13 +13,13 @@ OBJECTS = background.o border.o button.o client.o \
    move.o outline.o place.o popup.o resize.o \
    screen.o settings.o status.o \
    timing.o battery.o AbstractAction.o \
-   DesktopEnvironment.o DesktopComponent.o \
+   DesktopEnvironment.o DesktopSystemComponent.o \
    BackgroundComponent.o SystemComponent.o logger.o WindowManager.o \
    LogWindow.o Graphics.o TrayComponent.o Flex.o KeyEventHandler.o Token.o \
-   json.o fnv.o Configuration.o Notifications.o ApplicationsComponent.o \
+   json.o fnv.o Configuration.o Notifications.o ApplicationsSystemComponent.o \
    MessageService.o
 
-EXE = jwm
+EXE = nicwm
 
 .SUFFIXES: .o .h .c .cpp
 

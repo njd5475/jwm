@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the jwm package.
+# This file is distributed under the same license as the nwm package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.7\n"
+"Project-Id-Version: nwm 2.3.7\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -80,12 +80,12 @@ msgstr ""
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
+msgid "NWM: error: "
 msgstr ""
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
+msgid "NWM: warning: "
 msgstr ""
 
 #: src/error.c:77
@@ -323,7 +323,7 @@ msgid "invalid root menu specified: \"%c\""
 msgstr ""
 
 #: src/root.c:223
-msgid "Exit JWM"
+msgid "Exit NWM"
 msgstr ""
 
 #: src/root.c:224

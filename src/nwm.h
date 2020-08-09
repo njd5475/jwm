@@ -1,14 +1,14 @@
 /**
- * @file jwm.h
+ * @file nwm.h
  * @author Joe Wingbermuehle
  * @date 2004-2006
  *
- * @brief The main JWM header file.
+ * @brief The main NWM header file.
  *
  */
 
-#ifndef JWM_H
-#define JWM_H
+#ifndef NWM_H
+#define NWM_H
 
 #include "../config.h"
 
@@ -147,5 +147,5 @@
 #include "jxlib.h"
 #include "logger.h"
 
-#endif /* JWM_H */
+#endif /* NWM_H */
 

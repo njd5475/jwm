@@ -1,8 +1,8 @@
 ############################################################################
-# JWM autoconf.
+# NWM autoconf.
 ############################################################################
 
-AC_INIT(jwm, 2.4.0, joewing@joewing.net)
+AC_INIT(nicwm, 2.4.0, njd5475@gmail.com)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AC_PREREQ(2.57)
 AC_CONFIG_SRCDIR([src])
@@ -20,7 +20,7 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 
-PACKAGE=jwm
+PACKAGE=nicwm
 
 ############################################################################
 # Check if we need _XOPEN_SOURCE
@@ -99,7 +99,7 @@ AC_FUNC_ALLOCA()
 # Check for pkg-config.
 ############################################################################
 
-AC_DEFUN([JWM_PKGCONFIG_EXISTS],
+AC_DEFUN([NWM_PKGCONFIG_EXISTS],
 [
    AC_MSG_CHECKING([for pkg-config])
    if which pkg-config >/dev/null ; then
@@ -111,9 +111,9 @@ AC_DEFUN([JWM_PKGCONFIG_EXISTS],
    fi
 ])
 
-AC_DEFUN([JWM_PKGCONFIG],
+AC_DEFUN([NWM_PKGCONFIG],
 [
-   AC_REQUIRE([JWM_PKGCONFIG_EXISTS])
+   AC_REQUIRE([NWM_PKGCONFIG_EXISTS])
    if test "x$PKGCONFIG" != "x" ; then
       AC_MSG_CHECKING([if pkg-config knows about $2])
       if `$PKGCONFIG $2` ; then
@@ -127,16 +127,16 @@ AC_DEFUN([JWM_PKGCONFIG],
    fi
 ])
 
-JWM_PKGCONFIG([use_pkgconfig_png], [libpng])
-JWM_PKGCONFIG([use_pkgconfig_jpeg], [libjpeg])
-JWM_PKGCONFIG([use_pkgconfig_cairo], [cairo])
-JWM_PKGCONFIG([use_pkgconfig_rsvg], [librsvg-2.0])
-JWM_PKGCONFIG([use_pkgconfig_freetype2], [freetype2])
-JWM_PKGCONFIG([use_pkgconfig_xft], [xft])
-JWM_PKGCONFIG([use_pkgconfig_xrender], [xrender])
-JWM_PKGCONFIG([use_pkgconfig_fribidi], [fribidi])
-JWM_PKGCONFIG([use_pkgconfig_inotifytools], [inotifytools])
-JWM_PKGCONFIG([use_pkgconfig_dbus], [dbus-1])
+NWM_PKGCONFIG([use_pkgconfig_png], [libpng])
+NWM_PKGCONFIG([use_pkgconfig_jpeg], [libjpeg])
+NWM_PKGCONFIG([use_pkgconfig_cairo], [cairo])
+NWM_PKGCONFIG([use_pkgconfig_rsvg], [librsvg-2.0])
+NWM_PKGCONFIG([use_pkgconfig_freetype2], [freetype2])
+NWM_PKGCONFIG([use_pkgconfig_xft], [xft])
+NWM_PKGCONFIG([use_pkgconfig_xrender], [xrender])
+NWM_PKGCONFIG([use_pkgconfig_fribidi], [fribidi])
+NWM_PKGCONFIG([use_pkgconfig_inotifytools], [inotifytools])
+NWM_PKGCONFIG([use_pkgconfig_dbus], [dbus-1])
 
 
 ############################################################################
@@ -557,9 +557,9 @@ LDFLAGS="$LDFLAGS $LIBINTL $LIBICONV"
 # Check if debug mode was requested.
 ############################################################################
 AC_ARG_ENABLE(debug,
-   AC_HELP_STRING([--enable-debug], [use this to debug JWM]) )
+   AC_HELP_STRING([--enable-debug], [use this to debug NWM]) )
 if test "$enable_debug" = "yes"; then
-   AC_DEFINE(DEBUG, 1, [Define to debug JWM])
+   AC_DEFINE(DEBUG, 1, [Define to debug NWM])
    CFLAGS="$CFLAGS -Wall -g -DDEBUG"
    LDFLAGS="$LDFLAGS -g"
 else
@@ -611,7 +611,7 @@ DATADIR=`eval echo \""$DATADIR"\"`
 DATAROOTDIR=`eval echo \""$datarootdir"\"`
 DATAROOTDIR=`eval echo \""$DATAROOTDIR"\"`
 
-AC_DEFINE_UNQUOTED(SYSTEM_CONFIG, "$SYSCONF/system.jwmrc",
+AC_DEFINE_UNQUOTED(SYSTEM_CONFIG, "$SYSCONF/system.nwmrc",
    [default system configuration path])
 
 AC_SUBST(CFLAGS)
@@ -631,7 +631,7 @@ AC_OUTPUT(
    Makefile
    src/Makefile
    contrib/Makefile
-   jwm.1
+   nwm.1
 )
 
 ############################################################################

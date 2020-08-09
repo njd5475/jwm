@@ -1,11 +1,11 @@
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# Translation of JWM 2.3.0 in Portuguese (Portugal)
+# Translation of NWM 2.3.0 in Portuguese (Portugal)
 # This file is distributed under the same license as the PACKAGE package.
 # Vitor Lopes <vmnlop@gmail.com>, 2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.0\n"
+"Project-Id-Version: nwm 2.3.0\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2015-08-19 14:22+0100\n"
@@ -82,12 +82,12 @@ msgstr "não pode adquirir a seleção da bandeja do sistema"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
+msgid "NWM: error: "
 msgstr ""
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
+msgid "NWM: warning: "
 msgstr ""
 
 #: src/error.c:77
@@ -331,8 +331,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "menu root especificado é invalido: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Sair do JWM?"
+msgid "Exit NWM"
+msgstr "Sair do NWM?"
 
 #: src/root.c:224
 msgid "Are you sure?"

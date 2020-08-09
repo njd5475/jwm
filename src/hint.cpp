@@ -7,7 +7,7 @@
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "hint.h"
 #include "client.h"
 #include "misc.h"
@@ -62,9 +62,9 @@ typedef struct {
 
 Atom Hints::atoms[ATOM_COUNT];
 
-const char jwmRestart[] = "_JWM_RESTART";
-const char jwmExit[] = "_JWM_EXIT";
-const char jwmReload[] = "_JWM_RELOAD";
+const char nwmRestart[] = "_NWM_RESTART";
+const char nwmExit[] = "_NWM_EXIT";
+const char nwmReload[] = "_NWM_RELOAD";
 const char managerProperty[] = "MANAGER";
 
 const Hints::AtomNode Hints::atomList[] = {
@@ -128,11 +128,11 @@ const Hints::AtomNode Hints::atomList[] = {
 
 		{ &atoms[ATOM_MOTIF_WM_HINTS], "_MOTIF_WM_HINTS" },
 
-		{ &atoms[ATOM_JWM_RESTART], &jwmRestart[0] }, { &atoms[ATOM_JWM_EXIT], &jwmExit[0] }, { &atoms[ATOM_JWM_RELOAD],
-				&jwmReload[0] }, { &atoms[ATOM_JWM_WM_STATE_MAXIMIZED_TOP], "_JWM_WM_STATE_MAXIMIZED_TOP" }, {
-				&atoms[ATOM_JWM_WM_STATE_MAXIMIZED_BOTTOM], "_JWM_WM_STATE_MAXIMIZED_BOTTOM" }, {
-				&atoms[ATOM_JWM_WM_STATE_MAXIMIZED_LEFT], "_JWM_WM_STATE_MAXIMIZED_LEFT" }, {
-				&atoms[ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT], "_JWM_WM_STATE_MAXIMIZED_RIGHT" }
+		{ &atoms[ATOM_NWM_RESTART], &nwmRestart[0] }, { &atoms[ATOM_NWM_EXIT], &nwmExit[0] }, { &atoms[ATOM_NWM_RELOAD],
+				&nwmReload[0] }, { &atoms[ATOM_NWM_WM_STATE_MAXIMIZED_TOP], "_NWM_WM_STATE_MAXIMIZED_TOP" }, {
+				&atoms[ATOM_NWM_WM_STATE_MAXIMIZED_BOTTOM], "_NWM_WM_STATE_MAXIMIZED_BOTTOM" }, {
+				&atoms[ATOM_NWM_WM_STATE_MAXIMIZED_LEFT], "_NWM_WM_STATE_MAXIMIZED_LEFT" }, {
+				&atoms[ATOM_NWM_WM_STATE_MAXIMIZED_RIGHT], "_NWM_WM_STATE_MAXIMIZED_RIGHT" }
 
 };
 
@@ -202,7 +202,7 @@ void Hints::StartupHints(void) {
 	/* _NET_WM_NAME */
 	win = supportingWindow;
 	JXChangeProperty(display, win, atoms[ATOM_NET_WM_NAME], atoms[ATOM_UTF8_STRING], 8, PropModeReplace,
-			(unsigned char* )"JWM", 3);
+			(unsigned char* )"NWM", 3);
 
 	/* _NET_WM_PID */
 	array[0] = getpid();
@@ -305,16 +305,16 @@ void Hints::WriteNetState(const ClientNode *np) {
 		values[index++] = atoms[ATOM_NET_WM_STATE_MAXIMIZED_VERT];
 	}
 	if (np->getMaxFlags() & MAX_TOP) {
-		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_TOP];
+		values[index++] = atoms[ATOM_NWM_WM_STATE_MAXIMIZED_TOP];
 	}
 	if (np->getMaxFlags() & MAX_BOTTOM) {
-		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_BOTTOM];
+		values[index++] = atoms[ATOM_NWM_WM_STATE_MAXIMIZED_BOTTOM];
 	}
 	if (np->getMaxFlags() & MAX_LEFT) {
-		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_LEFT];
+		values[index++] = atoms[ATOM_NWM_WM_STATE_MAXIMIZED_LEFT];
 	}
 	if (np->getMaxFlags() & MAX_RIGHT) {
-		values[index++] = atoms[ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT];
+		values[index++] = atoms[ATOM_NWM_WM_STATE_MAXIMIZED_RIGHT];
 	}
 
 	if (np->isShaded()) {
@@ -499,13 +499,13 @@ void Hints::ReadWindowState(ClientNode *result, Window win, bool alreadyMapped) 
 					result->setMaxFlags(result->getMaxFlags() | MAX_VERT);
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_MAXIMIZED_HORZ]) {
 					result->setMaxFlags(result->getMaxFlags() | MAX_HORIZ);
-				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_TOP]) {
+				} else if (state[x] == atoms[ATOM_NWM_WM_STATE_MAXIMIZED_TOP]) {
 					result->setMaxFlags(result->getMaxFlags() | MAX_TOP);
-				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_BOTTOM]) {
+				} else if (state[x] == atoms[ATOM_NWM_WM_STATE_MAXIMIZED_BOTTOM]) {
 					result->setMaxFlags(result->getMaxFlags() | MAX_BOTTOM);
-				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_LEFT]) {
+				} else if (state[x] == atoms[ATOM_NWM_WM_STATE_MAXIMIZED_LEFT]) {
 					result->setMaxFlags(result->getMaxFlags() | MAX_LEFT);
-				} else if (state[x] == atoms[ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT]) {
+				} else if (state[x] == atoms[ATOM_NWM_WM_STATE_MAXIMIZED_RIGHT]) {
 					result->setMaxFlags(result->getMaxFlags() | MAX_RIGHT);
 				} else if (state[x] == atoms[ATOM_NET_WM_STATE_FULLSCREEN]) {
 					result->setFullscreen();

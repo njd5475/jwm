@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<!-- XSLT to update a JWM 2.2 configuration to 2.3.
-     To convert a JWM configuration file using this XSLT and xsltproc:
+<!-- XSLT to update a NWM 2.2 configuration to 2.3.
+     To convert a NWM configuration file using this XSLT and xsltproc:
 
-        xsltproc jwm-2.3.xsl oldjwmrc > newjwmrc
+        xsltproc nwm-2.3.xsl oldnwmrc > newnwmrc
 
-     All relevant JWM configuration files will need to be updated.
+     All relevant NWM configuration files will need to be updated.
      Note: auto-hide trays are assumed to hide to the bottom of the screen.
 -->
 

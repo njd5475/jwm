@@ -8,7 +8,7 @@
 #ifndef SRC_DESKTOPENVIRONMENT_H_
 #define SRC_DESKTOPENVIRONMENT_H_
 
-#include "jwm.h"
+#include "nwm.h"
 #include <vector>
 #include "SystemComponent.h"
 

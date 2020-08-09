@@ -10,7 +10,7 @@
 #ifndef HINT_H
 #define HINT_H
 
-#include "jwm.h"
+#include "nwm.h"
 struct ClientNode;
 
 /** Enumeration of atoms. */
@@ -111,21 +111,21 @@ typedef enum {
 	/* MWM atoms */
 	ATOM_MOTIF_WM_HINTS,
 
-	/* JWM-specific atoms. */
-	ATOM_JWM_RESTART,
-	ATOM_JWM_EXIT,
-	ATOM_JWM_RELOAD,
-	ATOM_JWM_WM_STATE_MAXIMIZED_TOP,
-	ATOM_JWM_WM_STATE_MAXIMIZED_BOTTOM,
-	ATOM_JWM_WM_STATE_MAXIMIZED_LEFT,
-	ATOM_JWM_WM_STATE_MAXIMIZED_RIGHT,
+	/* NWM-specific atoms. */
+	ATOM_NWM_RESTART,
+	ATOM_NWM_EXIT,
+	ATOM_NWM_RELOAD,
+	ATOM_NWM_WM_STATE_MAXIMIZED_TOP,
+	ATOM_NWM_WM_STATE_MAXIMIZED_BOTTOM,
+	ATOM_NWM_WM_STATE_MAXIMIZED_LEFT,
+	ATOM_NWM_WM_STATE_MAXIMIZED_RIGHT,
 
 	ATOM_COUNT
 } AtomType;
 
-extern const char jwmRestart[];
-extern const char jwmExit[];
-extern const char jwmReload[];
+extern const char nwmRestart[];
+extern const char nwmExit[];
+extern const char nwmReload[];
 extern const char managerProperty[];
 
 #define FIRST_NET_ATOM ATOM_NET_SUPPORTED

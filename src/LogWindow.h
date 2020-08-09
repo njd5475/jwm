@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "jwm.h"
+#include "nwm.h"
 #include "main.h"
 #include "LoggerListener.h"
 #include "event.h"

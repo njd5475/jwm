@@ -7,7 +7,7 @@
 
 #ifndef SRC_WINDOWMANAGER_H_
 #define SRC_WINDOWMANAGER_H_
-#include "jwm.h"
+#include "nwm.h"
 
 class WindowManager {
 public:
@@ -27,7 +27,7 @@ public:
 	static void SendRestart(void);
 	static void SendExit(void);
 	static void SendReload(void);
-	static void SendJWMMessage(const char *message);
+	static void SendNWMMessage(const char *message);
 
 	WindowManager();
 	virtual ~WindowManager();

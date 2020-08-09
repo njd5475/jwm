@@ -8,7 +8,7 @@
  */
 
 #include <algorithm>
-#include "jwm.h"
+#include "nwm.h"
 #include "client.h"
 #include "clientlist.h"
 #include "icon.h"

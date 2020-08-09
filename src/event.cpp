@@ -7,7 +7,7 @@
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "event.h"
 
 #include "client.h"
@@ -1080,13 +1080,13 @@ void Events::_HandleClientMessage(const XClientMessageEvent *event) {
 
   } else if (event->window == rootWindow) {
 
-    if (event->message_type == Hints::atoms[ATOM_JWM_RESTART]) {
+    if (event->message_type == Hints::atoms[ATOM_NWM_RESTART]) {
       Log("NOT IMPLEMENTED: Should restart here");
 //      Roots::Restart();
-    } else if (event->message_type == Hints::atoms[ATOM_JWM_EXIT]) {
+    } else if (event->message_type == Hints::atoms[ATOM_NWM_EXIT]) {
       Log("NOT IMPLEMENTED: Should exit here");
 //      Roots::Exit(0);
-    } else if (event->message_type == Hints::atoms[ATOM_JWM_RELOAD]) {
+    } else if (event->message_type == Hints::atoms[ATOM_NWM_RELOAD]) {
 //      Roots::ReloadMenu();
       Log("NOT IMPLEMENTED: Should reload menu");
     } else if (event->message_type == Hints::atoms[ATOM_NET_CURRENT_DESKTOP]) {

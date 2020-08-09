@@ -3,16 +3,16 @@
  * @author Joe Wingbermuehle
  * @date 2004-2006
  *
- * @brief Functions for displaying information about JWM.
+ * @brief Functions for displaying information about NWM.
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "help.h"
 
 /** Display program name, version, and compiled options . */
 void Help::DisplayAbout(void) {
-	printf("JWM v" PACKAGE_VERSION " by Joe Wingbermuehle\n");
+	printf("NWM v" PACKAGE_VERSION " by Joe Wingbermuehle\n");
 	DisplayCompileOptions();
 }
 
@@ -68,18 +68,18 @@ void Help::DisplayCompileOptions(void) {
 void Help::DisplayHelp(void) {
 	DisplayUsage();
 	printf("  -display X  Set the X display to use\n"
-			"  -exit       Exit JWM (send _JWM_EXIT to the root)\n"
+			"  -exit       Exit NWM (send _NWM_EXIT to the root)\n"
 			"  -f file     Use specified configuration file\n"
 			"  -h          Display this help message\n"
 			"  -p          Parse the configuration file and exit\n"
-			"  -reload     Reload menu (send _JWM_RELOAD to the root)\n"
-			"  -restart    Restart JWM (send _JWM_RESTART to the root)\n"
+			"  -reload     Reload menu (send _NWM_RELOAD to the root)\n"
+			"  -restart    Restart NWM (send _NWM_RESTART to the root)\n"
 			"  -v          Display version information\n");
 }
 
 /** Display program usage information. */
 void Help::DisplayUsage(void) {
 	DisplayAbout();
-	printf("usage: jwm [ options ]\n");
+	printf("usage: nwm [ options ]\n");
 }
 

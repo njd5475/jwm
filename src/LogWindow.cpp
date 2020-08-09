@@ -6,7 +6,7 @@
  */
 
 #include <algorithm>
-#include "jwm.h"
+#include "nwm.h"
 #include "main.h"
 #include "client.h"
 #include "color.h"

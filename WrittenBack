@@ -31,4 +31,4 @@ PopupStyle font='DejaVu Sans Mono' foreground=#000000 background=#999999
 IconPath path=/usr/share/icons/wm-icons/32x32-aquafusion
 IconPath path=/usr/share/icons/hicolor/32x32/apps
 IconPath path=/usr/share/icons/gnome/32x32/apps
-IconPath path=/usr/local/share/jwm
+IconPath path=/usr/local/share/nwm

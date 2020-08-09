@@ -5,7 +5,7 @@
  *      Author: nick
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "DesktopEnvironment.h"
 #include "background.h"
 #include "event.h"

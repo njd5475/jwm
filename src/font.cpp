@@ -7,7 +7,7 @@
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "font.h"
 #include "main.h"
 #include "error.h"

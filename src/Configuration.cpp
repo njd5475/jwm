@@ -537,7 +537,7 @@ void Saver::buildBattery(unsigned indent, JObject* battery) {
 static const char *const NEW_CONFIG_FILES[] = { "$XDG_CONFIG_HOME/nwm/nwmrc",
     "$HOME/.config/nwm/nwm", "$HOME/.nwmrc" };
 
-/** Parse the JWM configuration. */
+/** Parse the NWM configuration. */
 void Configuration::ParseConfig(const char *fileName) {
 
   static const unsigned int NEW_CONFIG_FILE_COUNT = ARRAY_LENGTH(

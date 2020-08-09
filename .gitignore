@@ -10,7 +10,7 @@ config.status
 config.sub
 config.rpath
 configure
-jwm.1
+nwm.1
 po/Makefile
 po/Makefile.in
 po/POTFILES
@@ -18,7 +18,7 @@ po/*.gmo
 po/stamp-*
 m4/
 src/Makefile
-src/jwm
+src/nwm
 doc
 *.swp
 .deps

@@ -1,6 +1,6 @@
-ICONDIR = $(DESTDIR)@DATADIR@/jwm
+ICONDIR = $(DESTDIR)@DATADIR@/nwm
 
-ICONS = jwm.xbm jwm-gray.svg jwm-blue.svg jwm-orange.svg
+ICONS = nwm.xbm nwm-gray.svg nwm-blue.svg nwm-orange.svg
 
 install:
 	install -d $(ICONDIR)

@@ -7,7 +7,7 @@
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "clientlist.h"
 #include "client.h"
 #include "event.h"

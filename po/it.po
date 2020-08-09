@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.2.0\n"
+"Project-Id-Version: nwm 2.2.0\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: Tue Jul 08 2014 15:18:16 GMT+0200\n"
@@ -80,13 +80,13 @@ msgstr "Impossibile acquisire la selezione del vassoio di sistema"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
-msgstr "JWM: errore: "
+msgid "NWM: error: "
+msgstr "NWM: errore: "
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
-msgstr "JWM: avviso: "
+msgid "NWM: warning: "
+msgstr "NWM: avviso: "
 
 #: src/error.c:77
 msgid "display is already managed"
@@ -326,8 +326,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "Root menu specificato non valido: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Termina JWM"
+msgid "Exit NWM"
+msgstr "Termina NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

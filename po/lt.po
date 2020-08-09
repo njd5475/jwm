@@ -1,11 +1,11 @@
-# Lithuanian JWM translation.
+# Lithuanian NWM translation.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the jwm package.
+# This file is distributed under the same license as the nwm package.
 # Moo, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.7\n"
+"Project-Id-Version: nwm 2.3.7\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-20 15:41-0400\n"
 "PO-Revision-Date: 2017-07-21 05:18-0400\n"
@@ -81,13 +81,13 @@ msgstr "nepavyko gauti pasirinkimo sistemos dėkle"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
-msgstr "JWM: klaida: "
+msgid "NWM: error: "
+msgstr "NWM: klaida: "
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
-msgstr "JWM: įspėjimas: "
+msgid "NWM: warning: "
+msgstr "NWM: įspėjimas: "
 
 #: src/error.c:77
 msgid "display is already managed"
@@ -324,8 +324,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "nurodytas neteisingas šaknies meniu: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Išeiti iš JWM"
+msgid "Exit NWM"
+msgstr "Išeiti iš NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

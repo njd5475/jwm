@@ -63,7 +63,7 @@ void WindowManager::Initialize(void) {
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
       new BackgroundComponent());
   DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
-      new ApplicationsComponent());
+      new ApplicationsSystemComponent());
 
   ILog(ClientNode::InitializeClients);
   ILog(Battery::InitializeBattery);
@@ -90,7 +90,7 @@ void WindowManager::Initialize(void) {
 //	printf("Temp %s", temp);
 }
 
-/** Startup the various JWM components.
+/** Startup the various NWM components.
  * This is called after the X connection is opened.
  */
 void WindowManager::Startup(void) {
@@ -148,7 +148,7 @@ void WindowManager::Startup(void) {
 //Flex::Create();
 }
 
-/** Shutdown the various JWM components.
+/** Shutdown the various NWM components.
  * This is called before the X connection is closed.
  */
 void WindowManager::Shutdown(void) {
@@ -202,23 +202,23 @@ void WindowManager::Destroy(void) {
   Flex::DestroyFlexes();
 }
 
-/** Send _JWM_RESTART to the root window. */
+/** Send _NWM_RESTART to the root window. */
 void WindowManager::SendRestart(void) {
-  SendJWMMessage(jwmRestart);
+  SendNWMMessage(nwmRestart);
 }
 
-/** Send _JWM_EXIT to the root window. */
+/** Send _NWM_EXIT to the root window. */
 void WindowManager::SendExit(void) {
-  SendJWMMessage(jwmExit);
+  SendNWMMessage(nwmExit);
 }
 
-/** Send _JWM_RELOAD to the root window. */
+/** Send _NWM_RELOAD to the root window. */
 void WindowManager::SendReload(void) {
-  SendJWMMessage(jwmReload);
+  SendNWMMessage(nwmReload);
 }
 
-/** Send a JWM message to the root window. */
-void WindowManager::SendJWMMessage(const char *message) {
+/** Send a NWM message to the root window. */
+void WindowManager::SendNWMMessage(const char *message) {
   XEvent event;
   if (!environment->OpenConnection()) {
     DoExit(1);
@@ -258,7 +258,7 @@ void WindowManager::StartupConnection(void) {
   XSynchronize(display, True);
 #endif
 
-  /* Create the supporting window used to verify JWM is running. */
+  /* Create the supporting window used to verify NWM is running. */
   supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0,
       0);
 
@@ -392,7 +392,7 @@ void WindowManager::DoExit(int code) {
   exit(code);
 }
 
-/** Main JWM event loop. */
+/** Main NWM event loop. */
 void WindowManager::EventLoop(void) {
 
   XEvent event;

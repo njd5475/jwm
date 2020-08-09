@@ -5,7 +5,7 @@
  *      Author: nick
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "MessageService.h"
 #include "command.h"
 #include "misc.h"

@@ -20,7 +20,7 @@ TEST(DesktopEnvironment, StartupComponent) {
 TEST(DesktopEnvironment, ParseNewDesktop) {
   ParseConfigString(
 "<?xml version=\"1.0\"?>"
-" <JWM>"
+" <NWM>"
 "  <!-- The root menu. -->"
 "  <RootMenu onroot=\"12\">"
 "      <Program icon=\"terminal.png\" label=\"Terminal\">xterm</Program>"
@@ -49,7 +49,7 @@ TEST(DesktopEnvironment, ParseNewDesktop) {
 "      <Restart label=\"Restart\" icon=\"restart.png\"/>"
 "      <Exit label=\"Exit\" confirm=\"true\" icon=\"quit.png\"/>"
 "  </RootMenu>"
-" </JWM>"
+" </NWM>"
   );
   ASSERT_TRUE(true);
 }
@@ -57,10 +57,10 @@ TEST(DesktopEnvironment, ParseNewDesktop) {
 TEST(DesktopEnvironment, ParseTray) {
   ParseConfigString(
 "<?xml version=\"1.0\"?>"
-" <JWM>"
+" <NWM>"
 "      <!-- Tray at the bottom. -->"
 "      <Tray x=\"0\" y=\"-1\" autohide=\"off\">"
-"          <TrayButton icon=\"jwm-blue\">root:1</TrayButton>"
+"          <TrayButton icon=\"nwm-blue\">root:1</TrayButton>"
 "          <Spacer width=\"2\"/>"
 "          <TrayButton label=\"_\">showdesktop</TrayButton>"
 "          <Spacer width=\"2\"/>"
@@ -70,7 +70,7 @@ TEST(DesktopEnvironment, ParseTray) {
 "          <Dock/>"
 "          <Clock format=\"%H:%M\"><Button mask=\"123\">exec:xclock</Button></Clock>"
 "      </Tray>"
-"</JWM>"
+"</NWM>"
   );
   ASSERT_TRUE(true);
 }
@@ -78,7 +78,7 @@ TEST(DesktopEnvironment, ParseTray) {
 TEST(DesktopEnvironment, ParseDesktops) {
   ParseConfigString(
 "<?xml version=\"1.0\"?>"
-"<JWM>"
+"<NWM>"
 "      <!-- Virtual Desktops -->"
 "      <!-- Desktop tags can be contained within Desktops for desktop names. -->"
 "      <Desktops width=\"4\" height=\"1\">"
@@ -88,7 +88,7 @@ TEST(DesktopEnvironment, ParseDesktops) {
 "           -->"
 "          <Background type=\"solid\">#111111</Background>"
 "      </Desktops>"
-"</JWM>"
+"</NWM>"
   );
   ASSERT_TRUE(true);
 }

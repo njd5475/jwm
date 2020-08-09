@@ -73,7 +73,7 @@ typedef unsigned int StatusFlags;
 #define STAT_NOLIST     (1 << 4)    /**< Skip this client in the task list. */
 #define STAT_MINIMIZED  (1 << 5)    /**< Minimized. */
 #define STAT_SHADED     (1 << 6)    /**< Shaded. */
-#define STAT_WMDIALOG   (1 << 7)    /**< This is a JWM dialog window. */
+#define STAT_WMDIALOG   (1 << 7)    /**< This is a NWM dialog window. */
 #define STAT_PIGNORE    (1 << 8)    /**< Ignore the program-position. */
 #define STAT_SDESKTOP   (1 << 9)    /**< Minimized to show desktop. */
 #define STAT_FULLSCREEN (1 << 10)   /**< Full screen. */
@@ -90,7 +90,7 @@ typedef unsigned int StatusFlags;
 #define STAT_NOPAGER    (1 << 21)   /**< Don't show in pager. */
 #define STAT_SHAPED     (1 << 22)   /**< This window is shaped. */
 #define STAT_FLASH      (1 << 23)   /**< Flashing for urgency. */
-#define STAT_DRAG       (1 << 24)   /**< Pass mouse events to JWM. */
+#define STAT_DRAG       (1 << 24)   /**< Pass mouse events to NWM. */
 #define STAT_ILIST      (1 << 25)   /**< Ignore program-specified list. */
 #define STAT_IPAGER     (1 << 26)   /**< Ignore program-specified pager. */
 #define STAT_FIXED      (1 << 27)   /**< Keep on the specified desktop. */

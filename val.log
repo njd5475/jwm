@@ -1,7 +1,7 @@
 ==26946== Memcheck, a memory error detector
 ==26946== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
 ==26946== Using Valgrind-3.12.0.SVN and LibVEX; rerun with -h for copyright info
-==26946== Command: src/jwm
+==26946== Command: src/nwm
 ==26946== Parent PID: 3563
 ==26946== 
 ==26946== Mismatched free() / delete / delete []

@@ -1,13 +1,13 @@
-JWM (Joe's Window Manager)
+NICWM (Nick's Window Manager) based on NICWM (Joe's Window Manager)
 ==============================================================================
 
-JWM is a light-weight window manager for the X11 Window System.
+nicwm is a light-weight window manager for the X11 Window System.
 
 Requirements
 ------------------------------------------------------------------------------
-To build JWM you will need a C compiler (gcc works), X11, and the
+To build NICWM you will need a C compiler (gcc works), X11, and the
 "development headers" for X11 and Xlib.
-If available and not disabled at compile time, JWM will also use
+If available and not disabled at compile time, NICWM will also use
 the following libraries:
 
  - cairo and librsvg2 for SVG icons and backgrounds.
@@ -21,6 +21,7 @@ the following libraries:
  - libXinerama for multiple head support.
  - libXpm for XPM icons and backgrounds.
  - libdbus for D-Bus integration
+ - libinotify for monitoring filesystem for changes.
 
 Installation
 ------------------------------------------------------------------------------
@@ -28,17 +29,17 @@ Installation
  0. For building from the git repository, run "./autogen.sh".
  1. Run "./configure --help" for configuration options.
  2. Run "./configure [options]"
- 3. Run "make" to build JWM.
- 4. Run "make install" to install JWM.  Depending on where you are installing
-    JWM, you may need to perform this step as root ("sudo make install").
+ 3. Run "make" to build NICWM.
+ 4. Run "make install" to install NICWM.  Depending on where you are installing
+    NICWM, you may need to perform this step as root ("sudo make install").
 
 License
 ------------------------------------------------------------------------------
 See LICENSE for license information.
 
-For more information see http://joewing.net/projects/jwm/
+For more information see http://joewing.net/projects/NICWM/
 
 Test
 ===
 
-To test jwm for development you can use `Xephyr :1 -ac -screen 1024x768 &` and then `DISPLAY=:1 src/jwm` after building with `make`
+To test NICWM for development you can use `Xephyr :1 -ac -screen 1024x768 &` and then `DISPLAY=:1 src/NICWM` after building with `make`

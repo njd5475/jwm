@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.1.1\n"
+"Project-Id-Version: nwm 2.1.1\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2013-06-26 15:38+0200\n"
@@ -75,12 +75,12 @@ msgstr "kan de systeem taakbalk keuze niet verkrijgen"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
+msgid "NWM: error: "
 msgstr ""
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
+msgid "NWM: warning: "
 msgstr ""
 
 #: src/error.c:77
@@ -320,8 +320,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "opgegeven root menu ongeldig: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "JWM afsluiten"
+msgid "Exit NWM"
+msgstr "NWM afsluiten"
 
 #: src/root.c:224
 msgid "Are you sure?"

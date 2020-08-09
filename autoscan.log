@@ -57,7 +57,7 @@ autoscan: warning: missing AC_CHECK_HEADERS([fcntl.h]) wanted by:
 	src/battery.c:57
 	src/command.c:17
 autoscan: warning: missing AC_CHECK_HEADERS([limits.h]) wanted by: 
-	src/jwm.h:21
+	src/nwm.h:21
 autoscan: warning: missing AC_CHECK_HEADERS([malloc.h]) wanted by: 
 	src/debug.h:24
 autoscan: warning: missing AC_FUNC_FORK wanted by: 

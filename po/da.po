@@ -1,11 +1,11 @@
-# Danish translation for JWM.
+# Danish translation for NWM.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the jwm package.
+# This file is distributed under the same license as the nwm package.
 # scootergrisen, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.6\n"
+"Project-Id-Version: nwm 2.3.6\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2017-03-25 00:00+0000\n"
@@ -80,13 +80,13 @@ msgstr "kunne ikke hente valg af systembakke"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
-msgstr "JWM: fejl: "
+msgid "NWM: error: "
+msgstr "NWM: fejl: "
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
-msgstr "JWM: advarsel: "
+msgid "NWM: warning: "
+msgstr "NWM: advarsel: "
 
 #: src/error.c:77
 msgid "display is already managed"
@@ -323,8 +323,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "ugyldig rodmenu angivet: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Afslut JWM"
+msgid "Exit NWM"
+msgstr "Afslut NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

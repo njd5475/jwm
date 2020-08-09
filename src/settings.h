@@ -3,7 +3,7 @@
  * @author Joe Wingbermuehle
  * @date 2012
  *
- * @brief JWM settings.
+ * @brief NWM settings.
  *
  */
 

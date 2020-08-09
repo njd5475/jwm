@@ -7,7 +7,7 @@
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "error.h"
 #include "main.h"
 
@@ -19,7 +19,7 @@ void FatalError(const char *str, ...) {
 
    Assert(str);
 
-   fprintf(stderr, _("JWM: error: "));
+   fprintf(stderr, _("NWM: error: "));
    vfprintf(stderr, str, ap);
    fprintf(stderr, "\n");
 
@@ -48,7 +48,7 @@ void WarningVA(const char *part, const char *str, va_list ap) {
 
    Assert(str);
 
-   fprintf(stderr, _("JWM: warning: "));
+   fprintf(stderr, _("NWM: warning: "));
    if(part) {
       fprintf(stderr, "%s: ", part);
    }

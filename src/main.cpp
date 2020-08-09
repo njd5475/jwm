@@ -3,11 +3,11 @@
  * @author Joe Wingbermuehle
  * @date 2004-2006
  *
- * @brief The main entry point and related JWM functions.
+ * @brief The main entry point and related NWM functions.
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "main.h"
 #include "help.h"
 #include "error.h"
@@ -24,7 +24,7 @@
 #ifndef UNIT_TEST
 int main(int argc, char *argv[]) {
 
-	Logger::AddFile("/var/log/jwm/jwm.log");
+	Logger::AddFile("/var/log/nwm/nwm.log");
 	Logger::EnableStandardOut();
 	Logger::Log("Hello World!\n");
 
@@ -101,8 +101,8 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_ALL, "");
 #endif
 #ifdef HAVE_GETTEXT
-	bindtextdomain("jwm", LOCALEDIR);
-	textdomain("jwm");
+	bindtextdomain("nwm", LOCALEDIR);
+	textdomain("nwm");
 #endif
 
 	/* The main loop. */
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 		shouldRestart = 0;
 		shouldReload = 0;
 
-		/* Prepare JWM components. */
+		/* Prepare NWM components. */
 		Log("Initializing...\n");
 		WindowManager::Initialize();
 
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
 		Log("Parsing Config...\n");
 		Configuration::ParseConfig(configPath);
 
-		/* Start up the JWM components. */
+		/* Start up the NWM components. */
 		Log("Starting up components...\n");
 		WindowManager::Startup();
 
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
 		Log("Starting Event Loop\n");
 		WindowManager::EventLoop();
 
-		/* Shutdown JWM components. */
+		/* Shutdown NWM components. */
 		Log("Shutting down components\n");
 		WindowManager::Shutdown();
 

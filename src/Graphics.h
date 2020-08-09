@@ -8,7 +8,7 @@
 #ifndef SRC_GRAPHICS_H_
 #define SRC_GRAPHICS_H_
 
-#include "jwm.h"
+#include "nwm.h"
 #include <vector>
 #include "button.h"
 

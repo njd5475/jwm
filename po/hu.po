@@ -1,11 +1,11 @@
-# Hungarian translations for jwm package.
+# Hungarian translations for nwm package.
 # Copyright (C) 2015 Free Software Foundation, Inc.
-# This file is distributed under the same license as the jwm package.
+# This file is distributed under the same license as the nwm package.
 # Mihály Horváth <hermitsoft@users.sourceforge.net>, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.0\n"
+"Project-Id-Version: nwm 2.3.0\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2015-06-22 13:19+0000\n"
@@ -81,12 +81,12 @@ msgstr "nem sikerült betölteni az értesítési terület (tray/dock) kijelöl�
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
+msgid "NWM: error: "
 msgstr ""
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
+msgid "NWM: warning: "
 msgstr ""
 
 #: src/error.c:77
@@ -327,8 +327,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "a megadott gyökérmenü helytelen: \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "Kilépés a JWM-ből"
+msgid "Exit NWM"
+msgstr "Kilépés a NWM-ből"
 
 #: src/root.c:224
 msgid "Are you sure?"

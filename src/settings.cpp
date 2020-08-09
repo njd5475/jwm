@@ -3,11 +3,11 @@
  * @author Joe Wingbermuehle
  * @date 2012
  *
- * @brief JWM settings.
+ * @brief NWM settings.
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "settings.h"
 #include "misc.h"
 

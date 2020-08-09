@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<!-- XSLT to update a JWM 2.3 configuration to 2.4.
-     To convert a JWM configuration file using this XSLT and xsltproc:
+<!-- XSLT to update a NWM 2.3 configuration to 2.4.
+     To convert a NWM configuration file using this XSLT and xsltproc:
 
-        xsltproc jwm-2.4.xsl oldjwmrc > newjwmrc
+        xsltproc nwm-2.4.xsl oldnwmrc > newnwmrc
 
-     All relevant JWM configuration files will need to be updated.
+     All relevant NWM configuration files will need to be updated.
 -->
 
 <xsl:stylesheet version="1.0"
@@ -18,7 +18,7 @@
         </xsl:copy>
     </xsl:template>
 
-   <xsl:template match="JWM">
+   <xsl:template match="NWM">
       <xsl:copy>
          <xsl:apply-templates select="node()|@*"/>
 

@@ -11,7 +11,7 @@
  *
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "screen.h"
 #include "main.h"
 #include "cursor.h"

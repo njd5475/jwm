@@ -12,7 +12,7 @@
 
 #ifndef MAKE_DEPEND
 
-/* We should include png.h here. See jwm.h for an explanation. */
+/* We should include png.h here. See nwm.h for an explanation. */
 
 #  ifdef USE_XPM
 #     include <X11/xpm.h>

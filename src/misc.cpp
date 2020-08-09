@@ -8,7 +8,7 @@
  */
 
 #include <string.h>
-#include "jwm.h"
+#include "nwm.h"
 #include "misc.h"
 #include "debug.h"
 
@@ -277,10 +277,9 @@ using namespace std;
 vector<string> splitStr(char *str, const char *tok) {
   vector<string> parts;
   char *pch;
-  pch = strtok(str, " ");
+  pch = strtok(str, tok);
   while (pch != NULL) {
-    printf("%s\n", pch);
-    pch = strtok(NULL, " ");
+    pch = strtok(NULL, tok);
 
     if (pch) {
       std::string param(pch);

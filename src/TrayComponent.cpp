@@ -5,7 +5,7 @@
  *      Author: nick
  */
 
-#include "jwm.h"
+#include "nwm.h"
 #include "error.h"
 #include "TrayComponent.h"
 #include "main.h"

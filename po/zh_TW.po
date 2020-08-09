@@ -2,7 +2,7 @@
 # Jim Tsai <poormusic2001@gmail.com>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: jwm 2.3.0\n"
+"Project-Id-Version: nwm 2.3.0\n"
 "Report-Msgid-Bugs-To: joewing@joewing.net\n"
 "POT-Creation-Date: 2017-07-12 21:06-0500\n"
 "PO-Revision-Date: 2016-03-30 16:11+0800\n"
@@ -78,13 +78,13 @@ msgstr "無法取得系統tray的選項"
 
 #: src/error.c:22
 #, c-format
-msgid "JWM: error: "
-msgstr "JWM: 錯誤:"
+msgid "NWM: error: "
+msgstr "NWM: 錯誤:"
 
 #: src/error.c:51
 #, c-format
-msgid "JWM: warning: "
-msgstr "JWM: 警告:"
+msgid "NWM: warning: "
+msgstr "NWM: 警告:"
 
 #: src/error.c:77
 msgid "display is already managed"
@@ -322,8 +322,8 @@ msgid "invalid root menu specified: \"%c\""
 msgstr "無效的指定主選項單 \"%c\""
 
 #: src/root.c:223
-msgid "Exit JWM"
-msgstr "退出 JWM"
+msgid "Exit NWM"
+msgstr "退出 NWM"
 
 #: src/root.c:224
 msgid "Are you sure?"

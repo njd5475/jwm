@@ -1,10 +1,10 @@
 
 This file describes configuration changes required for upgrading to newer
-versions of JWM.  In general, JWM revisions (changes to the third number)
+versions of NWM.  In general, NWM revisions (changes to the third number)
 will not contain changes that break a configuration, though minor
 modifications may be included if using an old configuration with the new 
 version will not cause problems.  New configuration options are not
-described.  See the release notes at http://joewing.net/projects/jwm/ for
+described.  See the release notes at http://joewing.net/projects/nwm/ for
 more information.
 
 Changes from 2.3.7 to 2.4.0
