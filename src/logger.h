@@ -38,8 +38,8 @@ private:
   Logger::Log(#fn "\n");\
   fn()
 
-#define vLog(message, ...) char _ibf[256];\
+#define vLog(message, ...) {char _ibf[256];\
   sprintf(_ibf, message, __VA_ARGS__); \
-  Logger::Log(_ibf)
+  Logger::Log(_ibf);}
 
 #endif /* SRC_LOGGER_H_ */

@@ -13,10 +13,31 @@
 #include <vector>
 #include <string>
 #include <iostream>
-//#include <filesystem>
+#include <string.h>
+#include <experimental/filesystem> // http://en.cppreference.com/w/cpp/experimental/fs
 
-//namespace fs = std::filesystem;
 using namespace std;
+namespace stdfs = experimental::filesystem;
+
+vector<string> getFilenames(experimental::filesystem::path path) {
+  vector<string> filenames;
+
+  // http://en.cppreference.com/w/cpp/experimental/fs/directory_iterator
+  const stdfs::directory_iterator end { };
+
+  for (stdfs::directory_iterator iter { path }; iter != end; ++iter) {
+    if (stdfs::is_regular_file(*iter)) {// comment out if all names (names of directories tc.) are required
+      filenames.push_back(iter->path().string());
+    } else if (stdfs::is_symlink(*iter)) {
+    } else if (stdfs::is_directory(*iter)) {
+      for(auto file : getFilenames(*iter)) {
+        filenames.push_back(file);
+      }
+    }
+  }
+
+  return filenames;
+}
 
 ApplicationsSystemComponent::ApplicationsSystemComponent() {
   // TODO Auto-generated constructor stub
@@ -28,14 +49,27 @@ ApplicationsSystemComponent::~ApplicationsSystemComponent() {
 }
 
 void ApplicationsSystemComponent::initialize() {
-  vLog("PATH is %s\n", std::getenv("PATH"));
-  vector<string> pathDirs = splitStr(std::getenv("PATH"), ":");
-  for(auto dirStr : pathDirs) {
+  vLog("PATH is %s\n", getenv("PATH"));
+  vector<string> pathDirs = splitStr(getenv("PATH"), ":");
+  for (auto dirStr : pathDirs) {
     vLog("Found path dir %s\n", dirStr.c_str());
-//    std::string path = "/path/to/directory";
-//        for (const auto & entry : fs::directory_iterator(path))
-//            std::cout << entry.path() << std::endl;
+    vector<string> filesInDir = getFilenames(dirStr);
+    for(auto file : filesInDir) {
+      files.push_back(file);
+    }
   }
+
+
+  for(auto file : getFilenames("/usr/share/applications")) {
+    files.push_back(file);
+    const char* ext = stdfs::path(file).extension().string().c_str();
+    if(strcmp(".desktop", ext) == 0) {
+      vLog("Found desktop file %s\n", file.c_str());
+    }
+  }
+
+  int count = files.size();
+  vLog("Found %d files\n", count);
 }
 
 void ApplicationsSystemComponent::start() {

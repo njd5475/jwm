@@ -22,6 +22,8 @@ AC_PROG_MKDIR_P
 
 PACKAGE=nicwm
 
+AX_CXX_COMPILE_STDCXX_14(ext, mandatory)
+
 ############################################################################
 # Check if we need _XOPEN_SOURCE
 ############################################################################
@@ -565,6 +567,13 @@ if test "$enable_debug" = "yes"; then
 else
    enable_debug="no"
 fi
+
+AX_CHECK_COMPILE_FLAG([-lstdc++fs], [
+  LDFLAGS="$LDFLAGS -lstdc++fs"
+], [
+  echo "No std c++ fs library"
+  exit -1
+])
 
 ############################################################################
 # Create the output files.
