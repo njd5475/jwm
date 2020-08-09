@@ -224,10 +224,7 @@ JItemValue NicksConfigParser::parse(const char *wildcardname) {
   }
   NicksConfigParser parser(tokenizer);
 
-  vLog("How big is a token class %d\n", sizeof(Token));
-  JItemValue root = parser.rootObject();
-  jsonPrintEntry(stdout, VAL_MIXED_ARRAY, &root);
-  return root;
+  return parser.rootObject();
 }
 
 JItemValue NicksConfigParser::rootObject() {

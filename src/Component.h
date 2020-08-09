@@ -18,6 +18,7 @@ public:
   virtual void Draw(Graphics* g) =0;
   virtual void mouseMoved(int mouseX, int mouseY) = 0;
   virtual bool contains(int mouseX, int mouseY) = 0;
+  virtual void mouseReleased() = 0;
 };
 
 #endif /* SRC_COMPONENT_H_ */

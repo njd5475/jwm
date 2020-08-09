@@ -75,7 +75,6 @@ public:
   virtual ~ActionGroup() {}
 
   virtual void add(AbstractAction &action) {
-    const unsigned int num = sizeof(_actions)/sizeof(AbstractAction);
 
   }
 

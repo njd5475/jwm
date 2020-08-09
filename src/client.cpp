@@ -271,7 +271,7 @@ ClientNode::~ClientNode() {
 
   int res = JXKillClient(display, this->window);
   if(res) {
-    Logger::Log("Error: Could not kill client");
+    Log("Error: Could not kill client");
 
   }
 

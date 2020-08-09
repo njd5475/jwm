@@ -37,7 +37,7 @@ void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const c
 class Button : public Component {
 
 public:
-  Button(const char* text, int x, int y, int width, int height);
+  Button(const char* text, int x, int y, int width, int height, void (*action)());
   virtual ~Button();
 
   void Draw(Graphics *g);
@@ -49,10 +49,12 @@ public:
   bool isActive();
   bool contains(int x, int y);
   void mouseMoved(int mouseX, int mouseY);
+  void mouseReleased();
 private:
   int _x,_y,_width,_height;
   bool _active;
   const char* _text;
+  void (*_action)();
 };
 
 #endif /* BUTTON_H */

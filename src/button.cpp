@@ -17,22 +17,19 @@
 #include "Graphics.h"
 #include "settings.h"
 
+void DrawButtonStyle(long fg, long bg1, long bg2, long up, long down,
+    DecorationsType decorations, AlignmentType alignment, FontType font,
+    const char *text, bool fill, bool border, Drawable drawable, Icon *icon,
+    int x, int y, int width, int height, int xoffset, int yoffset);
+
 /** Draw a button. */
 void DrawButton(ButtonType type, AlignmentType alignment, FontType font,
     const char *text, bool fill, bool border, Drawable drawable, Icon *icon,
     int x, int y, int width, int height, int xoffset, int yoffset) {
-
   ColorName fg;
   long bg1, bg2;
   long up, down;
   DecorationsType decorations;
-
-  GC gc;
-
-  int iconWidth, iconHeight;
-  int textWidth, textHeight;
-
-  gc = JXCreateGC(display, drawable, 0, NULL);
 
   /* Determine the colors to use. */
   switch (type) {
@@ -94,6 +91,22 @@ void DrawButton(ButtonType type, AlignmentType alignment, FontType font,
     decorations = settings.menuDecorations;
     break;
   }
+
+  DrawButtonStyle(fg, bg1, bg2, up, down, decorations, alignment, font, text,
+      fill, border, drawable, icon, x, y, width, height, xoffset, yoffset);
+}
+
+/** Draw a button. */
+void DrawButtonStyle(long fg, long bg1, long bg2, long up, long down,
+    DecorationsType decorations, AlignmentType alignment, FontType font,
+    const char *text, bool fill, bool border, Drawable drawable, Icon *icon,
+    int x, int y, int width, int height, int xoffset, int yoffset) {
+  GC gc;
+
+  int iconWidth, iconHeight;
+  int textWidth, textHeight;
+
+  gc = JXCreateGC(display, drawable, 0, NULL);
 
   /* Draw the background. */
   if (fill) {
@@ -193,8 +206,8 @@ void DrawButton(ButtonType type, AlignmentType alignment, FontType font,
 
 }
 
-Button::Button(const char *text, int x, int y, int width, int height) :
-    _x(x), _y(y), _width(width), _height(height), _active(false) {
+Button::Button(const char *text, int x, int y, int width, int height, void (*action)()) :
+    _x(x), _y(y), _width(width), _height(height), _active(false), _action(action) {
   Assert(text);
   _text = CopyString(text);
 }
@@ -230,21 +243,24 @@ bool Button::isActive() {
 }
 
 bool Button::contains(int mouseX, int mouseY) {
-  printf("Mouse %d, %d test on %d,%d %dx%d\n", mouseX, mouseY, this->getX(),
-      this->getY(), this->getX() + this->getWidth(),
-      this->getY() + this->getHeight());
   if (mouseX >= this->getX() && mouseX <= (this->getX() + this->getWidth())
       && mouseY >= this->getY()
       && mouseY <= (this->getY() + this->getHeight())) {
-    printf("ITs inside");
     _active = true;
   } else {
     _active = false;
   }
+//  printf("Mouse %d, %d test on %d,%d %dx%d (%s)\n", mouseX, mouseY,
+//      this->getX(), this->getY(), this->getX() + this->getWidth(),
+//      this->getY() + this->getHeight(), _active ? "Inside" : "Outside");
   return _active;
 }
 
 void Button::mouseMoved(int mouseX, int mouseY) {
   //TODO: Refactor this please.
 
+}
+
+void Button::mouseReleased() {
+  _action();
 }

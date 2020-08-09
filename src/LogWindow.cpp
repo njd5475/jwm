@@ -14,6 +14,8 @@
 #include "button.h"
 #include "hint.h"
 #include "Graphics.h"
+#include "WindowManager.h"
+#include "command.h"
 
 #include "LogWindow.h"
 
@@ -22,9 +24,16 @@
 
 std::vector<LogWindow*> LogWindow::windows;
 
+void exit() {
+  WindowManager::DoExit(0);
+}
+
+void nothing() {
+  //Commands::RunCommand("");
+}
+
 LogWindow::LogWindow(int x, int y, int width, int height) :
-    LoggerListener(), x(x), y(y), width(width), height(height), buttonState(0), window(
-        0), pixmap(0), node(0), graphics(0), percentage(0.0f) {
+    x(x), y(y), width(width), height(height), window(0), percentage(0.0), pixmap(0), buttonState(0), node(0), graphics(0) {
 
   XSetWindowAttributes attrs;
   attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
@@ -55,13 +64,10 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   Events::registerHandler(this);
 
   int lineHeight = 20;
-  int lns = (int) (lines.size() * this->percentage);
-  int temp;
+  int temp = Fonts::GetStringWidth(FONT_MENU, "Press Button");
   int buttonWidth = Fonts::GetStringWidth(FONT_MENU, "Don't Press");
-  temp = Fonts::GetStringWidth(FONT_MENU, "Press Button");
-  if (temp > buttonWidth) {
-    buttonWidth = temp;
-  }
+
+  buttonWidth = std::max(temp, buttonWidth);
   buttonWidth += 16;
   int buttonHeight = lineHeight + 4;
 
@@ -69,9 +75,9 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   int cancelx = 2 * width / 3 - buttonWidth / 2;
   int buttony = height - lineHeight - lineHeight / 2;
   this->components.push_back(
-      new Button("Start", okx, buttony, buttonWidth, buttonHeight));
+      new Button("Start", okx, buttony, buttonWidth, buttonHeight, &nothing));
   this->components.push_back(
-      new Button("Exit", cancelx, buttony, buttonWidth, buttonHeight));
+      new Button("Exit", cancelx, buttony, buttonWidth, buttonHeight, &exit));
 }
 
 LogWindow::LogWindow(const LogWindow &p) {
@@ -140,15 +146,6 @@ void LogWindow::Draw() {
         width, (*it));
     ++lns;
   }
-  int temp;
-
-  int buttonWidth = Fonts::GetStringWidth(FONT_MENU, "Don't Press");
-  temp = Fonts::GetStringWidth(FONT_MENU, "Press Button");
-  if (temp > buttonWidth) {
-    buttonWidth = temp;
-  }
-  buttonWidth += 16;
-  int buttonHeight = lineHeight + 4;
 
   for (auto c : components) {
     c->Draw(graphics);
@@ -165,7 +162,7 @@ void LogWindow::DrawAll() {
 bool LogWindow::process(const XEvent *event) {
 
   Window window = 0;
-  int mx, my;
+  int mx = 0, my = 0;
   switch (event->type) {
   case Expose:
     window = event->xexpose.window;
@@ -182,6 +179,11 @@ bool LogWindow::process(const XEvent *event) {
     Log("LogWindow: Button Released");
     mx = event->xbutton.x;
     my = event->xbutton.y;
+    for(auto c : components){
+      if(c->contains(mx,my)) {
+        c->mouseReleased();
+      }
+    }
     break;
   case MotionNotify:
     window = event->xmotion.window;
