@@ -14,7 +14,6 @@
 #include "timing.h"
 class ClientNode;
 
-extern char shouldStopMove;
 extern char atLeft;
 extern char atRight;
 extern char atBottom;
@@ -23,33 +22,25 @@ extern char atSideFirst;
 extern ClientNode *currentClient;
 extern TimeType moveTime;
 
-/** Move a client window.
- * @param np The client to move.
- * @param startx The starting mouse x-coordinate (window relative).
- * @param starty The starting mouse y-coordinate (window relative).
- * @return 1 if the client moved, 0 otherwise.
- */
-char MoveClient(struct ClientNode *np, int startx, int starty);
-
 /** Move a client window using the keyboard (mouse optional).
  * @param np The client to move.
  * @return 1 if the client moved, 0 otherwise.
  */
 char MoveClientKeyboard(struct ClientNode *np);
 
-void GetClientRectangle(ClientNode *np, RectangleType *r);
+void GetClientRectangle(ClientNode *np, ClientRectangle *r);
 
-char CheckLeftValid(const RectangleType *client, const RectangleType *other, const RectangleType *left);
+char CheckLeftValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *left);
 
-char CheckRightValid(const RectangleType *client, const RectangleType *other, const RectangleType *right);
+char CheckRightValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *right);
 
-char CheckTopValid(const RectangleType *client, const RectangleType *other, const RectangleType *top);
+char CheckTopValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *top);
 
-char CheckBottomValid(const RectangleType *client, const RectangleType *other, const RectangleType *bottom);
+char CheckBottomValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *bottom);
 
-char CheckOverlapTopBottom(const RectangleType *a, const RectangleType *b);
+char CheckOverlapTopBottom(const ClientRectangle *a, const ClientRectangle *b);
 
-char CheckOverlapLeftRight(const RectangleType *a, const RectangleType *b);
+char CheckOverlapLeftRight(const ClientRectangle *a, const ClientRectangle *b);
 
 char ShouldSnap(ClientNode *np);
 
@@ -58,8 +49,6 @@ void SignalMove(const TimeType *now, int x, int y, Window w, void *data);
 void UpdateDesktop(const TimeType *now);
 
 void DoSnap(ClientNode *np);
-
-void MoveController(int wasDestroyed);
 
 #endif /* MOVE_H */
 

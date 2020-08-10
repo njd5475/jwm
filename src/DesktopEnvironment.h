@@ -12,9 +12,6 @@
 #include <vector>
 #include "SystemComponent.h"
 
-class TrayComponent;
-class Tray;
-
 class DesktopEnvironment {
 public:
   DesktopEnvironment();
@@ -57,6 +54,8 @@ public:
   static void setDisplayString(char* str) {
 	  displayString = str;
   }
+
+  static const char* getLocale();
 private:
   static char *displayString;
   static DesktopEnvironment *_instance;

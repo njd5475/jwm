@@ -28,7 +28,6 @@
 #include "move.h"
 #include "font.h"
 #include "outline.h"
-#include "resize.h"
 #include "status.h"
 
 #include <X11/Xlibint.h>
@@ -270,7 +269,7 @@ ClientNode::~ClientNode() {
   }
 
   int res = JXKillClient(display, this->window);
-  if(res) {
+  if (res) {
     Log("Error: Could not kill client");
 
   }
@@ -281,7 +280,7 @@ ClientNode::~ClientNode() {
     this->parent = None;
   }
 
-  if(this->window) {
+  if (this->window) {
     JXDestroyWindow(display, this->window);
     this->window = 0;
   }
@@ -2238,12 +2237,11 @@ void ClientNode::GravitateClient(char negate) {
 void ClientNode::DoSnapBorder() {
 
   ClientNode *tp;
-  const Tray *tray;
-  RectangleType client, other;
-  RectangleType left = { 0 };
-  RectangleType right = { 0 };
-  RectangleType top = { 0 };
-  RectangleType bottom = { 0 };
+  ClientRectangle client, other;
+  ClientRectangle left = { 0 };
+  ClientRectangle right = { 0 };
+  ClientRectangle top = { 0 };
+  ClientRectangle bottom = { 0 };
   int layer;
   int north, south, east, west;
 
@@ -2393,7 +2391,7 @@ const char* ClientNode::getInstanceName() {
   return this->instanceName;
 }
 
-Icon *ClientNode::getIcon() const {
+Icon* ClientNode::getIcon() const {
   return this->icon;
 }
 
@@ -2434,7 +2432,7 @@ MouseContextType ClientNode::getMouseContext() const {
 }
 
 void ClientNode::setMouseContext(MouseContextType context) {
-  this->mouseContext= context;
+  this->mouseContext = context;
 }
 
 long int ClientNode::getSizeFlags() {
@@ -2987,14 +2985,15 @@ void ClientNode::setHidden() {
   this->status |= STAT_HIDDEN;
 }
 
-
 /** Update the size of a client window. */
-void ClientNode::UpdateSize(const MouseContextType context, const int x, const int y, const int startx,
-    const int starty, const int oldx, const int oldy, const int oldw, const int oldh) {
+void ClientNode::UpdateSize(const MouseContextType context, const int x,
+    const int y, const int startx, const int starty, const int oldx,
+    const int oldy, const int oldw, const int oldh) {
   if (context & MC_BORDER_N) {
     int delta = (y - starty) / this->yinc;
     delta *= this->yinc;
-    if (oldh - delta >= this->minHeight && (oldh - delta <= this->maxHeight || delta > 0)) {
+    if (oldh - delta >= this->minHeight
+        && (oldh - delta <= this->maxHeight || delta > 0)) {
       this->height = oldh - delta;
       this->y = oldy + delta;
     }
@@ -3025,7 +3024,8 @@ void ClientNode::UpdateSize(const MouseContextType context, const int x, const i
   if (context & MC_BORDER_W) {
     int delta = (x - startx) / this->xinc;
     delta *= this->xinc;
-    if (oldw - delta >= this->minWidth && (oldw - delta <= this->maxWidth || delta > 0)) {
+    if (oldw - delta >= this->minWidth
+        && (oldw - delta <= this->maxWidth || delta > 0)) {
       this->width = oldw - delta;
       this->x = oldx + delta;
     }
@@ -3035,7 +3035,8 @@ void ClientNode::UpdateSize(const MouseContextType context, const int x, const i
   }
 
   if (this->sizeFlags & PAspect) {
-    if ((context & (MC_BORDER_N | MC_BORDER_S)) && (context & (MC_BORDER_E | MC_BORDER_W))) {
+    if ((context & (MC_BORDER_N | MC_BORDER_S))
+        && (context & (MC_BORDER_E | MC_BORDER_W))) {
 
       if (this->width * this->aspect.miny < this->height * this->aspect.minx) {
         const int delta = this->width;
@@ -3055,8 +3056,22 @@ void ClientNode::UpdateSize(const MouseContextType context, const int x, const i
   }
 }
 
+bool shouldStopResize = false;
+bool shouldStopMove = false;
+
+void ResizeController(int wasDestroyed) {
+  if (settings.resizeMode == RESIZE_OUTLINE) {
+    Outline::ClearOutline();
+  }
+  JXUngrabPointer(display, CurrentTime);
+  JXUngrabKeyboard(display, CurrentTime);
+  DestroyResizeWindow();
+  shouldStopResize = true;
+}
+
 /** Resize a client window (mouse initiated). */
-void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) {
+void ClientNode::ResizeClient(MouseContextType context, int startx,
+    int starty) {
 
   XEvent event;
   int oldx, oldy;
@@ -3124,10 +3139,12 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
       break;
     case MotionNotify:
 
-      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
+      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
+          event.xmotion.window);
       Events::_DiscardMotionEvents(&event, this->window);
 
-      this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx, starty, oldx, oldy, oldw, oldh);
+      this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx,
+          starty, oldx, oldy, oldw, oldh);
 
       lastgwidth = gwidth;
       lastgheight = gheight;
@@ -3142,9 +3159,11 @@ void ClientNode::ResizeClient(MouseContextType context, int startx, int starty) 
         if (settings.resizeMode == RESIZE_OUTLINE) {
           Outline::ClearOutline();
           if (this->isShaded()) {
-            Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
+            Outline::DrawOutline(this->x - west, this->y - north,
+                this->width + west + east, north + south);
           } else {
-            Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
+            Outline::DrawOutline(this->x - west, this->y - north,
+                this->width + west + east, this->height + north + south);
           }
         } else {
           Border::ResetBorder(this);
@@ -3188,7 +3207,8 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
     Border::ResetBorder(this);
   }
 
-  if (JUNLIKELY(JXGrabKeyboard(display, this->parent, True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)) {
+  if (JUNLIKELY(
+      JXGrabKeyboard(display, this->parent, True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)) {
     return;
   }
   if (!Cursors::GrabMouseForResize(context)) {
@@ -3275,10 +3295,12 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
 
     } else if (event.type == MotionNotify) {
 
-      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root, event.xmotion.window);
+      Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
+          event.xmotion.window);
       Events::_DiscardMotionEvents(&event, this->window);
 
-      this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx, starty, oldx, oldy, oldw, oldh);
+      this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx,
+          starty, oldx, oldy, oldw, oldh);
 
     } else if (event.type == ButtonRelease) {
       this->StopResize();
@@ -3297,9 +3319,11 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
       if (settings.resizeMode == RESIZE_OUTLINE) {
         Outline::ClearOutline();
         if (this->isShaded()) {
-          Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, north + south);
+          Outline::DrawOutline(this->x - west, this->y - north,
+              this->width + west + east, north + south);
         } else {
-          Outline::DrawOutline(this->x - west, this->y - north, this->width + west + east, this->height + north + south);
+          Outline::DrawOutline(this->x - west, this->y - north,
+              this->width + west + east, this->height + north + south);
         }
       } else {
         Border::ResetBorder(this);
@@ -3367,7 +3391,6 @@ void ClientNode::FixHeight() {
   }
 }
 
-
 /** Centered placement. */
 void ClientNode::CenterClient(const BoundingBox *box) {
   this->x = box->x + (box->width / 2) - (this->width / 2);
@@ -3404,6 +3427,23 @@ void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
 
 }
 
+/** Callback for stopping moves. */
+void MoveController(int wasDestroyed) {
+  if (settings.moveMode == MOVE_OUTLINE) {
+    Outline::ClearOutline();
+  }
+
+  JXUngrabPointer(display, CurrentTime);
+  JXUngrabKeyboard(display, CurrentTime);
+
+  DestroyMoveWindow();
+  shouldStopMove = true;
+  atTop = 0;
+  atBottom = 0;
+  atLeft = 0;
+  atRight = 0;
+  atSideFirst = 0;
+}
 
 /** Move a client window. */
 char ClientNode::MoveClient(int startx, int starty) {
@@ -3428,7 +3468,7 @@ char ClientNode::MoveClient(int startx, int starty) {
 
   Events::_RegisterCallback(0, SignalMove, NULL);
   this->controller = MoveController;
-  shouldStopMove = 0;
+  shouldStopMove = false;
 
   oldx = this->getX();
   oldy = this->getY();
@@ -3481,7 +3521,8 @@ char ClientNode::MoveClient(int startx, int starty) {
       }
 
       /* Determine if we are at a border for desktop switching. */
-      sp = Screens::GetCurrentScreen(this->getX() + this->getWidth() / 2, this->getY() + this->getHeight() / 2);
+      sp = Screens::GetCurrentScreen(this->getX() + this->getWidth() / 2,
+          this->getY() + this->getHeight() / 2);
       atLeft = atTop = atRight = atBottom = 0;
       if (event.xmotion.x_root <= sp->x) {
         atLeft = 1;
@@ -3555,7 +3596,9 @@ char ClientNode::MoveClient(int startx, int starty) {
 
       if (flags != MAX_NONE) {
         this->RestartMove(&doMove);
-      } else if (!doMove && (abs(this->getX() - oldx) > MOVE_DELTA || abs(this->getY() - oldy) > MOVE_DELTA)) {
+      } else if (!doMove
+          && (abs(this->getX() - oldx) > MOVE_DELTA
+              || abs(this->getY() - oldy) > MOVE_DELTA)) {
 
         if (this->getMaxFlags()) {
           this->MaximizeClient(MAX_NONE);
@@ -3572,12 +3615,15 @@ char ClientNode::MoveClient(int startx, int starty) {
           if (!(this->isShaded())) {
             height += this->getHeight();
           }
-          Outline::DrawOutline(this->getX() - west, this->getY() - north, this->getWidth() + west + east, height);
+          Outline::DrawOutline(this->getX() - west, this->getY() - north,
+              this->getWidth() + west + east, height);
         } else {
           if (this->getParent() != None) {
-            JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
+            JXMoveWindow(display, this->getParent(), this->getX() - west,
+                this->getY() - north);
           } else {
-            JXMoveWindow(display, this->getWindow(), this->getX(), this->getY());
+            JXMoveWindow(display, this->getWindow(), this->getX(),
+                this->getY());
           }
           this->SendConfigureEvent();
         }
@@ -3612,7 +3658,8 @@ char ClientNode::MoveClientKeyboard() {
   }
 
   win = this->parent != None ? this->parent : this->window;
-  if (JUNLIKELY(JXGrabKeyboard(display, win, True, GrabModeAsync, GrabModeAsync, CurrentTime))) {
+  if (JUNLIKELY(
+      JXGrabKeyboard(display, win, True, GrabModeAsync, GrabModeAsync, CurrentTime))) {
     Debug("MoveClient: could not grab keyboard");
     return 0;
   }
@@ -3628,7 +3675,7 @@ char ClientNode::MoveClientKeyboard() {
 
   Events::_RegisterCallback(0, SignalMove, NULL);
   this->controller = MoveController;
-  shouldStopMove = 0;
+  shouldStopMove = false;
 
   CreateMoveWindow(this);
   UpdateMoveWindow(this);
@@ -3684,7 +3731,8 @@ char ClientNode::MoveClientKeyboard() {
 
       if (settings.moveMode == MOVE_OUTLINE) {
         Outline::ClearOutline();
-        Outline::DrawOutline(this->getX() - west, this->getY() - west, this->getWidth() + west + east, height + north + west);
+        Outline::DrawOutline(this->getX() - west, this->getY() - west,
+            this->getWidth() + west + east, height + north + west);
       } else {
         JXMoveWindow(display, win, this->getX() - west, this->getY() - north);
         this->SendConfigureEvent();
@@ -3703,7 +3751,7 @@ char ClientNode::MoveClientKeyboard() {
 void ClientNode::StopMove(int doMove, int oldx, int oldy) {
   int north, south, east, west;
 
-  Assert(this->controller);
+  Assert(this->controller); //must be moving
 
   (this->controller)(0);
 
@@ -3720,9 +3768,11 @@ void ClientNode::StopMove(int doMove, int oldx, int oldy) {
 
   Border::GetBorderSize(this, &north, &south, &east, &west);
   if (this->parent != None) {
-    JXMoveWindow(display, this->parent, this->getX() - west, this->getY() - north);
+    JXMoveWindow(display, this->parent, this->getX() - west,
+        this->getY() - north);
   } else {
-    JXMoveWindow(display, this->window, this->getX() - west, this->getY() - north);
+    JXMoveWindow(display, this->window, this->getX() - west,
+        this->getY() - north);
   }
   this->SendConfigureEvent();
 }
@@ -3735,9 +3785,11 @@ void ClientNode::RestartMove(int *doMove) {
     DestroyMoveWindow();
     Border::GetBorderSize(this, &north, &south, &east, &west);
     if (this->getParent() != None) {
-      JXMoveWindow(display, this->getParent(), this->getX() - west, this->getY() - north);
+      JXMoveWindow(display, this->getParent(), this->getX() - west,
+          this->getY() - north);
     } else {
-      JXMoveWindow(display, this->getWindow(), this->getX() - west, this->getY() - north);
+      JXMoveWindow(display, this->getWindow(), this->getX() - west,
+          this->getY() - north);
     }
     this->SendConfigureEvent();
   }
@@ -3746,7 +3798,7 @@ void ClientNode::RestartMove(int *doMove) {
 /** Snap to the screen. */
 void ClientNode::DoSnapScreen() {
 
-  RectangleType client;
+  ClientRectangle client;
   int screen;
   const ScreenType *sp;
   int screenCount;

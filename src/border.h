@@ -18,7 +18,7 @@ typedef struct {
   int left, right;
   int top, bottom;
   char valid;
-} RectangleType;
+} ClientRectangle;
 
 struct ClientNode;
 struct ClientState;

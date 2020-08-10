@@ -10,6 +10,7 @@
 #include "background.h"
 #include "event.h"
 #include "desktop.h"
+#include "command.h"
 
 Display *display = NULL;
 Window rootWindow;
@@ -80,6 +81,12 @@ DesktopEnvironment::~DesktopEnvironment() {
   _componentCount = 0;
 }
 
+const char* DesktopEnvironment::getLocale() {
+  const char* locale = Commands::ReadFromProcess("/usr/bin/locale", 1000);
+  printf(locale);
+  return "";
+}
+
 const char* DesktopEnvironment::GetDesktopName(unsigned short int num) {
   return Desktops::_GetDesktopName(num);
 }
@@ -110,6 +117,8 @@ void DesktopEnvironment::StartupComponents() {
   for(auto c : this->_components) {
     c->start();
   }
+
+  getLocale();
 }
 
 void DesktopEnvironment::ShutdownComponents() {

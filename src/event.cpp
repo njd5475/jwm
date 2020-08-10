@@ -17,7 +17,6 @@
 #include "icon.h"
 #include "move.h"
 #include "place.h"
-#include "resize.h"
 #include "timing.h"
 #include "settings.h"
 #include "grab.h"

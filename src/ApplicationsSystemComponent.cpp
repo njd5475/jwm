@@ -8,6 +8,7 @@
 #include "stdlib.h"
 #include "logger.h"
 #include "ApplicationsSystemComponent.h"
+#include "DesktopFile.h"
 
 #include "misc.h"
 #include <vector>
@@ -65,6 +66,7 @@ void ApplicationsSystemComponent::initialize() {
     const char* ext = stdfs::path(file).extension().string().c_str();
     if(strcmp(".desktop", ext) == 0) {
       vLog("Found desktop file %s\n", file.c_str());
+      DesktopFile::parse(file.c_str());
     }
   }
 
