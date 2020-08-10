@@ -16,7 +16,6 @@
 #include "json.h"
 #include "AbstractAction.h"
 
-class Tray;
 class Configuration;
 
 class Builder {
@@ -125,7 +124,7 @@ public:
   virtual void buildWindowStyle(JObject* jobj);
   virtual void buildMouse(JObject* jobj);
 
-  void buildBattery(Tray *tray, JObject* battery);
+  void buildBattery(JObject* battery);
   Actions convertToAction(const char* action);
   int convertToMouseContext(const char* context);
 

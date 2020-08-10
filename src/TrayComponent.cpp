@@ -66,7 +66,7 @@ int TrayComponent::getY() const {
   return this->y;
 }
 /** Update a specific component on a tray. */
-void TrayComponent::UpdateSpecificTray(const Tray *tp) {
+void TrayComponent::UpdateSpecificTray() {
   if (JUNLIKELY(shouldExit)) {
     return;
   }

@@ -11,7 +11,6 @@
 class Graphics;
 
 class ActionNode;
-class Tray;
 
 class TrayComponent {
 
@@ -76,7 +75,7 @@ public:
 	 * @param tp The tray containing the component.
 	 * @param cp The component that needs updating.
 	 */
-	void UpdateSpecificTray(const Tray *tp);
+	void UpdateSpecificTray();
 
 	virtual void SetSize(int width, int height) {
 		this->width = width;
