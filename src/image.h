@@ -71,7 +71,7 @@ public:
    * @return A new image node (NULL if the image could not be loaded).
    */
   static Image *LoadImage(const char *fileName, int rwidth, int rheight,
-      char preserveAspect);
+      bool preserveAspect);
 
   /** Load an image from a Drawable.
    * @param pmap The drawable.

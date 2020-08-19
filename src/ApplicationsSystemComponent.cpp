@@ -70,6 +70,10 @@ void ApplicationsSystemComponent::initialize() {
     }
   }
 
+  for(auto file : DesktopFile::getDesktopFiles()) {
+    printf("Found desktop entry %s\n", file->getName());
+  }
+
   int count = files.size();
   vLog("Found %d files\n", count);
 }

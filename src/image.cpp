@@ -48,7 +48,7 @@ static const unsigned IMAGE_LOADER_COUNT = ARRAY_LENGTH(IMAGE_LOADERS);
 
 /** Load an image from the specified file. */
 Image* Image::LoadImage(const char *fileName, int rwidth, int rheight,
-    char preserveAspect) {
+    bool preserveAspect) {
   unsigned i;
   unsigned name_length;
   Image *result = NULL;

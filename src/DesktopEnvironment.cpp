@@ -82,9 +82,8 @@ DesktopEnvironment::~DesktopEnvironment() {
 }
 
 const char* DesktopEnvironment::getLocale() {
-  const char* locale = Commands::ReadFromProcess("/usr/bin/locale", 1000);
-  printf(locale);
-  return "";
+  //const char* locale = Commands::ReadFromProcess("/usr/bin/locale -a", 1000);
+  return "en";
 }
 
 const char* DesktopEnvironment::GetDesktopName(unsigned short int num) {

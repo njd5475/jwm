@@ -40,8 +40,8 @@ std::string MessageService::getShutdownProperty() {
 
   vector<string> params = splitStr(property, " ");
 
-  if(params.size() >= 2) {
-    return params[1];
+  if(params.size() >= 3) {
+    return params[2];
   }
 
   return "";

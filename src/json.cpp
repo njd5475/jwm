@@ -130,7 +130,7 @@ JObject *jsonAddVal(JObject *obj, const char *name, JItemValue value, short type
       jsonAddString(stringCache, cached, cached);
     }
   }
-  JEntry *entry = malloc(sizeof(JEntry));
+  JEntry *entry = new JEntry;
   if(cached) {
     entry->name = cached;
   }else{

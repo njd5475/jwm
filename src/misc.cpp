@@ -278,12 +278,15 @@ vector<string> splitStr(char *str, const char *tok) {
   vector<string> parts;
   char *pch;
   pch = strtok(str, tok);
+  if(pch) {
+    parts.push_back(string(pch));
+  }
+
   while (pch != NULL) {
     pch = strtok(NULL, tok);
 
     if (pch) {
-      std::string param(pch);
-      parts.push_back(param);
+      parts.push_back(string(pch));
     }
   }
   return parts;

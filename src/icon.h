@@ -10,6 +10,7 @@
 #ifndef ICON_H
 #define ICON_H
 
+#include "nwm.h"
 #include <vector>
 #include <string>
 

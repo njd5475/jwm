@@ -73,11 +73,11 @@ void WindowManager::Initialize(void) {
 #ifndef DISABLE_CONFIRM
   ILog(Dialogs::InitializeDialogs);
 #endif
+  ILog(Icon::InitializeIcons);
   ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
   ILog(Fonts::InitializeFonts);
   ILog(Groups::InitializeGroups);
   ILog(Hints::InitializeHints);
-  ILog(Icon::InitializeIcons);
   ILog(Places::InitializePlacement);
   ILog(Popups::InitializePopup);
   ILog(Screens::InitializeScreens);

@@ -10,6 +10,9 @@
 #ifndef MISC_H
 #define MISC_H
 
+#include <vector>
+#include <string>
+
 /** Mapping between a string and integer.
  * This is used with FindValue and FindKey.
  * Note that mappings must be sorted.
