@@ -8,17 +8,33 @@
 #ifndef SRC_COMPONENT_H_
 #define SRC_COMPONENT_H_
 
-class Graphics;
+#include "nwm.h"
+#include "event.h"
 
-class Component {
+class Graphics;
+class Graphics;
+class ClientNode;
+
+class Component : public EventHandler {
 public:
-  Component();
+  Component(Component *parent);
   virtual ~Component();
 
   virtual void Draw(Graphics* g) =0;
   virtual void mouseMoved(int mouseX, int mouseY) = 0;
   virtual bool contains(int mouseX, int mouseY) = 0;
   virtual void mouseReleased() = 0;
+  virtual int getX() = 0;
+  virtual int getY() = 0;
+  virtual int getWidth() = 0;
+  virtual int getHeight() = 0;
+  virtual bool process(const XEvent *event) = 0;
+  virtual Component* getParent() {
+    return _parent;
+  }
+
+private:
+  Component *_parent;
 };
 
 #endif /* SRC_COMPONENT_H_ */

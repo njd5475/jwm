@@ -37,19 +37,20 @@ void DrawButton(ButtonType type, AlignmentType alignment, FontType font, const c
 class Button : public Component {
 
 public:
-  Button(const char* text, int x, int y, int width, int height, void (*action)());
+  Button(Component *parent, const char* text, int x, int y, int width, int height, void (*action)());
   virtual ~Button();
 
   void Draw(Graphics *g);
 
-  int getX();
-  int getY();
-  int getWidth();
-  int getHeight();
+  virtual int getX();
+  virtual int getY();
+  virtual int getWidth();
+  virtual int getHeight();
   bool isActive();
   bool contains(int x, int y);
   void mouseMoved(int mouseX, int mouseY);
   void mouseReleased();
+  virtual bool process(const XEvent *event);
 private:
   int _x,_y,_width,_height;
   bool _active;

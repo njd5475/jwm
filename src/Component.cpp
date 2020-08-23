@@ -6,9 +6,18 @@
  */
 
 #include "Component.h"
+#include "nwm.h"
+#include "main.h"
+#include "client.h"
+#include "color.h"
+#include "font.h"
+#include "button.h"
+#include "hint.h"
+#include "Graphics.h"
+#include "WindowManager.h"
+#include "command.h"
 
-Component::Component() {
-  // TODO Auto-generated constructor stub
+Component::Component(Component *parent) : _parent(parent) {
 
 }
 

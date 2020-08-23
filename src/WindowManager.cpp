@@ -46,6 +46,10 @@
 #include "timing.h"
 #include "Flex.h"
 #include "MessageService.h"
+#include "Graphics.h"
+#include "ComponentBuilder.h"
+
+WindowManager WindowManager::MANAGER;
 
 WindowManager::WindowManager() {
 
@@ -88,6 +92,10 @@ void WindowManager::Initialize(void) {
 
 //	const char* temp = Commands::ReadFromProcess("hddtemp /dev/sda", 1000);
 //	printf("Temp %s", temp);
+}
+
+WindowManager* WindowManager::WM() {
+  return &MANAGER;
 }
 
 /** Startup the various NWM components.
@@ -141,10 +149,18 @@ void WindowManager::Startup(void) {
   /* Run any startup commands. */
   Commands::StartupCommands();
 
-	LogWindow::Add(30, 30, 300, 200);
+  LogWindow::Add(30, 30, 500, 600);
+  LogWindow::Add(400, 30, 100, 100);
   LogWindow::StartupPortals();
-	LogWindow::DrawAll();
+  LogWindow::DrawAll();
 
+
+  ComponentBuilder builder;
+  builder.percentage(0.5, 0.5);
+  builder.label("Hello");
+  builder.build();
+
+  DrawAll();
 //Flex::Create();
 }
 
@@ -200,6 +216,7 @@ void WindowManager::Destroy(void) {
   Screens::DestroyScreens();
   Setting::DestroySettings();
   Flex::DestroyFlexes();
+
 }
 
 /** Send _NWM_RESTART to the root window. */
@@ -432,3 +449,46 @@ Bool WindowManager::SelectionReleased(Display *d, XEvent *e, XPointer arg) {
   return False;
 }
 
+void WindowManager::DrawAll() {
+  for (auto cp : WM()->_components) {
+    cp.component->Draw(cp.graphics);
+    cp.graphics->copy(cp.clientNode->getWindow(), 0, 0, cp.component->getWidth(), cp.component->getHeight(), 0, 0);
+  }
+}
+
+void WindowManager::add(Component *cp) {
+  if (cp) {
+    ComponentInfo info;
+    info.component = cp;
+
+    XSetWindowAttributes attrs;
+    attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
+    attrs.event_mask = ButtonPressMask | ButtonReleaseMask | KeyPressMask
+        | ExposureMask;
+    info.pixmap = JXCreatePixmap(display, rootWindow, cp->getWidth(),
+        cp->getHeight(), rootDepth);
+    info.window = JXCreateWindow(display, rootWindow, cp->getX(), cp->getY(),
+        cp->getWidth(), cp->getHeight(), 0, CopyFromParent, InputOutput,
+        CopyFromParent, CWBackPixel | CWEventMask, &attrs);
+    info.graphics = Graphics::getRootGraphics(info.pixmap);
+
+    XSizeHints shints;
+    shints.x = cp->getX();
+    shints.y = cp->getY();
+    shints.flags = PPosition;
+    JXSetWMNormalHints(display, info.window, &shints);
+    JXStoreName(display, info.window, _("Portal"));
+    Hints::SetAtomAtom(info.window, ATOM_NET_WM_WINDOW_TYPE,
+        ATOM_NET_WM_WINDOW_TYPE_UTILITY);
+    info.clientNode = ClientNode::Create(info.window, 0, 0);
+    info.clientNode->setNoBorderClose();
+    info.clientNode->keyboardFocus();
+    Hints::WriteState(info.clientNode);
+
+    /* Grab the mouse. */
+    JXGrabButton(display, AnyButton, AnyModifier, info.window, True,
+        ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+    Events::registerHandler(cp);
+    _components.push_back(info);
+  }
+}

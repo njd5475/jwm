@@ -54,6 +54,7 @@ private:
 	std::vector<const char *> lines;
 	static std::vector<LogWindow*> windows;
 	std::vector<Component*> components;
+	Component* _base;
 };
 
 #endif /* SRC_LOGWINDOW_H_ */

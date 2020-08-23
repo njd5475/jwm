@@ -11,8 +11,8 @@ OBJECTS = background.o border.o button.o client.o \
    desktop.o event.o error.o font.o grab.o gradient.o group.o \
    help.o hint.o icon.o image.o main.o misc.o Component.o \
    move.o outline.o place.o popup.o DesktopFile.o \
-   screen.o settings.o status.o HashMap.o \
-   timing.o battery.o AbstractAction.o \
+   screen.o settings.o status.o HashMap.o ComponentBuilder.o \
+   timing.o battery.o AbstractAction.o BaseComponent.o \
    DesktopEnvironment.o DesktopSystemComponent.o \
    BackgroundComponent.o SystemComponent.o logger.o WindowManager.o \
    LogWindow.o Graphics.o TrayComponent.o Flex.o KeyEventHandler.o Token.o \

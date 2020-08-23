@@ -16,6 +16,7 @@
 #include "Graphics.h"
 #include "WindowManager.h"
 #include "command.h"
+#include "BaseComponent.h"
 
 #include "LogWindow.h"
 
@@ -64,8 +65,8 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   Events::registerHandler(this);
 
   int lineHeight = 20;
-  int temp = Fonts::GetStringWidth(FONT_MENU, "Press Button");
-  int buttonWidth = Fonts::GetStringWidth(FONT_MENU, "Don't Press");
+  int temp = Fonts::GetStringWidth(FONT_MENU, "Start");
+  int buttonWidth = Fonts::GetStringWidth(FONT_MENU, "Exit");
 
   buttonWidth = std::max(temp, buttonWidth);
   buttonWidth += 16;
@@ -74,10 +75,11 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   int okx = width / 3 - buttonWidth / 2;
   int cancelx = 2 * width / 3 - buttonWidth / 2;
   int buttony = height - lineHeight - lineHeight / 2;
+  this->_base = new BaseComponent();
   this->components.push_back(
-      new Button("Start", okx, buttony, buttonWidth, buttonHeight, &nothing));
+      new Button(this->_base, "Start", okx, buttony, buttonWidth, buttonHeight, &nothing));
   this->components.push_back(
-      new Button("Exit", cancelx, buttony, buttonWidth, buttonHeight, &exit));
+      new Button(this->_base, "Exit", cancelx, buttony, buttonWidth, buttonHeight, &exit));
 }
 
 LogWindow::LogWindow(const LogWindow &p) {
@@ -91,6 +93,7 @@ LogWindow::LogWindow(const LogWindow &p) {
   this->node = p.node;
   this->graphics = p.graphics;
   this->percentage = p.percentage;
+  this->_base = p._base;
   Events::registerHandler(this);
 }
 
@@ -142,8 +145,9 @@ void LogWindow::Draw() {
   std::vector<const char*>::reverse_iterator it = lines.rbegin();
   it += lns;
   for (it = lines.rbegin(); it != lines.rend(); ++it) {
-    Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, lineHeight * lns,
-        width, (*it));
+    graphics->print((*it), 4, lineHeight * lns, width);
+//    Fonts::RenderString(pixmap, FONT_MENU, COLOR_MENU_FG, 4, lineHeight * lns,
+//        width, (*it));
     ++lns;
   }
 

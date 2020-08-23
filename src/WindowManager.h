@@ -8,6 +8,19 @@
 #ifndef SRC_WINDOWMANAGER_H_
 #define SRC_WINDOWMANAGER_H_
 #include "nwm.h"
+#include "HashMap.h"
+
+class Component;
+class Graphics;
+class ClientNode;
+
+struct ComponentInfo {
+  Pixmap pixmap;
+  Window window;
+  Graphics* graphics;
+  ClientNode* clientNode;
+  Component *component;
+};
 
 class WindowManager {
 public:
@@ -28,9 +41,19 @@ public:
 	static void SendExit(void);
 	static void SendReload(void);
 	static void SendNWMMessage(const char *message);
+	static void DrawAll();
 
+private:
 	WindowManager();
 	virtual ~WindowManager();
+
+public:
+	void add(Component* component);
+
+	static WindowManager *WM();
+private:
+	static WindowManager MANAGER;
+	std::vector<ComponentInfo> _components;
 };
 
 #endif /* SRC_WINDOWMANAGER_H_ */

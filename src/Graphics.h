@@ -20,6 +20,7 @@ private:
 public:
 	void fillRectangle(int x, int y, int width, int height);
 	void drawRectangle(int x, int y, int width, int height);
+	void print(const char* text, int x, int y, int width);
 	void free();
 	void line(int x1, int y1, int x2, int y2);
 	void point(int x, int y);

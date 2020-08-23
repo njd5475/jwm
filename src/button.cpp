@@ -206,8 +206,8 @@ void DrawButtonStyle(long fg, long bg1, long bg2, long up, long down,
 
 }
 
-Button::Button(const char *text, int x, int y, int width, int height, void (*action)()) :
-    _x(x), _y(y), _width(width), _height(height), _active(false), _action(action) {
+Button::Button(Component* parent, const char *text, int x, int y, int width, int height, void (*action)()) :
+    _x(x), _y(y), _width(width), _height(height), _active(false), _action(action), Component(parent) {
   Assert(text);
   _text = CopyString(text);
 }
@@ -263,4 +263,8 @@ void Button::mouseMoved(int mouseX, int mouseY) {
 
 void Button::mouseReleased() {
   _action();
+}
+
+bool Button::process(const XEvent *event) {
+  return false;
 }
