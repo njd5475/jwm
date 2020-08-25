@@ -35,9 +35,14 @@ Installation
 
 License
 ------------------------------------------------------------------------------
-See LICENSE for license information.
 
-For more information see http://joewing.net/projects/NICWM/
+MIT
+
+
+Based Off JWM
+------------------------------------------------------------------------------
+
+For more information see http://joewing.net/projects/JWM/
 
 Test
 ===
