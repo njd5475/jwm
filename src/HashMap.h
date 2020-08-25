@@ -46,7 +46,7 @@ public:
 private:
   MapEntry* _get(const char* key) {
     short type;
-    Value entry = jsonGet(_map, key, &type);
+    Value entry = jsonGetKey(_map, key, &type);
     return (MapEntry*)entry.ptr_val;
   }
 

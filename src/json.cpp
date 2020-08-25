@@ -262,6 +262,15 @@ JItemValue jsonGet(const JObject *obj, const char* keys, short *type) {
   return jval;
 }
 
+
+JItemValue jsonGetKey(const JObject *obj, const char *key, short *type) {
+  if (obj == 0 || key == NULL) {
+    return (JItemValue) { 0 };
+  }
+
+  return _jsonGetObjVal(obj, key, type);
+}
+
 char *last(const char *keys) {
   if (!keys) {
     return 0;

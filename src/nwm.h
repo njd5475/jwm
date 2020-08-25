@@ -126,7 +126,7 @@
 #define URGENCY_DELAY      500   /**< Flash timeout in ms for urgency. */
 #define DEFAULT_TIMEOUT_MS 5000  /**< Default pipe timeout. */
 
-#define SHELL_NAME "/bin/sh"
+#define SHELL_NAME "/bin/bash"
 
 #ifdef __GNUC__
 #  if __GNUC__ >= 3

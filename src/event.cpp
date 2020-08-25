@@ -22,6 +22,7 @@
 #include "grab.h"
 #include "DesktopEnvironment.h"
 #include "Flex.h"
+#include "WindowManager.h"
 
 #ifdef USE_INOTIFYTOOLS
 #include <inotifytools/inotify.h>
@@ -215,6 +216,7 @@ char Events::_WaitForEvent(XEvent *event) {
       Logger::Log(buf);
     }
     Flex::DrawAll();
+    WindowManager::DrawAll();
 
     for(auto handler : handlers) {
       handled = handler->process(event);

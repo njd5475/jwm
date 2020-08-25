@@ -116,6 +116,10 @@ void Commands::RunCommand(const char *command) {
       snprintf(str, var_len, "DISPLAY=%s", displayString);
       putenv(str);
     }
+    const char* path = "PATH=/usr/bin";
+    char* toDel = path;
+    putenv(toDel = strdup(path)); //TODO: dynamically deduce from where the executable is found
+    delete toDel;
     setsid();
     execl(SHELL_NAME, SHELL_NAME, "-c", command, NULL);
     Warning(_("exec failed: (%s) %s"), SHELL_NAME, command);

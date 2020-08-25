@@ -22,6 +22,7 @@ public:
   const char* getFile();
 
   const char* getName();
+  const char* getExec();
   const char* getKeywords();
   Image* getImage();
   Icon* getIcon();

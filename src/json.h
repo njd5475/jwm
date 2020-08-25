@@ -101,6 +101,7 @@ JArray*  jsonNewArray();
 
 /** Query & Extraction methods */
 JItemValue   jsonGet(const JObject *obj, const char *keys, short *type);
+JItemValue   jsonGetKey(const JObject *obj, const char *key, short *type);
 int          jsonInt(const JObject *obj, const char *keys);
 unsigned int jsonUInt(const JObject *obj, const char *keys);
 float        jsonFloat(const JObject *obj, const char *keys);

@@ -48,6 +48,7 @@
 #include "MessageService.h"
 #include "Graphics.h"
 #include "ComponentBuilder.h"
+#include "DesktopFile.h"
 
 WindowManager WindowManager::MANAGER;
 
@@ -97,6 +98,19 @@ void WindowManager::Initialize(void) {
 WindowManager* WindowManager::WM() {
   return &MANAGER;
 }
+
+class ClickDesktopFile : public ClickHandler {
+public:
+  ClickDesktopFile(DesktopFile *file) : _file(file) {}
+  virtual ~ClickDesktopFile() {}
+
+  virtual void click(const XEvent *event, Component* me) {
+    vLog("Clicking on %s to run %s\n", _file->getName(), _file->getExec());
+    Commands::RunCommand(_file->getExec());
+  }
+private:
+  DesktopFile *_file;
+};
 
 /** Startup the various NWM components.
  * This is called after the X connection is opened.
@@ -149,16 +163,27 @@ void WindowManager::Startup(void) {
   /* Run any startup commands. */
   Commands::StartupCommands();
 
-  LogWindow::Add(30, 30, 500, 600);
-  LogWindow::Add(400, 30, 100, 100);
   LogWindow::StartupPortals();
   LogWindow::DrawAll();
 
-
   ComponentBuilder builder;
-  builder.percentage(0.5, 0.5);
-  builder.label("Hello");
-  builder.build();
+  const char *last = NULL;
+  int i = 10;
+  for (auto file : DesktopFile::getDesktopFiles()) {
+    if (file->getName()) {
+      builder.percentage(0.5, 0.5);
+      builder.label(file->getName());
+      if (last) {
+        builder.below(last);
+      }
+      builder.clicked(new ClickDesktopFile(file));
+      builder.build(last = file->getName());
+    }
+    i--;
+    if(i <= 0) {
+      break;
+    }
+  }
 
   DrawAll();
 //Flex::Create();
@@ -244,7 +269,7 @@ void WindowManager::SendNWMMessage(const char *message) {
   event.xclient.type = ClientMessage;
   event.xclient.window = rootWindow;
   event.xclient.message_type = JXInternAtom(display, message, False);
-  event.xclient.format = 32;
+  event.xclient.format = 64;
   JXSendEvent(display, rootWindow, False, SubstructureRedirectMask, &event);
   CloseConnection();
 }
@@ -452,7 +477,8 @@ Bool WindowManager::SelectionReleased(Display *d, XEvent *e, XPointer arg) {
 void WindowManager::DrawAll() {
   for (auto cp : WM()->_components) {
     cp.component->Draw(cp.graphics);
-    cp.graphics->copy(cp.clientNode->getWindow(), 0, 0, cp.component->getWidth(), cp.component->getHeight(), 0, 0);
+    cp.graphics->copy(cp.clientNode->getWindow(), 0, 0,
+        cp.component->getWidth(), cp.component->getHeight(), 0, 0);
   }
 }
 
@@ -483,6 +509,8 @@ void WindowManager::add(Component *cp) {
     info.clientNode = ClientNode::Create(info.window, 0, 0);
     info.clientNode->setNoBorderClose();
     info.clientNode->keyboardFocus();
+    info.clientNode->setNoBorderTitle();
+    info.clientNode->setNoBorderOutline();
     Hints::WriteState(info.clientNode);
 
     /* Grab the mouse. */

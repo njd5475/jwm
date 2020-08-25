@@ -16,6 +16,7 @@
 #include "font.h"
 #include "Graphics.h"
 #include "WindowManager.h"
+#include "cursor.h"
 
 class EmptyComponent: public Component {
 public:
@@ -87,11 +88,48 @@ public:
   }
   virtual void Draw(Graphics *g) {
     getParent()->Draw(g);
+    g->setForeground(COLOR_MENU_BG);
     g->fillRectangle(0, 0, getWidth(), getHeight());
     g->print(_text, 0, 0, getWidth());
   }
 private:
   const char *_text;
+};
+
+class AlignBelow: public EmptyComponent {
+public:
+  AlignBelow(Component *parent, Component* below): EmptyComponent(parent), _below(below) {
+    Assert(_below);
+  }
+  virtual ~AlignBelow() {}
+  virtual int getY() {
+    return _below->getY() + _below->getHeight();
+  }
+private:
+  Component* _below;
+};
+
+class Clicked: public EmptyComponent {
+public:
+  Clicked(Component *parent, ClickHandler *handler) : EmptyComponent(parent), _handler(handler) {
+
+  }
+  virtual ~Clicked() {}
+
+  virtual bool process(const XEvent *event) {
+    if(event->type == ButtonRelease && event->xbutton.button == Button1) {
+      int x = event->xbutton.x_root;
+      int y = event->xbutton.y_root+20;
+      if(this->contains(x,y)) {
+        _handler->click(event, this);
+        return true;
+      }
+    }
+    return false;
+  }
+private:
+  ClickHandler *_handler;
+
 };
 
 ComponentBuilder::ComponentBuilder() :
@@ -114,8 +152,34 @@ ComponentBuilder* ComponentBuilder::label(const char *text) {
   return this;
 }
 
-Component* ComponentBuilder::build() {
+ComponentBuilder* ComponentBuilder::below(const char* name) {
+  this->_current = new AlignBelow(_current, get(name));
+  return this;
+}
+
+ComponentBuilder* ComponentBuilder::clicked(ClickHandler *handler) {
+  this->_current = new Clicked(_current, handler);
+  return this;
+}
+
+bool ComponentBuilder::saveAs(const char* name, Component *component) {
+  if(!_components.has(name)) {
+    _components[strdup(name)] = component;
+    return true;
+  }
+  return false;
+}
+
+Component *ComponentBuilder::get(const char* name) {
+  if(_components.has(name)) {
+    return _components[name].value();
+  }
+  return NULL;
+}
+
+Component* ComponentBuilder::build(const char* name) {
   WindowManager::WM()->add(_current);
+  saveAs(name, _current);
   Component *added = _current;
   _current = new BaseComponent();
   return added;

@@ -23,13 +23,17 @@ DesktopFile::DesktopFile(const char *file) :
 
 DesktopFile::~DesktopFile() {
   // TODO Auto-generated destructor stub
-  if(_icon) {
+  if (_icon) {
     delete _icon;
   }
 }
 
 const char* DesktopFile::getFile() {
   return _file.c_str();
+}
+
+const char* DesktopFile::getExec() {
+  return _exec;
 }
 
 using namespace std;
@@ -58,33 +62,57 @@ DesktopFile* DesktopFile::parse(const char *file) {
 
       if (split.size() >= 2) {
 
-        const char* value = split[1].c_str();
+        const char *value = split[1].c_str();
 
         vector<string> keySplit = splitStr(strdup(split[0].c_str()), "[");
 
         if (keySplit.size() > 1) {
           std::string key = keySplit[0].c_str();
-          const char *lang = keySplit[1].erase(keySplit[1].find_last_of(']')).c_str();
+          const char *lang =
+              keySplit[1].erase(keySplit[1].find_last_of(']')).c_str();
 
           if (key == "keywords") {
             toRet->addKeywords(lang, value);
           } else if (key == "Name") {
             toRet->addName(lang, value);
           } else if (key == "Exec") {
-            toRet->setExec(value);
+            toRet->setExec(strdup(value));
           } else if (key == "Icon") {
             std::string imagePath(value);
             Image *image = NULL;
-            if(imagePath.rfind("/", 0) == 0) {
+            if (imagePath.rfind("/", 0) == 0) {
               //full path
               image = Image::LoadImage(value, 1, 1, NULL);
-            }else{
+            } else {
               std::string imageFile(file);
               std::experimental::filesystem::path imagePath(file);
               imagePath.replace_filename(value);
               image = Image::LoadImage(imagePath.string().c_str(), 1, 1, NULL);
             }
-            if(image == NULL) {
+            if (image == NULL) {
+              toRet->setIcon(strdup(value));
+            }
+            toRet->setImage(image);
+          }
+        } else {
+          std::string key = split[0];
+          if (key == "Name") {
+            toRet->addName(DesktopEnvironment::getLocale(), value);
+          } else if (key == "Exec") {
+            toRet->setExec(strdup(value));
+          } else if (key == "Icon") {
+            std::string imagePath(value);
+            Image *image = NULL;
+            if (imagePath.rfind("/", 0) == 0) {
+              //full path
+              image = Image::LoadImage(value, 1, 1, NULL);
+            } else {
+              std::string imageFile(file);
+              std::experimental::filesystem::path imagePath(file);
+              imagePath.replace_filename(value);
+              image = Image::LoadImage(imagePath.string().c_str(), 1, 1, NULL);
+            }
+            if (image == NULL) {
               toRet->setIcon(strdup(value));
             }
             toRet->setImage(image);
@@ -110,9 +138,9 @@ const char* DesktopFile::getName() {
   if (_names.has(locale)) {
     name = _names[DesktopEnvironment::getLocale()].value();
   } else {
-    for(auto entry : _names.entries()) {
+    for (auto entry : _names.entries()) {
       std::string key = entry->key();
-      if(key.rfind(locale, 0) == 0) {
+      if (key.rfind(locale, 0) == 0) {
         name = entry->value();
         break;
       }
