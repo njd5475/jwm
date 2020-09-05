@@ -12,6 +12,7 @@
 #include "nwm.h"
 
 class Component;
+class ComponentProperty;
 
 class ClickHandler {
 public:
@@ -35,6 +36,7 @@ protected:
 private:
   HashMap<Component*> _components;
   Component *_current;
+  HashMap<ComponentProperty*>* _properties;
 };
 
 #endif /* COMPONENTBUILDER_H_ */

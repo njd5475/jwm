@@ -62,14 +62,14 @@ public:
     jsonFree(Value {this->_map}, VAL_OBJ);
   }
 
-  bool has(const char* key) {
+  bool hasKey(const char* key) {
     MapEntry *entry = _get(key);
     return entry != NULL;
   }
 
   T get(const char* key) {
     auto entry = _get(key);
-    return entry.value();
+    return entry->value();
   }
 
   void put(const char* key, T value) {

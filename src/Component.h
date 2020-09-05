@@ -10,6 +10,8 @@
 
 #include "nwm.h"
 #include "event.h"
+#include "HashMap.h"
+#include "ComponentProperty.h"
 
 class Graphics;
 class Graphics;
@@ -32,6 +34,9 @@ public:
   virtual Component* getParent() {
     return _parent;
   }
+  virtual void initProperties(HashMap<ComponentProperty*>* porperties) = 0;
+  virtual int getIntProp(const char* propName) = 0;
+  virtual const char* getStringProp(const char* propName) = 0;
 
 private:
   Component *_parent;

@@ -135,7 +135,7 @@ DesktopFile* DesktopFile::get(const char *file) {
 const char* DesktopFile::getName() {
   const char *locale = DesktopEnvironment::getLocale();
   const char *name = NULL;
-  if (_names.has(locale)) {
+  if (_names.hasKey(locale)) {
     name = _names[DesktopEnvironment::getLocale()].value();
   } else {
     for (auto entry : _names.entries()) {

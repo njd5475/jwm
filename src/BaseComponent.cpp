@@ -51,3 +51,15 @@ int BaseComponent::getHeight() {
 bool BaseComponent::process(const XEvent *event) {
   return false;
 }
+
+void BaseComponent::initProperties(HashMap<ComponentProperty*>* properties) {
+  //do nothings
+}
+
+int BaseComponent::getIntProp(const char* propName) {
+  return 0;
+}
+
+const char* BaseComponent::getStringProp(const char* propName) {
+  return "";
+}

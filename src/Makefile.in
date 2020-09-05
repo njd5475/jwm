@@ -13,7 +13,7 @@ OBJECTS = background.o border.o button.o client.o \
    move.o outline.o place.o popup.o DesktopFile.o \
    screen.o settings.o status.o HashMap.o ComponentBuilder.o \
    timing.o battery.o AbstractAction.o BaseComponent.o \
-   DesktopEnvironment.o DesktopSystemComponent.o \
+   DesktopEnvironment.o DesktopSystemComponent.o ComponentProperty.o \
    BackgroundComponent.o SystemComponent.o logger.o WindowManager.o \
    LogWindow.o Graphics.o TrayComponent.o Flex.o KeyEventHandler.o Token.o \
    json.o fnv.o Configuration.o Notifications.o ApplicationsSystemComponent.o \

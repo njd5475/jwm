@@ -14,6 +14,7 @@
 #include "timing.h"
 #include "KeyEventHandler.h"
 #include "AbstractAction.h"
+#include "HashMap.h"
 
 typedef unsigned char MouseContextType;
 
@@ -103,6 +104,10 @@ private:
 
   static std::vector<EventHandler*> handlers;
   static std::vector<CallbackNode*> callbacks;
+  static HashMap< std::vector<EventHandler*> > _handlerMap;
+
+  static const char* getEventName(const int type);
+
   static char restack_pending;
   static char task_update_pending;
   static char pager_update_pending;

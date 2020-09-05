@@ -35,6 +35,7 @@ Time Events::eventTime = CurrentTime;
 
 std::vector<CallbackNode*> Events::callbacks;
 
+
 char Events::restack_pending = 0;
 char Events::task_update_pending = 0;
 char Events::pager_update_pending = 0;
@@ -93,109 +94,90 @@ char Events::_WaitForEvent(XEvent *event) {
     _UpdateTime(event);
 
     char buf[80];
-    const char *eventName = "Unknown Event";
+    const char *eventName = getEventName(event->type);
     switch (event->type) {
     case ConfigureRequest:
-      eventName = "ConfigureRequest";
       _HandleConfigureRequest(&event->xconfigurerequest);
       handled = 1;
       break;
     case MapRequest:
-      eventName = "MapRequest";
       _HandleMapRequest(&event->xmap);
       handled = 1;
       break;
     case PropertyNotify:
-      eventName = "PropertyNotify";
       handled = _HandlePropertyNotify(&event->xproperty);
       break;
     case ClientMessage:
-      eventName = "ClientMessage";
       _HandleClientMessage(&event->xclient);
       handled = 1;
       break;
     case UnmapNotify:
-      eventName = "UnmapNotify";
       _HandleUnmapNotify(&event->xunmap);
       handled = 1;
       break;
     case Expose:
-      eventName = "Expose";
       handled = _HandleExpose(&event->xexpose);
       break;
     case ColormapNotify:
-      eventName = "ColormapNotify";
       _HandleColormapChange(&event->xcolormap);
       handled = 1;
       break;
     case DestroyNotify:
-      eventName = "DestroyNotify";
       handled = _HandleDestroyNotify(&event->xdestroywindow);
       break;
     case SelectionClear:
-      eventName = "SelectionClear";
       handled = _HandleSelectionClear(&event->xselectionclear);
       break;
     case ResizeRequest:
 
-      eventName = "ResizeRequest";
 //      handled =
 //          DesktopEnvironment::DefaultEnvironment()->HandleDockResizeRequest(
 //              &event->xresizerequest);
       break;
     case MotionNotify:
-      eventName = "MotionNotify";
       Cursors::SetMousePosition(event->xmotion.x_root, event->xmotion.y_root,
           event->xmotion.window);
       handled = 0;
       break;
     case ButtonPress:
+      Cursors::SetMousePosition(event->xbutton.x_root, event->xbutton.y_root,
+          event->xbutton.window);
+      handled = 0;
+      break;
     case ButtonRelease:
-      if (event->type == ButtonPress) {
-        eventName = "ButtonPress";
-      } else {
-        eventName = "ButtonRelease";
-      }
       Cursors::SetMousePosition(event->xbutton.x_root, event->xbutton.y_root,
           event->xbutton.window);
       handled = 0;
       break;
     case EnterNotify:
-      eventName = "EnterNotify";
       Cursors::SetMousePosition(event->xcrossing.x_root,
           event->xcrossing.y_root, event->xcrossing.window);
       handled = 0;
       break;
     case LeaveNotify:
-      eventName = "LeaveNotify";
       Cursors::SetMousePosition(event->xcrossing.x_root,
           event->xcrossing.y_root,
           None);
       handled = 0;
       break;
     case ReparentNotify:
-      eventName = "ReparentNotify";
 //      DesktopEnvironment::DefaultEnvironment()->HandleDockReparentNotify(
 //          &event->xreparent);
 //      handled = 1;
       break;
     case ConfigureNotify:
-      eventName = "ConfigureNotify";
       handled = _HandleConfigureNotify(&event->xconfigure);
       break;
     case CreateNotify:
+      handled = 1;
+      break;
     case MapNotify:
+      handled = 1;
+      break;
     case GraphicsExpose:
+      handled = 1;
+      break;
     case NoExpose:
-      if (event->type == CreateNotify) {
-        eventName = "CreateNotify";
-      } else if (event->type == MapNotify) {
-        eventName = "MapNotify";
-      } else if (event->type == GraphicsExpose) {
-        eventName = "GraphicsExpose";
-      } else if (event->type == NoExpose) {
-        eventName = "NoExpose";
-      }
       handled = 1;
       break;
     default:
@@ -228,7 +210,34 @@ char Events::_WaitForEvent(XEvent *event) {
   } while (handled && JLIKELY(!shouldExit));
 
   return !handled;
+}
 
+const char* Events::getEventName(const int type) {
+  switch (type) {
+  case ConfigureRequest: return "ConfigureRequest";
+  case MapRequest:       return "MapRequest";
+  case PropertyNotify:   return "PropertyNotify";
+  case ClientMessage:    return "ClientMessage";
+  case UnmapNotify:      return "UnmapNotify";
+  case Expose:           return "Expose";
+  case ColormapNotify:   return "ColormapNotify";
+  case DestroyNotify:    return "DestroyNotify";
+  case SelectionClear:   return "SelectionClear";
+  case ResizeRequest:    return "ResizeRequest";
+  case MotionNotify:     return "MotionNotify";
+  case ButtonPress:      return "ButtonPress";
+  case ButtonRelease:    return "ButtonRelease";
+  case EnterNotify:      return "EnterNotify";
+  case LeaveNotify:      return "LeaveNotify";
+  case ReparentNotify:   return "ReparentNotify";
+  case ConfigureNotify:  return "ConfigureNotify";
+  case CreateNotify:     return "CreateNotify";
+  case MapNotify:        return "MapNotify";
+  case GraphicsExpose:   return "GraphicsExpose";
+  case NoExpose:         return "NoExpose";
+  default:
+    return "Unknown Event";
+  }
 }
 
 /** Wake up components that need to run at certain times. */

@@ -13,6 +13,7 @@
 #include "font.h"
 #include "settings.h"
 #include "Component.h"
+#include "HashMap.h"
 
 class Graphics;
 class Icon;
@@ -51,6 +52,9 @@ public:
   void mouseMoved(int mouseX, int mouseY);
   void mouseReleased();
   virtual bool process(const XEvent *event);
+  virtual int getIntProp(const char* propName);
+  virtual const char* getStringProp(const char* propName);
+  virtual void initProperties(HashMap<ComponentProperty*>* properties);
 private:
   int _x,_y,_width,_height;
   bool _active;

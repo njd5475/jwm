@@ -268,3 +268,16 @@ void Button::mouseReleased() {
 bool Button::process(const XEvent *event) {
   return false;
 }
+
+int Button::getIntProp(const char* propName) {
+
+
+}
+
+const char* Button::getStringProp(const char* propName) {
+
+}
+
+void Button::initProperties(HashMap<ComponentProperty*>* properties) {
+
+}

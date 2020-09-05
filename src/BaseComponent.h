@@ -24,6 +24,9 @@ public:
   virtual int getWidth();
   virtual int getHeight();
   virtual bool process(const XEvent *event);
+  virtual void initProperties(HashMap<ComponentProperty*>* porperties);
+  virtual int getIntProp(const char* propName);
+  virtual const char* getStringProp(const char* propName);
 };
 
 #endif /* SRC_BASECOMPONENT_H_ */

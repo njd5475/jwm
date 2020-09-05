@@ -42,7 +42,6 @@ if test $use_xopen_source = "yes"; then
 
   # Needed for Solaris 2.5.1 so that struct timeval is declared.
   AC_DEFINE(__EXTENSIONS__, 1, [Define for timeval on Solaris 2.5.1])
-
 fi
 
 ############################################################################

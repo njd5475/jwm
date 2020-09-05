@@ -7,24 +7,26 @@
 
 #include "ComponentBuilder.h"
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <cstring>
 
 #include "BaseComponent.h"
 #include "color.h"
 #include "Component.h"
+#include "ComponentProperty.h"
+#include "debug.h"
 #include "font.h"
 #include "Graphics.h"
 #include "WindowManager.h"
-#include "cursor.h"
 
 class EmptyComponent: public Component {
 public:
   EmptyComponent(Component *parent) :
-      Component(parent) {
+      Component(parent), _properties(NULL) {
   }
-  virtual ~EmptyComponent() {
-  }
+  virtual ~EmptyComponent() {}
+
   virtual int getX() {
     return getParent()->getX();
   }
@@ -51,6 +53,26 @@ public:
   }
   virtual void mouseMoved(int, int) {
   }
+  virtual void initProperties(HashMap<ComponentProperty*>* properties) {
+    _properties = properties;
+    if(this->getParent()) {
+      this->getParent()->initProperties(properties);
+    }
+  }
+  virtual const char* getStringProp(const char* propName) {
+    if(this->_properties->hasKey(propName)) {
+      return (const char*) this->_properties->get(propName)->get();
+    }
+    return NULL;
+  }
+  virtual int getIntProp(const char* propName) {
+    if(this->_properties->hasKey(propName)) {
+      return *(int*) this->_properties->get(propName)->get();
+    }
+    return NULL;
+  }
+private:
+  HashMap<ComponentProperty*>* _properties;
 };
 
 class Percentage: public EmptyComponent {
@@ -88,8 +110,12 @@ public:
   }
   virtual void Draw(Graphics *g) {
     getParent()->Draw(g);
-    g->setForeground(COLOR_MENU_BG);
+    //int fg = = COLOR_MENU_BG;
+    int bg = getIntProp("background");
+    g->setForeground(bg);
     g->fillRectangle(0, 0, getWidth(), getHeight());
+    int fg = getIntProp("foreground");
+    g->setForeground(fg);
     g->print(_text, 0, 0, getWidth());
   }
 private:
@@ -133,9 +159,8 @@ private:
 };
 
 ComponentBuilder::ComponentBuilder() :
-    _current(new BaseComponent()) {
+    _current(new BaseComponent()), _properties(new HashMap<ComponentProperty*>) {
   // TODO Auto-generated constructor stub
-
 }
 
 ComponentBuilder::~ComponentBuilder() {
@@ -148,6 +173,18 @@ ComponentBuilder* ComponentBuilder::percentage(float percentX, float percentY) {
 }
 
 ComponentBuilder* ComponentBuilder::label(const char *text) {
+  ComponentProperty *fg = new ComponentProperty();
+  int* defaultFg = new int;
+  *defaultFg = COLOR_MENU_FG;
+  fg->set(defaultFg);
+  (*this->_properties)["foreground"] = fg;
+
+  ComponentProperty *bg = new ComponentProperty();
+  int* defaultBg = new int;
+  *defaultBg = COLOR_CLOCK_BG1;
+  bg->set(defaultBg);
+  (*this->_properties)["background"] = bg;
+
   this->_current = new Label(_current, text);
   return this;
 }
@@ -163,7 +200,7 @@ ComponentBuilder* ComponentBuilder::clicked(ClickHandler *handler) {
 }
 
 bool ComponentBuilder::saveAs(const char* name, Component *component) {
-  if(!_components.has(name)) {
+  if(!_components.hasKey(name)) {
     _components[strdup(name)] = component;
     return true;
   }
@@ -171,16 +208,24 @@ bool ComponentBuilder::saveAs(const char* name, Component *component) {
 }
 
 Component *ComponentBuilder::get(const char* name) {
-  if(_components.has(name)) {
+  if(_components.hasKey(name)) {
     return _components[name].value();
   }
   return NULL;
 }
 
 Component* ComponentBuilder::build(const char* name) {
+  HashMap<ComponentProperty*>* props = _properties;
+  _properties = new HashMap<ComponentProperty*>;
+
+  _current->initProperties(props);
+
   WindowManager::WM()->add(_current);
+
   saveAs(name, _current);
+
   Component *added = _current;
   _current = new BaseComponent();
+
   return added;
 }
