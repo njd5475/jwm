@@ -135,10 +135,10 @@ public:
 		//int fg = = COLOR_MENU_BG;
 		int bg = getIntProp("background");
 		g->setForeground(bg);
-		g->fillRectangle(0, 0, getWidth(), getHeight());
+		g->fillRectangle(getX(), getY(), getWidth(), getHeight());
 		int fg = getIntProp("foreground");
 		g->setForeground(fg);
-		g->print(_text, 0, 0, getWidth());
+		g->print(_text, getX(), getY(), getWidth());
 	}
 private:
 	const char *_text;

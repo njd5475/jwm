@@ -49,15 +49,17 @@
 #include "Graphics.h"
 #include "ComponentBuilder.h"
 #include "DesktopFile.h"
+#include "ComponentGroup.h"
 
 WindowManager WindowManager::MANAGER;
 
-WindowManager::WindowManager() {
+WindowManager::WindowManager() :
+		_group(NULL) {
 
 }
 
 WindowManager::~WindowManager() {
-
+	delete _group;
 }
 
 void WindowManager::Initialize(void) {
@@ -171,14 +173,14 @@ void WindowManager::Startup(void) {
 
 	ComponentBuilder builder;
 	const char *last = NULL;
-	int i = 10;
+	int i = 20;
 	for (auto file : DesktopFile::getDesktopFiles()) {
 		if (file->getName()) {
 			builder.percentage(0.5, 0.5);
-			builder.label(file->getName());
 			if (last) {
 				builder.below(last);
 			}
+			builder.label(file->getName());
 			builder.clicked(new ClickDesktopFile(file));
 			builder.hover(COLOR_MENU_ACTIVE_DOWN);
 			builder.build(last = file->getName());
@@ -480,51 +482,59 @@ Bool WindowManager::SelectionReleased(Display *d, XEvent *e, XPointer arg) {
 }
 
 void WindowManager::DrawAll() {
-	for (auto cp : WM()->_components) {
-		cp.component->Draw(cp.graphics);
-		cp.graphics->copy(cp.clientNode->getWindow(), 0, 0,
-				cp.component->getWidth(), cp.component->getHeight(), 0, 0);
+	if(WM()) {
+		WM()->Draw();
+	}
+}
+
+void WindowManager::Draw() {
+	if (_group) {
+		_group->Draw();
 	}
 }
 
 void WindowManager::add(Component *cp) {
-	if (cp) {
-		ComponentInfo info;
-		info.component = cp;
-
-		XSetWindowAttributes attrs;
-		attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
-		attrs.event_mask = ButtonPressMask | ButtonReleaseMask
-				| SubstructureNotifyMask | ExposureMask | KeyPressMask
-				| KeyReleaseMask | EnterWindowMask | PointerMotionMask;
-		info.pixmap = JXCreatePixmap(display, rootWindow, cp->getWidth(),
-				cp->getHeight(), rootDepth);
-		info.window = JXCreateWindow(display, rootWindow, cp->getX(),
-				cp->getY(), cp->getWidth(), cp->getHeight(), 0, CopyFromParent,
-				InputOutput, CopyFromParent, CWBackPixel | CWEventMask, &attrs);
-		info.graphics = Graphics::getRootGraphics(info.pixmap);
-
-		XSizeHints shints;
-		shints.x = cp->getX();
-		shints.y = cp->getY();
-		shints.flags = PPosition;
-		JXSetWMNormalHints(display, info.window, &shints);
-		JXStoreName(display, info.window, _("Portal"));
-		Hints::SetAtomAtom(info.window, ATOM_NET_WM_WINDOW_TYPE,
-				ATOM_NET_WM_WINDOW_TYPE_UTILITY);
-		info.clientNode = ClientNode::Create(info.window, 0, 0);
-		info.clientNode->setNoBorderClose();
-		info.clientNode->keyboardFocus();
-		info.clientNode->setNoBorderTitle();
-		info.clientNode->setNoBorderOutline();
-		Hints::WriteState(info.clientNode);
-
-		/* Grab the mouse. */
-		JXGrabButton(display, AnyButton, AnyModifier, info.window, True,
-				ButtonReleaseMask | ButtonMotionMask | ButtonPressMask,
-				GrabModeAsync, GrabModeAsync, None, None);
-		Cursors::GrabMouse(info.window);
-		Events::registerUnconsumedHandler(cp);
-		_components.push_back(info);
+	if (!_group) {
+		_group = new ComponentGroup(display, rootWindow);
 	}
+	_group->add(cp);
+//	if (cp) {
+//		ComponentInfo info;
+//		info.component = cp;
+//
+//		XSetWindowAttributes attrs;
+//		attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
+//		attrs.event_mask = ButtonPressMask | ButtonReleaseMask
+//				| SubstructureNotifyMask | ExposureMask | KeyPressMask
+//				| KeyReleaseMask | EnterWindowMask | PointerMotionMask;
+//		info.pixmap = JXCreatePixmap(display, rootWindow, cp->getWidth(),
+//				cp->getHeight(), rootDepth);
+//		info.window = JXCreateWindow(display, rootWindow, cp->getX(),
+//				cp->getY(), cp->getWidth(), cp->getHeight(), 0, CopyFromParent,
+//				InputOutput, CopyFromParent, CWBackPixel | CWEventMask, &attrs);
+//		info.graphics = Graphics::getRootGraphics(info.pixmap);
+//
+//		XSizeHints shints;
+//		shints.x = cp->getX();
+//		shints.y = cp->getY();
+//		shints.flags = PPosition;
+//		JXSetWMNormalHints(display, info.window, &shints);
+//		JXStoreName(display, info.window, _("Portal"));
+//		Hints::SetAtomAtom(info.window, ATOM_NET_WM_WINDOW_TYPE,
+//				ATOM_NET_WM_WINDOW_TYPE_UTILITY);
+//		info.clientNode = ClientNode::Create(info.window, 0, 0);
+//		info.clientNode->setNoBorderClose();
+//		info.clientNode->keyboardFocus();
+//		info.clientNode->setNoBorderTitle();
+//		info.clientNode->setNoBorderOutline();
+//		Hints::WriteState(info.clientNode);
+//
+//		/* Grab the mouse. */
+//		JXGrabButton(display, AnyButton, AnyModifier, info.window, True,
+//				ButtonReleaseMask | ButtonMotionMask | ButtonPressMask,
+//				GrabModeAsync, GrabModeAsync, None, None);
+//		Cursors::GrabMouse(info.window);
+//		Events::registerUnconsumedHandler(cp);
+//		_components.push_back(info);
+//	}
 }

@@ -17,7 +17,7 @@ OBJECTS = background.o border.o button.o client.o \
    BackgroundComponent.o SystemComponent.o logger.o WindowManager.o \
    LogWindow.o Graphics.o TrayComponent.o Flex.o KeyEventHandler.o Token.o \
    json.o fnv.o Configuration.o Notifications.o ApplicationsSystemComponent.o \
-   MessageService.o
+   MessageService.o ComponentGroup.o
 
 EXE = nicwm
 

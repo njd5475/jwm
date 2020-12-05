@@ -23,12 +23,12 @@
 #include "timing.h"
 #include "grab.h"
 #include "hint.h"
-#include "misc.h"
 #include "DesktopEnvironment.h"
 #include "move.h"
 #include "font.h"
 #include "outline.h"
 #include "status.h"
+#include "misc.h"
 
 #include <X11/Xlibint.h>
 

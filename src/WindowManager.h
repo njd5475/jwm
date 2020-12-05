@@ -13,6 +13,7 @@
 class Component;
 class Graphics;
 class ClientNode;
+class ComponentGroup;
 
 struct ComponentInfo {
   Pixmap pixmap;
@@ -47,11 +48,13 @@ private:
 	WindowManager();
 	virtual ~WindowManager();
 
+	void Draw();
 public:
 	void add(Component* component);
 
 	static WindowManager *WM();
 private:
+	ComponentGroup *_group;
 	static WindowManager MANAGER;
 	std::vector<ComponentInfo> _components;
 };

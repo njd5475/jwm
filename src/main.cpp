@@ -140,6 +140,8 @@ int main(int argc, char *argv[]) {
 		WindowManager::Destroy();
 
 	} while (shouldRestart);
+
+	/* Shutdown the WindowManager */
 	WindowManager::ShutdownConnection();
 
 	/* If we have a command to execute on shutdown, run it now. */
