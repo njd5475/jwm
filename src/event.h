@@ -41,6 +41,8 @@ public:
 class Events {
 public:
 
+  static void init();
+
   static void Bind(KeyEventHandler *handler, Actions action);
 
   /** Last event time. */
@@ -98,13 +100,14 @@ public:
   /** Update the pager before waiting for an event. */
   static void _RequirePagerUpdate();
 
-  static void registerHandler(EventHandler* handler);
+  static void registerUnconsumedHandler(EventHandler* handler);
+  static void registerHandler(const int eventType, EventHandler* handler);
 
 private:
 
   static std::vector<EventHandler*> handlers;
   static std::vector<CallbackNode*> callbacks;
-  static HashMap< std::vector<EventHandler*> > _handlerMap;
+  static HashMap< std::vector<EventHandler*>* > _handlerMap;
 
   static const char* getEventName(const int type);
 
@@ -112,6 +115,7 @@ private:
   static char task_update_pending;
   static char pager_update_pending;
 
+public:
   static void _Signal(void);
 
   static void _ProcessBinding(MouseContextType context, ClientNode *np,

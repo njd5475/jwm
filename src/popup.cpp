@@ -46,7 +46,7 @@ void Popups::StartupPopup(void) {
 	popup.text = NULL;
 	popup.window = None;
 	Events::_RegisterCallback(100, SignalPopup, NULL);
-	Events::registerHandler(&handler);
+	Events::registerUnconsumedHandler(&handler);
 }
 
 /** Shutdown popups. */

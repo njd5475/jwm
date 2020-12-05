@@ -96,7 +96,7 @@ bool DialogsEventHandler::process(const XEvent *event) {
 }
 
 void Dialogs::InitializeDialogs() {
-  Events::registerHandler(&handler);
+  Events::registerUnconsumedHandler(&handler);
 }
 
 void Dialogs::StartupDialogs() {

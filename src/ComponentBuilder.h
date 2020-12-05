@@ -29,6 +29,7 @@ public:
   ComponentBuilder *label(const char* text);
   ComponentBuilder *below(const char* name);
   ComponentBuilder *clicked(ClickHandler *handler);
+  ComponentBuilder *hover(const int &color);
   Component *build(const char* name);
 protected:
   bool saveAs(const char* name, Component *component);

@@ -14,8 +14,6 @@
 #include "ComponentProperty.h"
 
 class Graphics;
-class Graphics;
-class ClientNode;
 
 class Component : public EventHandler {
 public:

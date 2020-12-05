@@ -62,54 +62,57 @@ WindowManager::~WindowManager() {
 
 void WindowManager::Initialize(void) {
 
-  Log("Registering Components\n");
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
-      new DesktopSystemComponent());
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
-      new BackgroundComponent());
-  DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
-      new ApplicationsSystemComponent());
+	Log("Registering Components\n");
+	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
+			new DesktopSystemComponent());
+	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
+			new BackgroundComponent());
+	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
+			new ApplicationsSystemComponent());
 
-  ILog(ClientNode::InitializeClients);
-  ILog(Battery::InitializeBattery);
-  ILog(Colors::InitializeColors);
-  ILog(Commands::InitializeCommands);
-  ILog(Cursors::InitializeCursors);
+	ILog(ClientNode::InitializeClients);
+	ILog(Battery::InitializeBattery);
+	ILog(Colors::InitializeColors);
+	ILog(Commands::InitializeCommands);
+	ILog(Cursors::InitializeCursors);
 #ifndef DISABLE_CONFIRM
-  ILog(Dialogs::InitializeDialogs);
+	ILog(Dialogs::InitializeDialogs);
 #endif
-  ILog(Icon::InitializeIcons);
-  ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
-  ILog(Fonts::InitializeFonts);
-  ILog(Groups::InitializeGroups);
-  ILog(Hints::InitializeHints);
-  ILog(Places::InitializePlacement);
-  ILog(Popups::InitializePopup);
-  ILog(Screens::InitializeScreens);
-  ILog(Setting::InitializeSettings);
+	ILog(Icon::InitializeIcons);
+	ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
+	ILog(Fonts::InitializeFonts);
+	ILog(Groups::InitializeGroups);
+	ILog(Hints::InitializeHints);
+	ILog(Places::InitializePlacement);
+	ILog(Popups::InitializePopup);
+	ILog(Screens::InitializeScreens);
+	ILog(Setting::InitializeSettings);
 
-  //DBusPendingCall *pending = MessageService::callMethod("org.freedesktop.login1", "/org/freedesktop/login1", "org.freedesktop.login1.Manager", "ScheduledShutdown", NULL);
-  printf("Shutdown Time: %d\n", MessageService::getShutdownTime());
+	//DBusPendingCall *pending = MessageService::callMethod("org.freedesktop.login1", "/org/freedesktop/login1", "org.freedesktop.login1.Manager", "ScheduledShutdown", NULL);
+	printf("Shutdown Time: %d\n", MessageService::getShutdownTime());
 
 //	const char* temp = Commands::ReadFromProcess("hddtemp /dev/sda", 1000);
 //	printf("Temp %s", temp);
 }
 
 WindowManager* WindowManager::WM() {
-  return &MANAGER;
+	return &MANAGER;
 }
 
-class ClickDesktopFile : public ClickHandler {
+class ClickDesktopFile: public ClickHandler {
 public:
-  ClickDesktopFile(DesktopFile *file) : _file(file) {}
-  virtual ~ClickDesktopFile() {}
+	ClickDesktopFile(DesktopFile *file) :
+			_file(file) {
+	}
+	virtual ~ClickDesktopFile() {
+	}
 
-  virtual void click(const XEvent *event, Component* me) {
-    vLog("Clicking on %s to run %s\n", _file->getName(), _file->getExec());
-    Commands::RunCommand(_file->getExec());
-  }
+	virtual void click(const XEvent *event, Component *me) {
+		vLog("Clicking on %s to run %s\n", _file->getName(), _file->getExec());
+		Commands::RunCommand(_file->getExec());
+	}
 private:
-  DesktopFile *_file;
+	DesktopFile *_file;
 };
 
 /** Startup the various NWM components.
@@ -117,76 +120,77 @@ private:
  */
 void WindowManager::Startup(void) {
 
-  /* This order is important. */
+	/* This order is important. */
 
-  /* First we grab the server to prevent clients from changing things
-   * while we're still loading. */
-  Grabs::GrabServer();
+	/* First we grab the server to prevent clients from changing things
+	 * while we're still loading. */
+	Grabs::GrabServer();
 
-  Setting::StartupSettings();
-  Screens::StartupScreens();
+	Setting::StartupSettings();
+	Screens::StartupScreens();
 
-  Groups::StartupGroups();
-  Colors::StartupColors();
-  Fonts::StartupFonts();
-  Icon::StartupIcons();
-  Cursors::StartupCursors();
+	Groups::StartupGroups();
+	Colors::StartupColors();
+	Fonts::StartupFonts();
+	Icon::StartupIcons();
+	Cursors::StartupCursors();
 
-  Battery::StartupBattery();
-  DesktopEnvironment::DefaultEnvironment()->StartupComponents();
-  Hints::StartupHints();
-  Places::StartupPlacement();
+	Battery::StartupBattery();
+	DesktopEnvironment::DefaultEnvironment()->StartupComponents();
+	Hints::StartupHints();
+	Places::StartupPlacement();
 
 #  ifndef DISABLE_CONFIRM
-  Dialogs::StartupDialogs();
+	Dialogs::StartupDialogs();
 #  endif
-  Popups::StartupPopup();
+	Popups::StartupPopup();
 
-  Cursors::SetDefaultCursor(rootWindow);
-  Hints::ReadCurrentDesktop();
-  JXFlush(display);
+	Cursors::SetDefaultCursor(rootWindow);
+	Hints::ReadCurrentDesktop();
+	JXFlush(display);
 
-  Events::_RequireRestack();
+	Events::_RequireRestack();
 
-  /* Allow clients to do their thing. */
-  JXSync(display, True);
-  Grabs::UngrabServer();
+	/* Allow clients to do their thing. */
+	JXSync(display, True);
+	Grabs::UngrabServer();
 
-  ClientNode::StartupClients();
+	ClientNode::StartupClients();
 
-  /* Send expose events. */
-  Border::ExposeCurrentDesktop();
+	/* Send expose events. */
+	Border::ExposeCurrentDesktop();
 
-  /* Draw the background (if backgrounds are used). */
-  DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
+	/* Draw the background (if backgrounds are used). */
+	DesktopEnvironment::DefaultEnvironment()->LoadBackground(currentDesktop);
 
-  /* Run any startup commands. */
-  Commands::StartupCommands();
+	/* Run any startup commands. */
+	Commands::StartupCommands();
 
-  LogWindow::StartupPortals();
-  LogWindow::DrawAll();
+	LogWindow::StartupPortals();
+	LogWindow::DrawAll();
 
-  ComponentBuilder builder;
-  const char *last = NULL;
-  int i = 10;
-  for (auto file : DesktopFile::getDesktopFiles()) {
-    if (file->getName()) {
-      builder.percentage(0.5, 0.5);
-      builder.label(file->getName());
-      if (last) {
-        builder.below(last);
-      }
-      builder.clicked(new ClickDesktopFile(file));
-      builder.build(last = file->getName());
-    }
-    i--;
-    if(i <= 0) {
-      break;
-    }
-  }
+	ComponentBuilder builder;
+	const char *last = NULL;
+	int i = 10;
+	for (auto file : DesktopFile::getDesktopFiles()) {
+		if (file->getName()) {
+			builder.percentage(0.5, 0.5);
+			builder.label(file->getName());
+			if (last) {
+				builder.below(last);
+			}
+			builder.clicked(new ClickDesktopFile(file));
+			builder.hover(COLOR_MENU_ACTIVE_DOWN);
+			builder.build(last = file->getName());
+		}
+		i--;
+		if (i <= 0) {
+			break;
+		}
+	}
 
-  DrawAll();
-//Flex::Create();
+	DrawAll();
+	//Flex::Create();
 }
 
 /** Shutdown the various NWM components.
@@ -194,28 +198,28 @@ void WindowManager::Startup(void) {
  */
 void WindowManager::Shutdown(void) {
 
-  /* This order is important. */
+	/* This order is important. */
 
 #  ifndef DISABLE_CONFIRM
-  Dialogs::ShutdownDialogs();
+	Dialogs::ShutdownDialogs();
 #  endif
-  Popups::ShutdownPopup();
-  LogWindow::ShutdownPortals();
-  ClientNode::ShutdownClients();
-  DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
-  Battery::ShutdownBattery();
-  Icon::ShutdownIcons();
-  Cursors::ShutdownCursors();
-  Fonts::ShutdownFonts();
-  Colors::ShutdownColors();
-  Groups::ShutdownGroups();
+	Popups::ShutdownPopup();
+	LogWindow::ShutdownPortals();
+	ClientNode::ShutdownClients();
+	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
+	Battery::ShutdownBattery();
+	Icon::ShutdownIcons();
+	Cursors::ShutdownCursors();
+	Fonts::ShutdownFonts();
+	Colors::ShutdownColors();
+	Groups::ShutdownGroups();
 
-  Places::ShutdownPlacement();
-  Hints::ShutdownHints();
-  Screens::ShutdownScreens();
-  Setting::ShutdownSettings();
+	Places::ShutdownPlacement();
+	Hints::ShutdownHints();
+	Screens::ShutdownScreens();
+	Setting::ShutdownSettings();
 
-  Commands::ShutdownCommands();
+	Commands::ShutdownCommands();
 }
 
 /** Clean up memory.
@@ -223,300 +227,304 @@ void WindowManager::Shutdown(void) {
  * Note that it is possible for this to be called more than once.
  */
 void WindowManager::Destroy(void) {
-  ClientNode::DestroyClients();
-  Battery::DestroyBattery();
-  Colors::DestroyColors();
-  Commands::DestroyCommands();
-  Cursors::DestroyCursors();
+	ClientNode::DestroyClients();
+	Battery::DestroyBattery();
+	Colors::DestroyColors();
+	Commands::DestroyCommands();
+	Cursors::DestroyCursors();
 #ifndef DISABLE_CONFIRM
-  Dialogs::DestroyDialogs();
+	Dialogs::DestroyDialogs();
 #endif
-  DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
-  Fonts::DestroyFonts();
-  Groups::DestroyGroups();
-  Hints::DestroyHints();
-  Icon::DestroyIcons();
-  Places::DestroyPlacement();
-  Popups::DestroyPopup();
-  Screens::DestroyScreens();
-  Setting::DestroySettings();
-  Flex::DestroyFlexes();
+	DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
+	Fonts::DestroyFonts();
+	Groups::DestroyGroups();
+	Hints::DestroyHints();
+	Icon::DestroyIcons();
+	Places::DestroyPlacement();
+	Popups::DestroyPopup();
+	Screens::DestroyScreens();
+	Setting::DestroySettings();
+	Flex::DestroyFlexes();
 
 }
 
 /** Send _NWM_RESTART to the root window. */
 void WindowManager::SendRestart(void) {
-  SendNWMMessage(nwmRestart);
+	SendNWMMessage(nwmRestart);
 }
 
 /** Send _NWM_EXIT to the root window. */
 void WindowManager::SendExit(void) {
-  SendNWMMessage(nwmExit);
+	SendNWMMessage(nwmExit);
 }
 
 /** Send _NWM_RELOAD to the root window. */
 void WindowManager::SendReload(void) {
-  SendNWMMessage(nwmReload);
+	SendNWMMessage(nwmReload);
 }
 
 /** Send a NWM message to the root window. */
 void WindowManager::SendNWMMessage(const char *message) {
-  XEvent event;
-  if (!environment->OpenConnection()) {
-    DoExit(1);
-  }
-  memset(&event, 0, sizeof(event));
-  event.xclient.type = ClientMessage;
-  event.xclient.window = rootWindow;
-  event.xclient.message_type = JXInternAtom(display, message, False);
-  event.xclient.format = 64;
-  JXSendEvent(display, rootWindow, False, SubstructureRedirectMask, &event);
-  CloseConnection();
+	XEvent event;
+	if (!environment->OpenConnection()) {
+		DoExit(1);
+	}
+	memset(&event, 0, sizeof(event));
+	event.xclient.type = ClientMessage;
+	event.xclient.window = rootWindow;
+	event.xclient.message_type = JXInternAtom(display, message, False);
+	event.xclient.format = 64;
+	JXSendEvent(display, rootWindow, False, SubstructureRedirectMask, &event);
+	CloseConnection();
 }
 
 /** Prepare the connection. */
 void WindowManager::StartupConnection(void) {
 
-  XSetWindowAttributes attr;
+	XSetWindowAttributes attr;
 #ifdef USE_SHAPE
-  int shapeError;
+	int shapeError;
 #endif
 #ifdef USE_XRENDER
-  int renderEvent;
-  int renderError;
+	int renderEvent;
+	int renderError;
 #endif
-  struct sigaction sa;
-  char name[32];
-  Window win;
-  XEvent event;
-  int revert;
+	struct sigaction sa;
+	char name[32];
+	Window win;
+	XEvent event;
+	int revert;
 
-  initializing = 1;
-  if (!environment->OpenConnection()) {
-    DoExit(1);
-  }
+	initializing = 1;
+	if (!environment->OpenConnection()) {
+		DoExit(1);
+	}
 
 #if 0
   XSynchronize(display, True);
 #endif
 
-  /* Create the supporting window used to verify NWM is running. */
-  supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0,
-      0);
+	/* Create the supporting window used to verify NWM is running. */
+	supportingWindow = JXCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0,
+			0, 0);
 
-  /* Get the atom used for the window manager selection. */
-  snprintf(name, 32, "WM_S%d", rootScreen);
-  managerSelection = JXInternAtom(display, name, False);
+	/* Get the atom used for the window manager selection. */
+	snprintf(name, 32, "WM_S%d", rootScreen);
+	managerSelection = JXInternAtom(display, name, False);
 
-  /* Get the current window manager and take the selection. */
-  Grabs::GrabServer();
-  win = JXGetSelectionOwner(display, managerSelection);
-  if (win != None) {
-    JXSelectInput(display, win, StructureNotifyMask);
-  }
-  JXSetSelectionOwner(display, managerSelection, supportingWindow, CurrentTime);
-  Grabs::UngrabServer();
+	/* Get the current window manager and take the selection. */
+	Grabs::GrabServer();
+	win = JXGetSelectionOwner(display, managerSelection);
+	if (win != None) {
+		JXSelectInput(display, win, StructureNotifyMask);
+	}
+	JXSetSelectionOwner(display, managerSelection, supportingWindow,
+			CurrentTime);
+	Grabs::UngrabServer();
 
-  /* Wait for the current selection owner to give up the selection. */
-  if (win != None) {
-    /* Note that we need to wait for the current selection owner
-     * to exit before we can expect to select SubstructureRedirectMask. */
-    XIfEvent(display, &event, SelectionReleased, (XPointer) &win);
-    JXSync(display, False);
-  }
+	/* Wait for the current selection owner to give up the selection. */
+	if (win != None) {
+		/* Note that we need to wait for the current selection owner
+		 * to exit before we can expect to select SubstructureRedirectMask. */
+		XIfEvent(display, &event, SelectionReleased, (XPointer) &win);
+		JXSync(display, False);
+	}
 
-  event.xclient.display = display;
-  event.xclient.type = ClientMessage;
-  event.xclient.window = rootWindow;
-  event.xclient.message_type = JXInternAtom(display, managerProperty, False);
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = CurrentTime;
-  event.xclient.data.l[1] = managerSelection;
-  event.xclient.data.l[2] = supportingWindow;
-  event.xclient.data.l[3] = 2;
-  event.xclient.data.l[4] = 0;
-  JXSendEvent(display, rootWindow, False, StructureNotifyMask, &event);
-  JXSync(display, False);
+	event.xclient.display = display;
+	event.xclient.type = ClientMessage;
+	event.xclient.window = rootWindow;
+	event.xclient.message_type = JXInternAtom(display, managerProperty, False);
+	event.xclient.format = 32;
+	event.xclient.data.l[0] = CurrentTime;
+	event.xclient.data.l[1] = managerSelection;
+	event.xclient.data.l[2] = supportingWindow;
+	event.xclient.data.l[3] = 2;
+	event.xclient.data.l[4] = 0;
+	JXSendEvent(display, rootWindow, False, StructureNotifyMask, &event);
+	JXSync(display, False);
 
-  JXSetErrorHandler(ErrorHandler);
+	JXSetErrorHandler(ErrorHandler);
 
-  clientContext = XUniqueContext();
-  frameContext = XUniqueContext();
+	clientContext = XUniqueContext();
+	frameContext = XUniqueContext();
 
-  /* Set the events we want for the root window.
-   * Note that asking for SubstructureRedirect will fail
-   * if another window manager is already running.
-   */
-  attr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask
-      | StructureNotifyMask | PropertyChangeMask | ColormapChangeMask
-      | ButtonPressMask | ButtonReleaseMask | PointerMotionMask
-      | PointerMotionHintMask;
-  JXChangeWindowAttributes(display, rootWindow, CWEventMask, &attr);
+	/* Set the events we want for the root window.
+	 * Note that asking for SubstructureRedirect will fail
+	 * if another window manager is already running.
+	 */
+	attr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask
+			| StructureNotifyMask | PropertyChangeMask | ColormapChangeMask
+			| ButtonPressMask | ButtonReleaseMask | PointerMotionMask
+			| PointerMotionHintMask;
+	JXChangeWindowAttributes(display, rootWindow, CWEventMask, &attr);
 
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_flags = 0;
-  sa.sa_handler = HandleExit;
-  sigaction(SIGTERM, &sa, NULL);
-  sigaction(SIGINT, &sa, NULL);
-  sigaction(SIGHUP, &sa, NULL);
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_flags = 0;
+	sa.sa_handler = HandleExit;
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGHUP, &sa, NULL);
 
-  sa.sa_handler = HandleChild;
-  sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = HandleChild;
+	sigaction(SIGCHLD, &sa, NULL);
 
 #ifdef USE_SHAPE
-  haveShape = JXShapeQueryExtension(display, &shapeEvent, &shapeError);
-  if (haveShape) {
-    Debug("shape extension enabled");
-  } else {
-    Debug("shape extension disabled");
-  }
+	haveShape = JXShapeQueryExtension(display, &shapeEvent, &shapeError);
+	if (haveShape) {
+		Debug("shape extension enabled");
+	} else {
+		Debug("shape extension disabled");
+	}
 #endif
 
 #ifdef USE_XRENDER
-  haveRender = JXRenderQueryExtension(display, &renderEvent, &renderError);
-  if (haveRender) {
-    Debug("render extension enabled");
-  } else {
-    Debug("render extension disabled");
-  }
+	haveRender = JXRenderQueryExtension(display, &renderEvent, &renderError);
+	if (haveRender) {
+		Debug("render extension enabled");
+	} else {
+		Debug("render extension disabled");
+	}
 #endif
 
-  /* Make sure we have input focus. */
-  win = None;
-  JXGetInputFocus(display, &win, &revert);
-  if (win == None) {
-    JXSetInputFocus(display, rootWindow, RevertToParent, CurrentTime);
-  }
+	/* Make sure we have input focus. */
+	win = None;
+	JXGetInputFocus(display, &win, &revert);
+	if (win == None) {
+		JXSetInputFocus(display, rootWindow, RevertToParent, CurrentTime);
+	}
 
-  initializing = 0;
+	initializing = 0;
 
 }
 
 /** Close the X server connection. */
 void WindowManager::CloseConnection(void) {
-  JXFlush(display);
-  JXCloseDisplay(display);
+	JXFlush(display);
+	JXCloseDisplay(display);
 }
 
 /** Close the X server connection. */
 void WindowManager::ShutdownConnection(void) {
-  CloseConnection();
+	CloseConnection();
 }
 
 /** Signal handler. */
 void WindowManager::HandleExit(int sig) {
-  shouldExit = 1;
+	shouldExit = 1;
 }
 
 /** Signal handler for SIGCHLD. */
 void WindowManager::HandleChild(int sig) {
-  const int savedErrno = errno;
-  while (waitpid((pid_t) -1, NULL, WNOHANG) > 0)
-    ;
-  errno = savedErrno;
+	const int savedErrno = errno;
+	while (waitpid((pid_t) -1, NULL, WNOHANG) > 0)
+		;
+	errno = savedErrno;
 }
 
 /** Exit with the specified status code. */
 void WindowManager::DoExit(int code) {
 
-  WindowManager::Destroy();
+	WindowManager::Destroy();
 
-  if (configPath) {
-    Release(configPath);
-    configPath = NULL;
-  }
-  if (exitCommand) {
-    Release(exitCommand);
-    exitCommand = NULL;
-  }
+	if (configPath) {
+		delete configPath;
+		configPath = NULL;
+	}
+	if (exitCommand) {
+		delete exitCommand;
+		exitCommand = NULL;
+	}
 
-  StopDebug();
-  exit(code);
+	StopDebug();
+	exit(code);
 }
 
 /** Main NWM event loop. */
 void WindowManager::EventLoop(void) {
 
-  XEvent event;
-  TimeType start;
+	XEvent event;
+	TimeType start;
 
-  /* Loop processing events until it's time to exit. */
-  while (JLIKELY(!shouldExit)) {
-    if (JLIKELY(Events::_WaitForEvent(&event))) {
-      Events::_ProcessEvent(&event);
-    }
-  }
+	/* Loop processing events until it's time to exit. */
+	while (JLIKELY(!shouldExit)) {
+		if (JLIKELY(Events::_WaitForEvent(&event))) {
+			Events::_ProcessEvent(&event);
+		}
+	}
 
-  /* Process events one last time. */
-  GetCurrentTime(&start);
-  for (;;) {
-    if (JXPending(display) == 0) {
-      TimeType now;
-      GetCurrentTime(&now);
-      if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
-        break;
-      }
-    }
-    if (Events::_WaitForEvent(&event)) {
-      Events::_ProcessEvent(&event);
-    }
-  }
+	/* Process events one last time. */
+	GetCurrentTime(&start);
+	for (;;) {
+		if (JXPending(display) == 0) {
+			TimeType now;
+			GetCurrentTime(&now);
+			if (GetTimeDifference(&start, &now) > RESTART_DELAY) {
+				break;
+			}
+		}
+		if (Events::_WaitForEvent(&event)) {
+			Events::_ProcessEvent(&event);
+		}
+	}
 
 }
 
 /** Predicate for XIfEvent to determine if we got the WM_Sn selection. */
 Bool WindowManager::SelectionReleased(Display *d, XEvent *e, XPointer arg) {
-  if (e->type == DestroyNotify) {
-    if (e->xdestroywindow.window == *(Window*) arg) {
-      return True;
-    }
-  }
-  return False;
+	if (e->type == DestroyNotify) {
+		if (e->xdestroywindow.window == *(Window*) arg) {
+			return True;
+		}
+	}
+	return False;
 }
 
 void WindowManager::DrawAll() {
-  for (auto cp : WM()->_components) {
-    cp.component->Draw(cp.graphics);
-    cp.graphics->copy(cp.clientNode->getWindow(), 0, 0,
-        cp.component->getWidth(), cp.component->getHeight(), 0, 0);
-  }
+	for (auto cp : WM()->_components) {
+		cp.component->Draw(cp.graphics);
+		cp.graphics->copy(cp.clientNode->getWindow(), 0, 0,
+				cp.component->getWidth(), cp.component->getHeight(), 0, 0);
+	}
 }
 
 void WindowManager::add(Component *cp) {
-  if (cp) {
-    ComponentInfo info;
-    info.component = cp;
+	if (cp) {
+		ComponentInfo info;
+		info.component = cp;
 
-    XSetWindowAttributes attrs;
-    attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
-    attrs.event_mask = ButtonPressMask | ButtonReleaseMask | KeyPressMask
-        | ExposureMask;
-    info.pixmap = JXCreatePixmap(display, rootWindow, cp->getWidth(),
-        cp->getHeight(), rootDepth);
-    info.window = JXCreateWindow(display, rootWindow, cp->getX(), cp->getY(),
-        cp->getWidth(), cp->getHeight(), 0, CopyFromParent, InputOutput,
-        CopyFromParent, CWBackPixel | CWEventMask, &attrs);
-    info.graphics = Graphics::getRootGraphics(info.pixmap);
+		XSetWindowAttributes attrs;
+		attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
+		attrs.event_mask = ButtonPressMask | ButtonReleaseMask
+				| SubstructureNotifyMask | ExposureMask | KeyPressMask
+				| KeyReleaseMask | EnterWindowMask | PointerMotionMask;
+		info.pixmap = JXCreatePixmap(display, rootWindow, cp->getWidth(),
+				cp->getHeight(), rootDepth);
+		info.window = JXCreateWindow(display, rootWindow, cp->getX(),
+				cp->getY(), cp->getWidth(), cp->getHeight(), 0, CopyFromParent,
+				InputOutput, CopyFromParent, CWBackPixel | CWEventMask, &attrs);
+		info.graphics = Graphics::getRootGraphics(info.pixmap);
 
-    XSizeHints shints;
-    shints.x = cp->getX();
-    shints.y = cp->getY();
-    shints.flags = PPosition;
-    JXSetWMNormalHints(display, info.window, &shints);
-    JXStoreName(display, info.window, _("Portal"));
-    Hints::SetAtomAtom(info.window, ATOM_NET_WM_WINDOW_TYPE,
-        ATOM_NET_WM_WINDOW_TYPE_UTILITY);
-    info.clientNode = ClientNode::Create(info.window, 0, 0);
-    info.clientNode->setNoBorderClose();
-    info.clientNode->keyboardFocus();
-    info.clientNode->setNoBorderTitle();
-    info.clientNode->setNoBorderOutline();
-    Hints::WriteState(info.clientNode);
+		XSizeHints shints;
+		shints.x = cp->getX();
+		shints.y = cp->getY();
+		shints.flags = PPosition;
+		JXSetWMNormalHints(display, info.window, &shints);
+		JXStoreName(display, info.window, _("Portal"));
+		Hints::SetAtomAtom(info.window, ATOM_NET_WM_WINDOW_TYPE,
+				ATOM_NET_WM_WINDOW_TYPE_UTILITY);
+		info.clientNode = ClientNode::Create(info.window, 0, 0);
+		info.clientNode->setNoBorderClose();
+		info.clientNode->keyboardFocus();
+		info.clientNode->setNoBorderTitle();
+		info.clientNode->setNoBorderOutline();
+		Hints::WriteState(info.clientNode);
 
-    /* Grab the mouse. */
-    JXGrabButton(display, AnyButton, AnyModifier, info.window, True,
-        ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
-    Events::registerHandler(cp);
-    _components.push_back(info);
-  }
+		/* Grab the mouse. */
+		JXGrabButton(display, AnyButton, AnyModifier, info.window, True,
+				ButtonReleaseMask | ButtonMotionMask | ButtonPressMask,
+				GrabModeAsync, GrabModeAsync, None, None);
+		Cursors::GrabMouse(info.window);
+		Events::registerUnconsumedHandler(cp);
+		_components.push_back(info);
+	}
 }

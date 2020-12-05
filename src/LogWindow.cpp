@@ -62,7 +62,7 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   /* Grab the mouse. */
   JXGrabButton(display, AnyButton, AnyModifier, window, True, ButtonReleaseMask,
       GrabModeAsync, GrabModeAsync, None, None);
-  Events::registerHandler(this);
+  Events::registerUnconsumedHandler(this);
 
   int lineHeight = 20;
   int temp = Fonts::GetStringWidth(FONT_MENU, "Start");
@@ -94,7 +94,7 @@ LogWindow::LogWindow(const LogWindow &p) {
   this->graphics = p.graphics;
   this->percentage = p.percentage;
   this->_base = p._base;
-  Events::registerHandler(this);
+  Events::registerUnconsumedHandler(this);
 }
 
 LogWindow::~LogWindow() {
