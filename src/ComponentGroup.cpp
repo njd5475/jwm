@@ -73,6 +73,7 @@ void ComponentGroup::add(Component *c) {
 	}
 
 	this->resizeForComponent(c);
+	Events::registerUnconsumedHandler(c);
 }
 
 void ComponentGroup::resizeForComponent(Component *c) {
