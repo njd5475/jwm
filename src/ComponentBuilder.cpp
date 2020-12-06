@@ -48,11 +48,20 @@ public:
 		getParent()->Draw(graphics);
 	}
 	virtual bool process(const XEvent *event) {
-		if(event->type == MotionNotify) {
+		if (this->getParent()) {
+			this->getParent()->process(event);
+		}
+		if (event->type == MotionNotify) {
 			int x = event->xmotion.x;
 			int y = event->xmotion.y;
-			if(contains(x,y)) {
-				mouseMoved(x,y);
+			if (contains(x, y)) {
+				mouseMoved(x, y);
+			}
+		} else if (event->type == ButtonRelease) {
+			int x = event->xmotion.x;
+			int y = event->xmotion.y;
+			if (contains(x, y)) {
+				this->mouseReleased();
 			}
 		}
 		return false;
@@ -83,14 +92,14 @@ protected:
 	virtual void setIntProp(const char *propName, int propValue) {
 		if (!_properties->hasKey(propName)) {
 			ComponentProperty *nProp = new ComponentProperty();
-			nProp->set(new int{propValue});
+			nProp->set(new int { propValue });
 			(*_properties)[propName] = nProp;
 
 			return;
 		}
 
 		ComponentProperty *prop = ((*_properties)[propName]).value();
-		int *val = (int*)prop->get();
+		int *val = (int*) prop->get();
 		(*val) = propValue;
 	}
 private:
@@ -165,10 +174,14 @@ public:
 			EmptyComponent(parent), _handler(handler) {
 
 	}
+
 	virtual ~Clicked() {
 	}
 
 	virtual bool process(const XEvent *event) {
+		if (this->getParent()) {
+			this->getParent()->process(event);
+		}
 		if (event->type == ButtonRelease && event->xbutton.button == Button1) {
 			int x = event->xbutton.x_root;
 			int y = event->xbutton.y_root + 20;
@@ -186,13 +199,14 @@ private:
 class Hover: public EmptyComponent {
 public:
 	Hover(Component *parent, const int &color) :
-			EmptyComponent(parent), _hoverColor(color), _hovering(false), _oldBkColor(color) {
+			EmptyComponent(parent), _hoverColor(color), _hovering(false), _oldBkColor(
+					color) {
 	}
 
 	virtual void initProperties(HashMap<ComponentProperty*> *properties) {
 		EmptyComponent::initProperties(properties);
-		if(properties->hasKey("background")) {
-			_oldBkColor = *(int*)properties->get("background")->get();
+		if (properties->hasKey("background")) {
+			_oldBkColor = *(int*) properties->get("background")->get();
 		}
 	}
 
@@ -210,12 +224,17 @@ public:
 
 	virtual void mouseMoved(int x, int y) {
 		_hovering = this->contains(x, y);
-		if(_hovering) {
+	}
+
+	virtual bool contains(int x, int y) {
+		bool c = this->getParent()->contains(x, y);
+		_hovering = c;
+		if (_hovering) {
 			setIntProp("background", _hoverColor);
-		}else{
+		} else {
 			setIntProp("background", _oldBkColor);
 		}
-
+		return c;
 	}
 private:
 	int _hoverColor;
