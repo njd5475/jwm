@@ -498,43 +498,4 @@ void WindowManager::add(Component *cp) {
 		_group = new ComponentGroup(display, rootWindow);
 	}
 	_group->add(cp);
-//	if (cp) {
-//		ComponentInfo info;
-//		info.component = cp;
-//
-//		XSetWindowAttributes attrs;
-//		attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
-//		attrs.event_mask = ButtonPressMask | ButtonReleaseMask
-//				| SubstructureNotifyMask | ExposureMask | KeyPressMask
-//				| KeyReleaseMask | EnterWindowMask | PointerMotionMask;
-//		info.pixmap = JXCreatePixmap(display, rootWindow, cp->getWidth(),
-//				cp->getHeight(), rootDepth);
-//		info.window = JXCreateWindow(display, rootWindow, cp->getX(),
-//				cp->getY(), cp->getWidth(), cp->getHeight(), 0, CopyFromParent,
-//				InputOutput, CopyFromParent, CWBackPixel | CWEventMask, &attrs);
-//		info.graphics = Graphics::getRootGraphics(info.pixmap);
-//
-//		XSizeHints shints;
-//		shints.x = cp->getX();
-//		shints.y = cp->getY();
-//		shints.flags = PPosition;
-//		JXSetWMNormalHints(display, info.window, &shints);
-//		JXStoreName(display, info.window, _("Portal"));
-//		Hints::SetAtomAtom(info.window, ATOM_NET_WM_WINDOW_TYPE,
-//				ATOM_NET_WM_WINDOW_TYPE_UTILITY);
-//		info.clientNode = ClientNode::Create(info.window, 0, 0);
-//		info.clientNode->setNoBorderClose();
-//		info.clientNode->keyboardFocus();
-//		info.clientNode->setNoBorderTitle();
-//		info.clientNode->setNoBorderOutline();
-//		Hints::WriteState(info.clientNode);
-//
-//		/* Grab the mouse. */
-//		JXGrabButton(display, AnyButton, AnyModifier, info.window, True,
-//				ButtonReleaseMask | ButtonMotionMask | ButtonPressMask,
-//				GrabModeAsync, GrabModeAsync, None, None);
-//		Cursors::GrabMouse(info.window);
-//		Events::registerUnconsumedHandler(cp);
-//		_components.push_back(info);
-//	}
 }
