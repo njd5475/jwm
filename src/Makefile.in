@@ -8,7 +8,7 @@ VPATH=.:os
 
 OBJECTS = background.o border.o button.o client.o \
    clientlist.o color.o command.o confirm.o cursor.o debug.o \
-   desktop.o event.o error.o font.o grab.o gradient.o group.o \
+   desktop.o event.o error.o font.o grab.o gradient.o \
    help.o hint.o icon.o image.o main.o misc.o Component.o \
    move.o outline.o place.o popup.o DesktopFile.o \
    screen.o settings.o status.o HashMap.o ComponentBuilder.o \

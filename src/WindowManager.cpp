@@ -32,7 +32,6 @@
 #include "event.h"
 #include "font.h"
 #include "grab.h"
-#include "group.h"
 #include "hint.h"
 #include "icon.h"
 #include "jxlib.h"
@@ -83,7 +82,6 @@ void WindowManager::Initialize(void) {
 	ILog(Icon::InitializeIcons);
 	ILog(DesktopEnvironment::DefaultEnvironment()->InitializeComponents);
 	ILog(Fonts::InitializeFonts);
-	ILog(Groups::InitializeGroups);
 	ILog(Hints::InitializeHints);
 	ILog(Places::InitializePlacement);
 	ILog(Popups::InitializePopup);
@@ -131,7 +129,6 @@ void WindowManager::Startup(void) {
 	Setting::StartupSettings();
 	Screens::StartupScreens();
 
-	Groups::StartupGroups();
 	Colors::StartupColors();
 	Fonts::StartupFonts();
 	Icon::StartupIcons();
@@ -214,7 +211,6 @@ void WindowManager::Shutdown(void) {
 	Cursors::ShutdownCursors();
 	Fonts::ShutdownFonts();
 	Colors::ShutdownColors();
-	Groups::ShutdownGroups();
 
 	Places::ShutdownPlacement();
 	Hints::ShutdownHints();
@@ -239,7 +235,6 @@ void WindowManager::Destroy(void) {
 #endif
 	DesktopEnvironment::DefaultEnvironment()->DestroyComponents();
 	Fonts::DestroyFonts();
-	Groups::DestroyGroups();
 	Hints::DestroyHints();
 	Icon::DestroyIcons();
 	Places::DestroyPlacement();

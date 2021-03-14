@@ -12,7 +12,6 @@
 #include "client.h"
 #include "clientlist.h"
 #include "icon.h"
-#include "group.h"
 #include "confirm.h"
 #include "cursor.h"
 #include "screen.h"
@@ -367,7 +366,7 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
     this->setDefaultLayer(LAYER_ABOVE); //FIXME: can encapsulate this easily
   }
 
-  Groups::ApplyGroups(this);
+  //TODO: removed applying groups from here
   if (this->icon == NULL) {
     Icon::LoadIcon(this);
   }
