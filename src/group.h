@@ -10,8 +10,8 @@
 #ifndef GROUP_H
 #define GROUP_H
 
-struct ClientNode;
-struct GroupType;
+class Client;
+class GroupType;
 
 /** Enumeration of group options. */
 typedef unsigned char OptionType;
@@ -117,7 +117,7 @@ public:
 	/** Apply any matching groups to a client.
 	 * @param np The client.
 	 */
-	static void ApplyGroups(struct ClientNode *np);
+	static void ApplyGroups(struct Client *np);
 };
 
 #endif /* GROUP_H */

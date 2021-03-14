@@ -18,7 +18,7 @@
 class ClientList {
 private:
 	/** Client windows in linked lists for each layer. */
-	static std::vector<ClientNode*> nodes[LAYER_COUNT];
+	static std::vector<Client*> nodes[LAYER_COUNT];
 
 public:
 	/** Determine if a client is on the current desktop.
@@ -34,7 +34,7 @@ public:
 	 * @param current 1 if only showing clients on the current desktop.
 	 * @return 1 if focus is allowed, 0 otherwise.
 	 */
-	static char ShouldFocus(const ClientNode *np, char current);
+	static char ShouldFocus(const Client *np, char current);
 
 	/** Start walking the window client list. */
 	static void StartWindowWalk(void);
@@ -52,7 +52,7 @@ public:
 	 * This is used to focus the next client in the stacking order.
 	 * @param np The client before the client to focus.
 	 */
-	static void FocusNextStacked(ClientNode *np);
+	static void FocusNextStacked(Client *np);
 
 	static void UngrabKeys();
 
@@ -62,24 +62,24 @@ public:
 
 	static void Shutdown();
 
-	static std::vector<ClientNode*> GetLayerList(unsigned int layer);
-	static void InsertAt(ClientNode *node);
-	static void RemoveFrom(ClientNode* node);
-	static void MinimizeTransientWindows(ClientNode* client, bool lower);
-	static void ChangeLayer(ClientNode *node, unsigned int layer);
-	static void BringToTopOfLayer(ClientNode *node);
-	static void InsertBefore(ClientNode* anchor, ClientNode *toInsert);
-	static void InsertAfter(ClientNode* anchor, ClientNode *toInsert);
-	static void InsertFirst(ClientNode* toInsert);
-	static bool InsertRelative(ClientNode* toInsert, Window above, int detail);
-	static std::vector<ClientNode*> GetList();
+	static std::vector<Client*> GetLayerList(unsigned int layer);
+	static void InsertAt(Client *node);
+	static void RemoveFrom(Client* node);
+	static void MinimizeTransientWindows(Client* client, bool lower);
+	static void ChangeLayer(Client *node, unsigned int layer);
+	static void BringToTopOfLayer(Client *node);
+	static void InsertBefore(Client* anchor, Client *toInsert);
+	static void InsertAfter(Client* anchor, Client *toInsert);
+	static void InsertFirst(Client* toInsert);
+	static bool InsertRelative(Client* toInsert, Window above, int detail);
+	static std::vector<Client*> GetList();
 
-	static std::vector<ClientNode*> GetChildren(Window owner);
-	static std::vector<ClientNode*> GetSelfAndChildren(ClientNode* owner);
-	static std::vector<ClientNode*> GetMappedDesktopClients();
+	static std::vector<Client*> GetChildren(Window owner);
+	static std::vector<Client*> GetSelfAndChildren(Client* owner);
+	static std::vector<Client*> GetMappedDesktopClients();
 
 private:
-	static std::vector<ClientNode*>::iterator find(ClientNode *node, unsigned int *layer);
+	static std::vector<Client*>::iterator find(Client *node, unsigned int *layer);
 };
 
 #endif /* CLIENTLIST_H */

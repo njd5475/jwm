@@ -4,7 +4,7 @@
 #include "nwm.h"
 #include <vector>
 
-class ClientNode;
+class Client;
 class Component;
 class WindowManager;
 class Graphics;
@@ -29,7 +29,7 @@ private:
 	int _bottom;
 	Pixmap _pixmap;
 	Graphics* _graphics;
-	ClientNode *_clientNode;
+	Client *_clientNode;
 	Display *_display;
 	Window _window;
 	std::vector<Component*> _components;

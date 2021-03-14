@@ -16,7 +16,7 @@
 using namespace std;
 
 //TODO: This really needs to be encapsulated.
-vector<ClientNode*> ClientList::nodes[LAYER_COUNT];
+vector<Client*> ClientList::nodes[LAYER_COUNT];
 
 static Window *windowStack = NULL; /**< Image of the window stack. */
 static int windowStackSize = 0; /**< Size of the image. */
@@ -25,7 +25,7 @@ static char walkingWindows = 0; /**< Are we walking windows? */
 static char wasMinimized = 0; /**< Was the current window minimized? */
 
 /** Determine if a client is allowed focus. */
-char ClientList::ShouldFocus(const ClientNode *np, char current) {
+char ClientList::ShouldFocus(const Client *np, char current) {
 
   /* Only display clients on the current desktop or clients that are sticky. */
   if (!settings.listAllTasks || current) {
@@ -78,7 +78,7 @@ void ClientList::StartWindowStackWalk(void) {
   count = 0;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
-      ClientNode *client = nodes[x][at];
+      Client *client = nodes[x][at];
       if (ShouldFocus(client, 1)) {
         ++count;
       }
@@ -97,7 +97,7 @@ void ClientList::StartWindowStackWalk(void) {
   windowStackSize = 0;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
-      ClientNode *client = nodes[x][at];
+      Client *client = nodes[x][at];
       if (ShouldFocus(client, 1)) {
         windowStack[windowStackSize++] = client->getWindow();
       }
@@ -119,13 +119,13 @@ void ClientList::StartWindowStackWalk(void) {
 /** Move to the next window in the window stack. */
 void ClientList::WalkWindowStack(char forward) {
 
-  ClientNode *np;
+  Client *np;
 
   if (windowStack != NULL) {
     int x;
 
     if (wasMinimized) {
-      np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
+      np = Client::FindClientByWindow(windowStack[windowStackCurrent]);
       if (np) {
         np->MinimizeClient(1);
       }
@@ -145,7 +145,7 @@ void ClientList::WalkWindowStack(char forward) {
       }
 
       /* Look up the window. */
-      np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
+      np = Client::FindClientByWindow(windowStack[windowStackCurrent]);
 
       /* Skip this window if it no longer exists or is currently in
        * a state that doesn't allow focus.
@@ -157,7 +157,7 @@ void ClientList::WalkWindowStack(char forward) {
 
       /* Show the window.
        * Only when the walk completes do we update the stacking order. */
-      ClientNode::RestackClients();
+      Client::RestackClients();
       if (np->isMinimized()) {
         np->RestoreClient(1);
         wasMinimized = 1;
@@ -178,13 +178,13 @@ void ClientList::WalkWindowStack(char forward) {
 /** Stop walking the window stack or client list. */
 void ClientList::StopWindowWalk(void) {
 
-  ClientNode *np;
+  Client *np;
 
   /* Raise the selected window and free the window array. */
   if (windowStack != NULL) {
 
     /* Look up the current window. */
-    np = ClientNode::FindClientByWindow(windowStack[windowStackCurrent]);
+    np = Client::FindClientByWindow(windowStack[windowStackCurrent]);
     if (np) {
       if (np->isMinimized()) {
         np->RestoreClient(1);
@@ -209,7 +209,7 @@ void ClientList::StopWindowWalk(void) {
 }
 
 /** Focus the next client in the stacking order. */
-void ClientList::FocusNextStacked(ClientNode *client) {
+void ClientList::FocusNextStacked(Client *client) {
 
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
@@ -241,7 +241,7 @@ void ClientList::FocusNextStacked(ClientNode *client) {
 }
 
 void ClientList::UngrabKeys() {
-  ClientNode *client;
+  Client *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
@@ -251,7 +251,7 @@ void ClientList::UngrabKeys() {
 }
 
 void ClientList::DrawBorders() {
-  ClientNode *client;
+  Client *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
@@ -265,7 +265,7 @@ void ClientList::Initialize() {
 }
 
 void ClientList::Shutdown() {
-  ClientNode *client;
+  Client *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
 //      client = nodes[x][at];
@@ -278,15 +278,15 @@ void ClientList::Shutdown() {
   }
 }
 
-vector<ClientNode*> ClientList::GetLayerList(unsigned int layer) {
+vector<Client*> ClientList::GetLayerList(unsigned int layer) {
   return nodes[layer];
 }
 
-void ClientList::InsertAt(ClientNode *node) {
+void ClientList::InsertAt(Client *node) {
   nodes[node->getLayer()].push_back(node);
 }
 
-void ClientList::MinimizeTransientWindows(ClientNode *client, bool lower) {
+void ClientList::MinimizeTransientWindows(Client *client, bool lower) {
 //	int x = 0;
 //	ClientNode *tp;
 //	for (x = 0; x < LAYER_COUNT; x++) {
@@ -300,9 +300,9 @@ void ClientList::MinimizeTransientWindows(ClientNode *client, bool lower) {
 //			tp = next;
 //		}
 //	} // Minimize children
-  vector<ClientNode*> children = GetChildren(client->getWindow());
+  vector<Client*> children = GetChildren(client->getWindow());
   for (int i = 0; i < children.size(); ++i) {
-    ClientNode *child = children[i];
+    Client *child = children[i];
     if ((child->isStatus(STAT_MAPPED | STAT_SHADED))
         && !(child->isMinimized())) {
       child->MinimizeTransients(lower);
@@ -334,10 +334,10 @@ void ClientList::MinimizeTransientWindows(ClientNode *client, bool lower) {
   }
 }
 
-vector<ClientNode*> ClientList::GetChildren(Window owner) {
-  vector<ClientNode*> children;
+vector<Client*> ClientList::GetChildren(Window owner) {
+  vector<Client*> children;
 
-  ClientNode *theChild;
+  Client *theChild;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int child = 0; child < nodes[x].size(); ++child) {
       theChild = nodes[x][child];
@@ -349,7 +349,7 @@ vector<ClientNode*> ClientList::GetChildren(Window owner) {
   return children;
 }
 
-void ClientList::ChangeLayer(ClientNode *node, unsigned int layer) {
+void ClientList::ChangeLayer(Client *node, unsigned int layer) {
   /* Remove from the old node list */
   RemoveFrom(node);
 
@@ -362,10 +362,10 @@ void ClientList::ChangeLayer(ClientNode *node, unsigned int layer) {
   Hints::WriteState(node);
 }
 
-std::vector<ClientNode*> ClientList::GetSelfAndChildren(ClientNode *owner) {
-  vector<ClientNode*> all;
+std::vector<Client*> ClientList::GetSelfAndChildren(Client *owner) {
+  vector<Client*> all;
 
-  ClientNode *client;
+  Client *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
@@ -377,10 +377,10 @@ std::vector<ClientNode*> ClientList::GetSelfAndChildren(ClientNode *owner) {
   return all;
 }
 
-vector<ClientNode*> ClientList::GetMappedDesktopClients() {
-  vector<ClientNode*> all;
+vector<Client*> ClientList::GetMappedDesktopClients() {
+  vector<Client*> all;
 
-  ClientNode *client;
+  Client *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
     for (int at = 0; at < nodes[x].size(); ++at) {
       client = nodes[x][at];
@@ -392,17 +392,17 @@ vector<ClientNode*> ClientList::GetMappedDesktopClients() {
   return all;
 }
 
-void ClientList::BringToTopOfLayer(ClientNode *node) {
+void ClientList::BringToTopOfLayer(Client *node) {
   RemoveFrom(node);
 
   nodes[node->getLayer()].insert(nodes[node->getLayer()].begin(), node);
 }
 
-vector<ClientNode*>::iterator ClientList::find(ClientNode *node,
+vector<Client*>::iterator ClientList::find(Client *node,
     unsigned int *layer) {
-  ClientNode *client;
+  Client *client;
   for (int x = 0; x < LAYER_COUNT; x++) {
-    vector<ClientNode*>::iterator it = nodes[x].begin();
+    vector<Client*>::iterator it = nodes[x].begin();
     for (; it != nodes[x].end(); ++it) {
       client = (*it);
       if (node == client) {
@@ -412,15 +412,15 @@ vector<ClientNode*>::iterator ClientList::find(ClientNode *node,
     }
   }
   *layer = -1;
-  return vector<ClientNode*>::iterator();
+  return vector<Client*>::iterator();
 }
 
-bool ClientList::InsertRelative(ClientNode *node, Window above, int detail) {
+bool ClientList::InsertRelative(Client *node, Window above, int detail) {
   /* Insert relative to some other window. */
   bool found = false;
   bool inserted = false;
-  ClientNode *tp;
-  vector<ClientNode*> children = nodes[node->getLayer()];
+  Client *tp;
+  vector<Client*> children = nodes[node->getLayer()];
   for (int i = 0; i < children.size(); ++i) {
     tp = children[i];
     if (tp == node) {
@@ -455,8 +455,8 @@ bool ClientList::InsertRelative(ClientNode *node, Window above, int detail) {
   return found;
 }
 
-vector<ClientNode*> ClientList::GetList() {
-  vector<ClientNode*> all;
+vector<Client*> ClientList::GetList() {
+  vector<Client*> all;
   for (int l = 0; l < LAYER_COUNT; ++l) {
     for (int x = 0; x < nodes[l].size(); ++x) {
       all.push_back(nodes[l][x]);
@@ -465,8 +465,8 @@ vector<ClientNode*> ClientList::GetList() {
   return all;
 }
 
-void ClientList::RemoveFrom(ClientNode *node) {
-  vector<ClientNode*>::iterator found;
+void ClientList::RemoveFrom(Client *node) {
+  vector<Client*>::iterator found;
   unsigned int layer = -1;
   found = find(node, &layer);
   if (layer != -1) {
@@ -477,8 +477,8 @@ void ClientList::RemoveFrom(ClientNode *node) {
   }
 }
 
-void ClientList::InsertBefore(ClientNode *anchor, ClientNode *toInsert) {
-  vector<ClientNode*>::iterator found;
+void ClientList::InsertBefore(Client *anchor, Client *toInsert) {
+  vector<Client*>::iterator found;
   unsigned int layer = -1;
   found = find(anchor, &layer);
   if (layer != -1) {
@@ -489,8 +489,8 @@ void ClientList::InsertBefore(ClientNode *anchor, ClientNode *toInsert) {
   }
 }
 
-void ClientList::InsertAfter(ClientNode *anchor, ClientNode *toInsert) {
-  vector<ClientNode*>::iterator found;
+void ClientList::InsertAfter(Client *anchor, Client *toInsert) {
+  vector<Client*>::iterator found;
   unsigned int layer = -1;
   found = find(anchor, &layer);
   if (layer != -1) {
@@ -498,6 +498,6 @@ void ClientList::InsertAfter(ClientNode *anchor, ClientNode *toInsert) {
   }
 }
 
-void ClientList::InsertFirst(ClientNode* toInsert) {
+void ClientList::InsertFirst(Client* toInsert) {
   nodes[toInsert->getLayer()].insert(nodes[toInsert->getLayer()].begin(), toInsert);
 }

@@ -16,7 +16,7 @@
 #include "event.h"
 
 class Component;
-class ClientNode;
+class Client;
 class Graphics;
 
 class LogWindow : public LoggerListener, EventHandler {
@@ -34,7 +34,7 @@ private:
 	float percentage;
 	Pixmap pixmap;
 	int buttonState;
-	ClientNode *node;
+	Client *node;
 	Graphics *graphics;
 public:
 	int getX() {return x;}

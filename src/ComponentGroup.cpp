@@ -36,7 +36,7 @@ ComponentGroup::ComponentGroup(Display *display, Window rootWindow, int left, in
 	JXStoreName(display, _window, _("ComponentGroup"));
 	Hints::SetAtomAtom(_window, ATOM_NET_WM_WINDOW_TYPE,
 			ATOM_NET_WM_WINDOW_TYPE_UTILITY);
-	_clientNode = ClientNode::Create(_window, false, false);
+	_clientNode = Client::Create(_window, false, false);
 	_clientNode->setNoBorderClose();
 	_clientNode->keyboardFocus();
 	_clientNode->setNoBorderTitle();

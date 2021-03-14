@@ -72,7 +72,7 @@ void WindowManager::Initialize(void) {
 	DesktopEnvironment::DefaultEnvironment()->RegisterComponent(
 			new ApplicationsSystemComponent());
 
-	ILog(ClientNode::InitializeClients);
+	ILog(Client::InitializeClients);
 	ILog(Battery::InitializeBattery);
 	ILog(Colors::InitializeColors);
 	ILog(Commands::InitializeCommands);
@@ -157,7 +157,7 @@ void WindowManager::Startup(void) {
 	JXSync(display, True);
 	Grabs::UngrabServer();
 
-	ClientNode::StartupClients();
+	Client::StartupClients();
 
 	/* Send expose events. */
 	Border::ExposeCurrentDesktop();
@@ -207,7 +207,7 @@ void WindowManager::Shutdown(void) {
 #  endif
 	Popups::ShutdownPopup();
 	LogWindow::ShutdownPortals();
-	ClientNode::ShutdownClients();
+	Client::ShutdownClients();
 	DesktopEnvironment::DefaultEnvironment()->ShutdownComponents();
 	Battery::ShutdownBattery();
 	Icon::ShutdownIcons();
@@ -229,7 +229,7 @@ void WindowManager::Shutdown(void) {
  * Note that it is possible for this to be called more than once.
  */
 void WindowManager::Destroy(void) {
-	ClientNode::DestroyClients();
+	Client::DestroyClients();
 	Battery::DestroyBattery();
 	Colors::DestroyColors();
 	Commands::DestroyCommands();

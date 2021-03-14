@@ -12,23 +12,23 @@
 
 #include "border.h"
 #include "timing.h"
-class ClientNode;
+class Client;
 
 extern char atLeft;
 extern char atRight;
 extern char atBottom;
 extern char atTop;
 extern char atSideFirst;
-extern ClientNode *currentClient;
+extern Client *currentClient;
 extern TimeType moveTime;
 
 /** Move a client window using the keyboard (mouse optional).
  * @param np The client to move.
  * @return 1 if the client moved, 0 otherwise.
  */
-char MoveClientKeyboard(struct ClientNode *np);
+char MoveClientKeyboard(struct Client *np);
 
-void GetClientRectangle(ClientNode *np, ClientRectangle *r);
+void GetClientRectangle(Client *np, ClientRectangle *r);
 
 char CheckLeftValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *left);
 
@@ -42,13 +42,13 @@ char CheckOverlapTopBottom(const ClientRectangle *a, const ClientRectangle *b);
 
 char CheckOverlapLeftRight(const ClientRectangle *a, const ClientRectangle *b);
 
-char ShouldSnap(ClientNode *np);
+char ShouldSnap(Client *np);
 
 void SignalMove(const TimeType *now, int x, int y, Window w, void *data);
 
 void UpdateDesktop(const TimeType *now);
 
-void DoSnap(ClientNode *np);
+void DoSnap(Client *np);
 
 #endif /* MOVE_H */
 

@@ -355,7 +355,7 @@ ScaledIconNode* ScaledIconNode::CreateScaledRenderIcon(Image *image,
 }
 
 /** Load the icon for a client. */
-void Icon::LoadIcon(ClientNode *np) {
+void Icon::LoadIcon(Client *np) {
   Icon *ico = np->getIcon();
   /* If client already has an icon, destroy it first. */
   Icon::DestroyIcon(ico);

@@ -20,7 +20,7 @@ typedef struct {
   char valid;
 } ClientRectangle;
 
-struct ClientNode;
+class Client;
 struct ClientState;
 
 /** Border icon types. */
@@ -49,18 +49,18 @@ public:
    * @param y The y-coordinate of the mouse (frame relative).
    * @return The context.
    */
-  static MouseContextType GetBorderContext(const struct ClientNode *np,
+  static MouseContextType GetBorderContext(const struct Client *np,
       int x, int y);
 
   /** Reset the shape of a window border.
    * @param np The client.
    */
-  static void ResetBorder(const struct ClientNode *np);
+  static void ResetBorder(const struct Client *np);
 
   /** Draw a window border.
    * @param np The client whose frame to draw.
    */
-  static void DrawBorder(struct ClientNode *np);
+  static void DrawBorder(struct Client *np);
 
   /** Get the size of a border icon.
    * @return The size in pixels (note that icons are square).
@@ -77,7 +77,7 @@ public:
    * @param east Pointer to the value to contain the east border size.
    * @param west Pointer to the value to contain the west border size.
    */
-  static void GetBorderSize(const ClientNode *state,
+  static void GetBorderSize(const Client *state,
       int *north, int *south, int *east, int *west);
 
   /** Redraw all borders on the current desktop. */
@@ -102,23 +102,23 @@ private:
   static char *buttonNames[BI_COUNT];
   static Icon *buttonIcons[BI_COUNT];
 
-  static char IsContextEnabled(MouseContextType context, const ClientNode *np);
-  static void DrawBorderHelper(const ClientNode *np);
-  static void DrawBorderHandles(const ClientNode *np,
+  static char IsContextEnabled(MouseContextType context, const Client *np);
+  static void DrawBorderHelper(const Client *np);
+  static void DrawBorderHandles(const Client *np,
       Pixmap canvas, GC gc);
-  static void DrawBorderButton(const ClientNode *np, MouseContextType context,
+  static void DrawBorderButton(const Client *np, MouseContextType context,
       int x, int y, Pixmap canvas, GC gc, long fg);
-  static void DrawButtonBorder(const ClientNode *np, int x,
+  static void DrawButtonBorder(const Client *np, int x,
       Pixmap canvas, GC gc);
-  static void DrawLeftButton(const ClientNode *np, MouseContextType context,
+  static void DrawLeftButton(const Client *np, MouseContextType context,
       int x, int y, Pixmap canvas, GC gc, long fg);
-  static void DrawRightButton(const ClientNode *np, MouseContextType context,
+  static void DrawRightButton(const Client *np, MouseContextType context,
       int x, int y, Pixmap canvas, GC gc, long fg);
-  static XPoint DrawBorderButtons(const ClientNode *np, Pixmap canvas, GC gc);
+  static XPoint DrawBorderButtons(const Client *np, Pixmap canvas, GC gc);
   static char DrawBorderIcon(BorderIconType t,
       unsigned xoffset, unsigned yoffset,
       Pixmap canvas, long fg);
-  static void DrawIconButton(const ClientNode *np, int x, int y,
+  static void DrawIconButton(const Client *np, int x, int y,
       Pixmap canvas, GC gc, long fg);
   static void DrawCloseButton(unsigned xoffset, unsigned yoffset,
       Pixmap canvas, GC gc, long fg);

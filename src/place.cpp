@@ -29,14 +29,14 @@ void Places::ShutdownPlacement(void) {
 }
 
 /** Remove struts associated with a client. */
-void Places::RemoveClientStrut(ClientNode *np) {
+void Places::RemoveClientStrut(Client *np) {
   if (DoRemoveClientStrut(np)) {
     SetWorkarea();
   }
 }
 
 /** Add client specified struts to our list. */
-void Places::ReadClientStrut(ClientNode *np) {
+void Places::ReadClientStrut(Client *np) {
 
   BoundingBox box;
   int status;

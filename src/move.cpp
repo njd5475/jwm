@@ -27,16 +27,16 @@ static char atRight;
 static char atBottom;
 static char atTop;
 static char atSideFirst;
-static ClientNode *currentClient;
+static Client *currentClient;
 static TimeType moveTime;
 
-static void StopMove(ClientNode *np, int doMove, int oldx, int oldy);
-static void RestartMove(ClientNode *np, int *doMove);
+static void StopMove(Client *np, int doMove, int oldx, int oldy);
+static void RestartMove(Client *np, int *doMove);
 static void MoveController(int wasDestroyed);
 
-static void DoSnapScreen(ClientNode *np);
-static void DoSnapBorder(ClientNode *np);
-static char ShouldSnap(ClientNode *np);
+static void DoSnapScreen(Client *np);
+static void DoSnapBorder(Client *np);
+static char ShouldSnap(Client *np);
 
 static char CheckLeftValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *left);
 static char CheckRightValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *right);
@@ -44,7 +44,7 @@ static char CheckTopValid(const ClientRectangle *client, const ClientRectangle *
 static char CheckBottomValid(const ClientRectangle *client, const ClientRectangle *other, const ClientRectangle *bottom);
 
 /** Snap to the screen and/or neighboring windows. */
-void DoSnap(ClientNode *np) {
+void DoSnap(Client *np) {
   switch (settings.snapMode) {
   case SNAP_BORDER:
     np->DoSnapBorder();
@@ -59,7 +59,7 @@ void DoSnap(ClientNode *np) {
 }
 
 /** Determine if we should snap to the specified client. */
-char ShouldSnap(ClientNode *np) {
+char ShouldSnap(Client *np) {
   if (np->isHidden()) {
     return 0;
   } else if (np->isMinimized()) {
@@ -70,7 +70,7 @@ char ShouldSnap(ClientNode *np) {
 }
 
 /** Get a rectangle to represent a client window. */
-void GetClientRectangle(ClientNode *np, ClientRectangle *r) {
+void GetClientRectangle(Client *np, ClientRectangle *r) {
 
   int north, south, east, west;
 

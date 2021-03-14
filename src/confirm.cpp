@@ -42,9 +42,9 @@ typedef struct {
   char **message;
 
   Pixmap pmap;
-  ClientNode *node;
+  Client *node;
 
-  void (*action)(ClientNode*);
+  void (*action)(Client*);
   Window client;
 
 } DialogType;
@@ -57,7 +57,7 @@ DialogsEventHandler Dialogs::handler;
 
 static void RunDialogAction(void);
 static void DestroyConfirmDialog(void);
-static void ComputeDimensions(const ClientNode *np);
+static void ComputeDimensions(const Client *np);
 static void DrawDialog(void);
 static void DrawButtons(void);
 static void ExposeConfirmDialog(void);
@@ -117,7 +117,7 @@ void RunDialogAction(void) {
   if (dialog->client == None) {
     (dialog->action)(NULL);
   } else {
-    ClientNode *np = ClientNode::FindClientByWindow(dialog->client);
+    Client *np = Client::FindClientByWindow(dialog->client);
     if (np) {
       (dialog->action)(np);
     }
@@ -239,8 +239,8 @@ char HandleDialogKeyPress(const XKeyEvent *event) {
 }
 
 /** Show a confirm dialog. */
-void Dialogs::ShowConfirmDialog(ClientNode *np,
-    void (*action)(ClientNode*) ...) {
+void Dialogs::ShowConfirmDialog(Client *np,
+    void (*action)(Client*) ...) {
 
 va_list ap;
 XSetWindowAttributes attrs;
@@ -296,7 +296,7 @@ Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE, ATOM_NET_WM_WINDOW_TYPE_DIAL
 DrawDialog();
 
 /* Add the client and give it focus. */
-dialog->node = ClientNode::Create(window, 0, 0);
+dialog->node = Client::Create(window, 0, 0);
 Assert(dialog->node);
 if (np) {
   dialog->node->setOwner(np->getWindow());
@@ -343,7 +343,7 @@ void DestroyConfirmDialog(void) {
 }
 
 /** Compute the size of a dialog window. */
-void ComputeDimensions(const ClientNode *np) {
+void ComputeDimensions(const Client *np) {
 
   const ScreenType *sp;
   int width;
@@ -491,7 +491,7 @@ char Dialogs::ProcessDialogEvent(const XEvent *event)
 }
 
 /** Show a confirm dialog. */
-void Dialogs::ShowConfirmDialog(ClientNode *np, void (*action)(ClientNode*), ...)
+void Dialogs::ShowConfirmDialog(Client *np, void (*action)(Client*), ...)
 {
   Assert(action);
   (action)(np);

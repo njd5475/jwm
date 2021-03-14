@@ -12,14 +12,14 @@
 
 class Component;
 class Graphics;
-class ClientNode;
+class Client;
 class ComponentGroup;
 
 struct ComponentInfo {
   Pixmap pixmap;
   Window window;
   Graphics* graphics;
-  ClientNode* clientNode;
+  Client* clientNode;
   Component *component;
 };
 

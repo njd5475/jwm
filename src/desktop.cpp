@@ -137,9 +137,9 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 	 * with clients losing focus.
 	 */
 	for (unsigned int x = 0; x < LAYER_COUNT; x++) {
-		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
+		std::vector<Client*> clients = ClientList::GetLayerList(x);
 		for (int i = 0; i < clients.size(); ++i) {
-			ClientNode *np = clients[i];
+			Client *np = clients[i];
 			if (np->isSticky()) {
 				continue;
 			}
@@ -151,9 +151,9 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 
 	/* Show clients on the new desktop. */
 	for (unsigned int x = 0; x < LAYER_COUNT; x++) {
-		std::vector<ClientNode*> clients = ClientList::GetLayerList(x);
+		std::vector<Client*> clients = ClientList::GetLayerList(x);
 		for (int i = 0; i < clients.size(); ++i) {
-			ClientNode *np = clients[i];
+			Client *np = clients[i];
 			if (np->isSticky()) {
 				continue;
 			}
@@ -180,12 +180,12 @@ void Desktops::_ChangeDesktop(unsigned int desktop) {
 /** Toggle the "show desktop" state. */
 void Desktops::_ShowDesktop(void) {
 
-	ClientNode *np;
+	Client *np;
 	int layer;
 
 	Grabs::GrabServer();
 	for (layer = 0; layer < LAYER_COUNT; layer++) {
-		std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+		std::vector<Client*> clients = ClientList::GetLayerList(layer);
 		for (int i = 0; i < clients.size(); ++i) {
 			np = clients[i];
 			if (np->shouldSkipInTaskList()) {
@@ -216,7 +216,7 @@ void Desktops::_ShowDesktop(void) {
 		char first = 1;
 		JXSync(display, False);
 		for (layer = 0; layer < LAYER_COUNT; layer++) {
-			std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+			std::vector<Client*> clients = ClientList::GetLayerList(layer);
 			for(int i = 0; i < clients.size(); ++i) {
 				np = clients[i];
 				if (np->shouldSkipInTaskList()) {

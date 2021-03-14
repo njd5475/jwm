@@ -10,17 +10,17 @@
 #ifndef STATUS_H
 #define STATUS_H
 
-struct ClientNode;
+class Client;
 
 /** Create a move status window.
  * @param np The client to be moved.
  */
-void CreateMoveWindow(struct ClientNode *np);
+void CreateMoveWindow(struct Client *np);
 
 /** Update a move status window.
  * @param np The client being moved.
  */
-void UpdateMoveWindow(struct ClientNode *np);
+void UpdateMoveWindow(struct Client *np);
 
 /** Destroy a move status window. */
 void DestroyMoveWindow(void);
@@ -28,14 +28,14 @@ void DestroyMoveWindow(void);
 /** Create a resize status window.
  * @param np The client being resized.
  */
-void CreateResizeWindow(struct ClientNode *np);
+void CreateResizeWindow(struct Client *np);
 
 /** Update a resize status window.
  * @param np The client being resized.
  * @param gwidth The width to display.
  * @param gheight The height to display.
  */
-void UpdateResizeWindow(struct ClientNode *np, int gwidth, int gheight);
+void UpdateResizeWindow(struct Client *np, int gwidth, int gheight);
 
 /** Destroy a resize status window. */
 void DestroyResizeWindow(void);

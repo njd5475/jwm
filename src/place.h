@@ -15,7 +15,7 @@
 struct ScreenType;
 struct TrayType;
 
-class Places : public ClientNode {
+class Places : public Client {
 
 public:
 	/*@{*/
@@ -28,18 +28,18 @@ public:
 	/** Remove struts associated with a client.
 	 * @param np The client.
 	 */
-	static void RemoveClientStrut(ClientNode *np);
+	static void RemoveClientStrut(Client *np);
 
 	/** Read struts associated with a client.
 	 * @param np The client.
 	 */
-	static void ReadClientStrut(ClientNode *np);
+	static void ReadClientStrut(Client *np);
 
 	/** Move a client window for a border.
 	 * @param np The client.
 	 * @param negate 0 to gravitate for a border, 1 to gravitate for no border.
 	 */
-	static void GravitateClient(ClientNode *np, char negate);
+	static void GravitateClient(Client *np, char negate);
 
 
 	static int IntComparator(const void *a, const void *b);

@@ -297,7 +297,7 @@ void Events::_Signal(void) {
 
 	if (restack_pending) {
 		Logger::Log("Restacking Clients\n");
-		ClientNode::RestackClients();
+		Client::RestackClients();
 		restack_pending = 0;
 	}
 	if (task_update_pending) {
@@ -421,7 +421,7 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 	static int lastX = 0, lastY = 0;
 	static unsigned doubleClickActive = 0;
 
-	ClientNode *np;
+	Client *np;
 	int button;
 	int north, south, east, west;
 	MouseContextType context;
@@ -454,7 +454,7 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 	}
 
 	/* Dispatch the event. */
-	np = ClientNode::FindClientByParent(event->window);
+	np = Client::FindClientByParent(event->window);
 	if (np) {
 		/* Click on the border. */
 		if (event->type == ButtonPress) {
@@ -474,7 +474,7 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 		unsigned int lockMask = Button1Mask | Button2Mask | Button3Mask
 				| Button4Mask | Button5Mask | (1 << 13) | (1 << 14);
 		const unsigned int mask = event->state & ~lockMask;
-		np = ClientNode::FindClientByWindow(event->window);
+		np = Client::FindClientByWindow(event->window);
 		if (np) {
 			const char move_resize = (np->isDragable())
 					|| ((mask == settings.moveMask) && !(np->isNotDraggable()));
@@ -513,7 +513,7 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 }
 
 /** Toggle maximized state. */
-void Events::_ToggleMaximized(ClientNode *np, MaxFlags flags) {
+void Events::_ToggleMaximized(Client *np, MaxFlags flags) {
 	if (np) {
 		if (np->getMaxFlags() == flags) {
 			np->MaximizeClient(MAX_NONE);
@@ -528,7 +528,7 @@ void Events::Bind(KeyEventHandler *handler, Actions action) {
 }
 
 /** Process a key or mouse binding. */
-void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
+void Events::_ProcessBinding(MouseContextType context, Client *np,
 		unsigned state, int code, int x, int y) {
 	//const ActionType key = Binding::GetKey(context, state, code);
 	const char keyAction = context == MC_NONE;
@@ -755,9 +755,9 @@ void Events::_ProcessBinding(MouseContextType context, ClientNode *np,
 
 /** Process a key press event. */
 void Events::_HandleKeyPress(const XKeyEvent *event) {
-	ClientNode *np;
+	Client *np;
 	Cursors::SetMousePosition(event->x_root, event->y_root, event->window);
-	np = ClientNode::GetActiveClient();
+	np = Client::GetActiveClient();
 	_ProcessBinding(MC_NONE, np, event->state, event->keycode, 0, 0);
 }
 
@@ -780,7 +780,7 @@ void Events::_HandleConfigureRequest(const XConfigureRequestEvent *event) {
 //  }
 
 	// find the node for the window
-	np = (Places*) ClientNode::FindClientByWindow(event->window);
+	np = (Places*) Client::FindClientByWindow(event->window);
 	if (np) {
 
 		int deltax, deltay;
@@ -931,9 +931,9 @@ char Events::_HandleConfigureNotify(const XConfigureEvent *event) {
 
 /** Process an enter notify event. */
 void Events::_HandleEnterNotify(const XCrossingEvent *event) {
-	ClientNode *np;
+	Client *np;
 	Cursor cur;
-	np = ClientNode::FindClient(event->window);
+	np = Client::FindClient(event->window);
 	if (np) {
 		if (!(np->isActive())
 				&& (settings.focusModel == FOCUS_SLOPPY
@@ -955,15 +955,15 @@ void Events::_HandleEnterNotify(const XCrossingEvent *event) {
 
 /** Handle an expose event. */
 char Events::_HandleExpose(const XExposeEvent *event) {
-	ClientNode *np;
-	np = ClientNode::FindClientByParent(event->window);
+	Client *np;
+	np = Client::FindClientByParent(event->window);
 	if (np) {
 		if (event->count == 0) {
 			Border::DrawBorder(np);
 		}
 		return 1;
 	} else {
-		np = ClientNode::FindClientByWindow(event->window);
+		np = Client::FindClientByWindow(event->window);
 		if (np) {
 			if (np->isDialogWindow()) {
 
@@ -983,7 +983,7 @@ char Events::_HandleExpose(const XExposeEvent *event) {
 
 /** Handle a property notify event. */
 char Events::_HandlePropertyNotify(const XPropertyEvent *event) {
-	ClientNode *np = ClientNode::FindClientByWindow(event->window);
+	Client *np = Client::FindClientByWindow(event->window);
 	if (np) {
 		char changed = 0;
 		Atom atom = event->atom;
@@ -998,11 +998,11 @@ char Events::_HandlePropertyNotify(const XPropertyEvent *event) {
 			changed = 1;
 		} else if (atom == XA_WM_HINTS) {
 			if (np->isUrgent()) {
-				_UnregisterCallback(ClientNode::SignalUrgent, np);
+				_UnregisterCallback(Client::SignalUrgent, np);
 			}
 			Hints::ReadWMHints(np->getWindow(), np, 1);
 			if (np->isUrgent()) {
-				_RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, np);
+				_RegisterCallback(URGENCY_DELAY, Client::SignalUrgent, np);
 			}
 			Hints::WriteState(np);
 		} else if (atom == XA_WM_TRANSIENT_FOR) {
@@ -1061,12 +1061,12 @@ char Events::_HandlePropertyNotify(const XPropertyEvent *event) {
 /** Handle a client message. */
 void Events::_HandleClientMessage(const XClientMessageEvent *event) {
 
-	ClientNode *np;
+	Client *np;
 #ifdef DEBUG
 	char *atomName;
 #endif
 
-	np = ClientNode::FindClientByWindow(event->window);
+	np = Client::FindClientByWindow(event->window);
 	if (np) {
 		if (event->message_type == Hints::atoms[ATOM_WM_CHANGE_STATE]) {
 
@@ -1194,7 +1194,7 @@ void Events::_HandleClientMessage(const XClientMessageEvent *event) {
 
 /** Handle a _NET_MOVERESIZE_WINDOW request. */
 void Events::_HandleNetMoveResize(const XClientMessageEvent *event,
-		ClientNode *np) {
+		Client *np) {
 
 	long flags;
 	int gravity;
@@ -1280,7 +1280,7 @@ void Events::_HandleNetMoveResize(const XClientMessageEvent *event,
 
 /** Handle a _NET_WM_MOVERESIZE request. */
 void Events::HandleNetWMMoveResize(const XClientMessageEvent *event,
-		ClientNode *np) {
+		Client *np) {
 
 	long x = event->data.l[0] - np->getX();
 	long y = event->data.l[1] - np->getY();
@@ -1338,7 +1338,7 @@ void Events::HandleNetWMMoveResize(const XClientMessageEvent *event,
 
 /** Handle a _NET_RESTACK_WINDOW request. */
 void Events::_HandleNetRestack(const XClientMessageEvent *event,
-		ClientNode *np) {
+		Client *np) {
 	const Window sibling = event->data.l[1];
 	const int detail = event->data.l[2];
 	np->RestackClient(sibling, detail);
@@ -1346,7 +1346,7 @@ void Events::_HandleNetRestack(const XClientMessageEvent *event,
 
 /** Handle a _NET_WM_STATE request. */
 void Events::_HandleNetWMState(const XClientMessageEvent *event,
-		ClientNode *np) {
+		Client *np) {
 
 	unsigned int x;
 	MaxFlags maxFlags;
@@ -1532,20 +1532,20 @@ void Events::_HandleNetWMState(const XClientMessageEvent *event,
 
 /** Handle a _NET_REQUEST_FRAME_EXTENTS request. */
 void Events::_HandleFrameExtentsRequest(const XClientMessageEvent *event) {
-	Hints::WriteFrameExtents(event->window, (const ClientNode*) &event->data);
+	Hints::WriteFrameExtents(event->window, (const Client*) &event->data);
 }
 
 /** Handle a motion notify event. */
 void Events::_HandleMotionNotify(const XMotionEvent *event) {
 
-	ClientNode *np;
+	Client *np;
 	Cursor cur;
 
 	if (event->is_hint) {
 		return;
 	}
 
-	np = ClientNode::FindClientByParent(event->window);
+	np = Client::FindClientByParent(event->window);
 	if (np) {
 		const MouseContextType context = Border::GetBorderContext(np, event->x,
 				event->y);
@@ -1561,8 +1561,8 @@ void Events::_HandleMotionNotify(const XMotionEvent *event) {
 /** Handle a shape event. */
 #ifdef USE_SHAPE
 void Events::_HandleShapeEvent(const XShapeEvent *event) {
-	ClientNode *np;
-	np = ClientNode::FindClientByWindow(event->window);
+	Client *np;
+	np = Client::FindClientByWindow(event->window);
 	if (np) {
 		np->setShaded();
 		Border::ResetBorder(np);
@@ -1572,9 +1572,9 @@ void Events::_HandleShapeEvent(const XShapeEvent *event) {
 
 /** Handle a colormap event. */
 void Events::_HandleColormapChange(const XColormapEvent *event) {
-	ClientNode *np;
+	Client *np;
 	if (event->c_new == True) {
-		np = ClientNode::FindClientByWindow(event->window);
+		np = Client::FindClientByWindow(event->window);
 		if (np) {
 			np->UpdateClientColormap(event->colormap);
 		}
@@ -1583,13 +1583,13 @@ void Events::_HandleColormapChange(const XColormapEvent *event) {
 
 /** Handle a map request. */
 void Events::_HandleMapRequest(const XMapEvent *event) {
-	ClientNode *np;
+	Client *np;
 	Assert(event);
 
-	np = ClientNode::FindClientByWindow(event->window);
+	np = Client::FindClientByWindow(event->window);
 	if (!np) {
 		Grabs::GrabServer();
-		np = ClientNode::Create(event->window, 0, 1);
+		np = Client::Create(event->window, 0, 1);
 		if (np) {
 			if (!(np->notFocusableIfMapped())) {
 				np->keyboardFocus();
@@ -1623,7 +1623,7 @@ void Events::_HandleMapRequest(const XMapEvent *event) {
 
 /** Handle an unmap notify event. */
 void Events::_HandleUnmapNotify(const XUnmapEvent *event) {
-	ClientNode *np;
+	Client *np;
 	XEvent e;
 
 	Assert(event);
@@ -1635,7 +1635,7 @@ void Events::_HandleUnmapNotify(const XUnmapEvent *event) {
 		}
 	}
 
-	np = ClientNode::FindClientByWindow(event->window);
+	np = Client::FindClientByWindow(event->window);
 	if (np) {
 
 		/* Grab the server to prevent the client from destroying the
@@ -1670,8 +1670,8 @@ void Events::_HandleUnmapNotify(const XUnmapEvent *event) {
 
 /** Handle a destroy notify event. */
 char Events::_HandleDestroyNotify(const XDestroyWindowEvent *event) {
-	ClientNode *np;
-	np = ClientNode::FindClientByWindow(event->window);
+	Client *np;
+	np = Client::FindClientByWindow(event->window);
 	if (np) {
 		if (np->getController()) {
 			(np->getController())(1);

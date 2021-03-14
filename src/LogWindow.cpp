@@ -54,7 +54,7 @@ LogWindow::LogWindow(int x, int y, int width, int height) :
   JXStoreName(display, window, _("Portal"));
   Hints::SetAtomAtom(window, ATOM_NET_WM_WINDOW_TYPE,
       ATOM_NET_WM_WINDOW_TYPE_UTILITY);
-  node = ClientNode::Create(window, 0, 0);
+  node = Client::Create(window, 0, 0);
   node->setNoBorderClose();
   node->keyboardFocus();
   Hints::WriteState(node);

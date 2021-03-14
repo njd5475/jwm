@@ -22,7 +22,7 @@ typedef unsigned char MaxFlags;
 
 typedef void (*SignalCallback)(const struct TimeType *now, int x, int y,
     Window w, void *data);
-class ClientNode;
+class Client;
 
 typedef struct CallbackNode {
   TimeType last;
@@ -118,7 +118,7 @@ private:
 public:
   static void _Signal(void);
 
-  static void _ProcessBinding(MouseContextType context, ClientNode *np,
+  static void _ProcessBinding(MouseContextType context, Client *np,
       unsigned state, int code, int x, int y);
 
   static void _HandleConfigureRequest(const XConfigureRequestEvent *event);
@@ -131,7 +131,7 @@ public:
   static void _HandleMapRequest(const XMapEvent *event);
   static void _HandleUnmapNotify(const XUnmapEvent *event);
   static void _HandleButtonEvent(const XButtonEvent *event);
-  static void _ToggleMaximized(ClientNode *np, MaxFlags flags);
+  static void _ToggleMaximized(Client *np, MaxFlags flags);
   static void _HandleKeyPress(const XKeyEvent *event);
   static void _HandleKeyRelease(const XKeyEvent *event);
   static void _HandleEnterNotify(const XCrossingEvent *event);
@@ -139,11 +139,11 @@ public:
   static char _HandleSelectionClear(const XSelectionClearEvent *event);
 
   static void _HandleNetMoveResize(const XClientMessageEvent *event,
-      ClientNode *np);
+      Client *np);
   static void HandleNetWMMoveResize(const XClientMessageEvent *evnet,
-      ClientNode *np);
-  static void _HandleNetRestack(const XClientMessageEvent *event, ClientNode *np);
-  static void _HandleNetWMState(const XClientMessageEvent *event, ClientNode *np);
+      Client *np);
+  static void _HandleNetRestack(const XClientMessageEvent *event, Client *np);
+  static void _HandleNetWMState(const XClientMessageEvent *event, Client *np);
   static void _HandleFrameExtentsRequest(const XClientMessageEvent *event);
   static void _DiscardEnterEvents();
 

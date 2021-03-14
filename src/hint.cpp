@@ -230,7 +230,7 @@ void Hints::ReadCurrentDesktop(void) {
 /** Read client hints.
  * This is called while the client is being added to management.
  */
-void Hints::ReadClientInfo(ClientNode *np, bool alreadyMapped) {
+void Hints::ReadClientInfo(Client *np, bool alreadyMapped) {
 
 	Status status;
 
@@ -253,7 +253,7 @@ void Hints::ReadClientInfo(ClientNode *np, bool alreadyMapped) {
 }
 
 /** Write the window state hint for a client. */
-void Hints::WriteState(const ClientNode *np) {
+void Hints::WriteState(const Client *np) {
 	unsigned long data[2];
 
 	if (np->isMapped()) {
@@ -280,7 +280,7 @@ void Hints::WriteState(const ClientNode *np) {
 }
 
 /** Write the net state hint for a client. */
-void Hints::WriteNetState(const ClientNode *np) {
+void Hints::WriteNetState(const Client *np) {
 	unsigned long values[16];
 	int index;
 
@@ -357,7 +357,7 @@ void Hints::WriteNetState(const ClientNode *np) {
 }
 
 /** Set _NET_FRAME_EXTENTS. */
-void Hints::WriteFrameExtents(Window win, const ClientNode *state) {
+void Hints::WriteFrameExtents(Window win, const Client *state) {
 	unsigned long values[4];
 	int north, south, east, west;
 
@@ -375,7 +375,7 @@ void Hints::WriteFrameExtents(Window win, const ClientNode *state) {
 }
 
 /** Write the allowed action property. */
-void Hints::WriteNetAllowed(const ClientNode *np) {
+void Hints::WriteNetAllowed(const Client *np) {
 
 	unsigned long values[12];
 	unsigned int index;
@@ -442,7 +442,7 @@ char Hints::CheckShape(Window win) {
 }
 
 /** Read all hints needed to determine the current window state. */
-void Hints::ReadWindowState(ClientNode *result, Window win, bool alreadyMapped) {
+void Hints::ReadWindowState(Client *result, Window win, bool alreadyMapped) {
 
 	Status status;
 	unsigned long count, x;
@@ -608,7 +608,7 @@ void Hints::ReadWindowState(ClientNode *result, Window win, bool alreadyMapped) 
 }
 
 /** Read the protocols hint for a window. */
-void Hints::ReadWMProtocols(Window w, ClientNode *state) {
+void Hints::ReadWMProtocols(Window w, Client *state) {
 
 	unsigned long count, x;
 	int status;
@@ -671,7 +671,7 @@ bool Hints::IsDeleteAtomSet(Window w) {
 }
 
 /** Read the WM state for a window. */
-void Hints::ReadWMState(Window win, ClientNode *node) {
+void Hints::ReadWMState(Window win, Client *node) {
 
 	Status status;
 	unsigned long count;
@@ -702,7 +702,7 @@ void Hints::ReadWMState(Window win, ClientNode *node) {
 }
 
 /** Read the WM hints for a window. */
-void Hints::ReadWMHints(Window win, ClientNode *node, bool alreadyMapped) {
+void Hints::ReadWMHints(Window win, Client *node, bool alreadyMapped) {
 
 	XWMHints *wmhints;
 
@@ -747,7 +747,7 @@ void Hints::ReadWMOpacity(Window win, unsigned *opacity) {
 }
 
 /** Read _MOTIF_WM_HINTS */
-void Hints::ReadMotifHints(Window win, ClientNode *state) {
+void Hints::ReadMotifHints(Window win, Client *state) {
 
 	PropMwmHints *mhints;
 	Atom type;

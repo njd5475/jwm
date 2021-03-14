@@ -53,7 +53,7 @@ static void ReleasePatternList(PatternListType *lp);
 static void ReleaseOptionList(OptionListType *lp);
 static void AddPattern(PatternListType **lp, const char *pattern,
 		MatchType match);
-static void ApplyGroup(const GroupType *gp, ClientNode *np);
+static void ApplyGroup(const GroupType *gp, Client *np);
 
 /** Determine if expression matches pattern. */
 static char Match(const char *pattern, const char *expression);
@@ -183,7 +183,7 @@ void Groups::AddGroupOptionSigned(GroupType *gp, OptionType option, int value) {
 }
 
 /** Apply groups to a client. */
-void Groups::ApplyGroups(ClientNode *np) {
+void Groups::ApplyGroups(Client *np) {
 	PatternListType *lp;
 	GroupType *gp;
 	char hasClass;
@@ -220,7 +220,7 @@ void Groups::ApplyGroups(ClientNode *np) {
 }
 
 /** Apply a group to a client. */
-void ApplyGroup(const GroupType *gp, ClientNode *np) {
+void ApplyGroup(const GroupType *gp, Client *np) {
 	OptionListType *lp;
 	char noPager = 0;
 	char noList = 0;

@@ -73,7 +73,7 @@ int Border::GetBorderIconSize(void) {
 }
 
 /** Determine if the specified context is available for a client. */
-char Border::IsContextEnabled(MouseContextType context, const ClientNode *np) {
+char Border::IsContextEnabled(MouseContextType context, const Client *np) {
 	const BorderFlags flags = np->getBorder();
 	switch (context) {
 	case MC_BORDER:
@@ -94,7 +94,7 @@ char Border::IsContextEnabled(MouseContextType context, const ClientNode *np) {
 }
 
 /** Determine the border action to take given coordinates. */
-MouseContextType Border::GetBorderContext(const ClientNode *np, int x, int y) {
+MouseContextType Border::GetBorderContext(const Client *np, int x, int y) {
 	int north, south, east, west;
 	unsigned resizeMask;
 	const unsigned titleHeight = GetTitleHeight();
@@ -220,7 +220,7 @@ MouseContextType Border::GetBorderContext(const ClientNode *np, int x, int y) {
 }
 
 /** Reset the shape of a window border. */
-void Border::ResetBorder(const ClientNode *np) {
+void Border::ResetBorder(const Client *np) {
 #ifdef USE_SHAPE
 	Pixmap shapePixmap;
 	GC shapeGC;
@@ -321,7 +321,7 @@ void Border::ResetBorder(const ClientNode *np) {
 }
 
 /** Draw a client border. */
-void Border::DrawBorder(ClientNode *np) {
+void Border::DrawBorder(Client *np) {
 
 	Assert(np);
 
@@ -354,7 +354,7 @@ void Border::DrawBorder(ClientNode *np) {
 }
 
 /** Helper method for drawing borders. */
-void Border::DrawBorderHelper(const ClientNode *np) {
+void Border::DrawBorderHelper(const Client *np) {
 	ColorName borderTextColor;
 
 	long titleColor1, titleColor2;
@@ -485,7 +485,7 @@ void Border::DrawBorderHelper(const ClientNode *np) {
 }
 
 /** Draw window handles. */
-void Border::DrawBorderHandles(const ClientNode *np, Pixmap canvas, GC gc) {
+void Border::DrawBorderHandles(const Client *np, Pixmap canvas, GC gc) {
 	XSegment segments[9];
 	long pixelUp, pixelDown;
 	int width, height;
@@ -732,7 +732,7 @@ void Border::DrawBorderHandles(const ClientNode *np, Pixmap canvas, GC gc) {
 }
 
 /** Draw draw a border button (with the border). */
-void Border::DrawBorderButton(const ClientNode *np, MouseContextType context,
+void Border::DrawBorderButton(const Client *np, MouseContextType context,
 		int x, int y, Pixmap canvas, GC gc, long fg) {
 	JXSetForeground(display, gc, fg);
 	switch (context) {
@@ -759,7 +759,7 @@ void Border::DrawBorderButton(const ClientNode *np, MouseContextType context,
 }
 
 /** Draw a button border. */
-void Border::DrawButtonBorder(const ClientNode *np, int x, Pixmap canvas,
+void Border::DrawButtonBorder(const Client *np, int x, Pixmap canvas,
 		GC gc) {
 	long pixelUp, pixelDown;
 	const unsigned y1 = settings.borderWidth - 1;
@@ -789,21 +789,21 @@ void Border::DrawButtonBorder(const ClientNode *np, int x, Pixmap canvas,
 }
 
 /** Draw a button on the left side of the title (with border). */
-void Border::DrawLeftButton(const ClientNode *np, MouseContextType context,
+void Border::DrawLeftButton(const Client *np, MouseContextType context,
 		int x, int y, Pixmap canvas, GC gc, long fg) {
 	DrawButtonBorder(np, x, canvas, gc);
 	DrawBorderButton(np, context, x, y, canvas, gc, fg);
 }
 
 /** Draw a button on the right side of the title (with border). */
-void Border::DrawRightButton(const ClientNode *np, MouseContextType context,
+void Border::DrawRightButton(const Client *np, MouseContextType context,
 		int x, int y, Pixmap canvas, GC gc, long fg) {
 	DrawButtonBorder(np, x + GetTitleHeight() - 1, canvas, gc);
 	DrawBorderButton(np, context, x, y, canvas, gc, fg);
 }
 
 /** Draw the buttons on a client frame. */
-XPoint Border::DrawBorderButtons(const ClientNode *np, Pixmap canvas, GC gc) {
+XPoint Border::DrawBorderButtons(const Client *np, Pixmap canvas, GC gc) {
 	long fg;
 	XPoint point;
 	const unsigned titleHeight = GetTitleHeight();
@@ -1078,7 +1078,7 @@ void Border::DrawMinButton(unsigned xoffset, unsigned yoffset, Pixmap canvas,
 }
 
 /* Draw the title icon. */
-void Border::DrawIconButton(const ClientNode *np, int x, int y, Pixmap canvas,
+void Border::DrawIconButton(const Client *np, int x, int y, Pixmap canvas,
 		GC gc, long fg) {
 #ifdef USE_ICONS
 	const int iconSize = GetBorderIconSize();
@@ -1107,7 +1107,7 @@ unsigned Border::GetTitleHeight(void) {
 }
 
 /** Get the size of the borders for a client. */
-void Border::GetBorderSize(const ClientNode *state, int *north, int *south,
+void Border::GetBorderSize(const Client *state, int *north, int *south,
 		int *east, int *west) {
 	Assert(state);
 	Assert(north);

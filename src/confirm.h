@@ -12,7 +12,7 @@
 
 #include "event.h"
 
-struct ClientNode;
+class Client;
 
 class DialogsEventHandler : public EventHandler {
 
@@ -40,8 +40,8 @@ public:
 	 * @param np A client window associated with the dialog.
 	 * @param action A callback to run if "OK" is clicked.
 	 */
-	static void ShowConfirmDialog(struct ClientNode *np,
-			void (*action)(struct ClientNode*), ...);
+	static void ShowConfirmDialog(struct Client *np,
+			void (*action)(struct Client*), ...);
 
 private:
 

@@ -131,22 +131,22 @@ typedef struct BoundingBox {
 } BoundingBox;
 
 typedef struct Strut {
-  ClientNode *client;
+  Client *client;
   BoundingBox box;
   struct Strut *next;
 } Strut;
 
 /** Struture to store information about a client window. */
-class ClientNode {
+class Client {
 
 private:
-  ClientNode(Window w, bool alreadyMapped, bool notOwner);
+  Client(Window w, bool alreadyMapped, bool notOwner);
 
 public:
-  virtual ~ClientNode();
+  virtual ~Client();
 
 protected:
-  static std::vector<ClientNode*> nodes;
+  static std::vector<Client*> nodes;
 
   Window window; /**< The client window. */
   Window parent; /**< The frame window. */
@@ -191,18 +191,18 @@ protected:
 
 public:
 
-  static char DoRemoveClientStrut(ClientNode *np);
-  static void InsertStrut(const BoundingBox *box, ClientNode *np);
+  static char DoRemoveClientStrut(Client *np);
+  static void InsertStrut(const BoundingBox *box, Client *np);
   static void RestackClients(void);
   static void GetScreenBounds(const struct ScreenType *sp, BoundingBox *box);
-  static void SubtractStrutBounds(BoundingBox *box, const ClientNode *np);
+  static void SubtractStrutBounds(BoundingBox *box, const Client *np);
   static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
   static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
-  static ClientNode *Create(Window w, bool alreadyMapped, bool notOwner);
-  static ClientNode *FindClient(Window w); // by window or parent
-  static ClientNode *FindClientByWindow(Window w);
-  static ClientNode *FindClientByParent(Window p);
-  static ClientNode *GetActiveClient(void);
+  static Client *Create(Window w, bool alreadyMapped, bool notOwner);
+  static Client *FindClient(Window w); // by window or parent
+  static Client *FindClientByWindow(Window w);
+  static Client *FindClientByParent(Window p);
+  static Client *GetActiveClient(void);
 
   static void InitializeClients();
   static void StartupClients(void);
@@ -215,7 +215,7 @@ public:
    * @param np The client to place.
    * @param alreadyMapped 1 if already mapped, 0 if unmapped.
    */
-  static void PlaceClient(ClientNode *np, char alreadyMapped);
+  static void PlaceClient(Client *np, char alreadyMapped);
 
   /** Send a message to a client.
    * @param w The client window.
@@ -311,7 +311,7 @@ public:
    * @param np The client to place.
    * @param flags The type of maximization to perform.
    */
-  void PlaceMaximizedClient(ClientNode *np, MaxFlags flags);
+  void PlaceMaximizedClient(Client *np, MaxFlags flags);
 
   void ConstrainPosition();
   char ConstrainSize();
@@ -548,10 +548,10 @@ private:
 
   static Strut *struts;
   static int *cascadeOffsets;
-  static ClientNode *activeClient;
+  static Client *activeClient;
 
   static void LoadFocus(void);
-  static void KillClientHandler(ClientNode *np);
+  static void KillClientHandler(Client *np);
 
   void RestackTransients();
   void RestoreTransients(char raise);

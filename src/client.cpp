@@ -32,14 +32,14 @@
 
 #include <X11/Xlibint.h>
 
-ClientNode *ClientNode::activeClient;
+Client *Client::activeClient;
 
-unsigned int ClientNode::clientCount;
+unsigned int Client::clientCount;
 
-std::vector<ClientNode*> ClientNode::nodes;
+std::vector<Client*> Client::nodes;
 
 /** Load windows that are already mapped. */
-void ClientNode::StartupClients(void) {
+void Client::StartupClients(void) {
 
   XWindowAttributes attr;
   Window rootReturn, parentReturn, *childrenReturn;
@@ -85,14 +85,14 @@ void ClientNode::StartupClients(void) {
 
 }
 
-ClientNode* ClientNode::Create(Window w, bool alreadyMapped, bool notOwner) {
-  ClientNode *node = new ClientNode(w, alreadyMapped, notOwner);
+Client* Client::Create(Window w, bool alreadyMapped, bool notOwner) {
+  Client *node = new Client(w, alreadyMapped, notOwner);
   nodes.push_back(node);
   return node;
 }
 
 /** Place a client on the screen. */
-void ClientNode::PlaceClient(ClientNode *np, char alreadyMapped) {
+void Client::PlaceClient(Client *np, char alreadyMapped) {
 
   BoundingBox box;
   const ScreenType *sp;
@@ -133,7 +133,7 @@ void ClientNode::PlaceClient(ClientNode *np, char alreadyMapped) {
 }
 
 /** Cascade placement. */
-void ClientNode::CascadeClient(const BoundingBox *box) {
+void Client::CascadeClient(const BoundingBox *box) {
   const ScreenType *sp;
   const unsigned titleHeight = Border::GetTitleHeight();
   int north, south, east, west;
@@ -178,7 +178,7 @@ void ClientNode::CascadeClient(const BoundingBox *box) {
 }
 
 /** Release client windows. */
-void ClientNode::ShutdownClients(void) {
+void Client::ShutdownClients(void) {
 
   ClientList::Shutdown();
 
@@ -195,9 +195,9 @@ void ClientNode::ShutdownClients(void) {
 }
 
 /** Set the focus to the window currently under the mouse pointer. */
-void ClientNode::LoadFocus(void) {
+void Client::LoadFocus(void) {
 
-  ClientNode *np;
+  Client *np;
   Window rootReturn, childReturn;
   int rootx, rooty;
   int winx, winy;
@@ -213,7 +213,7 @@ void ClientNode::LoadFocus(void) {
 
 }
 
-ClientNode::~ClientNode() {
+Client::~Client() {
 
   this->setDelete();
   SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
@@ -312,7 +312,7 @@ ClientNode::~ClientNode() {
 }
 
 /** Add a window to management. */
-ClientNode::ClientNode(Window w, bool alreadyMapped, bool notOwner) :
+Client::Client(Window w, bool alreadyMapped, bool notOwner) :
     oldx(0), oldy(0), oldWidth(0), oldHeight(0), yinc(0), minWidth(0), maxWidth(
         0), minHeight(0), maxHeight(0), gravity(0), controller(0), instanceName(
         0), baseHeight(0), baseWidth(0), colormaps(), icon(0), sizeFlags(0), className(
@@ -466,14 +466,14 @@ ClientNode::ClientNode(Window w, bool alreadyMapped, bool notOwner) :
 }
 
 /** Minimize a client window and all of its transients. */
-void ClientNode::MinimizeClient(char lower) {
+void Client::MinimizeClient(char lower) {
   this->MinimizeTransients(lower);
   Events::_RequireRestack();
   Events::_RequireTaskUpdate();
 }
 
 /** Minimize all transients as well as the specified client. */
-void ClientNode::MinimizeTransients(char lower) {
+void Client::MinimizeTransients(char lower) {
 
   /* Unmap the window and update its state. */
   if (this->isStatus(STAT_MAPPED | STAT_SHADED)) {
@@ -491,7 +491,7 @@ void ClientNode::MinimizeTransients(char lower) {
 
 }
 
-void ClientNode::saveBounds() {
+void Client::saveBounds() {
   this->oldx = this->x;
   this->oldy = this->y;
   this->oldWidth = this->width;
@@ -499,7 +499,7 @@ void ClientNode::saveBounds() {
 }
 
 /** Determine which way to move the client for the border. */
-void ClientNode::GetGravityDelta(int gravity, int *x, int *y) {
+void Client::GetGravityDelta(int gravity, int *x, int *y) {
   int north, south, east, west;
   Border::GetBorderSize(this, &north, &south, &east, &west);
   switch (gravity) {
@@ -547,7 +547,7 @@ void ClientNode::GetGravityDelta(int gravity, int *x, int *y) {
 }
 
 /** Shade a client. */
-void ClientNode::ShadeClient() {
+void Client::ShadeClient() {
   if ((this->isStatus(STAT_SHADED | STAT_FULLSCREEN))
       || !(this->getBorder() & BORDER_SHADE)) {
     return;
@@ -563,7 +563,7 @@ void ClientNode::ShadeClient() {
 }
 
 /** Unshade a client. */
-void ClientNode::UnshadeClient() {
+void Client::UnshadeClient() {
   if (!(this->isShaded())) {
     return;
   }
@@ -582,7 +582,7 @@ void ClientNode::UnshadeClient() {
 }
 
 /** Set a client's state to withdrawn. */
-void ClientNode::sendToBackground() {
+void Client::sendToBackground() {
   if (activeClient == this) {
     activeClient = NULL;
     this->setNotActive();
@@ -613,7 +613,7 @@ void ClientNode::sendToBackground() {
 }
 
 /** Restore a window with its transients (helper method). */
-void ClientNode::RestoreTransients(char raise) {
+void Client::RestoreTransients(char raise) {
   int x;
 
   /* Make sure this window is on the current desktop. */
@@ -639,9 +639,9 @@ void ClientNode::RestoreTransients(char raise) {
 
   /* Restore transient windows. */
   //ClientList::RestoreTransientWindows(this->window, raise);
-  std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
+  std::vector<Client*> children = ClientList::GetChildren(this->window);
   for (int i = 0; i < children.size(); ++i) {
-    ClientNode *tp = children[i];
+    Client *tp = children[i];
     if (tp->isMinimized()) {
       tp->RestoreTransients(raise);
     }
@@ -657,7 +657,7 @@ void ClientNode::RestoreTransients(char raise) {
 }
 
 /** Restore a client window and its transients. */
-void ClientNode::RestoreClient(char raise) {
+void Client::RestoreClient(char raise) {
   if ((this->isFixed()) && !(this->isSticky())) {
     DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(this->getDesktop());
   }
@@ -667,7 +667,7 @@ void ClientNode::RestoreClient(char raise) {
 }
 
 /** Update window state information. */
-void ClientNode::_UpdateState() {
+void Client::_UpdateState() {
   const char alreadyMapped = (this->isMapped()) ? 1 : 0;
   const char active = (this->isActive()) ? 1 : 0;
 
@@ -676,11 +676,11 @@ void ClientNode::_UpdateState() {
 
   /* Read the state (and new layer). */
   if (this->isUrgent()) {
-    Events::_UnregisterCallback(ClientNode::SignalUrgent, this);
+    Events::_UnregisterCallback(Client::SignalUrgent, this);
   }
   Hints::ReadWindowState(this, this->getWindow(), alreadyMapped);
   if (this->isUrgent()) {
-    Events::_RegisterCallback(URGENCY_DELAY, ClientNode::SignalUrgent, this);
+    Events::_RegisterCallback(URGENCY_DELAY, Client::SignalUrgent, this);
   }
 
   /* We don't handle mapping the window, so restore its mapped state. */
@@ -698,7 +698,7 @@ void ClientNode::_UpdateState() {
 }
 
 /** Set the opacity of a client. */
-void ClientNode::SetOpacity(unsigned int opacity, char force) {
+void Client::SetOpacity(unsigned int opacity, char force) {
   Window w;
   if (this->getOpacity() == opacity && !force) {
     return;
@@ -713,7 +713,7 @@ void ClientNode::SetOpacity(unsigned int opacity, char force) {
   }
 }
 
-void ClientNode::UpdateWindowState(bool alreadyMapped) {
+void Client::UpdateWindowState(bool alreadyMapped) {
   /* Read the window state. */
   Hints::ReadWindowState(this, this->window, alreadyMapped);
   if (this->minWidth == this->maxWidth && this->minHeight == this->maxHeight) {
@@ -727,7 +727,7 @@ void ClientNode::UpdateWindowState(bool alreadyMapped) {
 
   /* Make sure this client is on at least as high of a layer
    * as its owner. */
-  ClientNode *pp;
+  Client *pp;
   if (this->owner != None) {
     pp = FindClientByWindow(this->owner);
     if (pp) {
@@ -737,12 +737,12 @@ void ClientNode::UpdateWindowState(bool alreadyMapped) {
 }
 
 /** Set the client layer. This will affect transients. */
-void ClientNode::SetClientLayer(unsigned int layer) {
+void Client::SetClientLayer(unsigned int layer) {
   Assert(layer <= LAST_LAYER);
 
   if (this->getLayer() != layer) {
-    ClientNode *tp;
-    std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
+    Client *tp;
+    std::vector<Client*> children = ClientList::GetChildren(this->window);
 
     for (int i = 0; i < children.size(); ++i) {
       tp = children[i];
@@ -757,7 +757,7 @@ void ClientNode::SetClientLayer(unsigned int layer) {
 }
 
 /** Set a client's sticky.getStatus(). This will update transients. */
-void ClientNode::SetClientSticky(char isSticky) {
+void Client::SetClientSticky(char isSticky) {
 
   bool old = false;
 
@@ -769,9 +769,9 @@ void ClientNode::SetClientSticky(char isSticky) {
   if (isSticky && !old) {
 
     /* Change from non-sticky to sticky. */
-    std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
+    std::vector<Client*> children = ClientList::GetChildren(this->window);
 
-    ClientNode *tp;
+    Client *tp;
     for (int i = 0; i < children.size(); ++i) {
       tp = children[i];
       tp->setSticky();
@@ -786,9 +786,9 @@ void ClientNode::SetClientSticky(char isSticky) {
   } else if (!isSticky && old) {
 
     /* Change from sticky to non-sticky. */
-    std::vector<ClientNode*> children = ClientList::GetChildren(this->window);
+    std::vector<Client*> children = ClientList::GetChildren(this->window);
 
-    ClientNode *tp;
+    Client *tp;
     for (int i = 0; i < children.size(); ++i) {
       tp = children[i];
       if (tp == this || tp->owner == this->window) {
@@ -811,16 +811,16 @@ void ClientNode::SetClientSticky(char isSticky) {
 }
 
 /** Set a client's desktop. This will update transients. */
-void ClientNode::SetClientDesktop(unsigned int desktop) {
+void Client::SetClientDesktop(unsigned int desktop) {
 
   if (JUNLIKELY(desktop >= settings.desktopCount)) {
     return;
   }
 
   if (!(this->isSticky())) {
-    ClientNode *tp;
+    Client *tp;
 
-    std::vector<ClientNode*> all = ClientList::GetSelfAndChildren(this);
+    std::vector<Client*> all = ClientList::GetSelfAndChildren(this);
     for (int i = 0; i < all.size(); ++i) {
       tp = all[i];
       tp->setDesktop(desktop);
@@ -841,7 +841,7 @@ void ClientNode::SetClientDesktop(unsigned int desktop) {
 }
 
 /** Hide a client. This will not update transients. */
-void ClientNode::HideClient() {
+void Client::HideClient() {
   if (!(this->isHidden())) {
     if (activeClient == this) {
       activeClient = NULL;
@@ -862,7 +862,7 @@ void ClientNode::HideClient() {
 }
 
 /** Show a hidden client. This will not update transients. */
-void ClientNode::ShowClient() {
+void Client::ShowClient() {
   if (this->isHidden()) {
     this->setNotHidden();
     if (this->isStatus(STAT_MAPPED | STAT_SHADED)) {
@@ -881,7 +881,7 @@ void ClientNode::ShowClient() {
 }
 
 /** Maximize a client window. */
-void ClientNode::MaximizeClient(MaxFlags flags) {
+void Client::MaximizeClient(MaxFlags flags) {
 
   /* Don't allow maximization of full-screen clients. */
   if (this->isFullscreen()) {
@@ -922,12 +922,12 @@ void ClientNode::MaximizeClient(MaxFlags flags) {
 
 }
 
-void ClientNode::clearController() {
+void Client::clearController() {
   this->controller = NULL;
 }
 
 /** Maximize a client using its default maximize settings. */
-void ClientNode::MaximizeClientDefault() {
+void Client::MaximizeClientDefault() {
 
   MaxFlags flags = MAX_NONE;
 
@@ -944,7 +944,7 @@ void ClientNode::MaximizeClientDefault() {
 
 }
 
-char ClientNode::TileClient(const BoundingBox *box) {
+char Client::TileClient(const BoundingBox *box) {
 
   int layer;
   int north, south, east, west;
@@ -957,10 +957,10 @@ char ClientNode::TileClient(const BoundingBox *box) {
 
   /* Count insertion points, including bounding box edges. */
   count = 2;
-  std::vector<ClientNode*> insertionPoints =
+  std::vector<Client*> insertionPoints =
       ClientList::GetMappedDesktopClients();
   for (int i = 0; i < insertionPoints.size(); ++i) {
-    ClientNode *ip = insertionPoints[i];
+    Client *ip = insertionPoints[i];
     if (ip == this) {
       continue;
     }
@@ -976,9 +976,9 @@ char ClientNode::TileClient(const BoundingBox *box) {
   ys[0] = box->y;
   count = 1;
 
-  const ClientNode *tp = NULL;
+  const Client *tp = NULL;
   for (int i = 0; i < insertionPoints.size(); ++i) {
-    ClientNode *tp = insertionPoints[i];
+    Client *tp = insertionPoints[i];
     if (tp == this) {
       continue;
     }
@@ -1036,7 +1036,7 @@ char ClientNode::TileClient(const BoundingBox *box) {
 }
 
 /** Place a maximized client on the screen. */
-void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
+void Client::PlaceMaximizedClient(MaxFlags flags) {
   BoundingBox box;
   const ScreenType *sp;
   int north, south, east, west;
@@ -1133,11 +1133,11 @@ void ClientNode::PlaceMaximizedClient(MaxFlags flags) {
   this->setHeight(newHeight);
 }
 
-void ClientNode::InitializeClients() {
+void Client::InitializeClients() {
 
 }
 
-void ClientNode::DestroyClients() {
+void Client::DestroyClients() {
   for (auto p : nodes) {
     delete p;
   }
@@ -1145,7 +1145,7 @@ void ClientNode::DestroyClients() {
 }
 
 /** Set a client's full screen state. */
-void ClientNode::SetClientFullScreen(char fullScreen) {
+void Client::SetClientFullScreen(char fullScreen) {
 
   XEvent event;
   int north, south, east, west;
@@ -1223,7 +1223,7 @@ void ClientNode::SetClientFullScreen(char fullScreen) {
 }
 
 /** Constrain the size of the client. */
-char ClientNode::ConstrainSize() {
+char Client::ConstrainSize() {
 
   BoundingBox box;
   const ScreenType *sp;
@@ -1299,7 +1299,7 @@ char ClientNode::ConstrainSize() {
 }
 
 /** Get the screen bounds. */
-void ClientNode::GetScreenBounds(const ScreenType *sp, BoundingBox *box) {
+void Client::GetScreenBounds(const ScreenType *sp, BoundingBox *box) {
   box->x = sp->x;
   box->y = sp->y;
   box->width = sp->width;
@@ -1307,7 +1307,7 @@ void ClientNode::GetScreenBounds(const ScreenType *sp, BoundingBox *box) {
 }
 
 /** Shrink dest such that it does not intersect with src. */
-void ClientNode::SubtractBounds(const BoundingBox *src, BoundingBox *dest) {
+void Client::SubtractBounds(const BoundingBox *src, BoundingBox *dest) {
 
   BoundingBox boxes[4];
 
@@ -1370,11 +1370,11 @@ void ClientNode::SubtractBounds(const BoundingBox *src, BoundingBox *dest) {
 
 }
 
-Strut *ClientNode::struts = NULL;
-int *ClientNode::cascadeOffsets = NULL;
+Strut *Client::struts = NULL;
+int *Client::cascadeOffsets = NULL;
 
 /** Insert a bounding box to the list of struts. */
-void ClientNode::InsertStrut(const BoundingBox *box, ClientNode *np) {
+void Client::InsertStrut(const BoundingBox *box, Client *np) {
   if (JLIKELY(box->width > 0 && box->height > 0)) {
     Strut *sp = new Strut;
     sp->client = np;
@@ -1385,7 +1385,7 @@ void ClientNode::InsertStrut(const BoundingBox *box, ClientNode *np) {
 }
 
 /** Remove struts associated with a client. */
-char ClientNode::DoRemoveClientStrut(ClientNode *np) {
+char Client::DoRemoveClientStrut(Client *np) {
   char updated = 0;
   Strut **spp = &struts;
   while (*spp) {
@@ -1402,7 +1402,7 @@ char ClientNode::DoRemoveClientStrut(ClientNode *np) {
 }
 
 /** Remove struts from the bounding box. */
-void ClientNode::SubtractStrutBounds(BoundingBox *box, const ClientNode *np) {
+void Client::SubtractStrutBounds(BoundingBox *box, const Client *np) {
 
   Strut *sp;
   BoundingBox last;
@@ -1424,7 +1424,7 @@ void ClientNode::SubtractStrutBounds(BoundingBox *box, const ClientNode *np) {
 }
 
 /** Subtract tray area from the bounding box. */
-void ClientNode::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
+void Client::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
   BoundingBox src;
   BoundingBox last;
 
@@ -1456,7 +1456,7 @@ void ClientNode::SubtractTrayBounds(BoundingBox *box, unsigned int layer) {
 }
 
 /** Constrain the position of a client. */
-void ClientNode::ConstrainPosition() {
+void Client::ConstrainPosition() {
 
   BoundingBox box;
   int north, south, east, west;
@@ -1495,7 +1495,7 @@ void ClientNode::ConstrainPosition() {
 }
 
 /** Set the active client. */
-void ClientNode::keyboardFocus() {
+void Client::keyboardFocus() {
   if (this->isHidden()) {
     return;
   }
@@ -1540,14 +1540,14 @@ void ClientNode::keyboardFocus() {
 }
 
 /** Refocus the active client (if there is one). */
-void ClientNode::RefocusClient(void) {
+void Client::RefocusClient(void) {
   if (activeClient) {
     activeClient->keyboardFocus();
   }
 }
 
 /** Send a delete message to a client. */
-void ClientNode::DeleteClient() {
+void Client::DeleteClient() {
   Hints::ReadWMProtocols(this->window, this);
   if (this->shouldDelete()) {
     SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
@@ -1557,7 +1557,7 @@ void ClientNode::DeleteClient() {
 }
 
 /** Callback to kill a client after a confirm dialog. */
-void ClientNode::KillClientHandler(ClientNode *np) {
+void Client::KillClientHandler(Client *np) {
   if (np == activeClient) {
     ClientList::FocusNextStacked(np);
   }
@@ -1566,15 +1566,15 @@ void ClientNode::KillClientHandler(ClientNode *np) {
 }
 
 /** Kill a client window. */
-void ClientNode::KillClient() {
-  Dialogs::ShowConfirmDialog(this, ClientNode::KillClientHandler,
+void Client::KillClient() {
+  Dialogs::ShowConfirmDialog(this, Client::KillClientHandler,
   _("Kill this window?"),
   _("This may cause data to be lost!"),
   NULL);
 }
 
 /** Place transients on top of the owner. */
-void ClientNode::RestackTransients() {
+void Client::RestackTransients() {
 //  ClientNode *tp;
 //  unsigned int layer;
 
@@ -1610,7 +1610,7 @@ void ClientNode::RestackTransients() {
 }
 
 /** Raise the client. This will affect transients. */
-void ClientNode::RaiseClient() {
+void Client::RaiseClient() {
 
   ClientList::BringToTopOfLayer(this);
 
@@ -1620,9 +1620,9 @@ void ClientNode::RaiseClient() {
 }
 
 /** Restack a client window. This will not affect transients. */
-void ClientNode::RestackClient(Window above, int detail) {
+void Client::RestackClient(Window above, int detail) {
 
-  ClientNode *tp;
+  Client *tp;
   char inserted = 0;
 
   /* Remove from the window list. */
@@ -1654,7 +1654,7 @@ void ClientNode::RestackClient(Window above, int detail) {
 }
 
 /** Restack the clients according the way we want them. */
-void ClientNode::RestackClients(void) {
+void Client::RestackClients(void) {
 
   unsigned int layer, index;
   int trayCount = 0;
@@ -1674,10 +1674,10 @@ void ClientNode::RestackClients(void) {
   index = 0;
   if (activeClient && (activeClient->isFullscreen())) {
     fw = activeClient->window;
-    std::vector<ClientNode*> clients = ClientList::GetLayerList(
+    std::vector<Client*> clients = ClientList::GetLayerList(
         activeClient->getLayer());
     for (int i = 0; i < clients.size(); ++i) {
-      ClientNode *np = clients[i];
+      Client *np = clients[i];
       if (np->getOwner() == fw) {
         if (np->getParent() != None) {
           stack[index] = np->getParent();
@@ -1697,9 +1697,9 @@ void ClientNode::RestackClients(void) {
   layer = LAST_LAYER;
   for (;;) {
 
-    std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+    std::vector<Client*> clients = ClientList::GetLayerList(layer);
     for (int i = 0; i < clients.size(); ++i) {
-      ClientNode *np = clients[i];
+      Client *np = clients[i];
       if ((np->isStatus(STAT_MAPPED | STAT_SHADED)) && !(np->isHidden())) {
         if (fw != None && (np->getWindow() == fw || np->getOwner() == fw)) {
           continue;
@@ -1735,7 +1735,7 @@ void ClientNode::RestackClients(void) {
 }
 
 /** Send a client message to a window. */
-void ClientNode::SendClientMessage(Window w, AtomType type, AtomType message) {
+void Client::SendClientMessage(Window w, AtomType type, AtomType message) {
 
   XEvent event;
   int status;
@@ -1756,8 +1756,8 @@ void ClientNode::SendClientMessage(Window w, AtomType type, AtomType message) {
 }
 
 /** Remove a client window from management. */
-void ClientNode::RemoveClient() {
-  std::vector<ClientNode*>::iterator found;
+void Client::RemoveClient() {
+  std::vector<Client*>::iterator found;
   if ((found = std::find(nodes.begin(), nodes.end(), this)) != nodes.end()) {
     nodes.erase(found);
   }
@@ -1766,7 +1766,7 @@ void ClientNode::RemoveClient() {
 }
 
 /** Determine the title to display for a client. */
-void ClientNode::ReadWMName() {
+void Client::ReadWMName() {
 
   unsigned long count;
   int status;
@@ -1831,7 +1831,7 @@ void ClientNode::ReadWMName() {
 }
 
 /** Read the window class for a client. */
-void ClientNode::ReadWMClass() {
+void Client::ReadWMClass() {
   XClassHint hint;
   if (JXGetClassHint(display, this->getWindow(), &hint)) {
     this->instanceName = hint.res_name;
@@ -1840,13 +1840,13 @@ void ClientNode::ReadWMClass() {
 }
 
 /** Get the active client (possibly NULL). */
-ClientNode* ClientNode::GetActiveClient(void) {
+Client* Client::GetActiveClient(void) {
   return activeClient;
 }
 
 /** Find a client by parent or window. */
-ClientNode* ClientNode::FindClient(Window w) {
-  ClientNode *np;
+Client* Client::FindClient(Window w) {
+  Client *np;
   np = FindClientByWindow(w);
   if (!np) {
     np = FindClientByParent(w);
@@ -1855,8 +1855,8 @@ ClientNode* ClientNode::FindClient(Window w) {
 }
 
 /** Find a client by window. */
-ClientNode* ClientNode::FindClientByWindow(Window w) {
-  ClientNode *np;
+Client* Client::FindClientByWindow(Window w) {
+  Client *np;
   if (!XFindContext(display, w, clientContext, (char**) &np)) {
     return np;
   } else {
@@ -1865,8 +1865,8 @@ ClientNode* ClientNode::FindClientByWindow(Window w) {
 }
 
 /** Find a client by its frame window. */
-ClientNode* ClientNode::FindClientByParent(Window p) {
-  ClientNode *np;
+Client* Client::FindClientByParent(Window p) {
+  Client *np;
   if (!XFindContext(display, p, frameContext, (char**) &np)) {
     return np;
   } else {
@@ -1875,8 +1875,8 @@ ClientNode* ClientNode::FindClientByParent(Window p) {
 }
 
 /** Reparent a client window. */
-void ClientNode::ReparentClient() {
-  ClientNode *np = this;
+void Client::ReparentClient() {
+  Client *np = this;
   XSetWindowAttributes attr;
   XEvent event;
   int attrMask;
@@ -1949,7 +1949,7 @@ void ClientNode::ReparentClient() {
 }
 
 /** Send a configure event to a client window. */
-void ClientNode::SendConfigureEvent() {
+void Client::SendConfigureEvent() {
 
   XConfigureEvent event;
   const ScreenType *sp;
@@ -1982,7 +1982,7 @@ void ClientNode::SendConfigureEvent() {
  * client changed. This will change the active colormap(s) if the given
  * client is active.
  */
-void ClientNode::UpdateClientColormap(Colormap cmap) {
+void Client::UpdateClientColormap(Colormap cmap) {
   if (this == activeClient) {
     if (this->cmap != -1) {
       this->cmap = cmap;
@@ -2012,9 +2012,9 @@ void ClientNode::UpdateClientColormap(Colormap cmap) {
 }
 
 /** Update callback for clients with the urgency hint set. */
-void ClientNode::SignalUrgent(const TimeType *now, int x, int y, Window w,
+void Client::SignalUrgent(const TimeType *now, int x, int y, Window w,
     void *data) {
-  ClientNode *np = (ClientNode*) data;
+  Client *np = (Client*) data;
 
   /* Redraw borders. */
   if (np->shouldFlash()) {
@@ -2029,7 +2029,7 @@ void ClientNode::SignalUrgent(const TimeType *now, int x, int y, Window w,
 }
 
 /** Unmap a client window and consume the UnmapNotify event. */
-void ClientNode::UnmapClient() {
+void Client::UnmapClient() {
   if (this->isMapped()) {
     XEvent e;
 
@@ -2046,7 +2046,7 @@ void ClientNode::UnmapClient() {
 }
 
 /** Read colormap information for a client. */
-void ClientNode::ReadWMColormaps() {
+void Client::ReadWMColormaps() {
 
   Window *windows;
   ColormapNode *cp;
@@ -2084,7 +2084,7 @@ void ClientNode::ReadWMColormaps() {
 }
 
 /** Attempt to place the client at the specified coordinates. */
-int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
+int Client::TryTileClient(const BoundingBox *box, int x, int y) {
   int layer;
   int north, south, east, west;
   int x1, x2, y1, y2;
@@ -2114,9 +2114,9 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
 
   /* Loop over each client. */
   for (layer = this->getLayer(); layer < LAYER_COUNT; layer++) {
-    std::vector<ClientNode*> clients = ClientList::GetLayerList(layer);
+    std::vector<Client*> clients = ClientList::GetLayerList(layer);
     for (int i = 0; i < clients.size(); ++i) {
-      ClientNode *tp = clients[i];
+      Client *tp = clients[i];
 
       /* Skip clients that aren't visible. */
       if (!IsClientOnCurrentDesktop(tp)) {
@@ -2151,7 +2151,7 @@ int ClientNode::TryTileClient(const BoundingBox *box, int x, int y) {
 }
 
 /** Read the "normal hints" for a client. */
-void ClientNode::ReadWMNormalHints() {
+void Client::ReadWMNormalHints() {
 
   XSizeHints hints;
   long temp;
@@ -2221,7 +2221,7 @@ void ClientNode::ReadWMNormalHints() {
 /** Tiled placement. */
 
 /** Move the window in the specified direction for reparenting. */
-void ClientNode::GravitateClient(char negate) {
+void Client::GravitateClient(char negate) {
   int deltax, deltay;
   this->GetGravityDelta(this->gravity, &deltax, &deltay);
   if (negate) {
@@ -2234,9 +2234,9 @@ void ClientNode::GravitateClient(char negate) {
 }
 
 /** Snap to window borders. */
-void ClientNode::DoSnapBorder() {
+void Client::DoSnapBorder() {
 
-  ClientNode *tp;
+  Client *tp;
   ClientRectangle client, other;
   ClientRectangle left = { 0 };
   ClientRectangle right = { 0 };
@@ -2290,7 +2290,7 @@ void ClientNode::DoSnapBorder() {
     }
 
     /* Check client windows. */
-    std::vector<ClientNode*> clients = ClientList::GetList();
+    std::vector<Client*> clients = ClientList::GetList();
     for (unsigned int i = 0; i < clients.size(); ++i) {
       tp = clients[i];
       if (tp == this || !ShouldSnap(tp)) {
@@ -2345,648 +2345,648 @@ void ClientNode::DoSnapBorder() {
 
 }
 
-void ClientNode::DrawBorder() {
+void Client::DrawBorder() {
   if (!(this->isStatus(STAT_HIDDEN | STAT_MINIMIZED))) {
     Border::DrawBorder(this);
   }
 }
 
-Window ClientNode::getOwner() const {
+Window Client::getOwner() const {
   return this->owner;
 }
 
-void ClientNode::setOwner(Window owner) {
+void Client::setOwner(Window owner) {
   this->owner = owner;
 }
 
-int ClientNode::getX() const {
+int Client::getX() const {
   return this->x;
 }
 
-int ClientNode::getY() const {
+int Client::getY() const {
   return this->y;
 }
 
-void ClientNode::setX(int x) {
+void Client::setX(int x) {
   this->x = x;
 }
 
-void ClientNode::setY(int y) {
+void Client::setY(int y) {
   this->y = y;
 }
 
-void ClientNode::setHeight(int height) {
+void Client::setHeight(int height) {
   this->height = height;
 }
 
-void ClientNode::setWidth(int width) {
+void Client::setWidth(int width) {
   this->width = width;
 }
 
-const char* ClientNode::getClassName() const {
+const char* Client::getClassName() const {
   return this->className;
 }
 
-const char* ClientNode::getInstanceName() {
+const char* Client::getInstanceName() {
   return this->instanceName;
 }
 
-Icon* ClientNode::getIcon() const {
+Icon* Client::getIcon() const {
   return this->icon;
 }
 
-void ClientNode::setIcon(Icon *icon) {
+void Client::setIcon(Icon *icon) {
   this->icon = icon;
 }
 
-ColormapNode* ClientNode::getColormaps() const {
+ColormapNode* Client::getColormaps() const {
   return this->colormaps;
 }
 
-Window ClientNode::getWindow() const {
+Window Client::getWindow() const {
   return this->window;
 }
 
-Window ClientNode::getParent() const {
+Window Client::getParent() const {
   return this->parent;
 }
 
-const char* ClientNode::getName() const {
+const char* Client::getName() const {
   return this->name;
 }
 
-int ClientNode::getWidth() const {
+int Client::getWidth() const {
   return this->width;
 }
 
-int ClientNode::getHeight() const {
+int Client::getHeight() const {
   return this->height;
 }
 
-int ClientNode::getGravity() const {
+int Client::getGravity() const {
   return this->gravity;
 }
 
-MouseContextType ClientNode::getMouseContext() const {
+MouseContextType Client::getMouseContext() const {
   return this->mouseContext;
 }
 
-void ClientNode::setMouseContext(MouseContextType context) {
+void Client::setMouseContext(MouseContextType context) {
   this->mouseContext = context;
 }
 
-long int ClientNode::getSizeFlags() {
+long int Client::getSizeFlags() {
   return this->sizeFlags;
 }
 
-void ClientNode::setController(void (*controller)(int wasDestroyed)) {
+void Client::setController(void (*controller)(int wasDestroyed)) {
   this->controller = controller;
 }
 
-void ClientNode::resetMaxFlags() {
+void Client::resetMaxFlags() {
   this->maxFlags = MAX_NONE;
 }
 
-void ClientNode::setDelete() {
+void Client::setDelete() {
   this->status |= STAT_DELETE;
 }
 
-void ClientNode::setTakeFocus() {
+void Client::setTakeFocus() {
   this->status |= STAT_TAKEFOCUS;
 }
 
-void ClientNode::setNoDelete() {
+void Client::setNoDelete() {
   this->status &= ~STAT_DELETE;
 }
 
-void ClientNode::setNoTakeFocus() {
+void Client::setNoTakeFocus() {
   this->status &= ~STAT_TAKEFOCUS;
 }
 
-void ClientNode::setLayer(unsigned char layer) {
+void Client::setLayer(unsigned char layer) {
   this->layer = layer;
 }
 
-void ClientNode::setDefaultLayer(unsigned char defaultLayer) {
+void Client::setDefaultLayer(unsigned char defaultLayer) {
   this->defaultLayer = defaultLayer;
 }
 
-unsigned char ClientNode::getDefaultLayer() const {
+unsigned char Client::getDefaultLayer() const {
   return this->defaultLayer;
 }
 
-void ClientNode::clearMaxFlags() {
+void Client::clearMaxFlags() {
   this->maxFlags = MAX_NONE;
 }
 
-void ClientNode::resetBorder() {
+void Client::resetBorder() {
   this->border = BORDER_DEFAULT;
 }
 
-void ClientNode::resetLayer() {
+void Client::resetLayer() {
   this->layer = LAYER_NORMAL;
 }
 
-void ClientNode::resetDefaultLayer() {
+void Client::resetDefaultLayer() {
   this->defaultLayer = LAYER_NORMAL;
 }
 
-void ClientNode::clearBorder() {
+void Client::clearBorder() {
   this->border = BORDER_NONE;
 }
 
-void ClientNode::clearStatus() {
+void Client::clearStatus() {
   this->status = STAT_NONE;
 }
 
-void ClientNode::setNotMapped() {
+void Client::setNotMapped() {
   this->status &= ~STAT_MAPPED;
 }
 
-unsigned int ClientNode::getOpacity() {
+unsigned int Client::getOpacity() {
   return this->opacity;
 }
 
-unsigned short ClientNode::getDesktop() const {
+unsigned short Client::getDesktop() const {
   return this->desktop;
 }
 
-void ClientNode::setShaped() {
+void Client::setShaped() {
   this->status |= STAT_SHAPED;
 }
 
-void ClientNode::resetLayerToDefault() {
+void Client::resetLayerToDefault() {
   this->SetClientLayer(this->getDefaultLayer());
   this->layer = this->defaultLayer;
 }
 
-void ClientNode::setDesktop(unsigned short desktop) {
+void Client::setDesktop(unsigned short desktop) {
   this->desktop = desktop;
 }
 
-unsigned char ClientNode::getLayer() const {
+unsigned char Client::getLayer() const {
   return this->layer;
 }
 
-unsigned short ClientNode::getBorder() const {
+unsigned short Client::getBorder() const {
   return this->border;
 }
 
-unsigned char ClientNode::getMaxFlags() const {
+unsigned char Client::getMaxFlags() const {
   return this->maxFlags;
 }
 
-bool ClientNode::isStatus(unsigned int flags) const {
+bool Client::isStatus(unsigned int flags) const {
   return (this->status & flags);
 }
 
-bool ClientNode::isFullscreen() const {
+bool Client::isFullscreen() const {
   return isStatus(STAT_FULLSCREEN);
 }
 
-bool ClientNode::isPosition() const {
+bool Client::isPosition() const {
   return isStatus(STAT_POSITION);
 }
 
-bool ClientNode::isMapped() const {
+bool Client::isMapped() const {
   return isStatus(STAT_MAPPED);
 }
 
-bool ClientNode::isShaded() const {
+bool Client::isShaded() const {
   return isStatus(STAT_SHADED);
 }
 
-bool ClientNode::isMinimized() const {
+bool Client::isMinimized() const {
   return isStatus(STAT_MINIMIZED);
 }
 
-bool ClientNode::isShaped() const {
+bool Client::isShaped() const {
   return isStatus(STAT_SHAPED);
 }
 
-bool ClientNode::isIgnoringProgramPosition() const {
+bool Client::isIgnoringProgramPosition() const {
   return isStatus(STAT_PIGNORE);
 }
 
-bool ClientNode::isTiled() const {
+bool Client::isTiled() const {
   return isStatus(STAT_TILED);
 }
 
-bool ClientNode::isCentered() const {
+bool Client::isCentered() const {
   return isStatus(STAT_CENTERED);
 }
 
-bool ClientNode::isUrgent() const {
+bool Client::isUrgent() const {
   return isStatus(STAT_URGENT);
 }
 
-bool ClientNode::isDialogWindow() const {
+bool Client::isDialogWindow() const {
   return isStatus(STAT_WMDIALOG);
 }
 
-bool ClientNode::isHidden() const {
+bool Client::isHidden() const {
   return isStatus(STAT_HIDDEN);
 }
 
-bool ClientNode::hasOpacity() const {
+bool Client::hasOpacity() const {
   return isStatus(STAT_OPACITY);
 }
 
-bool ClientNode::isSticky() const {
+bool Client::isSticky() const {
   return isStatus(STAT_STICKY);
 }
 
-bool ClientNode::isActive() const {
+bool Client::isActive() const {
   return isStatus(STAT_ACTIVE);
 }
 
-bool ClientNode::isFixed() const {
+bool Client::isFixed() const {
   return isStatus(STAT_FIXED);
 }
 
-bool ClientNode::willIgnoreIncrementWhenMaximized() const {
+bool Client::willIgnoreIncrementWhenMaximized() const {
   return isStatus(STAT_IIGNORE);
 }
 
-bool ClientNode::canFocus() const {
+bool Client::canFocus() const {
   return isStatus(STAT_CANFOCUS);
 }
 
-bool ClientNode::shouldTakeFocus() const {
+bool Client::shouldTakeFocus() const {
   return isStatus(STAT_TAKEFOCUS);
 }
 
-bool ClientNode::shouldDelete() const {
+bool Client::shouldDelete() const {
   return isStatus(STAT_DELETE);
 }
 
-bool ClientNode::shouldFlash() const {
+bool Client::shouldFlash() const {
   return isStatus(STAT_FLASH);
 }
 
-bool ClientNode::isNotUrgent() const {
+bool Client::isNotUrgent() const {
   return isStatus(STAT_NOTURGENT);
 }
 
-bool ClientNode::shouldSkipInTaskList() const {
+bool Client::shouldSkipInTaskList() const {
   return isStatus(STAT_NOLIST);
 }
 
-bool ClientNode::wasMinimizedToShowDesktop() const {
+bool Client::wasMinimizedToShowDesktop() const {
   return isStatus(STAT_SDESKTOP);
 }
 
-bool ClientNode::isDragable() const {
+bool Client::isDragable() const {
   return isStatus(STAT_DRAG);
 }
 
-bool ClientNode::isNotDraggable() const {
+bool Client::isNotDraggable() const {
   return isStatus(STAT_NODRAG);
 }
 
-bool ClientNode::shouldIgnoreSpecifiedList() const {
+bool Client::shouldIgnoreSpecifiedList() const {
   return isStatus(STAT_ILIST);
 }
 
-bool ClientNode::shouldIgnorePager() const {
+bool Client::shouldIgnorePager() const {
   return isStatus(STAT_IPAGER);
 }
 
-bool ClientNode::notFocusableIfMapped() const {
+bool Client::notFocusableIfMapped() const {
   return isStatus(STAT_NOFOCUS);
 }
 
-bool ClientNode::shouldNotShowInPager() const {
+bool Client::shouldNotShowInPager() const {
   return isStatus(STAT_NOPAGER);
 }
 
-bool ClientNode::isAeroSnapEnabled() const {
+bool Client::isAeroSnapEnabled() const {
   return isStatus(STAT_AEROSNAP);
 }
 
-void ClientNode::setActive() {
+void Client::setActive() {
   this->status |= STAT_ACTIVE;
 }
 
-void ClientNode::setNotActive() {
+void Client::setNotActive() {
   this->status &= ~STAT_ACTIVE;
 }
 
-void ClientNode::setMaxFlags(MaxFlags flags) {
+void Client::setMaxFlags(MaxFlags flags) {
   this->maxFlags = flags;
 }
 
-void ClientNode::setOpacity(unsigned int opacity) {
+void Client::setOpacity(unsigned int opacity) {
   this->opacity = opacity;
 }
 
 //TODO: Rename these methods to be better understood
-void ClientNode::setDialogWindowStatus() {
+void Client::setDialogWindowStatus() {
   this->status |= STAT_WMDIALOG;
 }
 
-void ClientNode::setSDesktopStatus() {
+void Client::setSDesktopStatus() {
   this->status |= STAT_SDESKTOP;
 }
 
-void ClientNode::setMapped() {
+void Client::setMapped() {
   this->status |= STAT_MAPPED;
 }
 
-void ClientNode::setCanFocus() {
+void Client::setCanFocus() {
   this->status |= STAT_CANFOCUS;
 }
 
-void ClientNode::setUrgent() {
+void Client::setUrgent() {
   this->status |= STAT_URGENT;
 }
 
-void ClientNode::setNoFlash() {
+void Client::setNoFlash() {
   this->status &= ~STAT_FLASH;
 }
 
-void ClientNode::setShaded() {
+void Client::setShaded() {
   this->status |= STAT_SHADED;
 }
 
-void ClientNode::setMinimized() {
+void Client::setMinimized() {
   this->status |= STAT_MINIMIZED;
 }
 
-void ClientNode::setNoPager() {
+void Client::setNoPager() {
   this->status |= STAT_NOPAGER;
 }
 
-void ClientNode::setNoFullscreen() {
+void Client::setNoFullscreen() {
   this->status &= ~STAT_FULLSCREEN;
 }
 
-void ClientNode::setPositionFromConfig() {
+void Client::setPositionFromConfig() {
   this->status |= STAT_POSITION;
 }
 
-void ClientNode::setHasNoList() {
+void Client::setHasNoList() {
   this->status ^= STAT_NOLIST;
 }
 
-void ClientNode::setNoShaded() {
+void Client::setNoShaded() {
   this->status &= ~STAT_SHADED;
 }
 
-void ClientNode::setNoList() {
+void Client::setNoList() {
   this->status |= STAT_NOLIST;
 }
 
-void ClientNode::setSticky() {
+void Client::setSticky() {
   this->status |= STAT_STICKY;
 }
 
-void ClientNode::setNoSticky() {
+void Client::setNoSticky() {
   this->status &= ~STAT_STICKY;
 }
 
-void ClientNode::setNoDrag() {
+void Client::setNoDrag() {
   this->status |= STAT_NODRAG;
 }
 
-void ClientNode::setNoMinimized() {
+void Client::setNoMinimized() {
   this->status &= ~STAT_MINIMIZED;
 }
 
-void ClientNode::setNoSDesktop() {
+void Client::setNoSDesktop() {
   this->status &= ~STAT_SDESKTOP;
 }
 
-void ClientNode::clearToNoList() {
+void Client::clearToNoList() {
   this->status &= ~STAT_NOLIST;
 }
 
-void ClientNode::clearToNoPager() {
+void Client::clearToNoPager() {
   this->status &= ~STAT_NOPAGER;
 }
 
-void ClientNode::resetMappedState() {
+void Client::resetMappedState() {
   this->status &= ~STAT_MAPPED;
 }
 
-void ClientNode::clearToSticky() {
+void Client::clearToSticky() {
   this->status &= ~STAT_STICKY;
 }
 
-void ClientNode::setEdgeSnap() {
+void Client::setEdgeSnap() {
   this->status |= STAT_AEROSNAP;
 }
 
-void ClientNode::setDrag() {
+void Client::setDrag() {
   this->status |= STAT_DRAG;
 }
 
-void ClientNode::setFixed() {
+void Client::setFixed() {
   this->status |= STAT_FIXED;
 }
 
-void ClientNode::setCurrentDesktop(unsigned int desktop) {
+void Client::setCurrentDesktop(unsigned int desktop) {
   this->desktop = desktop;
 }
 
-void ClientNode::ignoreProgramList() {
+void Client::ignoreProgramList() {
   this->status |= STAT_PIGNORE;
 }
 
-void ClientNode::ignoreProgramSpecificPager() {
+void Client::ignoreProgramSpecificPager() {
   this->status |= STAT_IPAGER;
 }
 
-void ClientNode::setFullscreen() {
+void Client::setFullscreen() {
   this->status |= STAT_FULLSCREEN;
 }
 
-void ClientNode::setMaximized() {
+void Client::setMaximized() {
   this->status |= MAX_HORIZ | MAX_VERT;
 }
 
-void ClientNode::setCentered() {
+void Client::setCentered() {
   this->status |= STAT_CENTERED;
 }
 
-void ClientNode::setFlash() {
+void Client::setFlash() {
   this->status |= STAT_FLASH;
 }
 
-void ClientNode::setTiled() {
+void Client::setTiled() {
   this->status |= STAT_TILED;
 }
 
-void ClientNode::setNotUrgent() {
+void Client::setNotUrgent() {
   this->status |= STAT_NOTURGENT;
 }
 
-void ClientNode::setTaskListSkipped() {
+void Client::setTaskListSkipped() {
   this->status |= STAT_NOLIST;
 }
 
-void ClientNode::setNoFocus() {
+void Client::setNoFocus() {
   this->status |= STAT_NOFOCUS;
 }
 
-void ClientNode::setOpacityFixed() {
+void Client::setOpacityFixed() {
   this->status |= STAT_OPACITY;
 }
 
-void ClientNode::ignoreProgramSpecificPosition() {
+void Client::ignoreProgramSpecificPosition() {
   this->status |= STAT_PIGNORE;
 }
 
-void ClientNode::ignoreIncrementWhenMaximized() {
+void Client::ignoreIncrementWhenMaximized() {
   this->status |= STAT_IIGNORE;
 }
 
-void ClientNode::setBorderOutline() {
+void Client::setBorderOutline() {
   /**< Window has a border. */
   this->border |= BORDER_OUTLINE;
 }
 
-void ClientNode::setBorderTitle() {
+void Client::setBorderTitle() {
   /**< Window has a title bar. */
   this->border |= BORDER_TITLE;
 }
 
-void ClientNode::setBorderMin() {
+void Client::setBorderMin() {
   /**< Window supports minimize. */
   this->border |= BORDER_MIN;
 }
 
-void ClientNode::setBorderMax() {
+void Client::setBorderMax() {
   /**< Window supports maximize. */
   this->border |= BORDER_MAX;
 }
 
-void ClientNode::setBorderClose() {
+void Client::setBorderClose() {
   /**< Window supports close. */
   this->border |= BORDER_CLOSE;
 }
 
-void ClientNode::setBorderResize() {
+void Client::setBorderResize() {
   /**< Window supports resizing. */
   this->border |= BORDER_RESIZE;
 }
 
-void ClientNode::setBorderMove() {
+void Client::setBorderMove() {
   /**< Window supports moving. */
   this->border |= BORDER_MOVE;
 }
 
-void ClientNode::setBorderMaxVert() {
+void Client::setBorderMaxVert() {
   /**< Maximize vertically. */
   this->border |= BORDER_MAX_V;
 }
 
-void ClientNode::setBorderMaxHoriz() {
+void Client::setBorderMaxHoriz() {
   /**< Maximize horizontally. */
   this->border |= BORDER_MAX_H;
 }
 
-void ClientNode::setBorderShade() {
+void Client::setBorderShade() {
   /**< Allow shading. */
   this->border |= BORDER_SHADE;
 }
 
-void ClientNode::setBorderConstrain() {
+void Client::setBorderConstrain() {
   /**< Constrain to the screen. */
   this->border |= BORDER_CONSTRAIN;
 }
 
-void ClientNode::setBorderFullscreen() {
+void Client::setBorderFullscreen() {
   /**< Allow fullscreen. */
   this->border |= BORDER_FULLSCREEN;
 }
 
-void ClientNode::setNoCanFocus() {
+void Client::setNoCanFocus() {
   this->status &= ~STAT_CANFOCUS;
 }
 
-void ClientNode::setNoBorderOutline() {
+void Client::setNoBorderOutline() {
   /**< Window has a border. */
   this->border &= ~BORDER_OUTLINE;
 }
 
-void ClientNode::setNoBorderTitle() {
+void Client::setNoBorderTitle() {
   /**< Window has a title bar. */
   this->border &= ~BORDER_TITLE;
 }
 
-void ClientNode::setNoBorderMin() {
+void Client::setNoBorderMin() {
   /**< Window supports minimize. */
   this->border &= ~BORDER_MIN;
 }
 
-void ClientNode::setNoBorderMax() {
+void Client::setNoBorderMax() {
   /**< Window supports maximize. */
   this->border &= ~BORDER_MAX;
 }
 
-void ClientNode::setNoBorderClose() {
+void Client::setNoBorderClose() {
   /**< Window supports close. */
   this->border &= ~BORDER_CLOSE;
 }
 
-void ClientNode::setNoBorderResize() {
+void Client::setNoBorderResize() {
   /**< Window supports resizing. */
   this->border &= ~BORDER_RESIZE;
 }
 
-void ClientNode::setNoBorderMove() {
+void Client::setNoBorderMove() {
   /**< Window supports moving. */
   this->border &= ~BORDER_MOVE;
 }
 
-void ClientNode::setNoBorderMaxVert() {
+void Client::setNoBorderMaxVert() {
   /**< Maximize vertically. */
   this->border &= ~BORDER_MAX_V;
 }
 
-void ClientNode::setNoBorderMaxHoriz() {
+void Client::setNoBorderMaxHoriz() {
   /**< Maximize horizontally. */
   this->border &= ~BORDER_MAX_H;
 }
 
-void ClientNode::setNoBorderShade() {
+void Client::setNoBorderShade() {
   /**< Allow shading. */
   this->border &= ~BORDER_SHADE;
 }
 
-void ClientNode::setNoBorderConstrain() {
+void Client::setNoBorderConstrain() {
   /**< Constrain to the screen. */
   this->border &= ~BORDER_CONSTRAIN;
 }
 
-void ClientNode::setNoBorderFullscreen() {
+void Client::setNoBorderFullscreen() {
   /**< Allow fullscreen. */
   this->border &= ~BORDER_FULLSCREEN;
 }
 
-void ClientNode::setNoUrgent() {
+void Client::setNoUrgent() {
   this->status &= ~STAT_URGENT;
 }
 
-void ClientNode::unsetNoPager() {
+void Client::unsetNoPager() {
   this->status &= ~STAT_NOPAGER;
 }
 
-void ClientNode::unsetSkippingInTaskList() {
+void Client::unsetSkippingInTaskList() {
   this->status &= ~STAT_NOLIST;
 }
 
-void ClientNode::setNotHidden() {
+void Client::setNotHidden() {
   this->status &= ~STAT_HIDDEN;
 }
 
-void ClientNode::setHidden() {
+void Client::setHidden() {
   this->status |= STAT_HIDDEN;
 }
 
 /** Update the size of a client window. */
-void ClientNode::UpdateSize(const MouseContextType context, const int x,
+void Client::UpdateSize(const MouseContextType context, const int x,
     const int y, const int startx, const int starty, const int oldx,
     const int oldy, const int oldw, const int oldh) {
   if (context & MC_BORDER_N) {
@@ -3070,7 +3070,7 @@ void ResizeController(int wasDestroyed) {
 }
 
 /** Resize a client window (mouse initiated). */
-void ClientNode::ResizeClient(MouseContextType context, int startx,
+void Client::ResizeClient(MouseContextType context, int startx,
     int starty) {
 
   XEvent event;
@@ -3183,7 +3183,7 @@ void ClientNode::ResizeClient(MouseContextType context, int startx,
 }
 
 /** Resize a client window (keyboard or menu initiated). */
-void ClientNode::ResizeClientKeyboard(MouseContextType context) {
+void Client::ResizeClientKeyboard(MouseContextType context) {
 
   XEvent event;
   int gwidth, gheight;
@@ -3339,7 +3339,7 @@ void ClientNode::ResizeClientKeyboard(MouseContextType context) {
 }
 
 /** Stop a resize action. */
-void ClientNode::StopResize() {
+void Client::StopResize() {
   this->controller = NULL;
 
   /* Set the old width/height if maximized so the window
@@ -3368,7 +3368,7 @@ void ClientNode::StopResize() {
 }
 
 /** Fix the width to match the aspect ratio. */
-void ClientNode::FixWidth() {
+void Client::FixWidth() {
   if ((this->sizeFlags & PAspect) && this->height > 0) {
     if (this->width * this->aspect.miny < this->height * this->aspect.minx) {
       this->width = (this->height * this->aspect.minx) / this->aspect.miny;
@@ -3380,7 +3380,7 @@ void ClientNode::FixWidth() {
 }
 
 /** Fix the height to match the aspect ratio. */
-void ClientNode::FixHeight() {
+void Client::FixHeight() {
   if ((this->sizeFlags & PAspect) && this->height > 0) {
     if (this->width * this->aspect.miny < this->height * this->aspect.minx) {
       this->height = (this->width * this->aspect.miny) / this->aspect.minx;
@@ -3392,7 +3392,7 @@ void ClientNode::FixHeight() {
 }
 
 /** Centered placement. */
-void ClientNode::CenterClient(const BoundingBox *box) {
+void Client::CenterClient(const BoundingBox *box) {
   this->x = box->x + (box->width / 2) - (this->width / 2);
   this->y = box->y + (box->height / 2) - (this->height / 2);
   this->ConstrainSize();
@@ -3400,7 +3400,7 @@ void ClientNode::CenterClient(const BoundingBox *box) {
 }
 
 /** Stop an active pager move. */
-void ClientNode::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
+void Client::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
 
   int north, south, east, west;
 
@@ -3446,7 +3446,7 @@ void MoveController(int wasDestroyed) {
 }
 
 /** Move a client window. */
-char ClientNode::MoveClient(int startx, int starty) {
+char Client::MoveClient(int startx, int starty) {
   XEvent event;
   const ScreenType *sp;
   MaxFlags flags;
@@ -3639,7 +3639,7 @@ char ClientNode::MoveClient(int startx, int starty) {
 }
 
 /** Move a client window (keyboard or menu initiated). */
-char ClientNode::MoveClientKeyboard() {
+char Client::MoveClientKeyboard() {
   XEvent event;
   int oldx, oldy;
   int moved;
@@ -3748,7 +3748,7 @@ char ClientNode::MoveClientKeyboard() {
 }
 
 /** Stop move. */
-void ClientNode::StopMove(int doMove, int oldx, int oldy) {
+void Client::StopMove(int doMove, int oldx, int oldy) {
   int north, south, east, west;
 
   Assert(this->controller); //must be moving
@@ -3778,7 +3778,7 @@ void ClientNode::StopMove(int doMove, int oldx, int oldy) {
 }
 
 /** Restart a move. */
-void ClientNode::RestartMove(int *doMove) {
+void Client::RestartMove(int *doMove) {
   if (*doMove) {
     int north, south, east, west;
     *doMove = 0;
@@ -3796,7 +3796,7 @@ void ClientNode::RestartMove(int *doMove) {
 }
 
 /** Snap to the screen. */
-void ClientNode::DoSnapScreen() {
+void Client::DoSnapScreen() {
 
   ClientRectangle client;
   int screen;
