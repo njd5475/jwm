@@ -11,7 +11,7 @@ class Graphics;
 
 class ComponentGroup {
 public:
-	ComponentGroup(Display *display, Window window);
+	ComponentGroup(Display *display, Window window, int left, int top, int right, int bottom);
 	virtual ~ComponentGroup();
 
 	void Draw();

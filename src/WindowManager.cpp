@@ -495,7 +495,7 @@ void WindowManager::Draw() {
 
 void WindowManager::add(Component *cp) {
 	if (!_group) {
-		_group = new ComponentGroup(display, rootWindow);
+		_group = new ComponentGroup(display, rootWindow, 100, 100, 300, 300);
 	}
 	_group->add(cp);
 }

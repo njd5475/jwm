@@ -183,8 +183,8 @@ public:
 			this->getParent()->process(event);
 		}
 		if (event->type == ButtonRelease && event->xbutton.button == Button1) {
-			int x = event->xbutton.x_root;
-			int y = event->xbutton.y_root + 20;
+			int x = event->xbutton.x;
+			int y = event->xbutton.y;
 			if (this->contains(x, y)) {
 				_handler->click(event, this);
 				return true;

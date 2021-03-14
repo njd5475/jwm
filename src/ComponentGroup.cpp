@@ -13,23 +13,24 @@
 
 #include <X11/Xlibint.h>
 
-ComponentGroup::ComponentGroup(Display *display, Window rootWindow) :
-		_left(-1), _top(-1), _right(100), _bottom(100), _display(display), _window(
+ComponentGroup::ComponentGroup(Display *display, Window rootWindow, int left, int top, int right, int bottom) :
+		_left(left), _top(top), _right(right), _bottom(bottom), _display(display), _window(
 				rootWindow) {
 	XSetWindowAttributes attrs;
 	attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
 	attrs.event_mask = ButtonPressMask | ButtonReleaseMask
 			| SubstructureNotifyMask | ExposureMask | KeyPressMask
 			| KeyReleaseMask | EnterWindowMask | PointerMotionMask;
-	_pixmap = JXCreatePixmap(display, rootWindow, 100, 100, 4);
-	_window = JXCreateWindow(display, rootWindow, 0, 0, 100, 100, 0,
+	_pixmap = JXCreatePixmap(display, rootWindow, this->getWidth(), this->getHeight(), 4);
+	_window = JXCreateWindow(display, rootWindow, this->getX(), this->getY(),
+			this->getWidth(), this->getHeight(), 0,
 			CopyFromParent, InputOutput, CopyFromParent,
 			CWBackPixel | CWEventMask, &attrs);
 	_graphics = Graphics::getRootGraphics(_pixmap);
 
 	XSizeHints shints;
-	shints.x = 0;
-	shints.y = 0;
+	shints.x = this->getX();
+	shints.y = this->getY();
 	shints.flags = PPosition;
 	JXSetWMNormalHints(display, _window, &shints);
 	JXStoreName(display, _window, _("ComponentGroup"));
@@ -59,7 +60,7 @@ void ComponentGroup::Draw() {
 	for(auto c : _components) {
 		c->Draw(_graphics);
 	}
-	_graphics->copy(_window, 0, 0, getWidth(), getHeight(), getX()+10, getY()+10);
+	_graphics->copy(_window, 0, 0, getWidth(), getHeight(), getX(), getY());
 }
 
 void ComponentGroup::add(Component *c) {
