@@ -8,6 +8,7 @@
 #ifndef SRC_WINDOWMANAGER_H_
 #define SRC_WINDOWMANAGER_H_
 #include "nwm.h"
+#include "ClientListener.h"
 #include "HashMap.h"
 
 class Component;
@@ -23,7 +24,7 @@ struct ComponentInfo {
   Component *component;
 };
 
-class WindowManager {
+class WindowManager : public ClientListener {
 public:
 	static void Initialize(void);
 	static void Startup(void);
@@ -43,6 +44,8 @@ public:
 	static void SendReload(void);
 	static void SendNWMMessage(const char *message);
 	static void DrawAll();
+	static void SetWaitingPid(int pid);
+	static int  GetWaitingPid();
 
 private:
 	WindowManager();
@@ -51,11 +54,13 @@ private:
 	void Draw();
 public:
 	void add(Component* component);
+	void newClient(Client* node);
 
 	static WindowManager *WM();
 private:
 	ComponentGroup *_group;
 	static WindowManager MANAGER;
+	static int _WAITING_PID;
 	std::vector<ComponentInfo> _components;
 };
 

@@ -452,7 +452,7 @@ void Hints::ReadWindowState(Client *result, Window win, bool alreadyMapped) {
 	unsigned char *temp;
 	Atom *state;
 	unsigned long card;
-	Window utwin;
+	unsigned int utwin;
 
 	Assert(win != None);
 
@@ -837,8 +837,12 @@ void Hints::SetCardinalAtom(Window window, AtomType atom, unsigned long value) {
 	JXChangeProperty(display, window, atoms[atom], XA_CARDINAL, 32, PropModeReplace, (unsigned char* )&value, 1);
 }
 
+char Hints::GetWindowAtom(Window window, AtomType atom, unsigned int *value) {
+	return GetWindowAtom(window, atom, (unsigned char*)value);
+}
+
 /** Read a window atom. */
-char Hints::GetWindowAtom(Window window, AtomType atom, Window *value) {
+char Hints::GetWindowAtom(Window window, AtomType atom, unsigned char *value) {
 
 	unsigned long count;
 	int status;
@@ -857,7 +861,7 @@ char Hints::GetWindowAtom(Window window, AtomType atom, Window *value) {
 	ret = 0;
 	if (status == Success && realFormat != 0 && data) {
 		if (JLIKELY(count == 1)) {
-			*value = *(Window*) data;
+			*value = *data;
 			ret = 1;
 		}
 		JXFree(data);

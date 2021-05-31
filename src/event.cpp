@@ -15,7 +15,6 @@
 #include "confirm.h"
 #include "cursor.h"
 #include "icon.h"
-#include "move.h"
 #include "place.h"
 #include "timing.h"
 #include "settings.h"
@@ -219,8 +218,8 @@ char Events::_WaitForEvent(XEvent *event) {
 			break;
 		}
 
-		sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
-		Logger::Log(buf);
+		//sprintf(buf, "Event received [%s](%d)\n", eventName, event->type);
+		//Logger::Log(buf);
 		Flex::DrawAll();
 		WindowManager::DrawAll();
 
@@ -354,7 +353,7 @@ void Events::_ProcessEvent(XEvent *event) {
 	case ConfigureNotify:
 		break;
 	default:
-		Debug("Unknown event type: %d", event->type);
+		Debug("Unknown event type: %d\n", event->type);
 		break;
 	}
 }
@@ -455,7 +454,12 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 
 	/* Dispatch the event. */
 	np = Client::FindClientByParent(event->window);
+	if(!np) {
+		vLog("Could not find the client by parent %d\n", event->window);
+	}
+
 	if (np) {
+		Log("Clicked on border\n");
 		/* Click on the border. */
 		if (event->type == ButtonPress) {
 			np->keyboardFocus();
@@ -464,12 +468,14 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 		context = Border::GetBorderContext(np, event->x, event->y);
 		_ProcessBinding(context, np, event->state, button, event->x, event->y);
 	} else if (event->window == rootWindow) {
+		Log("Click on the root window\n");
 		/* Click on the root.
 		 * Note that we use the raw button from the event for ShowRootMenu. */
 //    if (!Roots::ShowRootMenu(event->button, event->x, event->y)) {
 //      _ProcessBinding(MC_ROOT, NULL, event->state, button, 0, 0);
 //    }
 	} else {
+		Log("Clicked over window contents\n");
 		/* Click over window content. */
 		unsigned int lockMask = Button1Mask | Button2Mask | Button3Mask
 				| Button4Mask | Button5Mask | (1 << 13) | (1 << 14);
@@ -485,10 +491,6 @@ void Events::_HandleButtonEvent(const XButtonEvent *event) {
 				if (settings.focusModel == FOCUS_SLOPPY
 						|| settings.focusModel == FOCUS_CLICK) {
 					np->RaiseClient();
-				}
-				if (move_resize) {
-					Border::GetBorderSize(np, &north, &south, &east, &west);
-					np->MoveClient(event->x + west, event->y + north);
 				}
 				break;
 			case Button3:
@@ -597,13 +599,13 @@ void Events::_ProcessBinding(MouseContextType context, Client *np,
 		}
 		break;
 	case MOVE:
-		if (np) {
-			if (keyAction) {
-				np->MoveClientKeyboard();
-			} else {
-				np->MoveClient(x, y);
-			}
-		}
+		// if (np) {
+		// 	if (keyAction) {
+		// 		np->MoveClientKeyboard();
+		// 	} else {
+		// 		np->MoveClient(x, y);
+		// 	}
+		// }
 		break;
 	case RESIZE:
 		if (np) {
@@ -1317,13 +1319,13 @@ void Events::HandleNetWMMoveResize(const XClientMessageEvent *event,
 		np->ResizeClient(MC_BORDER | MC_BORDER_W, x, y);
 		break;
 	case 8: /* move */
-		np->MoveClient(x, y);
+		//np->MoveClient(x, y);
 		break;
 	case 9: /* resize-keyboard */
 		np->ResizeClientKeyboard(MC_BORDER | MC_BORDER_S | MC_BORDER_E);
 		break;
 	case 10: /* move-keyboard */
-		np->MoveClientKeyboard();
+		//np->MoveClientKeyboard();
 		break;
 	case 11: /* cancel */
 		if (np->getController()) {
@@ -1589,7 +1591,9 @@ void Events::_HandleMapRequest(const XMapEvent *event) {
 	np = Client::FindClientByWindow(event->window);
 	if (!np) {
 		Grabs::GrabServer();
-		np = Client::Create(event->window, 0, 1);
+		int pid = WindowManager::GetWaitingPid();
+		np = Client::Create(event->window, pid, 0, 1);
+		WindowManager::SetWaitingPid(0);
 		if (np) {
 			if (!(np->notFocusableIfMapped())) {
 				np->keyboardFocus();

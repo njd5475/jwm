@@ -38,8 +38,9 @@ public:
 
 	/** Run a command.
 	 * @param command The command to run (run in sh).
+	 * @return The pid of the process that the command is running in
 	 */
-	static void RunCommand(const char *command);
+	static int RunCommand(const char *command);
 
 	/** Read output from a process.
 	 * @param command The command to run (run in sh).

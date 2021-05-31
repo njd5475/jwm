@@ -98,12 +98,12 @@ void Commands::AddRestartCommand(const char *command) {
 }
 
 /** Execute an external program. */
-void Commands::RunCommand(const char *command) {
+int Commands::RunCommand(const char *command) {
 
   const char *displayString;
 
   if (JUNLIKELY(!command)) {
-    return;
+    return -1;
   }
 
   displayString = DisplayString(display);
@@ -122,6 +122,7 @@ void Commands::RunCommand(const char *command) {
     delete toDel;
     setsid();
     execl(SHELL_NAME, SHELL_NAME, "-c", command, NULL);
+    printf("Launched Program the pid is %d\n", pid);
     Warning(_("exec failed: (%s) %s"), SHELL_NAME, command);
     exit(EXIT_SUCCESS);
   } else if (pid != -1) {
@@ -130,6 +131,7 @@ void Commands::RunCommand(const char *command) {
     sprintf(buf, "\nLaunched pid=%d\n", pid);
     Logger::Log(buf);
     pids.push_back(pid);
+    return pid;
   } else {
     //error
     Log("Could not fork process");

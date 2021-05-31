@@ -49,8 +49,10 @@
 #include "ComponentBuilder.h"
 #include "DesktopFile.h"
 #include "ComponentGroup.h"
+#include "status.h"
 
 WindowManager WindowManager::MANAGER;
+int WindowManager::_WAITING_PID = 0;
 
 WindowManager::WindowManager() :
 		_group(NULL) {
@@ -95,6 +97,14 @@ void WindowManager::Initialize(void) {
 //	printf("Temp %s", temp);
 }
 
+void WindowManager::SetWaitingPid(int pid) {
+	WindowManager::_WAITING_PID = pid;
+}
+
+int WindowManager::GetWaitingPid() {
+	return _WAITING_PID;
+}
+
 WindowManager* WindowManager::WM() {
 	return &MANAGER;
 }
@@ -108,8 +118,10 @@ public:
 	}
 
 	virtual void click(const XEvent *event, Component *me) {
-		vLog("Clicking on %s to run %s\n", _file->getName(), _file->getExec());
-		Commands::RunCommand(_file->getExec());
+
+		int pid = Commands::RunCommand(_file->getExec());
+		vLog("Clicking on %s to run %s (%d)\n", _file->getName(), _file->getExec(), pid);
+		WindowManager::SetWaitingPid(pid);
 	}
 private:
 	DesktopFile *_file;
@@ -167,6 +179,8 @@ void WindowManager::Startup(void) {
 
 	LogWindow::StartupPortals();
 	LogWindow::DrawAll();
+
+	Client::RegisterNewClientListener(WindowManager::WM());
 
 	ComponentBuilder builder;
 	const char *last = NULL;
@@ -493,4 +507,10 @@ void WindowManager::add(Component *cp) {
 		_group = new ComponentGroup(display, rootWindow, 100, 100, 300, 300);
 	}
 	_group->add(cp);
+}
+
+void WindowManager::newClient(Client *client) {
+	vLog("Got a new client %s (%d)\n", client->getName(), client->getPid());
+	client->move(400, 200);
+	Client::RestackClients();
 }

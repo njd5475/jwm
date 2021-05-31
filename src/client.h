@@ -13,6 +13,7 @@
 #include "main.h"
 #include "border.h"
 #include "hint.h"
+#include "ClientListener.h"
 
 struct TimeType;
 
@@ -148,8 +149,8 @@ public:
 protected:
   static std::vector<Client*> nodes;
 
-  Window window; /**< The client window. */
-  Window parent; /**< The frame window. */
+  Window _window; /**< The client window. */
+  Window _parent; /**< The frame window. */
   Window owner; /**< The owner window (for transients). */
 
   int x, y; /**< The location of the window. */
@@ -199,10 +200,15 @@ public:
   static void SubtractTrayBounds(BoundingBox *box, unsigned int layer);
   static void SubtractBounds(const BoundingBox *src, BoundingBox *dest);
   static Client *Create(Window w, bool alreadyMapped, bool notOwner);
+  static Client *Create(Window w, int pid, bool alreadyMapped, bool notOwner);
   static Client *FindClient(Window w); // by window or parent
   static Client *FindClientByWindow(Window w);
   static Client *FindClientByParent(Window p);
+  static Client *FindClientByPid(unsigned int pid);
+  static Client *FindClientByName(const char* name);
   static Client *GetActiveClient(void);
+  static void   RegisterNewClientListener(ClientListener *listener);
+  static void   NotifyNewClientListeners(Client* client);
 
   static void InitializeClients();
   static void StartupClients(void);
@@ -266,6 +272,7 @@ public:
   int getMinHeight() {return this->minHeight;}
   int getYInc() {return this->yinc;}
   int getXInc() {return this->xinc;}
+  unsigned int getPid() const {return this->_pid;}
 
   AspectRatio getAspect() {return this->aspect;}
   const char* getClassName() const;
@@ -294,12 +301,6 @@ public:
   void ReadWMName();
   void ReadWMClass();
   void LoadIcon();
-  void StopMove(int doMove, int oldx, int oldy);
-  char MoveClient(int startx, int starty);
-  char MoveClientKeyboard();
-  void RestartMove(int *doMove);
-  void DoSnapScreen();
-  void DoSnapBorder();
   void clearController();
   void setController(void (*controller)(int wasDestroyed));
   void StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags);
@@ -404,6 +405,7 @@ private:
   unsigned char maxFlags; /**< Maximization status. */
   unsigned char layer; /**< Current window layer. */
   unsigned char defaultLayer; /**< Default window layer. */
+  unsigned int _pid; /* Current window process id */
 
 public:
 
@@ -457,6 +459,8 @@ public:
   bool notFocusableIfMapped() const;
   bool willIgnoreIncrementWhenMaximized() const;
   bool hasOpacity() const;
+  bool hasParent() const;
+  bool hasWindow() const;
   bool canFocus() const;
 
   void setDefaultLayer(unsigned char defaultLayer);
@@ -543,12 +547,14 @@ public:
   void setHidden();
   void unsetNoPager();
   void unsetSkippingInTaskList();
+  void move(int x, int y);
 
 private:
 
   static Strut *struts;
   static int *cascadeOffsets;
   static Client *activeClient;
+  static std::vector<ClientListener*> _LISTENERS;
 
   static void LoadFocus(void);
   static void KillClientHandler(Client *np);
@@ -556,6 +562,12 @@ private:
   void RestackTransients();
   void RestoreTransients(char raise);
   void UnmapClient();
+  void DestroyParent();
+  void DestroyWindow();
+  void ClearWindow();
+  void Unparent();
+  void setWindow(Window window);
+  void setParent(Window parent);
 
 };
 

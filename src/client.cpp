@@ -23,7 +23,6 @@
 #include "grab.h"
 #include "hint.h"
 #include "DesktopEnvironment.h"
-#include "move.h"
 #include "font.h"
 #include "outline.h"
 #include "status.h"
@@ -36,6 +35,7 @@ Client *Client::activeClient;
 unsigned int Client::clientCount;
 
 std::vector<Client*> Client::nodes;
+std::vector<ClientListener*> Client::_LISTENERS;
 
 /** Load windows that are already mapped. */
 void Client::StartupClients(void) {
@@ -86,7 +86,17 @@ void Client::StartupClients(void) {
 
 Client* Client::Create(Window w, bool alreadyMapped, bool notOwner) {
   Client *node = new Client(w, alreadyMapped, notOwner);
+  Log("Got a new client node without a PID\n");
   nodes.push_back(node);
+  return node;
+}
+
+Client* Client::Create(Window w, int pid, bool alreadyMapped, bool notOwner) {
+  Client *node = new Client(w, alreadyMapped, notOwner);
+  vLog("Got a new client node with a PID (%d)\n", pid);
+  node->_pid = pid;
+  nodes.push_back(node);
+  Client::NotifyNewClientListeners(node);
   return node;
 }
 
@@ -215,17 +225,17 @@ void Client::LoadFocus(void) {
 Client::~Client() {
 
   this->setDelete();
-  SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
+  SendClientMessage(getWindow(), ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
   ColormapNode *cp;
 
-  Assert(this->window != None);
+  Assert(hasWindow());
 
   /* Remove this client from the client list */
   ClientList::RemoveFrom(this);
   clientCount -= 1;
-  XDeleteContext(display, this->window, clientContext);
-  if (this->parent != None) {
-    XDeleteContext(display, this->parent, frameContext);
+  XDeleteContext(display, getWindow(), clientContext);
+  if (hasParent()) {
+    XDeleteContext(display, getParent(), frameContext);
   }
 
   if (this->isUrgent()) {
@@ -253,36 +263,27 @@ Client::~Client() {
       this->y = this->oldy;
       this->width = this->oldWidth;
       this->height = this->oldHeight;
-      JXMoveResizeWindow(display, this->window, this->x, this->y, this->width,
-          this->height);
+      JXMoveResizeWindow(getDesktop(), getWindow(), getX(), getY(), getWidth(), getHeight());
     }
     this->GravitateClient(1);
     if ((this->isHidden())
         || (!(this->isMapped())
             && (this->isStatus(STAT_MINIMIZED | STAT_SHADED)))) {
-      JXMapWindow(display, this->window);
+      JXMapWindow(display, getWindow());
     }
-    JXUngrabButton(display, AnyButton, AnyModifier, this->window);
-    JXReparentWindow(display, this->window, rootWindow, this->x, this->y);
-    JXRemoveFromSaveSet(display, this->window);
+    JXUngrabButton(display, AnyButton, AnyModifier, getWindow());
+    JXReparentWindow(display, getWindow(), rootWindow, this->x, this->y);
+    JXRemoveFromSaveSet(display, getWindow());
   }
 
-  int res = JXKillClient(display, this->window);
+  int res = JXKillClient(display, getWindow());
   if (res) {
-    Log("Error: Could not kill client");
+    Log("Error: Could not kill client\n");
 
   }
 
-  /* Destroy the parent */
-  if (this->parent) {
-    JXDestroyWindow(display, this->parent);
-    this->parent = None;
-  }
-
-  if (this->window) {
-    JXDestroyWindow(display, this->window);
-    this->window = 0;
-  }
+  DestroyParent();
+  DestroyWindow();
 
   if (this->instanceName) {
     JXFree(this->instanceName);
@@ -315,7 +316,7 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
     oldx(0), oldy(0), oldWidth(0), oldHeight(0), yinc(0), minWidth(0), maxWidth(
         0), minHeight(0), maxHeight(0), gravity(0), controller(0), instanceName(
         0), baseHeight(0), baseWidth(0), colormaps(), icon(0), sizeFlags(0), className(
-        0), xinc(0), name(0) {
+        0), xinc(0), name(0), _pid(0) {
 
   XWindowAttributes attr;
 
@@ -335,8 +336,8 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
   }
 
   /* Prepare a client node for this window. */
-  this->window = w;
-  this->parent = None;
+  this->setWindow(w);
+  this->Unparent();
   this->owner = None;
   this->setDesktop(currentDesktop);
 
@@ -354,6 +355,12 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
   this->mouseContext = MC_NONE;
 
   Hints::ReadClientInfo(this, alreadyMapped);
+  unsigned int pid = 0;
+  Hints::GetWindowAtom(getWindow(), ATOM_NET_WM_PID, (unsigned char*)&pid);
+  this->_pid = pid;
+  if(pid) {
+	  printf("Finally a pid that is not zero\n");
+  }
 
   if (!notOwner) {
     this->clearBorder();
@@ -374,27 +381,27 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
   /* We now know the layer, so insert */
   ClientList::InsertAt(this);
 
-  Cursors::SetDefaultCursor(this->window);
+  Cursors::SetDefaultCursor(getWindow());
 
   if (notOwner) {
     XSetWindowAttributes sattr;
-    JXAddToSaveSet(display, this->window);
+    JXAddToSaveSet(display, getWindow());
     sattr.event_mask = EnterWindowMask | ColormapChangeMask | PropertyChangeMask
         | KeyReleaseMask | StructureNotifyMask;
     sattr.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask
         | PointerMotionMask | KeyPressMask | KeyReleaseMask;
-    JXChangeWindowAttributes(display, this->window,
+    JXChangeWindowAttributes(display, getWindow(),
         CWEventMask | CWDontPropagate, &sattr);
   }
-  JXGrabButton(display, AnyButton, AnyModifier, this->window, True,
+  JXGrabButton(display, AnyButton, AnyModifier, getWindow(), True,
       ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
 
   Places::PlaceClient(this, alreadyMapped);
   this->ReparentClient();
-  XSaveContext(display, this->window, clientContext, (char*) this);
+  XSaveContext(display, getParent(), clientContext, (char*) this);
 
   if (this->isMapped()) {
-    JXMapWindow(display, this->window);
+    JXMapWindow(display, getWindow());
   }
 
   clientCount += 1;
@@ -409,9 +416,9 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
     this->SetOpacity(settings.inactiveClientOpacity, 1);
   }
   if (this->isSticky()) {
-    Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, ~0UL);
+    Hints::SetCardinalAtom(getWindow(), ATOM_NET_WM_DESKTOP, ~0UL);
   } else {
-    Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP,
+    Hints::SetCardinalAtom(getWindow(), ATOM_NET_WM_DESKTOP,
         this->getDesktop());
   }
 
@@ -451,7 +458,7 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
 
   /* Focus transients if their parent has focus. */
   if (this->owner != None) {
-    if (activeClient && this->owner == activeClient->window) {
+    if (activeClient && this->owner == activeClient->getWindow()) {
       this->keyboardFocus();
     }
   }
@@ -477,8 +484,8 @@ void Client::MinimizeTransients(char lower) {
   /* Unmap the window and update its state. */
   if (this->isStatus(STAT_MAPPED | STAT_SHADED)) {
     this->UnmapClient();
-    if (this->parent != None) {
-      JXUnmapWindow(display, this->parent);
+    if (hasParent()) {
+      JXUnmapWindow(display, getParent());
     }
   }
   this->setMinimized();
@@ -568,7 +575,7 @@ void Client::UnshadeClient() {
   }
 
   if (!(this->isStatus(STAT_MINIMIZED | STAT_SDESKTOP))) {
-    JXMapWindow(display, this->window);
+    JXMapWindow(display, getWindow());
     this->setMapped();
   }
   this->setNoShaded();
@@ -590,13 +597,13 @@ void Client::sendToBackground() {
 
   if (this->isMapped()) {
     this->UnmapClient();
-    if (this->parent != None) {
-      JXUnmapWindow(display, this->parent);
+    if (hasParent()) {
+      JXUnmapWindow(display, getParent());
     }
   } else if (this->isShaded()) {
     if (!(this->isMinimized())) {
-      if (this->parent != None) {
-        JXUnmapWindow(display, this->parent);
+      if (hasParent()) {
+        JXUnmapWindow(display, getParent());
       }
     }
   }
@@ -621,13 +628,13 @@ void Client::RestoreTransients(char raise) {
   /* Restore this window. */
   if (!(this->isMapped())) {
     if (this->isShaded()) {
-      if (this->parent != None) {
-        JXMapWindow(display, this->parent);
+      if (hasParent()) {
+        JXMapWindow(display, getParent());
       }
     } else {
-      JXMapWindow(display, this->window);
-      if (this->parent != None) {
-        JXMapWindow(display, this->parent);
+      JXMapWindow(display, getWindow());
+      if (hasParent()) {
+        JXMapWindow(display, getParent());
       }
       this->setMapped();
     }
@@ -637,8 +644,8 @@ void Client::RestoreTransients(char raise) {
   this->setNoSDesktop();
 
   /* Restore transient windows. */
-  //ClientList::RestoreTransientWindows(this->window, raise);
-  std::vector<Client*> children = ClientList::GetChildren(this->window);
+  //ClientList::RestoreTransientWindows(getWindow(), raise);
+  std::vector<Client*> children = ClientList::GetChildren(getWindow());
   for (int i = 0; i < children.size(); ++i) {
     Client *tp = children[i];
     if (tp->isMinimized()) {
@@ -677,7 +684,7 @@ void Client::_UpdateState() {
   if (this->isUrgent()) {
     Events::_UnregisterCallback(Client::SignalUrgent, this);
   }
-  Hints::ReadWindowState(this, this->getWindow(), alreadyMapped);
+  Hints::ReadWindowState(this, getWindow(), alreadyMapped);
   if (this->isUrgent()) {
     Events::_RegisterCallback(URGENCY_DELAY, Client::SignalUrgent, this);
   }
@@ -703,7 +710,7 @@ void Client::SetOpacity(unsigned int opacity, char force) {
     return;
   }
 
-  w = this->parent != None ? this->parent : this->window;
+  w = hasParent() ? hasParent() : getWindow();
   this->setOpacity(opacity);
   if (opacity == 0xFFFFFFFF) {
     JXDeleteProperty(display, w, Hints::atoms[ATOM_NET_WM_WINDOW_OPACITY]);
@@ -714,7 +721,7 @@ void Client::SetOpacity(unsigned int opacity, char force) {
 
 void Client::UpdateWindowState(bool alreadyMapped) {
   /* Read the window state. */
-  Hints::ReadWindowState(this, this->window, alreadyMapped);
+  Hints::ReadWindowState(this, getWindow(), alreadyMapped);
   if (this->minWidth == this->maxWidth && this->minHeight == this->maxHeight) {
     this->setNoBorderResize();
     this->setNoBorderMax();
@@ -741,11 +748,11 @@ void Client::SetClientLayer(unsigned int layer) {
 
   if (this->getLayer() != layer) {
     Client *tp;
-    std::vector<Client*> children = ClientList::GetChildren(this->window);
+    std::vector<Client*> children = ClientList::GetChildren(getWindow());
 
     for (int i = 0; i < children.size(); ++i) {
       tp = children[i];
-      if (tp == this || tp->owner == this->window) {
+      if (tp == this || tp->owner == getWindow()) {
         ClientList::ChangeLayer(tp, layer);
       }
     }
@@ -768,29 +775,29 @@ void Client::SetClientSticky(char isSticky) {
   if (isSticky && !old) {
 
     /* Change from non-sticky to sticky. */
-    std::vector<Client*> children = ClientList::GetChildren(this->window);
+    std::vector<Client*> children = ClientList::GetChildren(getWindow());
 
     Client *tp;
     for (int i = 0; i < children.size(); ++i) {
       tp = children[i];
       tp->setSticky();
-      Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, ~0UL);
+      Hints::SetCardinalAtom(tp->getWindow(), ATOM_NET_WM_DESKTOP, ~0UL);
       Hints::WriteState(tp);
     }
 
     this->setSticky();
-    Hints::SetCardinalAtom(this->window, ATOM_NET_WM_DESKTOP, ~0UL);
+    Hints::SetCardinalAtom(getWindow(), ATOM_NET_WM_DESKTOP, ~0UL);
     Hints::WriteState(this);
 
   } else if (!isSticky && old) {
 
     /* Change from sticky to non-sticky. */
-    std::vector<Client*> children = ClientList::GetChildren(this->window);
+    std::vector<Client*> children = ClientList::GetChildren(getWindow());
 
     Client *tp;
     for (int i = 0; i < children.size(); ++i) {
       tp = children[i];
-      if (tp == this || tp->owner == this->window) {
+      if (tp == this || tp->owner == getWindow()) {
         tp->setNoSticky();
         Hints::WriteState(tp);
       }
@@ -830,7 +837,7 @@ void Client::SetClientDesktop(unsigned int desktop) {
         tp->HideClient();
       }
 
-      Hints::SetCardinalAtom(tp->window, ATOM_NET_WM_DESKTOP, tp->getDesktop());
+      Hints::SetCardinalAtom(tp->getWindow(), ATOM_NET_WM_DESKTOP, tp->getDesktop());
 
     }
     Events::_RequirePagerUpdate();
@@ -847,10 +854,10 @@ void Client::HideClient() {
     }
     this->setHidden();
     if (this->isStatus(STAT_MAPPED | STAT_SHADED)) {
-      if (this->parent != None) {
-        JXUnmapWindow(display, this->parent);
+      if (hasParent()) {
+        JXUnmapWindow(display, getParent());
       } else {
-        JXUnmapWindow(display, this->window);
+        JXUnmapWindow(display, getWindow());
       }
     }
     //this->clearStatus();
@@ -866,10 +873,10 @@ void Client::ShowClient() {
     this->setNotHidden();
     if (this->isStatus(STAT_MAPPED | STAT_SHADED)) {
       if (!(this->isMinimized())) {
-        if (this->parent != None) {
-          JXMapWindow(display, this->parent);
+        if (hasParent()) {
+          JXMapWindow(display, getParent());
         } else {
-          JXMapWindow(display, this->window);
+          JXMapWindow(display, getWindow());
         }
         if (this->isActive()) {
           this->keyboardFocus();
@@ -1209,8 +1216,8 @@ void Client::SetClientFullScreen(char fullScreen) {
     event.type = MapRequest;
     event.xmaprequest.send_event = True;
     event.xmaprequest.display = display;
-    event.xmaprequest.parent = this->parent;
-    event.xmaprequest.window = this->window;
+    event.xmaprequest.parent = getParent();
+    event.xmaprequest.window = getWindow();
     JXSendEvent(display, rootWindow, False, SubstructureRedirectMask, &event);
 
   }
@@ -1524,13 +1531,13 @@ void Client::keyboardFocus() {
 
   if (this->isMapped()) {
     this->UpdateClientColormap(-1);
-    Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, this->window);
+    Hints::SetWindowAtom(rootWindow, ATOM_NET_ACTIVE_WINDOW, getWindow());
     Hints::WriteNetState(this);
     if (this->canFocus()) {
-      JXSetInputFocus(display, this->window, RevertToParent, Events::eventTime);
+      JXSetInputFocus(display, getWindow(), RevertToParent, Events::eventTime);
     }
     if (this->shouldTakeFocus()) {
-      SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_TAKE_FOCUS);
+      SendClientMessage(getWindow(), ATOM_WM_PROTOCOLS, ATOM_WM_TAKE_FOCUS);
     }
   } else {
     JXSetInputFocus(display, rootWindow, RevertToParent, Events::eventTime);
@@ -1547,9 +1554,9 @@ void Client::RefocusClient(void) {
 
 /** Send a delete message to a client. */
 void Client::DeleteClient() {
-  Hints::ReadWMProtocols(this->window, this);
+  Hints::ReadWMProtocols(getWindow(), this);
   if (this->shouldDelete()) {
-    SendClientMessage(this->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
+    SendClientMessage(getWindow(), ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
   } else {
     this->KillClient();
   }
@@ -1561,7 +1568,7 @@ void Client::KillClientHandler(Client *np) {
     ClientList::FocusNextStacked(np);
   }
 
-  JXKillClient(display, np->window);
+  JXKillClient(display, np->getWindow());
 }
 
 /** Kill a client window. */
@@ -1580,7 +1587,7 @@ void Client::RestackTransients() {
   /* TODO: Place any transient windows on top of the owner */
 //	for (layer = 0; layer < LAYER_COUNT; layer++) {
 //		for (tp = nodes[layer]; tp; tp = tp->next) {
-//			if (tp->owner == this->window && tp->prev) {
+//			if (tp->owner == getWindow() && tp->prev) {
 //
 //				ClientNode *next = tp->next;
 //
@@ -1628,7 +1635,7 @@ void Client::RestackClient(Window above, int detail) {
   ClientList::RemoveFrom(this);
 
   /* Insert back into the window list. */
-  if (above != None && above != this->window) {
+  if (above != None && above != getWindow()) {
 
     ClientList::InsertRelative(this, above, detail);
   }
@@ -1672,7 +1679,7 @@ void Client::RestackClients(void) {
   fw = None;
   index = 0;
   if (activeClient && (activeClient->isFullscreen())) {
-    fw = activeClient->window;
+    fw = activeClient->getWindow();
     std::vector<Client*> clients = ClientList::GetLayerList(
         activeClient->getLayer());
     for (int i = 0; i < clients.size(); ++i) {
@@ -1686,16 +1693,15 @@ void Client::RestackClients(void) {
         index += 1;
       }
     }
-    if (activeClient->parent != None) {
-      stack[index] = activeClient->parent;
+    if (activeClient->hasParent()) {
+      stack[index] = activeClient->getParent();
     } else {
-      stack[index] = activeClient->window;
+      stack[index] = activeClient->getWindow();
     }
     index += 1;
   }
   layer = LAST_LAYER;
   for (;;) {
-
     std::vector<Client*> clients = ClientList::GetLayerList(layer);
     for (int i = 0; i < clients.size(); ++i) {
       Client *np = clients[i];
@@ -1703,7 +1709,7 @@ void Client::RestackClients(void) {
         if (fw != None && (np->getWindow() == fw || np->getOwner() == fw)) {
           continue;
         }
-        if (np->getParent() != None) {
+        if (np->hasParent()) {
           stack[index] = np->getParent();
         } else {
           stack[index] = np->getWindow();
@@ -1778,7 +1784,7 @@ void Client::ReadWMName() {
     delete[] (this->getName());
   }
 
-  status = JXGetWindowProperty(display, this->getWindow(),
+  status = JXGetWindowProperty(display, getWindow(),
       Hints::atoms[ATOM_NET_WM_NAME], 0, 1024, False,
       Hints::atoms[ATOM_UTF8_STRING], &realType, &realFormat, &count, &extra,
       &name);
@@ -1794,7 +1800,7 @@ void Client::ReadWMName() {
 
 #ifdef USE_XUTF8
   if (!this->getName()) {
-    status = JXGetWindowProperty(display, this->getWindow(), XA_WM_NAME, 0,
+    status = JXGetWindowProperty(display, getWindow(), XA_WM_NAME, 0,
         1024, False, Hints::atoms[ATOM_COMPOUND_TEXT], &realType, &realFormat,
         &count, &extra, &name);
     if (status == Success && realFormat != 0) {
@@ -1819,7 +1825,7 @@ void Client::ReadWMName() {
 
   if (!this->getName()) {
     char *temp = NULL;
-    if (JXFetchName(display, this->getWindow(), &temp)) {
+    if (JXFetchName(display, getWindow(), &temp)) {
       const size_t len = strlen(temp) + 1;
       this->name = new char[len];
       memcpy(this->name, temp, len);
@@ -1832,7 +1838,7 @@ void Client::ReadWMName() {
 /** Read the window class for a client. */
 void Client::ReadWMClass() {
   XClassHint hint;
-  if (JXGetClassHint(display, this->getWindow(), &hint)) {
+  if (JXGetClassHint(display, getWindow(), &hint)) {
     this->instanceName = hint.res_name;
     this->className = hint.res_class;
   }
@@ -1843,6 +1849,17 @@ Client* Client::GetActiveClient(void) {
   return activeClient;
 }
 
+
+void Client::RegisterNewClientListener(ClientListener *listener) {
+  _LISTENERS.push_back(listener);
+}
+
+void Client::NotifyNewClientListeners(Client* client) {
+  for(auto l : _LISTENERS) {
+    l->newClient(client);
+  }
+}
+
 /** Find a client by parent or window. */
 Client* Client::FindClient(Window w) {
   Client *np;
@@ -1851,6 +1868,28 @@ Client* Client::FindClient(Window w) {
     np = FindClientByParent(w);
   }
   return np;
+}
+
+Client* Client::FindClientByName(const char* name) {
+  Client* found = NULL;
+  for(auto c : nodes) {
+    c->ReadWMName(); // make sure the name is read
+    vLog("Client name=%s\n", c->getName());
+    if(strcmp(c->getName(), name) == 0) {
+      return c;
+    }
+  }
+  return found;
+}
+
+Client* Client::FindClientByPid(unsigned int pid) {
+	Client* found = NULL;
+	for(auto c : nodes) {
+		if(c->getPid() == pid) {
+			return c;
+		}
+	}
+	return found;
 }
 
 /** Find a client by window. */
@@ -1883,19 +1922,17 @@ void Client::ReparentClient() {
   int north, south, east, west;
 
   if ((this->getBorder() & (BORDER_TITLE | BORDER_OUTLINE)) == 0) {
-
-    if (this->parent == None) {
+    if (hasParent()) {
       return;
     }
 
-    JXReparentWindow(display, this->window, rootWindow, this->x, this->y);
-    XDeleteContext(display, this->parent, frameContext);
-    JXDestroyWindow(display, this->parent);
-    this->parent = None;
+    JXReparentWindow(display, getWindow(), rootWindow, this->x, this->y);
+    XDeleteContext(display, getParent(), frameContext);
+    JXDestroyWindow(display, getParent());
+    Unparent();
 
   } else {
-
-    if (this->parent != None) {
+    if (hasParent()) {
       return;
     }
 
@@ -1928,23 +1965,23 @@ void Client::ReparentClient() {
     height += north + south;
 
     /* Create the frame window. */
-    this->parent = JXCreateWindow(display, rootWindow, x, y, width, height, 0,
+    Window parent = JXCreateWindow(display, rootWindow, 400, 400, width, height, 0,
         rootDepth, InputOutput, rootVisual, attrMask, &attr);
-    XSaveContext(display, this->parent, frameContext, (const char*) this);
+    this->setParent(parent);
+    XSaveContext(display, getWindow(), frameContext, (const char*) this);
 
-    JXSetWindowBorderWidth(display, this->window, 0);
+    JXSetWindowBorderWidth(display, getWindow(), 0);
 
     /* Reparent the client window. */
-    JXReparentWindow(display, this->window, this->parent, west, north);
+    JXReparentWindow(display, getWindow(), getParent(), west, north);
 
     if (this->isMapped()) {
-      JXMapWindow(display, this->parent);
+      JXMapWindow(display, getParent());
     }
   }
 
   JXSync(display, False);
-  JXCheckTypedWindowEvent(display, this->window, UnmapNotify, &event);
-
+  JXCheckTypedWindowEvent(display, getWindow(), UnmapNotify, &event);
 }
 
 /** Send a configure event to a client window. */
@@ -1956,8 +1993,8 @@ void Client::SendConfigureEvent() {
   memset(&event, 0, sizeof(event));
   event.display = display;
   event.type = ConfigureNotify;
-  event.event = this->window;
-  event.window = this->window;
+  event.event = getWindow();
+  event.window = getWindow();
   if (this->isFullscreen()) {
     sp = Screens::GetCurrentScreen(this->x, this->y);
     event.x = sp->x;
@@ -1971,7 +2008,7 @@ void Client::SendConfigureEvent() {
     event.height = this->height;
   }
 
-  JXSendEvent(display, this->window, False, StructureNotifyMask,
+  JXSendEvent(display, getWindow(), False, StructureNotifyMask,
       (XEvent* )&event);
 
 }
@@ -2034,11 +2071,11 @@ void Client::UnmapClient() {
 
     /* Unmap the window and record that we did so. */
     this->setNotMapped();
-    JXUnmapWindow(display, this->getWindow());
+    JXUnmapWindow(display, getWindow());
 
     /* Discard the unmap event so we don't process it later. */
     JXSync(display, False);
-    if (JXCheckTypedWindowEvent(display, this->getWindow(), UnmapNotify, &e)) {
+    if (JXCheckTypedWindowEvent(display, getWindow(), UnmapNotify, &e)) {
       Events::_UpdateTime(&e);
     }
   }
@@ -2051,7 +2088,7 @@ void Client::ReadWMColormaps() {
   ColormapNode *cp;
   int count;
 
-  if (JXGetWMColormapWindows(display, this->getWindow(), &windows, &count)) {
+  if (JXGetWMColormapWindows(display, getWindow(), &windows, &count)) {
     if (count > 0) {
       int x;
 
@@ -2155,7 +2192,7 @@ void Client::ReadWMNormalHints() {
   XSizeHints hints;
   long temp;
 
-  if (!JXGetWMNormalHints(display, this->getWindow(), &hints, &temp)) {
+  if (!JXGetWMNormalHints(display, getWindow(), &hints, &temp)) {
     this->sizeFlags = 0;
   } else {
     this->sizeFlags = hints.flags;
@@ -2232,118 +2269,6 @@ void Client::GravitateClient(char negate) {
   }
 }
 
-/** Snap to window borders. */
-void Client::DoSnapBorder() {
-
-  Client *tp;
-  ClientRectangle client, other;
-  ClientRectangle left = { 0 };
-  ClientRectangle right = { 0 };
-  ClientRectangle top = { 0 };
-  ClientRectangle bottom = { 0 };
-  int layer;
-  int north, south, east, west;
-
-  GetClientRectangle(this, &client);
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-
-  other.valid = 1;
-
-  /* Work from the bottom of the window stack to the top. */
-  for (layer = 0; layer < LAYER_COUNT; layer++) {
-
-    /* Check tray windows. */
-    std::vector<BoundingBox> boxes;
-    std::vector<BoundingBox>::iterator it;
-    for (it = boxes.begin(); it != boxes.end(); ++it) {
-      BoundingBox box = *it;
-
-      other.left = box.x;
-      other.right = box.x + box.width;
-      other.top = box.y;
-      other.bottom = box.y + box.height;
-
-      left.valid = CheckLeftValid(&client, &other, &left);
-      right.valid = CheckRightValid(&client, &other, &right);
-      top.valid = CheckTopValid(&client, &other, &top);
-      bottom.valid = CheckBottomValid(&client, &other, &bottom);
-
-      if (CheckOverlapTopBottom(&client, &other)) {
-        if (abs(client.left - other.right) <= settings.snapDistance) {
-          left = other;
-        }
-        if (abs(client.right - other.left) <= settings.snapDistance) {
-          right = other;
-        }
-      }
-      if (CheckOverlapLeftRight(&client, &other)) {
-        if (abs(client.top - other.bottom) <= settings.snapDistance) {
-          top = other;
-        }
-        if (abs(client.bottom - other.top) <= settings.snapDistance) {
-          bottom = other;
-        }
-      }
-
-    }
-
-    /* Check client windows. */
-    std::vector<Client*> clients = ClientList::GetList();
-    for (unsigned int i = 0; i < clients.size(); ++i) {
-      tp = clients[i];
-      if (tp == this || !ShouldSnap(tp)) {
-        continue;
-      }
-
-      GetClientRectangle(tp, &other);
-
-      /* Check if this border invalidates any previous value. */
-      left.valid = CheckLeftValid(&client, &other, &left);
-      right.valid = CheckRightValid(&client, &other, &right);
-      top.valid = CheckTopValid(&client, &other, &top);
-      bottom.valid = CheckBottomValid(&client, &other, &bottom);
-
-      /* Compute the new snap values. */
-      if (CheckOverlapTopBottom(&client, &other)) {
-        if (abs(client.left - other.right) <= settings.snapDistance) {
-          left = other;
-        }
-        if (abs(client.right - other.left) <= settings.snapDistance) {
-          right = other;
-        }
-      }
-      if (CheckOverlapLeftRight(&client, &other)) {
-        if (abs(client.top - other.bottom) <= settings.snapDistance) {
-          top = other;
-        }
-        if (abs(client.bottom - other.top) <= settings.snapDistance) {
-          bottom = other;
-        }
-      }
-
-    }
-
-  }
-
-  if (right.valid) {
-    this->x = right.left - this->getWidth() - west;
-  }
-  if (left.valid) {
-    this->x = left.right + east;
-  }
-  if (bottom.valid) {
-    this->y = bottom.top - south;
-    if (!(this->isShaded())) {
-      this->y -= this->getHeight();
-    }
-  }
-  if (top.valid) {
-    this->y = top.bottom + north;
-  }
-
-}
-
 void Client::DrawBorder() {
   if (!(this->isStatus(STAT_HIDDEN | STAT_MINIMIZED))) {
     Border::DrawBorder(this);
@@ -2403,11 +2328,11 @@ ColormapNode* Client::getColormaps() const {
 }
 
 Window Client::getWindow() const {
-  return this->window;
+  return this->_window;
 }
 
 Window Client::getParent() const {
-  return this->parent;
+  return this->_parent;
 }
 
 const char* Client::getName() const {
@@ -2589,6 +2514,14 @@ bool Client::isHidden() const {
 
 bool Client::hasOpacity() const {
   return isStatus(STAT_OPACITY);
+}
+
+bool Client::hasParent() const {
+  return this->_parent != None; /* same as not equal zero or null */
+}
+
+bool Client::hasWindow() const {
+  return this->_window != None;
 }
 
 bool Client::isSticky() const {
@@ -2959,6 +2892,37 @@ void Client::setNoBorderConstrain() {
   this->border &= ~BORDER_CONSTRAIN;
 }
 
+void Client::DestroyParent() {
+    /* Destroy the parent */
+  if (hasParent()) {
+    JXDestroyWindow(display, getParent());
+    Unparent();
+  }
+}
+
+void Client::DestroyWindow() {
+  if(hasWindow()) {
+    JXDestroyWindow(display, getWindow());
+    ClearWindow();
+  }
+}
+
+void Client::setWindow(Window window) {
+  this->_window = window;
+}
+
+void Client::setParent(Window parent) {
+  this->_parent = parent;
+}
+
+void Client::Unparent() {
+  setParent(None);
+}
+
+void Client::ClearWindow() {
+  setWindow(0);
+}
+
 void Client::setNoBorderFullscreen() {
   /**< Allow fullscreen. */
   this->border &= ~BORDER_FULLSCREEN;
@@ -3140,7 +3104,7 @@ void Client::ResizeClient(MouseContextType context, int startx,
 
       Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
           event.xmotion.window);
-      Events::_DiscardMotionEvents(&event, this->window);
+      Events::_DiscardMotionEvents(&event, getWindow());
 
       this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx,
           starty, oldx, oldy, oldw, oldh);
@@ -3207,7 +3171,7 @@ void Client::ResizeClientKeyboard(MouseContextType context) {
   }
 
   if (JUNLIKELY(
-      JXGrabKeyboard(display, this->parent, True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)) {
+      JXGrabKeyboard(display, getParent(), True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess)) {
     return;
   }
   if (!Cursors::GrabMouseForResize(context)) {
@@ -3249,8 +3213,7 @@ void Client::ResizeClientKeyboard(MouseContextType context) {
   } else {
     startx = this->x + this->width / 2;
   }
-  Cursors::MoveMouse(rootWindow, startx, starty);
-  Events::_DiscardMotionEvents(&event, this->window);
+  Events::_DiscardMotionEvents(&event, getWindow());
 
   for (;;) {
 
@@ -3265,7 +3228,7 @@ void Client::ResizeClientKeyboard(MouseContextType context) {
       int deltax = 0;
       int deltay = 0;
 
-      Events::_DiscardKeyEvents(&event, this->window);
+      Events::_DiscardKeyEvents(&event, getWindow());
 
       deltay -= deltay % this->yinc;
       this->height += deltay;
@@ -3296,7 +3259,7 @@ void Client::ResizeClientKeyboard(MouseContextType context) {
 
       Cursors::SetMousePosition(event.xmotion.x_root, event.xmotion.y_root,
           event.xmotion.window);
-      Events::_DiscardMotionEvents(&event, this->window);
+      Events::_DiscardMotionEvents(&event, getWindow());
 
       this->UpdateSize(context, event.xmotion.x, event.xmotion.y, startx,
           starty, oldx, oldy, oldw, oldh);
@@ -3398,437 +3361,8 @@ void Client::CenterClient(const BoundingBox *box) {
   this->ConstrainPosition();
 }
 
-/** Stop an active pager move. */
-void Client::StopPagerMove(int x, int y, int desktop, MaxFlags maxFlags) {
-
-  int north, south, east, west;
-
-  Assert(this->controller);
-
-  /* Release grabs. */
-  (this->controller)(0);
-
-  this->x = x;
-  this->y = y;
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-  JXMoveWindow(display, this->parent, this->getX() - west,
-      this->getY() - north);
-  this->SendConfigureEvent();
-
-  /* Restore the maximized state of the client. */
-  if (maxFlags != MAX_NONE) {
-    this->MaximizeClient(maxFlags);
-  }
-
-  /* Redraw the pager. */
-  Events::_RequirePagerUpdate();
-
+void Client::move(int x, int y) {
+  setX(x);
+  setY(y);
+  JXMoveWindow(display, getParent(), x, y);
 }
-
-/** Callback for stopping moves. */
-void MoveController(int wasDestroyed) {
-  if (settings.moveMode == MOVE_OUTLINE) {
-    Outline::ClearOutline();
-  }
-
-  JXUngrabPointer(display, CurrentTime);
-  JXUngrabKeyboard(display, CurrentTime);
-
-  DestroyMoveWindow();
-  shouldStopMove = true;
-  atTop = 0;
-  atBottom = 0;
-  atLeft = 0;
-  atRight = 0;
-  atSideFirst = 0;
-}
-
-/** Move a client window. */
-char Client::MoveClient(int startx, int starty) {
-  XEvent event;
-  const ScreenType *sp;
-  MaxFlags flags;
-  int oldx, oldy;
-  int doMove;
-  int north, south, east, west;
-  int height;
-
-  if (!(this->getBorder() & BORDER_MOVE)) {
-    return 0;
-  }
-  if (this->isFullscreen()) {
-    return 0;
-  }
-
-  if (!Cursors::GrabMouseForMove()) {
-    return 0;
-  }
-
-  Events::_RegisterCallback(0, SignalMove, NULL);
-  this->controller = MoveController;
-  shouldStopMove = false;
-
-  oldx = this->getX();
-  oldy = this->getY();
-
-  if (!(Cursors::GetMouseMask() & (Button1Mask | Button2Mask))) {
-    this->StopMove(0, oldx, oldy);
-    return 0;
-  }
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-  startx -= west;
-  starty -= north;
-
-  currentClient = this;
-  atTop = atBottom = atLeft = atRight = atSideFirst = 0;
-  doMove = 0;
-  for (;;) {
-
-    Events::_WaitForEvent(&event);
-
-    if (shouldStopMove) {
-      this->controller = NULL;
-      Cursors::SetDefaultCursor(this->parent);
-      Events::_UnregisterCallback(SignalMove, NULL);
-      return doMove;
-    }
-
-    switch (event.type) {
-    case ButtonRelease:
-      if (event.xbutton.button == Button1 || event.xbutton.button == Button2) {
-        this->StopMove(doMove, oldx, oldy);
-        return doMove;
-      }
-      break;
-    case MotionNotify:
-
-      Events::_DiscardMotionEvents(&event, this->getWindow());
-
-      this->x = event.xmotion.x_root - startx;
-      this->y = event.xmotion.y_root - starty;
-
-      /* Get the move time used for desktop switching. */
-      if (!(atLeft | atTop | atRight | atBottom)) {
-        if (event.xmotion.state & Mod1Mask) {
-          moveTime.seconds = 0;
-          moveTime.ms = 0;
-        } else {
-          GetCurrentTime(&moveTime);
-        }
-      }
-
-      /* Determine if we are at a border for desktop switching. */
-      sp = Screens::GetCurrentScreen(this->getX() + this->getWidth() / 2,
-          this->getY() + this->getHeight() / 2);
-      atLeft = atTop = atRight = atBottom = 0;
-      if (event.xmotion.x_root <= sp->x) {
-        atLeft = 1;
-      } else if (event.xmotion.x_root >= sp->x + sp->width - 1) {
-        atRight = 1;
-      }
-      if (event.xmotion.y_root <= sp->y) {
-        atTop = 1;
-      } else if (event.xmotion.y_root >= sp->y + sp->height - 1) {
-        atBottom = 1;
-      }
-
-      flags = MAX_NONE;
-      if (event.xmotion.state & Mod1Mask) {
-        /* Switch desktops immediately if alt is pressed. */
-        if (atLeft | atRight | atTop | atBottom) {
-          TimeType now;
-          GetCurrentTime(&now);
-          UpdateDesktop(&now);
-        }
-      } else {
-        /* If alt is not pressed, snap to borders. */
-        if (this->isAeroSnapEnabled()) {
-          if (atTop & atLeft) {
-            if (atSideFirst) {
-              flags = MAX_TOP | MAX_LEFT;
-            } else {
-              flags = MAX_TOP | MAX_HORIZ;
-            }
-          } else if (atTop & atRight) {
-            if (atSideFirst) {
-              flags = MAX_TOP | MAX_RIGHT;
-            } else {
-              flags = MAX_TOP | MAX_HORIZ;
-            }
-          } else if (atBottom & atLeft) {
-            if (atSideFirst) {
-              flags = MAX_BOTTOM | MAX_LEFT;
-            } else {
-              flags = MAX_BOTTOM | MAX_HORIZ;
-            }
-          } else if (atBottom & atRight) {
-            if (atSideFirst) {
-              flags = MAX_BOTTOM | MAX_RIGHT;
-            } else {
-              flags = MAX_BOTTOM | MAX_HORIZ;
-            }
-          } else if (atLeft) {
-            flags = MAX_LEFT | MAX_VERT;
-            atSideFirst = 1;
-          } else if (atRight) {
-            flags = MAX_RIGHT | MAX_VERT;
-            atSideFirst = 1;
-          } else if (atTop | atBottom) {
-            flags = MAX_VERT | MAX_HORIZ;
-            atSideFirst = 0;
-          }
-          if (flags != this->getMaxFlags()) {
-            if (settings.moveMode == MOVE_OUTLINE) {
-              Outline::ClearOutline();
-            }
-            this->MaximizeClient(flags);
-          }
-          if (!this->getMaxFlags()) {
-            DoSnap(this);
-          }
-        } else {
-          DoSnap(this);
-        }
-      }
-
-      if (flags != MAX_NONE) {
-        this->RestartMove(&doMove);
-      } else if (!doMove
-          && (abs(this->getX() - oldx) > MOVE_DELTA
-              || abs(this->getY() - oldy) > MOVE_DELTA)) {
-
-        if (this->getMaxFlags()) {
-          this->MaximizeClient(MAX_NONE);
-        }
-
-        CreateMoveWindow(this);
-        doMove = 1;
-      }
-
-      if (doMove) {
-        if (settings.moveMode == MOVE_OUTLINE) {
-          Outline::ClearOutline();
-          height = north + south;
-          if (!(this->isShaded())) {
-            height += this->getHeight();
-          }
-          Outline::DrawOutline(this->getX() - west, this->getY() - north,
-              this->getWidth() + west + east, height);
-        } else {
-          if (this->getParent() != None) {
-            JXMoveWindow(display, this->getParent(), this->getX() - west,
-                this->getY() - north);
-          } else {
-            JXMoveWindow(display, this->getWindow(), this->getX(),
-                this->getY());
-          }
-          this->SendConfigureEvent();
-        }
-        UpdateMoveWindow(this);
-        Events::_RequirePagerUpdate();
-      }
-
-      break;
-    default:
-      break;
-    }
-  }
-}
-
-/** Move a client window (keyboard or menu initiated). */
-char Client::MoveClientKeyboard() {
-  XEvent event;
-  int oldx, oldy;
-  int moved;
-  int height;
-  int north, south, east, west;
-  Window win;
-  if (!(this->getBorder() & BORDER_MOVE)) {
-    return 0;
-  }
-  if (this->isFullscreen()) {
-    return 0;
-  }
-
-  if (this->getMaxFlags() != MAX_NONE) {
-    this->MaximizeClient(MAX_NONE);
-  }
-
-  win = this->parent != None ? this->parent : this->window;
-  if (JUNLIKELY(
-      JXGrabKeyboard(display, win, True, GrabModeAsync, GrabModeAsync, CurrentTime))) {
-    Debug("MoveClient: could not grab keyboard");
-    return 0;
-  }
-  if (!Cursors::GrabMouseForMove()) {
-    JXUngrabKeyboard(display, CurrentTime);
-    return 0;
-  }
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-
-  oldx = this->getX();
-  oldy = this->getY();
-
-  Events::_RegisterCallback(0, SignalMove, NULL);
-  this->controller = MoveController;
-  shouldStopMove = false;
-
-  CreateMoveWindow(this);
-  UpdateMoveWindow(this);
-
-  Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
-  Events::_DiscardMotionEvents(&event, this->window);
-
-  if (this->isShaded()) {
-    height = 0;
-  } else {
-    height = this->getHeight();
-  }
-  currentClient = this;
-
-  for (;;) {
-
-    Events::_WaitForEvent(&event);
-
-    if (shouldStopMove) {
-      this->controller = NULL;
-      Cursors::SetDefaultCursor(this->parent);
-      Events::_UnregisterCallback(SignalMove, NULL);
-      return 1;
-    }
-
-    moved = 0;
-
-    if (event.type == KeyPress) {
-
-      Events::_DiscardKeyEvents(&event, this->window);
-
-      Cursors::MoveMouse(rootWindow, this->getX(), this->getY());
-      Events::_DiscardMotionEvents(&event, this->window);
-
-      moved = 1;
-
-    } else if (event.type == MotionNotify) {
-
-      Events::_DiscardMotionEvents(&event, this->window);
-
-      this->x = event.xmotion.x;
-      this->y = event.xmotion.y;
-
-      moved = 1;
-
-    } else if (event.type == ButtonRelease) {
-      this->StopMove(1, oldx, oldy);
-      return 1;
-
-    }
-
-    if (moved) {
-
-      if (settings.moveMode == MOVE_OUTLINE) {
-        Outline::ClearOutline();
-        Outline::DrawOutline(this->getX() - west, this->getY() - west,
-            this->getWidth() + west + east, height + north + west);
-      } else {
-        JXMoveWindow(display, win, this->getX() - west, this->getY() - north);
-        this->SendConfigureEvent();
-      }
-
-      UpdateMoveWindow(this);
-      Events::_RequirePagerUpdate();
-
-    }
-
-  }
-
-}
-
-/** Stop move. */
-void Client::StopMove(int doMove, int oldx, int oldy) {
-  int north, south, east, west;
-
-  Assert(this->controller); //must be moving
-
-  (this->controller)(0);
-
-  this->controller = NULL;
-
-  Cursors::SetDefaultCursor(this->parent);
-  Events::_UnregisterCallback(SignalMove, NULL);
-
-  if (!doMove) {
-    this->x = oldx;
-    this->y = oldy;
-    return;
-  }
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-  if (this->parent != None) {
-    JXMoveWindow(display, this->parent, this->getX() - west,
-        this->getY() - north);
-  } else {
-    JXMoveWindow(display, this->window, this->getX() - west,
-        this->getY() - north);
-  }
-  this->SendConfigureEvent();
-}
-
-/** Restart a move. */
-void Client::RestartMove(int *doMove) {
-  if (*doMove) {
-    int north, south, east, west;
-    *doMove = 0;
-    DestroyMoveWindow();
-    Border::GetBorderSize(this, &north, &south, &east, &west);
-    if (this->getParent() != None) {
-      JXMoveWindow(display, this->getParent(), this->getX() - west,
-          this->getY() - north);
-    } else {
-      JXMoveWindow(display, this->getWindow(), this->getX() - west,
-          this->getY() - north);
-    }
-    this->SendConfigureEvent();
-  }
-}
-
-/** Snap to the screen. */
-void Client::DoSnapScreen() {
-
-  ClientRectangle client;
-  int screen;
-  const ScreenType *sp;
-  int screenCount;
-  int north, south, east, west;
-
-  GetClientRectangle(this, &client);
-
-  Border::GetBorderSize(this, &north, &south, &east, &west);
-
-  screenCount = Screens::GetScreenCount();
-  for (screen = 0; screen < screenCount; screen++) {
-
-    sp = Screens::GetScreen(screen);
-
-    if (abs(client.right - sp->width - sp->x) <= settings.snapDistance) {
-      this->x = sp->x + sp->width - west - this->getWidth();
-    }
-    if (abs(client.left - sp->x) <= settings.snapDistance) {
-      this->x = sp->x + east;
-    }
-    if (abs(client.bottom - sp->height - sp->y) <= settings.snapDistance) {
-      this->y = sp->y + sp->height - south;
-      if (!(this->isShaded())) {
-        this->y -= this->getHeight();
-      }
-    }
-    if (abs(client.top - sp->y) <= settings.snapDistance) {
-      this->y = north + sp->y;
-    }
-
-  }
-
-}
-

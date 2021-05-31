@@ -260,7 +260,16 @@ public:
 	 * @param value A pointer to the location to save the atom.
 	 * @return 1 on success, 0 on failure.
 	 */
-	static char GetWindowAtom(Window window, AtomType atom, Window *value);
+	static char GetWindowAtom(Window window, AtomType atom, unsigned char *value);
+
+
+	/** Read a window atom.
+	 * @param window The window.
+	 * @param atom The atom to read.
+	 * @param value A pointer to the location to save the atom.
+	 * @return 1 on success, 0 on failure.
+	 */
+	static char GetWindowAtom(Window window, AtomType atom, unsigned int *value);
 
 	/** Set a window atom.
 	 * @param window The window.

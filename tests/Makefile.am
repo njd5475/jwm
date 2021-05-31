@@ -11,7 +11,7 @@ gtest_SOURCES = gtest.cpp ../src/DesktopEnvironment.cpp ../src/DesktopSystemComp
 	../src/cursor.cpp ../src/background.cpp ../src/border.cpp ../src/debug.cpp ../src/battery.cpp \
 	../src/command.cpp ../src/error.cpp ../src/event.cpp ../src/font.cpp ../src/grab.cpp ../src/gradient.cpp\
 	../src/group.cpp ../src/help.cpp ../src/hint.cpp ../src/icon.cpp ../src/image.cpp \
-	../src/misc.cpp ../src/move.cpp ../src/outline.cpp ../src/Graphics.cpp \
+	../src/misc.cpp ../src/outline.cpp ../src/Graphics.cpp \
 	../src/place.cpp ../src/popup.cpp ../src/screen.cpp ../src/logger.cpp ../src/fnv.cpp \
 	../src/settings.cpp ../src/status.cpp ../src/timing.cpp ../src/SystemComponent.cpp ../src/json.cpp ../src/Flex.cpp \
 	../src/Component.cpp

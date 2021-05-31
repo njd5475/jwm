@@ -26,7 +26,9 @@ vector<string> getFilenames(experimental::filesystem::path path) {
   // http://en.cppreference.com/w/cpp/experimental/fs/directory_iterator
   const stdfs::directory_iterator end { };
 
-  for (stdfs::directory_iterator iter { path }; iter != end; ++iter) {
+  for (stdfs::directory_iterator iter { path }; 
+      iter != end; 
+      ++iter) {
     if (stdfs::is_regular_file(*iter)) {// comment out if all names (names of directories tc.) are required
       filenames.push_back(iter->path().string());
     } else if (stdfs::is_symlink(*iter)) {
@@ -50,8 +52,10 @@ ApplicationsSystemComponent::~ApplicationsSystemComponent() {
 }
 
 void ApplicationsSystemComponent::initialize() {
-  vLog("PATH is %s\n", getenv("PATH"));
-  vector<string> pathDirs = splitStr(getenv("PATH"), ":");
+  char *path = strdup(getenv("PATH"));
+  vLog("PATH is %s\n", path);
+  vector<string> pathDirs = splitStr(path, ":");
+  Log("PATH split done\n");
   for (auto dirStr : pathDirs) {
     vLog("Found path dir %s\n", dirStr.c_str());
     vector<string> filesInDir = getFilenames(dirStr);
