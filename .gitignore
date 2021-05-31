@@ -34,3 +34,6 @@ test-driver
 googletest/
 /googletest/
 googletest
+.cproject
+.project
+.vscode
