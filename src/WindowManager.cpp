@@ -511,6 +511,6 @@ void WindowManager::add(Component *cp) {
 
 void WindowManager::newClient(Client *client) {
 	vLog("Got a new client %s (%d)\n", client->getName(), client->getPid());
-	client->move(400, 200);
+	client->move(300, 100);
 	Client::RestackClients();
 }

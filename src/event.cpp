@@ -541,18 +541,6 @@ void Events::_ProcessBinding(MouseContextType context, Client *np,
 	case DESKTOP:
 		//DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(key.extra);
 		break;
-	case RDESKTOP:
-		DesktopEnvironment::DefaultEnvironment()->RightDesktop();
-		break;
-	case LDESKTOP:
-		DesktopEnvironment::DefaultEnvironment()->LeftDesktop();
-		break;
-	case UDESKTOP:
-		DesktopEnvironment::DefaultEnvironment()->AboveDesktop();
-		break;
-	case DDESKTOP:
-		DesktopEnvironment::DefaultEnvironment()->BelowDesktop();
-		break;
 	case SHOWDESK:
 		DesktopEnvironment::DefaultEnvironment()->ShowDesktop();
 		break;
@@ -704,49 +692,6 @@ void Events::_ProcessBinding(MouseContextType context, Client *np,
 			} else {
 				np->SetClientFullScreen(1);
 			}
-		}
-		break;
-	case SEND:
-		if (np) {
-//      const unsigned desktop = key.extra;
-//      np->SetClientDesktop(desktop);
-//      DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
-		}
-		break;
-	case SENDR:
-		if (np) {
-			const unsigned desktop =
-					DesktopEnvironment::DefaultEnvironment()->GetRightDesktop(
-							np->getDesktop());
-			np->SetClientDesktop(desktop);
-			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
-		}
-		break;
-	case SENDL:
-		if (np) {
-			const unsigned desktop =
-					DesktopEnvironment::DefaultEnvironment()->GetLeftDesktop(
-							np->getDesktop());
-			np->SetClientDesktop(desktop);
-			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
-		}
-		break;
-	case SENDU:
-		if (np) {
-			const unsigned desktop =
-					DesktopEnvironment::DefaultEnvironment()->GetAboveDesktop(
-							np->getDesktop());
-			np->SetClientDesktop(desktop);
-			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
-		}
-		break;
-	case SENDD:
-		if (np) {
-			const unsigned desktop =
-					DesktopEnvironment::DefaultEnvironment()->GetBelowDesktop(
-							np->getDesktop());
-			np->SetClientDesktop(desktop);
-			DesktopEnvironment::DefaultEnvironment()->ChangeDesktop(desktop);
 		}
 		break;
 	default:

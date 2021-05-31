@@ -328,8 +328,6 @@ Actions Loader::convertToAction(const char *action) {
     toRet = ESC;
   } else if (strcasecmp(action, LITERAL(RESTART))) {
     toRet = RESTART;
-  } else if (strcasecmp(action, LITERAL(LDESKTOP))) {
-    toRet = LDESKTOP;
   } else if (strcasecmp(action, LITERAL(DESKTOP))) {
     toRet = DESKTOP;
   } else if (strcasecmp(action, LITERAL(EXIT))) {
@@ -346,8 +344,6 @@ Actions Loader::convertToAction(const char *action) {
     toRet = MAXLEFT;
   } else if (strcasecmp(action, LITERAL(MAXRIGHT))) {
     toRet = MAXRIGHT;
-  } else if (strcasecmp(action, LITERAL(DDESKTOP))) {
-    toRet = DDESKTOP;
   } else if (strcasecmp(action, LITERAL(SHOWDESK))) {
     toRet = SHOWDESK;
   } else if (strcasecmp(action, LITERAL(SHOWTRAY))) {
@@ -356,16 +352,6 @@ Actions Loader::convertToAction(const char *action) {
     toRet = EXEC;
   } else if (strcasecmp(action, LITERAL(RESTART))) {
     toRet = RESTART;
-  } else if (strcasecmp(action, LITERAL(SEND))) {
-    toRet = SEND;
-  } else if (strcasecmp(action, LITERAL(SENDR))) {
-    toRet = SENDR;
-  } else if (strcasecmp(action, LITERAL(SENDL))) {
-    toRet = SENDL;
-  } else if (strcasecmp(action, LITERAL(SENDU))) {
-    toRet = SENDU;
-  } else if (strcasecmp(action, LITERAL(SENDD))) {
-    toRet = SENDD;
   } else if (strcasecmp(action, LITERAL(MAXTOP))) {
     toRet = MAXTOP;
   } else if (strcasecmp(action, LITERAL(MAXBOTTOM))) {

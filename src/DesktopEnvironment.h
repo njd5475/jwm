@@ -36,11 +36,6 @@ public:
   virtual void SetDesktopName(int num, const char* name);
   virtual void SetBackground(int id, const char* file, char* const value);
 
-  virtual const unsigned GetRightDesktop(short signed int num);
-  virtual const unsigned GetLeftDesktop(short signed int num);
-  virtual const unsigned GetAboveDesktop(short signed int num);
-  virtual const unsigned GetBelowDesktop(short signed int num);
-
 private:
   std::vector<SystemComponent*> _components;
   unsigned int _componentCount;

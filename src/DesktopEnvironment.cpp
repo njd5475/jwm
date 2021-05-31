@@ -90,22 +90,6 @@ const char* DesktopEnvironment::GetDesktopName(unsigned short int num) {
   return Desktops::_GetDesktopName(num);
 }
 
-const unsigned DesktopEnvironment::GetRightDesktop(signed short int num) {
-  return Desktops::_GetRightDesktop(num);
-}
-
-const unsigned DesktopEnvironment::GetLeftDesktop(signed short int num) {
-  return Desktops::_GetLeftDesktop(num);
-}
-
-const unsigned DesktopEnvironment::GetAboveDesktop(signed short int num) {
-  return Desktops::_GetAboveDesktop(num);
-}
-
-const unsigned DesktopEnvironment::GetBelowDesktop(signed short int num) {
-  return Desktops::_GetBelowDesktop(num);
-}
-
 void DesktopEnvironment::InitializeComponents() {
   for(auto c : this->_components) {
     c->initialize();
