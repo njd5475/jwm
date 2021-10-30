@@ -182,11 +182,21 @@ void WindowManager::Startup(void) {
 
 	Client::RegisterNewClientListener(WindowManager::WM());
 
+	CreateDesktopComponents();
+	DrawAll();
+	//Flex::Create();
+}
+
+void WindowManager::CreateDesktopComponents() {
 	ComponentBuilder builder;
 	const char *last = NULL;
-	int i = 20;
+	int i = 40;
+	vLog("Found %d desktop files\n", DesktopFile::getDesktopFiles().size());
 	for (auto file : DesktopFile::getDesktopFiles()) {
 		if (file->getName()) {
+			if(!last) {
+				builder.offset(100, 200);
+			}
 			builder.percentage(0.5, 0.5);
 			if (last) {
 				builder.below(last);
@@ -195,15 +205,12 @@ void WindowManager::Startup(void) {
 			builder.clicked(new ClickDesktopFile(file));
 			builder.hover(COLOR_MENU_ACTIVE_DOWN);
 			builder.build(last = file->getName());
-		}
-		i--;
-		if (i <= 0) {
-			break;
+			i--;
+			if (i <= 0) {
+				break;
+			}
 		}
 	}
-
-	DrawAll();
-	//Flex::Create();
 }
 
 /** Shutdown the various NWM components.
@@ -504,7 +511,7 @@ void WindowManager::Draw() {
 
 void WindowManager::add(Component *cp) {
 	if (!_group) {
-		_group = new ComponentGroup(display, rootWindow, 100, 100, 300, 300);
+		_group = new ComponentGroup(display, rootWindow, 100, 100, 300, 200);
 	}
 	_group->add(cp);
 }

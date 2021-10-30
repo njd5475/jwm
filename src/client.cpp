@@ -316,7 +316,7 @@ Client::Client(Window w, bool alreadyMapped, bool notOwner) :
     oldx(0), oldy(0), oldWidth(0), oldHeight(0), yinc(0), minWidth(0), maxWidth(
         0), minHeight(0), maxHeight(0), gravity(0), controller(0), instanceName(
         0), baseHeight(0), baseWidth(0), colormaps(), icon(0), sizeFlags(0), className(
-        0), xinc(0), name(0), _pid(0) {
+        0), xinc(0), name(0), _pid(0), bounds(Bounds(0,0,0,0)) {
 
   XWindowAttributes attr;
 

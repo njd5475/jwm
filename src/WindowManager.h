@@ -35,6 +35,7 @@ public:
 	static Bool SelectionReleased(Display *d, XEvent *e, XPointer arg);
 	static void StartupConnection(void);
 	static void ShutdownConnection(void);
+	static void CreateDesktopComponents();
 	static void EventLoop(void);
 	static void HandleExit(int sig);
 	static void HandleChild(int sig);

@@ -14,6 +14,7 @@
 #include "border.h"
 #include "hint.h"
 #include "ClientListener.h"
+#include "bounds.h"
 
 struct TimeType;
 
@@ -156,6 +157,7 @@ protected:
   int x, y; /**< The location of the window. */
   int width; /**< The width of the window. */
   int height; /**< The height of the window. */
+  Bounds bounds;
   int oldx; /**< The old x coordinate (for maximize). */
   int oldy; /**< The old y coordinate (for maximize). */
   int oldWidth; /**< The old width (for maximize). */

@@ -90,6 +90,10 @@ void Graphics::destroy(Graphics *g) {
   delete g;
 }
 
+void Graphics::flush() {
+  JXFlush(_display);
+}
+
 Graphics* Graphics::wrap(const Pixmap p, GC gc, Display *display) {
   Graphics *g = new Graphics(p, gc, display);
   graphics.push_back(g);

@@ -26,6 +26,7 @@ public:
   virtual ~ComponentBuilder();
 
   ComponentBuilder *percentage(float percentX, float percentY);
+  ComponentBuilder *offset(int x, int y, const char* name = 0);
   ComponentBuilder *label(const char* text);
   ComponentBuilder *below(const char* name);
   ComponentBuilder *clicked(ClickHandler *handler);

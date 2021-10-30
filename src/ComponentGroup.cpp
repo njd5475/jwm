@@ -14,8 +14,7 @@
 #include <X11/Xlibint.h>
 
 ComponentGroup::ComponentGroup(Display *display, Window rootWindow, int left, int top, int right, int bottom) :
-		_left(left), _top(top), _right(right), _bottom(bottom), _display(display), _window(
-				rootWindow) {
+		_left(left), _top(top), _right(right), _bottom(bottom), _display(display) {
 	XSetWindowAttributes attrs;
 	attrs.background_pixel = Colors::lookupColor(COLOR_MENU_BG);
 	attrs.event_mask = ButtonPressMask | ButtonReleaseMask
@@ -26,7 +25,7 @@ ComponentGroup::ComponentGroup(Display *display, Window rootWindow, int left, in
 			this->getWidth(), this->getHeight(), 0,
 			CopyFromParent, InputOutput, CopyFromParent,
 			CWBackPixel | CWEventMask, &attrs);
-	_graphics = Graphics::getRootGraphics(_pixmap);
+	_graphics = Graphics::wrap(_pixmap, rootGC, display);
 
 	XSizeHints shints;
 	shints.x = this->getX();
@@ -36,18 +35,20 @@ ComponentGroup::ComponentGroup(Display *display, Window rootWindow, int left, in
 	JXStoreName(display, _window, _("ComponentGroup"));
 	Hints::SetAtomAtom(_window, ATOM_NET_WM_WINDOW_TYPE,
 			ATOM_NET_WM_WINDOW_TYPE_UTILITY);
-	_clientNode = Client::Create(_window, false, false);
-	_clientNode->setNoBorderClose();
-	_clientNode->keyboardFocus();
-	_clientNode->setNoBorderTitle();
-	_clientNode->setNoBorderOutline();
-	Hints::WriteState(_clientNode);
+	// _clientNode = Client::Create(_window, false, false);
+	// _clientNode->setNoBorderClose();
+	// _clientNode->keyboardFocus();
+	// _clientNode->setNoBorderTitle();
+	// _clientNode->setNoBorderOutline();
+	// Hints::WriteState(_clientNode);
 
 	/* Grab the mouse. */
 	JXGrabButton(display, AnyButton, AnyModifier, _window, True,
 			ButtonReleaseMask | ButtonMotionMask | ButtonPressMask,
 			GrabModeAsync, GrabModeAsync, None, None);
 	Cursors::GrabMouse(_window);
+
+	Events::registerHandler(MotionNotify, this);
 }
 
 ComponentGroup::~ComponentGroup() {
@@ -60,7 +61,9 @@ void ComponentGroup::Draw() {
 	for(auto c : _components) {
 		c->Draw(_graphics);
 	}
-	_graphics->copy(_window, 0, 0, getWidth(), getHeight(), getX(), getY());
+	vLog("Drawing ComponentGroup x=%d y=%d width=%d height=%d\n", getX(), getY(), this->getWidth(), this->getHeight());
+
+	_graphics->copy(rootWindow, 0, 0, getWidth(), getHeight(), getX()+200, getY());
 }
 
 void ComponentGroup::add(Component *c) {
@@ -88,17 +91,19 @@ void ComponentGroup::resizeForComponent(Component *c) {
 	// recreate pixmap
 	JXFreePixmap(_display, _pixmap);
 
-	_pixmap = JXCreatePixmap(display, rootWindow, getWidth(), getHeight(),
+	_pixmap = JXCreatePixmap(display, _window, getWidth(), getHeight(),
 			rootDepth);
 
 	Graphics::destroy(_graphics);
 
-	_graphics = Graphics::getRootGraphics(_pixmap);
+	_graphics = Graphics::wrap(_pixmap, rootGC, display);
 
 	// resize the window
+	vLog("Resizing ComponentGroup width=%d height=%d\n", this->getWidth(), this->getHeight());
 	JXResizeWindow(display, _window, this->getWidth(), this->getHeight());
 	JXMoveWindow(display, _window, this->getX(), this->getY());
 	this->Draw();
+	this->_graphics->flush();
 }
 
 int ComponentGroup::getX() {
@@ -115,4 +120,9 @@ int ComponentGroup::getWidth() {
 
 int ComponentGroup::getHeight() {
 	return abs(_bottom - _top);
+}
+
+bool ComponentGroup::process(const XEvent *event) {
+	Log("Received motion notify event for ComponentGroup\n");
+	return false;
 }

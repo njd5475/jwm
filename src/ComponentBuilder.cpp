@@ -153,6 +153,31 @@ private:
 	const char *_text;
 };
 
+class Offset: public EmptyComponent {
+public:
+	Offset(Component *parent, int x, int y, Component *other = NULL): EmptyComponent(parent), _x(x), _y(y), _other(other) {
+	}
+	virtual ~Offset() {}
+
+	virtual int getX() {
+		return get()->getX() + _x;
+	}
+
+	virtual int getY() {
+		return get()->getY() + _y;
+	}
+
+private:
+	Component *get() {
+		return _other == NULL ? getParent() : _other;
+	}
+
+private:
+	int _x;
+	int _y;
+	Component *_other;
+};
+
 class AlignBelow: public EmptyComponent {
 public:
 	AlignBelow(Component *parent, Component *below) :
@@ -276,6 +301,11 @@ ComponentBuilder* ComponentBuilder::label(const char *text) {
 
 ComponentBuilder* ComponentBuilder::below(const char *name) {
 	this->_current = new AlignBelow(_current, get(name));
+	return this;
+}
+
+ComponentBuilder* ComponentBuilder::offset(int x, int y, const char* name = 0) {
+	this->_current = new Offset(_current, x, y, get(name));
 	return this;
 }
 
